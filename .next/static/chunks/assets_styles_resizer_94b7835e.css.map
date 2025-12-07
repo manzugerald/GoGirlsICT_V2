@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/GERALD/Desktop/NEXT/gogirlsict/assets/styles/resizer.css"],"sourcesContent":[".resizer {\r\n  position: absolute;\r\n  right: 0;\r\n  top: 0;\r\n  height: 100%;\r\n  width: 6px;\r\n  cursor: col-resize;\r\n  user-select: none;\r\n  touch-action: none;\r\n  z-index: 10;\r\n  background: transparent;  /* No visible bar */\r\n  opacity: 0;               /* Completely invisible */\r\n  transition: none;\r\n  border-radius: 3px;\r\n  /* No hover or active effects */\r\n}"],"names":[],"mappings":"AAAA","debugId":null}}]
+}

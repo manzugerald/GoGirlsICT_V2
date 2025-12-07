@@ -1,0 +1,3 @@
+{
+  "/(root)/resources/[section]/page": "app/(root)/resources/[section]/page.js"
+}

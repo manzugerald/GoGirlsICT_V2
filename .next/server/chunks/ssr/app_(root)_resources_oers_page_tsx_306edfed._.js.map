@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/GERALD/Desktop/NEXT/gogirlsict/app/%28root%29/resources/oers/page.tsx"],"sourcesContent":["'use client';\r\n\r\nimport { useEffect, useRef } from 'react';\r\n\r\nconst OER_PDF_URL = '/assets/pdfs/oers/Guide1.pdf';\r\n\r\nconst OersPage = () => {\r\n  const iframeRef = useRef<HTMLIFrameElement>(null);\r\n\r\n  useEffect(() => {\r\n    iframeRef.current?.focus();\r\n  }, []);\r\n\r\n  return (\r\n    <div className=\"w-screen h-screen fixed inset-0 bg-black z-40\">\r\n      <iframe\r\n        ref={iframeRef}\r\n        src={OER_PDF_URL}\r\n        title=\"Open Educational Resources\"\r\n        className=\"w-full h-full border-0\"\r\n        aria-label=\"OERs PDF\"\r\n      />\r\n    </div>\r\n  );\r\n};\r\n\r\nexport default OersPage;\r\n// This code defines a React component that displays a PDF document of Open Educational Resources (OERs) in full screen."],"names":[],"mappings":";;;;AAEA;AAFA;;;AAIA,MAAM,cAAc;AAEpB,MAAM,WAAW;IACf,MAAM,YAAY,CAAA,GAAA,qMAAA,CAAA,SAAM,AAAD,EAAqB;IAE5C,CAAA,GAAA,qMAAA,CAAA,YAAS,AAAD,EAAE;QACR,UAAU,OAAO,EAAE;IACrB,GAAG,EAAE;IAEL,qBACE,8OAAC;QAAI,WAAU;kBACb,cAAA,8OAAC;YACC,KAAK;YACL,KAAK;YACL,OAAM;YACN,WAAU;YACV,cAAW;;;;;;;;;;;AAInB;uCAEe;CACf,wHAAwH","debugId":null}}]
+}

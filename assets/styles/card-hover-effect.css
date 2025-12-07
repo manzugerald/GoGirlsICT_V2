@@ -1,0 +1,9 @@
+@keyframes fbcardin {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fbcardin {
+  animation: fbcardin 0.8s cubic-bezier(0.55,0,0.1,1) forwards;
+}
