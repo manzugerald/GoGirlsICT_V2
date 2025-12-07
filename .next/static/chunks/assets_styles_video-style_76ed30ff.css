@@ -1,0 +1,66 @@
+/* [project]/assets/styles/video-style.css [app-client] (css) */
+.main-video-container {
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: .75rem;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.main-video-overlay {
+  z-index: 10;
+  pointer-events: none;
+  background: linear-gradient(to top, #000000b3 60%, #0000 100%);
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1rem;
+  display: flex;
+  position: absolute;
+  inset: 0;
+}
+
+.main-video-title {
+  color: #fff;
+  margin-bottom: .25rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.main-video-description {
+  color: #e5e7eb;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  font-size: 1rem;
+  display: -webkit-box;
+  overflow: hidden;
+}
+
+.main-video-views {
+  color: #d1d5db;
+  margin-top: .25rem;
+  font-size: .75rem;
+}
+
+.main-video-enlarge-btn {
+  z-index: 20;
+  color: #fff;
+  cursor: pointer;
+  pointer-events: auto;
+  background: #0009;
+  border: none;
+  border-radius: 9999px;
+  padding: .5rem;
+  transition: background .2s;
+  position: absolute;
+  top: .75rem;
+  right: .75rem;
+}
+
+.main-video-enlarge-btn:hover {
+  color: #fff;
+  background: #be185d;
+}
+
+
+/*# sourceMappingURL=assets_styles_video-style_76ed30ff.css.map*/

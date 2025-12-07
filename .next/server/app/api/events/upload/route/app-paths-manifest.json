@@ -1,0 +1,3 @@
+{
+  "/api/events/upload/route": "app/api/events/upload/route.js"
+}
