@@ -2020,6 +2020,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
         lastName: initialData?.lastName ?? '',
         username: initialData?.username ?? '',
         email: initialData?.email ?? '',
+        about: initialData?.about ?? '',
         password: '',
         confirmPassword: '',
         role: initialData?.role ?? ''
@@ -2032,6 +2033,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
     const [newUsername, setNewUsername] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [confirmNewUsername, setConfirmNewUsername] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [changePassword, setChangePassword] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [currentPassword, setCurrentPassword] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(''); // NEW: current password required for edit password changes
     const [newPassword, setNewPassword] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [confirmNewPassword, setConfirmNewPassword] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
@@ -2066,6 +2068,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                 lastName: json?.lastName ?? '',
                 username: json?.username ?? '',
                 email: json?.email ?? '',
+                about: json?.about ?? '',
                 password: '',
                 confirmPassword: '',
                 role: json?.role ?? ''
@@ -2079,6 +2082,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
             setConfirmNewPassword('');
             setNewUsername('');
             setConfirmNewUsername('');
+            setCurrentPassword('');
             setUsernameInvalid(false);
             setError('');
             setSuccess('');
@@ -2117,6 +2121,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                 lastName: initialData?.lastName ?? '',
                 username: initialData?.username ?? '',
                 email: initialData?.email ?? '',
+                about: initialData?.about ?? '',
                 password: '',
                 confirmPassword: '',
                 role: initialData?.role ?? ''
@@ -2131,6 +2136,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
             setConfirmNewPassword('');
             setNewUsername('');
             setConfirmNewUsername('');
+            setCurrentPassword('');
             setError('');
             setSuccess('');
             setUsernameInvalid(false);
@@ -2297,6 +2303,11 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                 }
             }
             if ((showOnly === 'all' || showOnly === 'password' || changePassword) && changePassword) {
+                if (!currentPassword) {
+                    setError('Please provide your current password to change to a new password.');
+                    setIsSubmitting(false);
+                    return;
+                }
                 if (!newPassword || !confirmNewPassword) {
                     setError('Please provide the new password and confirmation');
                     setIsSubmitting(false);
@@ -2327,6 +2338,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                     formData.append('lastName', form.lastName);
                     formData.append('username', form.username);
                     formData.append('email', form.email);
+                    formData.append('about', form.about ?? '');
                     if (imageFile) formData.append('image', imageFile);
                 }
                 if (showOnly === 'all' || showOnly === 'password') {
@@ -2345,6 +2357,13 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                     if (form.firstName !== (orig.firstName ?? '')) formData.append('firstName', form.firstName);
                     if (form.lastName !== (orig.lastName ?? '')) formData.append('lastName', form.lastName);
                     if (form.email !== (orig.email ?? '')) formData.append('email', form.email);
+                    // include about field change or empty string to allow clearing
+                    if (form.about !== (orig.about ?? '')) {
+                        formData.append('about', form.about ?? '');
+                    } else {
+                        // include anyway to keep server handling simple
+                        formData.append('about', form.about ?? '');
+                    }
                     if (imageFile) formData.append('image', imageFile);
                     if (imageToDelete) formData.append('oldImageUrl', imageToDelete);
                     // include role in edit (always include if provided)
@@ -2367,8 +2386,12 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                 }
                 // password change flow (explicit or via showOnly)
                 if (changePassword || showOnly === 'password') {
-                    const pw = changePassword ? newPassword : form.password;
-                    if (pw) formData.append('password', pw);
+                    const pw = newPassword || form.password;
+                    if (pw) {
+                        formData.append('password', pw);
+                        // include current password for verification when editing password
+                        formData.append('currentPassword', currentPassword);
+                    }
                 } else if (form.password) {
                     // backwards compatibility: if user typed in main password field, include it
                     formData.append('password', form.password);
@@ -2417,7 +2440,8 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                     setForm((f)=>({
                             ...f,
                             username: data.user.username || f.username,
-                            role: data.user.role ?? f.role
+                            role: data.user.role ?? f.role,
+                            about: data.user.about ?? f.about
                         }));
                     initialRef.current = {
                         ...initialRef.current || {},
@@ -2429,6 +2453,10 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
             setError(err?.message || 'Something went wrong');
         } finally{
             setIsSubmitting(false);
+            // clear sensitive fields
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmNewPassword('');
         }
     };
     const handleCancel = ()=>{
@@ -2464,7 +2492,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
         fetchUserData();
     };
     // Render
-    // If showOnly restricts UI, we render only matching sections:
+    // If showOnly restricts the UI, we render only matching sections:
     const renderProfileFields = ()=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
             children: [
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2475,7 +2503,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                             children: "Profile image"
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 533,
+                            lineNumber: 561,
                             columnNumber: 9
                         }, this),
                         imagePreview ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2487,7 +2515,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     className: "w-24 h-24 rounded-full object-cover border mx-auto"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 536,
+                                    lineNumber: 564,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2498,20 +2526,20 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     children: "×"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 541,
+                                    lineNumber: 569,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 535,
+                            lineNumber: 563,
                             columnNumber: 11
                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "w-24 h-24 rounded-full border flex items-center justify-center mb-2 text-gray-400",
                             children: "No Image"
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 551,
+                            lineNumber: 579,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2521,13 +2549,13 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                             className: "mt-2 mb-2 block"
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 555,
+                            lineNumber: 583,
                             columnNumber: 9
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 532,
+                    lineNumber: 560,
                     columnNumber: 7
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2541,7 +2569,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     children: "First name"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 566,
+                                    lineNumber: 594,
                                     columnNumber: 11
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2552,13 +2580,13 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     className: "border p-2 rounded w-full"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 567,
+                                    lineNumber: 595,
                                     columnNumber: 11
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 565,
+                            lineNumber: 593,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2569,7 +2597,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     children: "Last name"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 576,
+                                    lineNumber: 604,
                                     columnNumber: 11
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2580,19 +2608,19 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     className: "border p-2 rounded w-full"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 577,
+                                    lineNumber: 605,
                                     columnNumber: 11
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 575,
+                            lineNumber: 603,
                             columnNumber: 9
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 564,
+                    lineNumber: 592,
                     columnNumber: 7
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2606,7 +2634,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     children: "Username"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 590,
+                                    lineNumber: 618,
                                     columnNumber: 11
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2620,13 +2648,13 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     disabled: changeUsername || showOnly === 'username'
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 591,
+                                    lineNumber: 619,
                                     columnNumber: 11
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 589,
+                            lineNumber: 617,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2637,7 +2665,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     children: "Email"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 603,
+                                    lineNumber: 631,
                                     columnNumber: 11
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2650,20 +2678,52 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     autoComplete: "off"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 604,
+                                    lineNumber: 632,
                                     columnNumber: 11
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 602,
+                            lineNumber: 630,
                             columnNumber: 9
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 588,
+                    lineNumber: 616,
                     columnNumber: 7
+                }, this),
+                isEdit && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "mt-2",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                            className: "text-sm block mb-1",
+                            children: "About"
+                        }, void 0, false, {
+                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                            lineNumber: 647,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
+                            name: "about",
+                            value: form.about,
+                            onChange: (e)=>setForm({
+                                    ...form,
+                                    about: e.target.value
+                                }),
+                            className: "border p-2 rounded w-full",
+                            rows: 4,
+                            placeholder: "Tell us a few words about this user (optional)"
+                        }, void 0, false, {
+                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                            lineNumber: 648,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                    lineNumber: 646,
+                    columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "mt-2",
@@ -2673,7 +2733,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                             children: "Role"
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 618,
+                            lineNumber: 661,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -2687,7 +2747,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     children: "— select role —"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 625,
+                                    lineNumber: 668,
                                     columnNumber: 11
                                 }, this),
                                 ROLE_OPTIONS.map((r)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -2695,19 +2755,19 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                         children: r.label
                                     }, r.value, false, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                        lineNumber: 627,
+                                        lineNumber: 670,
                                         columnNumber: 13
                                     }, this))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 619,
+                            lineNumber: 662,
                             columnNumber: 9
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 617,
+                    lineNumber: 660,
                     columnNumber: 7
                 }, this)
             ]
@@ -2729,7 +2789,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                             }
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 639,
+                            lineNumber: 682,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2737,13 +2797,13 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                             children: "Change username"
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 649,
+                            lineNumber: 692,
                             columnNumber: 9
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 638,
+                    lineNumber: 681,
                     columnNumber: 7
                 }, this),
                 changeUsername && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2756,7 +2816,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     children: "New username"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 655,
+                                    lineNumber: 698,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2767,13 +2827,13 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     autoComplete: "off"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 656,
+                                    lineNumber: 699,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 654,
+                            lineNumber: 697,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2783,7 +2843,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     children: "Confirm new username"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 665,
+                                    lineNumber: 708,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2794,13 +2854,13 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     autoComplete: "off"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 666,
+                                    lineNumber: 709,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 664,
+                            lineNumber: 707,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2808,19 +2868,19 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                             children: "If you change username, you'll be updating the account handle."
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 674,
+                            lineNumber: 717,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 653,
+                    lineNumber: 696,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-            lineNumber: 637,
+            lineNumber: 680,
             columnNumber: 5
         }, this);
     const renderPasswordChange = ()=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2836,11 +2896,12 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                 setChangePassword(!changePassword);
                                 setNewPassword('');
                                 setConfirmNewPassword('');
+                                setCurrentPassword('');
                                 setError('');
                             }
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 685,
+                            lineNumber: 728,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2848,80 +2909,117 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                             children: "Change password"
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 695,
+                            lineNumber: 739,
                             columnNumber: 9
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 684,
+                    lineNumber: 727,
                     columnNumber: 7
                 }, this),
                 changePassword && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "mt-3 flex gap-4",
+                    className: "border rounded p-3 bg-gray-50 dark:bg-gray-800",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "w-1/2",
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
                                     className: "text-sm block mb-1",
-                                    children: "New password"
+                                    children: "Current password"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 701,
+                                    lineNumber: 745,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                     type: "password",
-                                    placeholder: "New password",
-                                    value: newPassword,
-                                    onChange: (e)=>setNewPassword(e.target.value),
+                                    placeholder: "Current password",
+                                    value: currentPassword,
+                                    onChange: (e)=>setCurrentPassword(e.target.value),
                                     className: "border p-2 rounded w-full",
-                                    autoComplete: "new-password"
+                                    autoComplete: "current-password"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 702,
+                                    lineNumber: 746,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 700,
+                            lineNumber: 744,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "w-1/2",
+                            className: "flex gap-4 mt-3",
                             children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                    className: "text-sm block mb-1",
-                                    children: "Confirm new password"
-                                }, void 0, false, {
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "w-1/2",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                            className: "text-sm block mb-1",
+                                            children: "New password"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                                            lineNumber: 758,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                            type: "password",
+                                            placeholder: "New password",
+                                            value: newPassword,
+                                            onChange: (e)=>setNewPassword(e.target.value),
+                                            className: "border p-2 rounded w-full",
+                                            autoComplete: "new-password"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                                            lineNumber: 759,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 712,
+                                    lineNumber: 757,
                                     columnNumber: 13
                                 }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                    type: "password",
-                                    placeholder: "Confirm new password",
-                                    value: confirmNewPassword,
-                                    onChange: (e)=>setConfirmNewPassword(e.target.value),
-                                    className: "border p-2 rounded w-full",
-                                    autoComplete: "new-password"
-                                }, void 0, false, {
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "w-1/2",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                            className: "text-sm block mb-1",
+                                            children: "Confirm new password"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                                            lineNumber: 769,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                            type: "password",
+                                            placeholder: "Confirm new password",
+                                            value: confirmNewPassword,
+                                            onChange: (e)=>setConfirmNewPassword(e.target.value),
+                                            className: "border p-2 rounded w-full",
+                                            autoComplete: "new-password"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                                            lineNumber: 770,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 713,
+                                    lineNumber: 768,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 711,
+                            lineNumber: 756,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 699,
+                    lineNumber: 743,
                     columnNumber: 9
                 }, this),
                 !changePassword && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2929,13 +3027,13 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                     children: "Leave password blank to keep existing password."
                 }, void 0, false, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 725,
+                    lineNumber: 783,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-            lineNumber: 683,
+            lineNumber: 726,
             columnNumber: 5
         }, this);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2945,7 +3043,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
             children: "Loading…"
         }, void 0, false, {
             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-            lineNumber: 735,
+            lineNumber: 793,
             columnNumber: 9
         }, this) : fetchError ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
             className: "p-6 text-center",
@@ -2958,7 +3056,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 738,
+                    lineNumber: 796,
                     columnNumber: 11
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2970,7 +3068,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                             children: "Retry"
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 740,
+                            lineNumber: 798,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2979,19 +3077,19 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                             children: "Close"
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 743,
+                            lineNumber: 801,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 739,
+                    lineNumber: 797,
                     columnNumber: 11
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-            lineNumber: 737,
+            lineNumber: 795,
             columnNumber: 9
         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
             onSubmit: handleSubmit,
@@ -3010,7 +3108,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     children: "Password"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 759,
+                                    lineNumber: 817,
                                     columnNumber: 17
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -3023,13 +3121,13 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     autoComplete: "new-password"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 760,
+                                    lineNumber: 818,
                                     columnNumber: 17
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 758,
+                            lineNumber: 816,
                             columnNumber: 15
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3040,7 +3138,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     children: "Confirm Password"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 771,
+                                    lineNumber: 829,
                                     columnNumber: 17
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -3053,19 +3151,19 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     autoComplete: "new-password"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 772,
+                                    lineNumber: 830,
                                     columnNumber: 17
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 770,
+                            lineNumber: 828,
                             columnNumber: 15
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 757,
+                    lineNumber: 815,
                     columnNumber: 13
                 }, this),
                 isEdit && (showOnly === 'all' || showOnly === 'password') && renderPasswordChange(),
@@ -3074,7 +3172,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                     children: error
                 }, void 0, false, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 787,
+                    lineNumber: 845,
                     columnNumber: 21
                 }, this),
                 success && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3082,7 +3180,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                     children: success
                 }, void 0, false, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 788,
+                    lineNumber: 846,
                     columnNumber: 23
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3104,18 +3202,18 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                             className: `transition-all w-1.5 h-1.5 rounded-full mx-0.5 inline-block ${registerDot === i ? 'bg-white' : 'bg-green-900 opacity-40'}`
                                         }, i, false, {
                                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                            lineNumber: 818,
+                                            lineNumber: 876,
                                             columnNumber: 21
                                         }, this))
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 816,
+                                    lineNumber: 874,
                                     columnNumber: 17
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 793,
+                            lineNumber: 851,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -3126,13 +3224,13 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                             children: "Cancel"
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 829,
+                            lineNumber: 887,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 791,
+                    lineNumber: 849,
                     columnNumber: 11
                 }, this),
                 isEdit && (userId ?? initialRef.current?.id) && showOnly !== 'password' && showOnly !== 'username' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3145,27 +3243,27 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                         children: deleting ? 'Deleting...' : 'Delete User'
                     }, void 0, false, {
                         fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                        lineNumber: 844,
+                        lineNumber: 902,
                         columnNumber: 17
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 843,
+                    lineNumber: 901,
                     columnNumber: 15
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-            lineNumber: 749,
+            lineNumber: 807,
             columnNumber: 9
         }, this)
     }, void 0, false, {
         fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-        lineNumber: 733,
+        lineNumber: 791,
         columnNumber: 5
     }, this);
 }
-_s(CreateOrEditUserForm, "s9QXpiaphYtwX7el4oOQGSjHunE=", false, function() {
+_s(CreateOrEditUserForm, "RA3JNW35Ja/GGIMhlHpsdA8TCcc=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]
     ];
@@ -3208,8 +3306,8 @@ var _s = __turbopack_context__.k.signature();
  * SettingsSection
  *
  * - Header: "User Settings" title (icon) only.
- * - Profile block moved BELOW the title and ABOVE the "Edit your profile..." paragraph.
- *   The profile block shows the avatar at left and the name/username/email to the right of it.
+ * - Profile block moved BELOW the title and the About is displayed to the right
+ *   of the avatar/name/username/email (no different background/foreground).
  * - Action buttons are below the profile block and are laid out left-to-right.
  * - Role editing remains inside the embedded CreateUserForm (no duplicate Role select here).
  *
@@ -3245,7 +3343,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
     const id = currentUserId ?? sessionUserId;
     const loading = status === 'loading';
     const canEdit = !!sessionUser?.id;
-    // full user profile fetched from API (may include email/firstName/lastName/role/image)
+    // full user profile fetched from API (may include email/firstName/lastName/role,image,about)
     const [currentUser, setCurrentUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [currentUserLoading, setCurrentUserLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [currentUserError, setCurrentUserError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
@@ -4111,7 +4209,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "flex items-center gap-4 mb-3",
+                        className: "flex items-start gap-4 mb-3",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "flex-shrink-0",
@@ -4122,6 +4220,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex-1",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "text-base font-semibold",
@@ -4157,6 +4256,14 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
                                         lineNumber: 714,
                                         columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "mt-2 text-sm text-muted-foreground",
+                                        children: displayUser?.about && String(displayUser.about).trim().length > 0 ? displayUser.about : 'None'
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
+                                        lineNumber: 720,
+                                        columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
@@ -4175,7 +4282,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                         children: "Edit your profile or change your password. The form opens in a modal."
                     }, void 0, false, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 721,
+                        lineNumber: 728,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4187,7 +4294,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 children: "Edit my profile"
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 727,
+                                lineNumber: 734,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -4197,7 +4304,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 children: "Change my password"
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 730,
+                                lineNumber: 737,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -4207,7 +4314,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 children: "Change my username"
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 737,
+                                lineNumber: 744,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -4217,13 +4324,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 children: deleteAccountLoading ? 'Processing…' : 'Delete account'
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 744,
+                                lineNumber: 751,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 726,
+                        lineNumber: 733,
                         columnNumber: 9
                     }, this),
                     deleteAccountError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4231,7 +4338,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                         children: deleteAccountError
                     }, void 0, false, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 754,
+                        lineNumber: 761,
                         columnNumber: 11
                     }, this),
                     deleteAccountSuccess && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4239,7 +4346,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                         children: deleteAccountSuccess
                     }, void 0, false, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 757,
+                        lineNumber: 764,
                         columnNumber: 11
                     }, this)
                 ]
@@ -4260,12 +4367,12 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 children: "Edit profile"
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 768,
+                                lineNumber: 775,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                            lineNumber: 767,
+                            lineNumber: 774,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4304,35 +4411,35 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                     children: "CreateUserForm not available"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                    lineNumber: 806,
+                                    lineNumber: 813,
                                     columnNumber: 19
                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "text-sm text-red-600",
                                     children: "No user id available for editing."
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                    lineNumber: 809,
+                                    lineNumber: 816,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 772,
+                                lineNumber: 779,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                            lineNumber: 771,
+                            lineNumber: 778,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                    lineNumber: 766,
+                    lineNumber: 773,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                lineNumber: 762,
+                lineNumber: 769,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -4347,12 +4454,12 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 children: homeData?.id ? 'Edit homepage content' : 'Create homepage content'
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 820,
+                                lineNumber: 827,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                            lineNumber: 819,
+                            lineNumber: 826,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4362,7 +4469,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 children: "Loading…"
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 827,
+                                lineNumber: 834,
                                 columnNumber: 15
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
                                 onSubmit: saveHomeContent,
@@ -4373,7 +4480,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                         children: homeError
                                     }, void 0, false, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 830,
+                                        lineNumber: 837,
                                         columnNumber: 31
                                     }, this),
                                     homeSuccess && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4381,7 +4488,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                         children: homeSuccess
                                     }, void 0, false, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 831,
+                                        lineNumber: 838,
                                         columnNumber: 33
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4391,7 +4498,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Hero video URL"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 834,
+                                                lineNumber: 841,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -4405,13 +4512,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 placeholder: "https://... (or upload a file below)"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 835,
+                                                lineNumber: 842,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 833,
+                                        lineNumber: 840,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4421,7 +4528,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Upload hero video (.mov, .mp4, .gif)"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 848,
+                                                lineNumber: 855,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4435,7 +4542,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                         className: "text-sm"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                        lineNumber: 850,
+                                                        lineNumber: 857,
                                                         columnNumber: 21
                                                     }, this),
                                                     uploading && uploadProgress !== null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4447,21 +4554,33 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                        lineNumber: 858,
+                                                        lineNumber: 865,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 849,
+                                                lineNumber: 856,
                                                 columnNumber: 19
+                                            }, this),
+                                            uploading && uploadProgress !== null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "text-sm text-muted-foreground",
+                                                children: [
+                                                    "Uploading: ",
+                                                    uploadProgress,
+                                                    "%"
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
+                                                lineNumber: 871,
+                                                columnNumber: 21
                                             }, this),
                                             uploadError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "text-sm text-red-500 mt-1",
                                                 children: uploadError
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 863,
+                                                lineNumber: 875,
                                                 columnNumber: 35
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4469,13 +4588,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Max file size: 50MB."
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 864,
+                                                lineNumber: 876,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 847,
+                                        lineNumber: 854,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4485,7 +4604,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Vision"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 868,
+                                                lineNumber: 880,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -4497,13 +4616,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 className: "w-full border p-2 rounded h-24"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 869,
+                                                lineNumber: 881,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 867,
+                                        lineNumber: 879,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4513,7 +4632,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Mission"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 877,
+                                                lineNumber: 889,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -4525,13 +4644,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 className: "w-full border p-2 rounded h-24"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 878,
+                                                lineNumber: 890,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 876,
+                                        lineNumber: 888,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4541,7 +4660,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Focus"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 888,
+                                                lineNumber: 900,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -4553,13 +4672,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 className: "w-full border p-2 rounded h-20"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 889,
+                                                lineNumber: 901,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 887,
+                                        lineNumber: 899,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4569,7 +4688,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Core values (comma separated)"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 897,
+                                                lineNumber: 909,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -4583,13 +4702,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 placeholder: "Integrity, Inclusion, ... "
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 898,
+                                                lineNumber: 910,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 896,
+                                        lineNumber: 908,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4601,7 +4720,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: homeSaving ? 'Saving…' : homeData?.id ? 'Save changes' : 'Create content'
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 910,
+                                                lineNumber: 922,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -4611,7 +4730,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Cancel"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 913,
+                                                lineNumber: 925,
                                                 columnNumber: 19
                                             }, this),
                                             homeData?.id && canEdit && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -4621,35 +4740,35 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Delete"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 917,
+                                                lineNumber: 929,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 909,
+                                        lineNumber: 921,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 829,
+                                lineNumber: 836,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                            lineNumber: 825,
+                            lineNumber: 832,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                    lineNumber: 818,
+                    lineNumber: 825,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                lineNumber: 817,
+                lineNumber: 824,
                 columnNumber: 7
             }, this)
         ]

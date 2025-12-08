@@ -57,6 +57,7 @@ export async function GET(req: Request) {
         email: true,
         role: true,
         image: true,
+        about: true, // <-- include about in list responses
         createdAt: true,
       },
     });
@@ -82,7 +83,7 @@ export async function GET(req: Request) {
  *
  * Two uses:
  * - application/json { action?: 'delete-image', imageUrl } -> deletes image file
- * - multipart/form-data -> create user (firstName, lastName, username, email, password, image, role?)
+ * - multipart/form-data -> create user (firstName, lastName, username, email, password, image, role?, about?)
  */
 export async function POST(req: Request) {
   const contentType = req.headers.get('content-type') ?? '';
@@ -114,6 +115,7 @@ export async function POST(req: Request) {
     const password = (formData.get('password') as string) ?? null;
     const imageFile = formData.get('image') as File | null;
     const role = (formData.get('role') as string) ?? undefined;
+    const about = (formData.get('about') as string) ?? null;
 
     if (!firstName || !lastName || !username || !email || !password || !imageFile) {
       return NextResponse.json({ error: 'All fields and image are required' }, { status: 400 });
@@ -144,6 +146,7 @@ export async function POST(req: Request) {
         password: hashedPassword,
         image: imageUrl,
         role: role ?? undefined,
+        about: about ?? undefined, // <-- store about on create if provided
       },
     });
 
