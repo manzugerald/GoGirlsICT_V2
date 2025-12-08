@@ -8661,6 +8661,7 @@ async function GET(req) {
                 email: true,
                 role: true,
                 image: true,
+                about: true,
                 createdAt: true
             }
         });
@@ -8717,6 +8718,7 @@ async function POST(req) {
         const password = formData.get('password') ?? null;
         const imageFile = formData.get('image');
         const role = formData.get('role') ?? undefined;
+        const about = formData.get('about') ?? null;
         if (!firstName || !lastName || !username || !email || !password || !imageFile) {
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
                 error: 'All fields and image are required'
@@ -8761,7 +8763,8 @@ async function POST(req) {
                 email,
                 password: hashedPassword,
                 image: imageUrl,
-                role: role ?? undefined
+                role: role ?? undefined,
+                about: about ?? undefined
             }
         });
         // Store initial password hash in history so reuse checks work immediately

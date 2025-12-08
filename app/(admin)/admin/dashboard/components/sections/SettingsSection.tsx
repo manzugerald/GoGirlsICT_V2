@@ -10,8 +10,8 @@ import { Home, User, Star, Target, Search, Gem } from 'lucide-react';
  * SettingsSection
  *
  * - Header: "User Settings" title (icon) only.
- * - Profile block moved BELOW the title and ABOVE the "Edit your profile..." paragraph.
- *   The profile block shows the avatar at left and the name/username/email to the right of it.
+ * - Profile block moved BELOW the title and the About is displayed to the right
+ *   of the avatar/name/username/email (no different background/foreground).
  * - Action buttons are below the profile block and are laid out left-to-right.
  * - Role editing remains inside the embedded CreateUserForm (no duplicate Role select here).
  *
@@ -46,7 +46,7 @@ export default function SettingsSection({
   const loading = status === 'loading';
   const canEdit = !!sessionUser?.id;
 
-  // full user profile fetched from API (may include email/firstName/lastName/role/image)
+  // full user profile fetched from API (may include email/firstName/lastName/role,image,about)
   const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [currentUserLoading, setCurrentUserLoading] = useState(false);
   const [currentUserError, setCurrentUserError] = useState<string | null>(null);
@@ -706,14 +706,21 @@ export default function SettingsSection({
           <h2 className="font-semibold text-xl m-0">User Settings</h2>
         </div>
 
-        {/* Profile block: avatar left, names/username/email to the right of the pic */}
-        <div className="flex items-center gap-4 mb-3">
+        {/* Profile block: avatar left, names/username/email and About to the right (no special bg) */}
+        <div className="flex items-start gap-4 mb-3">
           <div className="flex-shrink-0">{renderAvatar(displayUser)}</div>
-          <div>
+          <div className="flex-1">
             <div className="text-base font-semibold">{fullName() || 'You'}</div>
             <div className="text-sm text-muted-foreground">
               {displayUser?.username ? <span className="mr-2">@{displayUser.username}</span> : null}
               <span>{displayUser?.email ?? 'no email'}</span>
+            </div>
+
+            {/* About inline to the right of profile (same bg/fg as surrounding text) */}
+            <div className="mt-2 text-sm text-muted-foreground">
+              {displayUser?.about && String(displayUser.about).trim().length > 0
+                ? displayUser.about
+                : 'None'}
             </div>
           </div>
         </div>
@@ -860,6 +867,11 @@ export default function SettingsSection({
                       </div>
                     )}
                   </div>
+                  {uploading && uploadProgress !== null && (
+                    <div className="text-sm text-muted-foreground">
+                      Uploading: {uploadProgress}%
+                    </div>
+                  )}
                   {uploadError && <div className="text-sm text-red-500 mt-1">{uploadError}</div>}
                   <div className="text-xs text-muted-foreground mt-1">Max file size: 50MB.</div>
                 </div>

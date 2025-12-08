@@ -12,9 +12,11 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next-auth/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$authClient$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/authClient.ts [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 'use client';
+;
 ;
 ;
 ;
@@ -27,10 +29,12 @@ function AdminLoginPage() {
     const [password, setPassword] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
-    // Get the callback url from the query params, or fallback to /admin/dashboard
-    const callbackUrl = searchParams?.get('callbackUrl') || '/admin/dashboard';
+    const [logoutLoading, setLogoutLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    // Use provided callback query param if present, otherwise default to home dashboard
+    const callbackUrl = searchParams?.get('callbackUrl') || '/admin/dashboard?type=home';
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AdminLoginPage.useEffect": ()=>{
+            // If already authenticated, redirect to callbackUrl
             if (status === 'authenticated') {
                 router.replace(callbackUrl);
             }
@@ -44,17 +48,41 @@ function AdminLoginPage() {
         e.preventDefault();
         setError('');
         setLoading(true);
-        const res = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["signIn"])('credentials', {
-            redirect: false,
-            username,
-            password,
-            callbackUrl
-        });
-        setLoading(false);
-        if (res?.error) {
-            setError('Invalid username or password');
-        } else if (res?.url) {
-            router.push(res.url); // NextAuth will return the callback url here
+        try {
+            const result = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$authClient$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["loginAndSync"])({
+                identifier: username,
+                password,
+                callbackUrl
+            });
+            setLoading(false);
+            if (!result.ok) {
+                setError(result.error || 'Login failed');
+                return;
+            }
+            // Prefer redirectUrl returned by loginAndSync (which prefers next-auth url, then callback, then default)
+            router.push(result.redirectUrl ?? callbackUrl);
+        } catch (err) {
+            console.error('Login error', err);
+            setError('Server error during login');
+        } finally{
+            setLoading(false);
+        }
+    };
+    const handleLogout = async ()=>{
+        setLogoutLoading(true);
+        setError('');
+        try {
+            const r = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$authClient$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["logoutAndSync"])();
+            if (!r.ok) {
+                setError(r.error || 'Logout failed');
+                setLogoutLoading(false);
+                return;
+            }
+        } catch (err) {
+            console.error('Logout error', err);
+            setError('Logout failed');
+        } finally{
+            setLogoutLoading(false);
         }
     };
     if (status === 'loading') {
@@ -65,17 +93,94 @@ function AdminLoginPage() {
                 children: "Checking session..."
             }, void 0, false, {
                 fileName: "[project]/app/(admin)/admin/page.tsx",
-                lineNumber: 50,
+                lineNumber: 72,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/app/(admin)/admin/page.tsx",
-            lineNumber: 49,
+            lineNumber: 71,
             columnNumber: 7
         }, this);
     }
-    if (status === 'authenticated') {
-        return null;
+    if (status === 'authenticated' && session?.user) {
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
+            className: "min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900",
+            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "space-y-4 w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded shadow-md dark:shadow-lg text-center",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
+                        className: "text-2xl font-semibold text-gray-800 dark:text-gray-100",
+                        children: "You are signed in"
+                    }, void 0, false, {
+                        fileName: "[project]/app/(admin)/admin/page.tsx",
+                        lineNumber: 81,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "text-sm text-muted-foreground",
+                        children: [
+                            "Signed in as ",
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "font-medium",
+                                children: session.user.username
+                            }, void 0, false, {
+                                fileName: "[project]/app/(admin)/admin/page.tsx",
+                                lineNumber: 85,
+                                columnNumber: 26
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/(admin)/admin/page.tsx",
+                        lineNumber: 84,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex flex-col sm:flex-row gap-2 justify-center mt-2",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: ()=>router.push(callbackUrl),
+                                className: "bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition-colors",
+                                children: "Continue to Dashboard"
+                            }, void 0, false, {
+                                fileName: "[project]/app/(admin)/admin/page.tsx",
+                                lineNumber: 88,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: handleLogout,
+                                disabled: logoutLoading,
+                                className: "bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded transition-colors",
+                                children: logoutLoading ? 'Signing out…' : 'Sign out'
+                            }, void 0, false, {
+                                fileName: "[project]/app/(admin)/admin/page.tsx",
+                                lineNumber: 94,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/(admin)/admin/page.tsx",
+                        lineNumber: 87,
+                        columnNumber: 11
+                    }, this),
+                    error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "text-red-500 text-sm mt-2",
+                        children: error
+                    }, void 0, false, {
+                        fileName: "[project]/app/(admin)/admin/page.tsx",
+                        lineNumber: 102,
+                        columnNumber: 21
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/app/(admin)/admin/page.tsx",
+                lineNumber: 80,
+                columnNumber: 9
+            }, this)
+        }, void 0, false, {
+            fileName: "[project]/app/(admin)/admin/page.tsx",
+            lineNumber: 79,
+            columnNumber: 7
+        }, this);
     }
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
         className: "min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900",
@@ -88,19 +193,19 @@ function AdminLoginPage() {
                     children: "Admin Login"
                 }, void 0, false, {
                     fileName: "[project]/app/(admin)/admin/page.tsx",
-                    lineNumber: 65,
+                    lineNumber: 114,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                     type: "text",
-                    placeholder: "Username",
+                    placeholder: "Username or email",
                     value: username,
                     onChange: (e)=>setUsername(e.target.value),
-                    className: "border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500",
+                    className: "border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded p-2 w-full",
                     required: true
                 }, void 0, false, {
                     fileName: "[project]/app/(admin)/admin/page.tsx",
-                    lineNumber: 69,
+                    lineNumber: 118,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -108,11 +213,11 @@ function AdminLoginPage() {
                     placeholder: "Password",
                     value: password,
                     onChange: (e)=>setPassword(e.target.value),
-                    className: "border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500",
+                    className: "border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded p-2 w-full",
                     required: true
                 }, void 0, false, {
                     fileName: "[project]/app/(admin)/admin/page.tsx",
-                    lineNumber: 77,
+                    lineNumber: 126,
                     columnNumber: 9
                 }, this),
                 error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -120,32 +225,32 @@ function AdminLoginPage() {
                     children: error
                 }, void 0, false, {
                     fileName: "[project]/app/(admin)/admin/page.tsx",
-                    lineNumber: 85,
+                    lineNumber: 134,
                     columnNumber: 19
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                     type: "submit",
                     disabled: loading,
-                    className: "bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded w-full transition-colors",
+                    className: "bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded w-full",
                     children: loading ? 'Signing In...' : 'Sign In'
                 }, void 0, false, {
                     fileName: "[project]/app/(admin)/admin/page.tsx",
-                    lineNumber: 87,
+                    lineNumber: 136,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/(admin)/admin/page.tsx",
-            lineNumber: 61,
+            lineNumber: 110,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/app/(admin)/admin/page.tsx",
-        lineNumber: 60,
+        lineNumber: 109,
         columnNumber: 5
     }, this);
 }
-_s(AdminLoginPage, "teEOEbziHxy1ad8ZQvqeelyfjUA=", false, function() {
+_s(AdminLoginPage, "HgKzUZmFhcbpT9PGGwH8LN7yyFc=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useSession"],
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"],

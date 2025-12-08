@@ -8828,6 +8828,7 @@ async function GET(_req, { params }) {
                 email: true,
                 role: true,
                 image: true,
+                about: true,
                 createdAt: true,
                 updatedAt: true
             }
@@ -8876,6 +8877,7 @@ async function PATCH(req, { params }) {
         const imageFile = formData.get('image');
         const oldImageUrl = formData.get('oldImageUrl') ?? null;
         const role = formData.get('role') ?? undefined;
+        const about = formData.has('about') ? formData.get('about') : undefined;
         // If the client supplied an original username, verify it matches the DB for safety.
         if (username && username !== user.username) {
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
@@ -9037,6 +9039,10 @@ async function PATCH(req, { params }) {
         if (lastName) updateData.lastName = lastName;
         if (email) updateData.email = email;
         if (typeof role !== 'undefined') updateData.role = role;
+        // Handle about: if the client provided the about field (even empty string), update it
+        if (typeof about !== 'undefined') {
+            updateData.about = about;
+        }
         // Handle username change if requested via newUsername
         if (newUsername && newUsername !== user.username) {
             // check availability
@@ -9078,7 +9084,7 @@ async function PATCH(req, { params }) {
             await __TURBOPACK__imported__module__$5b$externals$5d2f$fs__$5b$external$5d$__$28$fs$2c$__cjs$29$__["promises"].writeFile(__TURBOPACK__imported__module__$5b$externals$5d2f$path__$5b$external$5d$__$28$path$2c$__cjs$29$__["default"].join(uploadDir, filename), buffer);
             updateData.image = `/assets/images/users/${filename}`;
         }
-        // If there's nothing to update, return current record
+        // If there's nothing to update, return current record (include about)
         const hasUpdates = Object.keys(updateData).length > 0;
         if (!hasUpdates) {
             const current = await __TURBOPACK__imported__module__$5b$project$5d2f$db$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].user.findUnique({
@@ -9092,7 +9098,8 @@ async function PATCH(req, { params }) {
                     image: true,
                     firstName: true,
                     lastName: true,
-                    role: true
+                    role: true,
+                    about: true
                 }
             });
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
@@ -9112,7 +9119,8 @@ async function PATCH(req, { params }) {
                 image: true,
                 firstName: true,
                 lastName: true,
-                role: true
+                role: true,
+                about: true
             }
         });
         // Invalidate cache (redis commented)

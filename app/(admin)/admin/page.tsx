@@ -1,8 +1,9 @@
 'use client';
 
-import { signIn, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { loginAndSync, logoutAndSync } from '@/lib/authClient';
 
 export default function AdminLoginPage() {
   const { data: session, status } = useSession();
@@ -13,11 +14,13 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
-  // Get the callback url from the query params, or fallback to /admin/dashboard
-  const callbackUrl = searchParams?.get('callbackUrl') || '/admin/dashboard';
+  // Use provided callback query param if present, otherwise default to home dashboard
+  const callbackUrl = searchParams?.get('callbackUrl') || '/admin/dashboard?type=home';
 
   useEffect(() => {
+    // If already authenticated, redirect to callbackUrl
     if (status === 'authenticated') {
       router.replace(callbackUrl);
     }
@@ -28,19 +31,38 @@ export default function AdminLoginPage() {
     setError('');
     setLoading(true);
 
-    const res = await signIn('credentials', {
-      redirect: false,
-      username,
-      password,
-      callbackUrl, // pass callbackUrl to signIn
-    });
+    try {
+      const result = await loginAndSync({ identifier: username, password, callbackUrl });
+      setLoading(false);
+      if (!result.ok) {
+        setError(result.error || 'Login failed');
+        return;
+      }
+      // Prefer redirectUrl returned by loginAndSync (which prefers next-auth url, then callback, then default)
+      router.push(result.redirectUrl ?? callbackUrl);
+    } catch (err: any) {
+      console.error('Login error', err);
+      setError('Server error during login');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    setLoading(false);
-
-    if (res?.error) {
-      setError('Invalid username or password');
-    } else if (res?.url) {
-      router.push(res.url); // NextAuth will return the callback url here
+  const handleLogout = async () => {
+    setLogoutLoading(true);
+    setError('');
+    try {
+      const r = await logoutAndSync();
+      if (!r.ok) {
+        setError(r.error || 'Logout failed');
+        setLogoutLoading(false);
+        return;
+      }
+    } catch (err: any) {
+      console.error('Logout error', err);
+      setError('Logout failed');
+    } finally {
+      setLogoutLoading(false);
     }
   };
 
@@ -52,8 +74,35 @@ export default function AdminLoginPage() {
     );
   }
 
-  if (status === 'authenticated') {
-    return null;
+  if (status === 'authenticated' && session?.user) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="space-y-4 w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded shadow-md dark:shadow-lg text-center">
+          <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+            You are signed in
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Signed in as <span className="font-medium">{session.user.username}</span>
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center mt-2">
+            <button
+              onClick={() => router.push(callbackUrl)}
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition-colors"
+            >
+              Continue to Dashboard
+            </button>
+            <button
+              onClick={handleLogout}
+              disabled={logoutLoading}
+              className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded transition-colors"
+            >
+              {logoutLoading ? 'Signing out…' : 'Sign out'}
+            </button>
+          </div>
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -68,10 +117,10 @@ export default function AdminLoginPage() {
 
         <input
           type="text"
-          placeholder="Username"
+          placeholder="Username or email"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded p-2 w-full"
           required
         />
         <input
@@ -79,7 +128,7 @@ export default function AdminLoginPage() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded p-2 w-full"
           required
         />
         {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -87,7 +136,7 @@ export default function AdminLoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded w-full transition-colors"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded w-full"
         >
           {loading ? 'Signing In...' : 'Sign In'}
         </button>

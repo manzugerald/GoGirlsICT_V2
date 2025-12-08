@@ -8,7 +8,7 @@ type ShowOnly = 'all' | 'profile' | 'password' | 'username';
 type Props = {
   mode?: 'create' | 'edit';
   userId?: string;
-  initialData?: any; // optional preloaded data: {firstName, lastName, username, email, image, role, ...}
+  initialData?: any; // optional preloaded data: {firstName, lastName, username, email, image, role, about, ...}
   onSuccess?: (updatedUser?: any) => void;
   onCancel?: () => void;
   onDelete?: (userId: string) => void;
@@ -63,6 +63,7 @@ export default function CreateOrEditUserForm({
     lastName: initialData?.lastName ?? '',
     username: initialData?.username ?? '',
     email: initialData?.email ?? '',
+    about: initialData?.about ?? '',
     password: '',
     confirmPassword: '',
     role: initialData?.role ?? '', // role included for both create & edit
@@ -77,6 +78,7 @@ export default function CreateOrEditUserForm({
   const [confirmNewUsername, setConfirmNewUsername] = useState('');
 
   const [changePassword, setChangePassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState(''); // NEW: current password required for edit password changes
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
@@ -113,6 +115,7 @@ export default function CreateOrEditUserForm({
         lastName: json?.lastName ?? '',
         username: json?.username ?? '',
         email: json?.email ?? '',
+        about: json?.about ?? '',
         password: '',
         confirmPassword: '',
         role: json?.role ?? '',
@@ -127,6 +130,7 @@ export default function CreateOrEditUserForm({
       setConfirmNewPassword('');
       setNewUsername('');
       setConfirmNewUsername('');
+      setCurrentPassword('');
       setUsernameInvalid(false);
       setError('');
       setSuccess('');
@@ -161,6 +165,7 @@ export default function CreateOrEditUserForm({
       lastName: initialData?.lastName ?? '',
       username: initialData?.username ?? '',
       email: initialData?.email ?? '',
+      about: initialData?.about ?? '',
       password: '',
       confirmPassword: '',
       role: initialData?.role ?? '',
@@ -176,6 +181,7 @@ export default function CreateOrEditUserForm({
     setConfirmNewPassword('');
     setNewUsername('');
     setConfirmNewUsername('');
+    setCurrentPassword('');
     setError('');
     setSuccess('');
     setUsernameInvalid(false);
@@ -343,6 +349,11 @@ export default function CreateOrEditUserForm({
       }
 
       if ((showOnly === 'all' || showOnly === 'password' || changePassword) && changePassword) {
+        if (!currentPassword) {
+          setError('Please provide your current password to change to a new password.');
+          setIsSubmitting(false);
+          return;
+        }
         if (!newPassword || !confirmNewPassword) {
           setError('Please provide the new password and confirmation');
           setIsSubmitting(false);
@@ -375,6 +386,7 @@ export default function CreateOrEditUserForm({
           formData.append('lastName', form.lastName);
           formData.append('username', form.username);
           formData.append('email', form.email);
+          formData.append('about', form.about ?? '');
           if (imageFile) formData.append('image', imageFile);
         }
         if (showOnly === 'all' || showOnly === 'password') {
@@ -396,6 +408,13 @@ export default function CreateOrEditUserForm({
             formData.append('firstName', form.firstName);
           if (form.lastName !== (orig.lastName ?? '')) formData.append('lastName', form.lastName);
           if (form.email !== (orig.email ?? '')) formData.append('email', form.email);
+          // include about field change or empty string to allow clearing
+          if (form.about !== (orig.about ?? '')) {
+            formData.append('about', form.about ?? '');
+          } else {
+            // include anyway to keep server handling simple
+            formData.append('about', form.about ?? '');
+          }
           if (imageFile) formData.append('image', imageFile);
           if (imageToDelete) formData.append('oldImageUrl', imageToDelete);
 
@@ -421,8 +440,12 @@ export default function CreateOrEditUserForm({
 
         // password change flow (explicit or via showOnly)
         if (changePassword || showOnly === 'password') {
-          const pw = changePassword ? newPassword : form.password;
-          if (pw) formData.append('password', pw);
+          const pw = newPassword || form.password;
+          if (pw) {
+            formData.append('password', pw);
+            // include current password for verification when editing password
+            formData.append('currentPassword', currentPassword);
+          }
         } else if (form.password) {
           // backwards compatibility: if user typed in main password field, include it
           formData.append('password', form.password);
@@ -477,6 +500,7 @@ export default function CreateOrEditUserForm({
             ...f,
             username: data.user.username || f.username,
             role: data.user.role ?? f.role,
+            about: data.user.about ?? f.about,
           }));
           initialRef.current = { ...(initialRef.current || {}), ...data.user };
         }
@@ -485,6 +509,10 @@ export default function CreateOrEditUserForm({
       setError(err?.message || 'Something went wrong');
     } finally {
       setIsSubmitting(false);
+      // clear sensitive fields
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
     }
   };
 
@@ -525,7 +553,7 @@ export default function CreateOrEditUserForm({
   };
 
   // Render
-  // If showOnly restricts UI, we render only matching sections:
+  // If showOnly restricts the UI, we render only matching sections:
   const renderProfileFields = () => (
     <>
       {/* User Image */}
@@ -613,6 +641,21 @@ export default function CreateOrEditUserForm({
         </div>
       </div>
 
+      {/* About - show in edit mode so admins/users can edit the about text */}
+      {isEdit && (
+        <div className="mt-2">
+          <label className="text-sm block mb-1">About</label>
+          <textarea
+            name="about"
+            value={form.about}
+            onChange={(e) => setForm({ ...form, about: e.target.value })}
+            className="border p-2 rounded w-full"
+            rows={4}
+            placeholder="Tell us a few words about this user (optional)"
+          />
+        </div>
+      )}
+
       {/* Role select (visible in both create and edit profile sections) */}
       <div className="mt-2">
         <label className="text-sm block mb-1">Role</label>
@@ -689,6 +732,7 @@ export default function CreateOrEditUserForm({
             setChangePassword(!changePassword);
             setNewPassword('');
             setConfirmNewPassword('');
+            setCurrentPassword('');
             setError('');
           }}
         />
@@ -696,28 +740,42 @@ export default function CreateOrEditUserForm({
       </label>
 
       {changePassword && (
-        <div className="mt-3 flex gap-4">
-          <div className="w-1/2">
-            <label className="text-sm block mb-1">New password</label>
+        <div className="border rounded p-3 bg-gray-50 dark:bg-gray-800">
+          <div>
+            <label className="text-sm block mb-1">Current password</label>
             <input
               type="password"
-              placeholder="New password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Current password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
               className="border p-2 rounded w-full"
-              autoComplete="new-password"
+              autoComplete="current-password"
             />
           </div>
-          <div className="w-1/2">
-            <label className="text-sm block mb-1">Confirm new password</label>
-            <input
-              type="password"
-              placeholder="Confirm new password"
-              value={confirmNewPassword}
-              onChange={(e) => setConfirmNewPassword(e.target.value)}
-              className="border p-2 rounded w-full"
-              autoComplete="new-password"
-            />
+
+          <div className="flex gap-4 mt-3">
+            <div className="w-1/2">
+              <label className="text-sm block mb-1">New password</label>
+              <input
+                type="password"
+                placeholder="New password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="border p-2 rounded w-full"
+                autoComplete="new-password"
+              />
+            </div>
+            <div className="w-1/2">
+              <label className="text-sm block mb-1">Confirm new password</label>
+              <input
+                type="password"
+                placeholder="Confirm new password"
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                className="border p-2 rounded w-full"
+                autoComplete="new-password"
+              />
+            </div>
           </div>
         </div>
       )}

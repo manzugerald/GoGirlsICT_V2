@@ -35,6 +35,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
         email: true,
         role: true,
         image: true,
+        about: true, // <-- include about in GET by id
         createdAt: true,
         updatedAt: true,
       },
@@ -62,6 +63,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
  * - image (File), oldImageUrl (string)
  * - password (string)            <-- when present we run the secure change-password flow
  * - role (string)
+ * - about (string)
  *
  * Behavior:
  * - If password is provided in the form-data we route it through the same secure
@@ -85,6 +87,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const imageFile = formData.get('image') as File | null;
     const oldImageUrl = (formData.get('oldImageUrl') as string) ?? null;
     const role = (formData.get('role') as string) ?? undefined;
+    const about = formData.has('about') ? (formData.get('about') as string) : undefined;
 
     // If the client supplied an original username, verify it matches the DB for safety.
     if (username && username !== user.username) {
@@ -210,6 +213,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (email) updateData.email = email;
     if (typeof role !== 'undefined') updateData.role = role;
 
+    // Handle about: if the client provided the about field (even empty string), update it
+    if (typeof about !== 'undefined') {
+      updateData.about = about;
+    }
+
     // Handle username change if requested via newUsername
     if (newUsername && newUsername !== user.username) {
       // check availability
@@ -243,7 +251,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       updateData.image = `/assets/images/users/${filename}`;
     }
 
-    // If there's nothing to update, return current record
+    // If there's nothing to update, return current record (include about)
     const hasUpdates = Object.keys(updateData).length > 0;
     if (!hasUpdates) {
       const current = await prisma.user.findUnique({
@@ -256,6 +264,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
           firstName: true,
           lastName: true,
           role: true,
+          about: true, // <-- include about when returning 'no changes'
         },
       });
       return NextResponse.json({ message: 'No changes', user: current });
@@ -272,6 +281,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         firstName: true,
         lastName: true,
         role: true,
+        about: true, // <-- include about in response
       },
     });
 
