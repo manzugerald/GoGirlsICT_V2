@@ -1774,172 +1774,149 @@ __turbopack_context__.s({
     "default": (()=>UsersSection)
 });
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$app$2f28$admin$292f$admin$2f$dashboard$2f$data$2d$table$2f$data$2d$table$2f$data$2d$table$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/app/(admin)/admin/dashboard/data-table/data-table/data-table.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/button.tsx [app-client] (ecmascript)");
-;
-var _s = __turbopack_context__.k.signature();
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$user$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__User$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/user.js [app-client] (ecmascript) <export default as User>");
 'use client';
 ;
 ;
 ;
-function UsersSection({ paginatedData, page, rowsPerPage, handleEdit, handleView, handleDelete, messagesCountMap, responsesCountMap, currentUserRole, TableActions, onAddMessage }) {
-    _s();
-    const columns = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
-        "UsersSection.useMemo[columns]": ()=>[
-                {
-                    id: 'number',
-                    header: 'No.',
-                    cell: {
-                        "UsersSection.useMemo[columns]": ({ row })=>(page - 1) * rowsPerPage + row.index + 1
-                    }["UsersSection.useMemo[columns]"],
-                    size: 50
-                },
-                {
-                    accessorKey: 'username',
-                    header: 'Username',
-                    cell: {
-                        "UsersSection.useMemo[columns]": ({ row })=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "whitespace-normal break-words max-w-xs",
-                                children: row.getValue('username')
+function UsersSection({ paginatedData, handleEdit, handleView, handleDelete }) {
+    if (!paginatedData?.length) {
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            className: "text-center py-6 text-muted-foreground",
+            children: "No users found."
+        }, void 0, false, {
+            fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
+            lineNumber: 19,
+            columnNumber: 12
+        }, this);
+    }
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+        className: "flex flex-col gap-6 w-full",
+        children: paginatedData.map((user)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "bg-background shadow rounded-xl px-6 py-5 flex flex-col sm:flex-row items-center justify-between w-full",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex items-center gap-4 w-full",
+                        children: [
+                            user.image ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
+                                src: user.image,
+                                alt: user.username || 'avatar',
+                                className: "w-16 h-16 rounded-full object-cover border"
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
-                                lineNumber: 44,
-                                columnNumber: 11
+                                lineNumber: 32,
+                                columnNumber: 15
+                            }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "w-16 h-16 flex items-center justify-center rounded-full bg-muted border",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$user$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__User$3e$__["User"], {
+                                    className: "w-9 h-9 text-muted-foreground"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
+                                    lineNumber: 39,
+                                    columnNumber: 17
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
+                                lineNumber: 38,
+                                columnNumber: 15
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex flex-col flex-1 min-w-0",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "font-semibold text-xl truncate",
+                                        children: user.firstName || user.lastName ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() : user.username
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
+                                        lineNumber: 43,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "text-sm text-muted-foreground truncate",
+                                        children: [
+                                            "@",
+                                            user.username
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
+                                        lineNumber: 48,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "text-sm text-muted-foreground truncate",
+                                        children: user.email
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
+                                        lineNumber: 49,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
+                                lineNumber: 42,
+                                columnNumber: 13
                             }, this)
-                    }["UsersSection.useMemo[columns]"]
-                },
-                {
-                    id: 'name',
-                    header: 'Name',
-                    cell: {
-                        "UsersSection.useMemo[columns]": ({ row })=>`${row.original.firstName ?? ''} ${row.original.lastName ?? ''}`.trim() || '-'
-                    }["UsersSection.useMemo[columns]"]
-                },
-                {
-                    accessorKey: 'email',
-                    header: 'Email',
-                    cell: {
-                        "UsersSection.useMemo[columns]": ({ row })=>row.getValue('email') ?? '-'
-                    }["UsersSection.useMemo[columns]"]
-                },
-                {
-                    id: 'role',
-                    header: 'Role',
-                    cell: {
-                        "UsersSection.useMemo[columns]": ({ row })=>row.original.role ?? '-'
-                    }["UsersSection.useMemo[columns]"]
-                },
-                {
-                    accessorKey: 'createdAt',
-                    header: 'Created At',
-                    cell: {
-                        "UsersSection.useMemo[columns]": ({ row })=>row.getValue('createdAt') ? new Date(row.getValue('createdAt')).toLocaleDateString() : ''
-                    }["UsersSection.useMemo[columns]"]
-                },
-                {
-                    id: 'view',
-                    header: 'View',
-                    cell: {
-                        "UsersSection.useMemo[columns]": ({ row })=>handleView ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
+                        lineNumber: 30,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex gap-2 mt-4 sm:mt-0 sm:ml-6",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
                                 type: "button",
                                 size: "sm",
                                 variant: "outline",
-                                className: "transition-colors duration-150 hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-blue-900 dark:hover:text-blue-100",
-                                onClick: {
-                                    "UsersSection.useMemo[columns]": ()=>handleView(row.original)
-                                }["UsersSection.useMemo[columns]"],
+                                onClick: ()=>handleView(user),
                                 children: "View"
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
-                                lineNumber: 76,
+                                lineNumber: 55,
                                 columnNumber: 13
-                            }, this) : null
-                    }["UsersSection.useMemo[columns]"]
-                },
-                {
-                    id: 'edit',
-                    header: 'Edit',
-                    cell: {
-                        "UsersSection.useMemo[columns]": ({ row })=>handleEdit ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
                                 type: "button",
                                 size: "sm",
                                 variant: "outline",
-                                className: "transition-colors duration-150 hover:bg-yellow-100 dark:hover:bg-yellow-800 hover:text-yellow-900 dark:hover:text-yellow-100",
-                                onClick: {
-                                    "UsersSection.useMemo[columns]": ()=>handleEdit(row.original)
-                                }["UsersSection.useMemo[columns]"],
+                                onClick: ()=>handleEdit(user),
                                 children: "Edit"
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
-                                lineNumber: 92,
+                                lineNumber: 58,
                                 columnNumber: 13
-                            }, this) : null
-                    }["UsersSection.useMemo[columns]"]
-                },
-                {
-                    id: 'delete',
-                    header: 'Delete',
-                    cell: {
-                        "UsersSection.useMemo[columns]": ({ row })=>handleDelete ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
                                 type: "button",
                                 size: "sm",
                                 variant: "destructive",
-                                className: "transition-colors duration-150 hover:bg-red-600 dark:hover:bg-red-800 hover:text-white dark:hover:text-white",
-                                onClick: {
-                                    "UsersSection.useMemo[columns]": ()=>handleDelete(row.original.id)
-                                }["UsersSection.useMemo[columns]"],
+                                onClick: ()=>handleDelete(user.id),
                                 children: "Delete"
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
-                                lineNumber: 108,
+                                lineNumber: 61,
                                 columnNumber: 13
-                            }, this) : null
-                    }["UsersSection.useMemo[columns]"]
-                }
-            ]
-    }["UsersSection.useMemo[columns]"], // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-        page,
-        rowsPerPage,
-        handleEdit,
-        handleView,
-        handleDelete
-    ]);
-    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        children: [
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "mb-4 flex items-center justify-end"
-            }, void 0, false, {
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
+                        lineNumber: 54,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, user.id, true, {
                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
-                lineNumber: 126,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$app$2f28$admin$292f$admin$2f$dashboard$2f$data$2d$table$2f$data$2d$table$2f$data$2d$table$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DataTable"], {
-                columns: columns,
-                data: paginatedData
-            }, void 0, false, {
-                fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
-                lineNumber: 130,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(TableActions, {
-                data: paginatedData,
-                columns: columns,
-                tableRef: /*#__PURE__*/ __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].createRef()
-            }, void 0, false, {
-                fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
-                lineNumber: 131,
-                columnNumber: 7
-            }, this)
-        ]
-    }, void 0, true, {
+                lineNumber: 25,
+                columnNumber: 9
+            }, this))
+    }, void 0, false, {
         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/UsersSection.tsx",
-        lineNumber: 125,
+        lineNumber: 23,
         columnNumber: 5
     }, this);
 }
-_s(UsersSection, "erkfbBpUuAY09jdvhSOqc0XsEHQ=");
 _c = UsersSection;
 var _c;
 __turbopack_context__.k.register(_c, "UsersSection");
