@@ -3,6 +3,7 @@ import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { redis } from '@/utils/redis';
+import { sendAccountDeletionRequestEmail } from '@/lib/email';
 
 export const runtime = 'nodejs';
 
@@ -11,7 +12,6 @@ function isPublishStatus(v: unknown): v is PublishStatus {
   return v === 'draft' || v === 'published';
 }
 
-// Updated to use "category" terminology to match Prisma schema
 const messageCategoryOptions = [
   'beneficiary',
   'request',
@@ -25,11 +25,10 @@ function isMessageCategory(v: unknown): v is MessageCategory {
   return typeof v === 'string' && (messageCategoryOptions as readonly string[]).includes(v);
 }
 
-// Redis cache keys for beneficiaries (kept consistent with /api/beneficiaries)
 const BENEFICIARIES_BASE_KEY = 'beneficiaries';
 const BENEFICIARIES_ALL_KEY = `${BENEFICIARIES_BASE_KEY}:all`;
-const BENEFICIARIES_OWN_PREFIX = `${BENEFICIARIES_BASE_KEY}:own:`; // + encodeURIComponent(first)|encodeURIComponent(last)
-const BENEFICIARY_BY_ID_PREFIX = `${BENEFICIARIES_BASE_KEY}:`; // + id
+const BENEFICIARIES_OWN_PREFIX = `${BENEFICIARIES_BASE_KEY}:own:`;
+const BENEFICIARY_BY_ID_PREFIX = `${BENEFICIARIES_BASE_KEY}:`;
 
 function ownCacheKey(firstName: string, lastName: string) {
   return `${BENEFICIARIES_OWN_PREFIX}${encodeURIComponent(firstName)}|${encodeURIComponent(
@@ -37,19 +36,10 @@ function ownCacheKey(firstName: string, lastName: string) {
   )}`;
 }
 
-// (Optional) allow preflight without 405s
 export async function OPTIONS() {
   return NextResponse.json(null, { status: 204 });
 }
 
-/**
- * GET:
- * - If role === 'beneficiary': return ONLY messages whose related beneficiary
- *   has (firstName AND lastName) matching the session.
- * - Else: return all messages.
- *
- * Includes beneficiary and createdBy relations so the UI can show the author and beneficiary.
- */
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -60,13 +50,9 @@ export async function GET() {
     if (role === 'beneficiary') {
       const firstName = (session?.user as any)?.firstName;
       const lastName = (session?.user as any)?.lastName;
-
-      // If the session doesn't carry names, return an empty list rather than leaking data
       if (!firstName || !lastName) {
         return NextResponse.json([]);
       }
-
-      // Relational filter to Beneficiary by exact names
       where = {
         beneficiary: {
           firstName,
@@ -80,7 +66,9 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
       include: {
         beneficiary: { select: { id: true, firstName: true, lastName: true } },
-        createdBy: { select: { id: true, firstName: true, lastName: true, email: true } },
+        createdBy: {
+          select: { id: true, firstName: true, lastName: true, email: true, username: true },
+        },
       },
     });
 
@@ -91,19 +79,6 @@ export async function GET() {
   }
 }
 
-/**
- * POST:
- * - Beneficiary: server resolves beneficiaryId by matching session first/last name; status is forced to 'draft'.
- * - Admin/Moderator/Super: may pass beneficiaryId; status can be 'draft' | 'published'.
- * - Authenticated guests: allowed to create messages but cannot set beneficiaryId; their messages are created unlinked
- *   (beneficiaryId = null) and forced to sensible defaults. This allows features like "account deletion request".
- *
- * Sets createdById to the signed-in user's id so the message author is recorded.
- * This enables the author to later post an AUTHOR response (server logic for responses should check createdById).
- *
- * Also invalidates beneficiary caches so message/response counts shown in the beneficiaries list stay accurate
- * after creating a message.
- */
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -121,7 +96,6 @@ export async function POST(req: Request) {
     if (!body) return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
 
     const {
-      beneficiaryId,
       title,
       affiliated,
       name,
@@ -130,8 +104,8 @@ export async function POST(req: Request) {
       messageStatus,
       senderEmail,
       allowResponses,
+      meta, // used for logic, not storage!
     } = body as {
-      beneficiaryId?: string;
       title?: string;
       affiliated?: string;
       name?: string;
@@ -140,6 +114,8 @@ export async function POST(req: Request) {
       messageStatus?: unknown;
       senderEmail?: string;
       allowResponses?: boolean;
+      meta?: { type?: string; [key: string]: any };
+      beneficiaryId?: string;
     };
 
     if (!title) {
@@ -150,9 +126,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid messageCategory' }, { status: 400 });
     }
 
-    let targetBeneficiaryId: string | null = null;
+    let beneficiaryConnect: any = undefined;
+    const isAccountDeletionRequest = meta?.type === 'account-deletion-request';
 
-    if (role === 'beneficiary') {
+    if (role === 'beneficiary' && !isAccountDeletionRequest) {
       const firstName = (session.user as any)?.firstName;
       const lastName = (session.user as any)?.lastName;
       if (!firstName || !lastName) {
@@ -161,56 +138,30 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
-
       const match = await prisma.beneficiary.findFirst({
         where: { firstName, lastName },
         select: { id: true },
       });
-
       if (!match) {
         return NextResponse.json(
           { error: 'Beneficiary profile not found for your account.' },
           { status: 404 }
         );
       }
-
-      targetBeneficiaryId = match.id;
-    } else if (role === 'super' || role === 'admin' || role === 'moderator') {
-      if (beneficiaryId) {
-        const exists = await prisma.beneficiary.findUnique({
-          where: { id: beneficiaryId },
-          select: { id: true },
-        });
-        if (!exists) {
-          return NextResponse.json({ error: 'Beneficiary not found' }, { status: 404 });
-        }
-        targetBeneficiaryId = beneficiaryId;
-      } else {
-        // leave null — messages can be unlinked (e.g., executive/system/external)
-        targetBeneficiaryId = null;
-      }
-    } else {
-      // role is 'guest' or other authenticated non-privileged role
-      // allow creation but do not accept beneficiaryId from the client (prevent spoofing)
-      targetBeneficiaryId = null;
+      beneficiaryConnect = { connect: { id: match.id } };
+    } else if (role !== 'beneficiary' && body.beneficiaryId && !isAccountDeletionRequest) {
+      beneficiaryConnect = { connect: { id: body.beneficiaryId } };
     }
 
-    // Enforce/normalize category and status based on role
     let resolvedCategory: MessageCategory = 'external';
     if (isMessageCategory(messageCategory)) {
-      // Only 'super' may create 'system' messages; downgrade otherwise
       if (messageCategory === 'system' && role !== 'super') {
         resolvedCategory = 'request';
       } else {
         resolvedCategory = messageCategory as MessageCategory;
       }
     } else {
-      // default for beneficiaries and guests: 'request' (so admins can easily find)
-      if (role === 'beneficiary' || role === 'guest') {
-        resolvedCategory = 'request';
-      } else {
-        resolvedCategory = 'external';
-      }
+      resolvedCategory = role === 'beneficiary' || role === 'guest' ? 'request' : 'external';
     }
 
     const resolvedStatus: PublishStatus =
@@ -220,36 +171,51 @@ export async function POST(req: Request) {
         ? (messageStatus as PublishStatus)
         : 'draft';
 
+    // Construct Prisma message.create payload -- NO META FIELD!
+    const data: any = {
+      title,
+      affiliated: affiliated ?? null,
+      name: name ?? null,
+      content: typeof content === 'string' ? content : JSON.stringify(content ?? ''),
+      messageCategory: resolvedCategory,
+      messageStatus: resolvedStatus,
+      senderEmail: senderEmail ?? null,
+      allowResponses: typeof allowResponses === 'boolean' ? allowResponses : true,
+      createdBy: { connect: { id: session.user.id } },
+    };
+    if (beneficiaryConnect) data.beneficiary = beneficiaryConnect;
+
     const created = await prisma.message.create({
-      data: {
-        beneficiaryId: targetBeneficiaryId,
-        title,
-        affiliated: affiliated ?? null,
-        name: name ?? null,
-        content: content ?? '',
-        // map to the normalized messageCategory
-        messageCategory: resolvedCategory,
-        messageStatus: resolvedStatus,
-        senderEmail: senderEmail ?? null,
-        allowResponses: typeof allowResponses === 'boolean' ? allowResponses : true,
-        // record the creator so they can be identified as author later
-        createdById: session.user.id,
-      },
+      data,
       include: {
         beneficiary: { select: { id: true, firstName: true, lastName: true } },
-        createdBy: { select: { id: true, firstName: true, lastName: true, email: true } },
+        createdBy: {
+          select: { id: true, username: true, firstName: true, lastName: true, email: true },
+        },
       },
     });
+
+    // --- SEND EMAIL FOR ACCOUNT DELETION REQUEST ---
+    if (meta?.type === 'account-deletion-request' && created.senderEmail) {
+      try {
+        await sendAccountDeletionRequestEmail(created.senderEmail, {
+          username: created.createdBy?.username ?? '',
+          firstName: created.createdBy?.firstName ?? '',
+          time: new Date().toLocaleString(),
+        });
+      } catch (e) {
+        console.error('[EMAIL] Failed to send account deletion confirmation:', e);
+      }
+    }
+    // ----------------------------------------------
 
     // Invalidate beneficiaries caches so refreshed list has updated counts
     try {
       await redis.del(BENEFICIARIES_ALL_KEY);
-      if (created.beneficiaryId) {
-        // delete per-id cache if present
-        await redis.del(`${BENEFICIARY_BY_ID_PREFIX}${created.beneficiaryId}`);
-        // delete name-scoped cache if we can resolve names
+      if (created.beneficiary?.id) {
+        await redis.del(`${BENEFICIARY_BY_ID_PREFIX}${created.beneficiary.id}`);
         const beneficiary = await prisma.beneficiary.findUnique({
-          where: { id: created.beneficiaryId },
+          where: { id: created.beneficiary.id },
           select: { firstName: true, lastName: true },
         });
         if (beneficiary?.firstName && beneficiary?.lastName) {
