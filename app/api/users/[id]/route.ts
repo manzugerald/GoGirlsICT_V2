@@ -4,20 +4,18 @@ import bcrypt from 'bcrypt';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
-// import { redis } from '@/utils/redis'; // Redis kept commented per request
+// import { redis } from '@/utils/redis';
 import { isPwned } from '@/lib/hibp';
 import { sendPasswordChangeEmail } from '@/lib/email';
+import { getIpFromRequest } from '@/lib/getIp';
 
 const USERS_CACHE_KEY = 'users:all';
-const SINGLE_USER_CACHE_PREFIX = 'users:'; // users:[id]
-// const CACHE_TTL = 60 * 60 * 24 * 7; // 7 days (redis disabled)
+const SINGLE_USER_CACHE_PREFIX = 'users:';
+// const CACHE_TTL = 60 * 60 * 24 * 7;
 
 const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '12', 10);
 const MAX_HISTORY = parseInt(process.env.MAX_HISTORY || '5', 10);
 
-/**
- * GET /api/users/:id
- */
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   try {
     const userId = params?.id;
@@ -35,7 +33,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
         email: true,
         role: true,
         image: true,
-        about: true, // <-- include about in GET by id
+        about: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -52,34 +50,19 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   }
 }
 
-/**
- * PATCH /api/users/:id
- *
- * Accepts multipart/form-data for file uploads (image) and text fields.
- * Recognized fields:
- * - username (original username for optional verification)
- * - newUsername (desired new username) <-- newly supported
- * - firstName, lastName, email
- * - image (File), oldImageUrl (string)
- * - password (string)            <-- when present we run the secure change-password flow
- * - role (string)
- * - about (string)
- *
- * Behavior:
- * - If password is provided in the form-data we route it through the same secure
- *   change-password flow (reuse prevention, HIBP, history, session revocation, email).
- */
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
     const userId = params.id;
+    const ip = getIpFromRequest(req);
+    const userAgent = req.headers.get('user-agent') ?? 'unknown';
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const formData = await req.formData();
-    const username = (formData.get('username') as string) ?? null; // original username (optional)
-    const newUsername = (formData.get('newUsername') as string) ?? null; // desired username (optional)
+    const username = (formData.get('username') as string) ?? null;
+    const newUsername = (formData.get('newUsername') as string) ?? null;
     const password = (formData.get('password') as string) ?? null;
     const email = (formData.get('email') as string) ?? null;
     const firstName = (formData.get('firstName') as string) ?? null;
@@ -89,7 +72,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const role = (formData.get('role') as string) ?? undefined;
     const about = formData.has('about') ? (formData.get('about') as string) : undefined;
 
-    // If the client supplied an original username, verify it matches the DB for safety.
     if (username && username !== user.username) {
       return NextResponse.json(
         { error: 'The original username does not match the record.' },
@@ -97,9 +79,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       );
     }
 
-    // If a password is provided, run the secure change-password flow here (user-initiated)
+    // Password change flow (with IP, email notification, and system message)
     if (password) {
-      // Require currentPassword in form data for safety (user must prove identity)
       const currentPassword = (formData.get('currentPassword') as string) ?? null;
       if (!currentPassword) {
         return NextResponse.json(
@@ -108,13 +89,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         );
       }
 
-      // Verify current password
       const ok = await bcrypt.compare(currentPassword, user.password);
       if (!ok) {
         return NextResponse.json({ error: 'Current password incorrect' }, { status: 401 });
       }
 
-      // Prevent reuse: check against history + current
       const historyRows = await prisma.passwordHistory.findMany({
         where: { userId },
         orderBy: { createdAt: 'desc' },
@@ -130,7 +109,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         }
       }
 
-      // HIBP check
       try {
         const { pwned, count } = await isPwned(password);
         if (pwned) {
@@ -143,7 +121,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         console.warn('HIBP check failed, continuing', e);
       }
 
-      // Hash and perform transactional update similar to change-password endpoint
       const newHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
       const now = new Date();
 
@@ -166,8 +143,23 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
           data: {
             userId,
             changedBy: null,
-            ip: null,
-            userAgent: null,
+            ip,
+            userAgent,
+          },
+        });
+
+        // CREATE SYSTEM MESSAGE FOR USER
+        await tx.message.create({
+          data: {
+            title: 'Your password was changed',
+            content: {
+              text: `Your account password was changed on ${now.toLocaleString()} from IP ${ip}. If this wasn't you, please contact support immediately.`,
+            },
+            messageCategory: 'system',
+            allowResponses: false,
+            senderEmail: user.email ?? undefined,
+            senderIp: ip ?? undefined,
+            createdById: userId,
           },
         });
 
@@ -182,7 +174,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
           await tx.passwordHistory.deleteMany({ where: { id: { in: ids } } });
         }
 
-        // revoke active sessions and mark inactive
         await tx.session.updateMany({
           where: { userId, active: true },
           data: { active: false, endedAt: now },
@@ -190,56 +181,51 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         await tx.user.update({ where: { id: userId }, data: { loginStatus: 'inactive' } });
       });
 
-      // notify user by email
+      // Logging for troubleshooting
+      console.log('[PATCH] Sending password change email to', user.email, { ip, userAgent });
+      // Notify user by email (IP/user-agent included)
       if (user.email) {
         try {
-          await sendPasswordChangeEmail(user.email, {
-            time: new Date().toISOString(),
-            ip: null,
-            userAgent: null,
+          const emailResult = await sendPasswordChangeEmail(user.email, {
+            time: now.toISOString(),
+            ip,
+            userAgent,
+            username: user.username,
+            firstName: user.firstName,
           });
+          console.log('[PATCH] Password change email sent:', emailResult?.messageId || emailResult);
         } catch (e) {
-          console.warn('Failed to send password change email', e);
+          console.error('[PATCH] Password change email failed:', e);
         }
       }
 
       return NextResponse.json({ message: 'Password changed' });
     }
 
+    // Standard profile update flow
     const updateData: any = {};
 
     if (firstName) updateData.firstName = firstName;
     if (lastName) updateData.lastName = lastName;
     if (email) updateData.email = email;
     if (typeof role !== 'undefined') updateData.role = role;
+    if (typeof about !== 'undefined') updateData.about = about;
 
-    // Handle about: if the client provided the about field (even empty string), update it
-    if (typeof about !== 'undefined') {
-      updateData.about = about;
-    }
-
-    // Handle username change if requested via newUsername
     if (newUsername && newUsername !== user.username) {
-      // check availability
       const existing = await prisma.user.findUnique({ where: { username: newUsername } });
       if (existing) {
         return NextResponse.json({ error: 'Username already taken' }, { status: 400 });
       }
       updateData.username = newUsername;
-    } else if (!newUsername && formData.has('username') && username) {
-      // If client sent 'username' intending to update (edge case), we allow it only if it equals current username
-      // (no-op) — nothing to change.
     }
 
-    // Handle image upload
     if (imageFile && (imageFile as any).size > 0) {
-      // Delete old image if provided
       if (oldImageUrl) {
         try {
           const filePath = path.join(process.cwd(), 'public', oldImageUrl);
           await fs.unlink(filePath);
         } catch {
-          // ignore
+          // ignore file not found
         }
       }
       const ext = imageFile.name.split('.').pop() || 'jpg';
@@ -251,7 +237,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       updateData.image = `/assets/images/users/${filename}`;
     }
 
-    // If there's nothing to update, return current record (include about)
     const hasUpdates = Object.keys(updateData).length > 0;
     if (!hasUpdates) {
       const current = await prisma.user.findUnique({
@@ -264,7 +249,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
           firstName: true,
           lastName: true,
           role: true,
-          about: true, // <-- include about when returning 'no changes'
+          about: true,
         },
       });
       return NextResponse.json({ message: 'No changes', user: current });
@@ -281,7 +266,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         firstName: true,
         lastName: true,
         role: true,
-        about: true, // <-- include about in response
+        about: true,
       },
     });
 
@@ -302,9 +287,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-/**
- * DELETE /api/users/:id
- */
 export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
   try {
     const userId = params.id;
@@ -313,13 +295,12 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Delete the image file (if present)
     if (user.image) {
       try {
         const filePath = path.join(process.cwd(), 'public', user.image);
         await fs.unlink(filePath);
       } catch (e) {
-        // It's ok if the file doesn't exist, continue
+        // It's ok if the file doesn't exist
       }
     }
 
@@ -342,7 +323,6 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   }
 }
 
-// Unsupported methods
 export async function POST() {
   return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
 }

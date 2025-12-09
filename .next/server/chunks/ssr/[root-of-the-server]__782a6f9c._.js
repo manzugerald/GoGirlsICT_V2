@@ -1801,12 +1801,6 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navi
 ;
 ;
 ;
-function getCameFrom() {
-    if ("TURBOPACK compile-time falsy", 0) {
-        "TURBOPACK unreachable";
-    }
-    return '/';
-}
 const ROLE_OPTIONS = [
     {
         value: 'super',
@@ -1829,27 +1823,14 @@ const ROLE_OPTIONS = [
         label: 'Guest'
     }
 ];
-function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess, onCancel, onDelete, forceChangePassword = false, forceChangeUsername = false, showOnly = 'all' }) {
-    // Defensive: don't even render the form if edit mode and no id and no initialData
-    if (mode === 'edit' && !userId && !initialData) {
-        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "text-red-500 text-center",
-            children: "User ID missing. Cannot edit user"
-        }, void 0, false, {
-            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-            lineNumber: 49,
-            columnNumber: 12
-        }, this);
-    }
-    // initialRef keeps a snapshot of the data we consider "original" for diffing
+function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess, onCancel, onDelete, hideUsernameField = false, hidePasswordFields = false, hideRoleField = false, onlyPasswordFields = false, requireCurrentPassword = true, showDeleteAccount = false }) {
+    const isEdit = mode === 'edit' || !!userId || !!initialData;
     const initialRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(initialData ?? null);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         if (initialData) initialRef.current = initialData;
     }, [
         initialData
     ]);
-    const isEdit = mode === 'edit' || !!userId || !!initialData;
-    // Form state (visible values)
     const [form, setForm] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])({
         firstName: initialData?.firstName ?? '',
         lastName: initialData?.lastName ?? '',
@@ -1864,156 +1845,45 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
     const [imageUrl, setImageUrl] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(initialData?.image || '');
     const [imagePreview, setImagePreview] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(initialData?.image || null);
     const [imageToDelete, setImageToDelete] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
-    const [changeUsername, setChangeUsername] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [newUsername, setNewUsername] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
-    const [confirmNewUsername, setConfirmNewUsername] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
-    const [changePassword, setChangePassword] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [currentPassword, setCurrentPassword] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(''); // NEW: current password required for edit password changes
+    const [currentPassword, setCurrentPassword] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
     const [newPassword, setNewPassword] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
     const [confirmNewPassword, setConfirmNewPassword] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
     const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
     const [success, setSuccess] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
-    const [checkingUsername, setCheckingUsername] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [usernameInvalid, setUsernameInvalid] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [deleting, setDeleting] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [isSubmitting, setIsSubmitting] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [registerDot, setRegisterDot] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(0);
-    const [loadingUser, setLoadingUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [fetchError, setFetchError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
-    // Fetcher (used both on mount and on retry)
-    async function fetchUserData(signal) {
-        const idToUse = userId ?? initialRef.current?.id;
-        if (!idToUse) return;
-        setLoadingUser(true);
-        setFetchError(null);
-        try {
-            const res = await fetch(`/api/users/${encodeURIComponent(String(idToUse))}`, {
-                signal
-            });
-            if (!res.ok) {
-                const txt = await res.text().catch(()=>'');
-                throw new Error(txt || `Failed to load user (${res.status})`);
-            }
-            const json = await res.json();
-            // populate
-            initialRef.current = json;
-            setForm({
-                firstName: json?.firstName ?? '',
-                lastName: json?.lastName ?? '',
-                username: json?.username ?? '',
-                email: json?.email ?? '',
-                about: json?.about ?? '',
-                password: '',
-                confirmPassword: '',
-                role: json?.role ?? ''
-            });
-            setImageUrl(json?.image ?? '');
-            setImagePreview(json?.image ?? null);
-            // Toggles from props
-            setChangePassword(Boolean(forceChangePassword));
-            setChangeUsername(Boolean(forceChangeUsername));
-            setNewPassword('');
-            setConfirmNewPassword('');
-            setNewUsername('');
-            setConfirmNewUsername('');
-            setCurrentPassword('');
-            setUsernameInvalid(false);
-            setError('');
-            setSuccess('');
-        } catch (err) {
-            if (err.name === 'AbortError') return;
-            setFetchError(err?.message || 'Failed to load user');
-        } finally{
-            setLoadingUser(false);
-        }
-    }
-    // If in edit mode and we have a userId, default behavior is to fetch the latest user data to populate the form.
+    // If onlyPasswordFields, skip fetching profile data.
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        let controller = null;
-        const shouldFetch = isEdit && (userId ?? initialRef.current?.id);
-        if (!shouldFetch) return;
-        controller = new AbortController();
-        fetchUserData(controller.signal);
-        return ()=>{
-            if (controller) controller.abort();
-        };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        if (isEdit && userId && !initialData && !onlyPasswordFields) {
+            (async ()=>{
+                try {
+                    const res = await fetch(`/api/users/${encodeURIComponent(String(userId))}`);
+                    if (!res.ok) throw new Error(await res.text());
+                    const json = await res.json();
+                    initialRef.current = json;
+                    setForm({
+                        firstName: json?.firstName ?? '',
+                        lastName: json?.lastName ?? '',
+                        username: json?.username ?? '',
+                        email: json?.email ?? '',
+                        about: json?.about ?? '',
+                        password: '',
+                        confirmPassword: '',
+                        role: json?.role ?? ''
+                    });
+                    setImageUrl(json?.image || '');
+                    setImagePreview(json?.image || null);
+                } catch (e) {
+                    setError(e.message || 'Failed to fetch user');
+                }
+            })();
+        }
     }, [
         isEdit,
-        userId
+        userId,
+        initialData,
+        onlyPasswordFields
     ]);
-    // If parent provides initialData explicitly (e.g., dashboard passed it), keep form in sync with that too.
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        if (!initialData) return;
-        setForm({
-            firstName: initialData?.firstName ?? '',
-            lastName: initialData?.lastName ?? '',
-            username: initialData?.username ?? '',
-            email: initialData?.email ?? '',
-            about: initialData?.about ?? '',
-            password: '',
-            confirmPassword: '',
-            role: initialData?.role ?? ''
-        });
-        setImageUrl(initialData?.image || '');
-        setImagePreview(initialData?.image || null);
-        setImageFile(null);
-        setImageToDelete(null);
-        setChangePassword(Boolean(forceChangePassword));
-        setChangeUsername(Boolean(forceChangeUsername));
-        setNewPassword('');
-        setConfirmNewPassword('');
-        setNewUsername('');
-        setConfirmNewUsername('');
-        setCurrentPassword('');
-        setError('');
-        setSuccess('');
-        setUsernameInvalid(false);
-        initialRef.current = initialData;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        initialData
-    ]);
-    // Smart username availability/exact check:
-    // - When creating: checkAvailable
-    // - When editing:
-    //    - if user edits the main username input (form.username !== orig.username): checkAvailable
-    //    - else (unchanged): checkExact (validates that server still has same username)
-    const handleUsernameBlur = async ()=>{
-        if (!form.username) return;
-        try {
-            setCheckingUsername(true);
-            const origUsername = initialRef.current?.username;
-            const idToUse = userId ?? initialRef.current?.id;
-            let url;
-            if (mode === 'edit' && idToUse) {
-                if (form.username !== origUsername) {
-                    // user changed main username field -> check availability
-                    url = `/api/users?checkAvailable=1&username=${encodeURIComponent(form.username)}`;
-                } else {
-                    // unchanged -> verify exact
-                    url = `/api/users?checkExact=1&userId=${encodeURIComponent(String(idToUse))}&username=${encodeURIComponent(form.username)}`;
-                }
-            } else {
-                // create mode
-                url = `/api/users?checkAvailable=1&username=${encodeURIComponent(form.username)}`;
-            }
-            const res = await fetch(url);
-            if (!res.ok) {
-                setUsernameInvalid(false);
-                setCheckingUsername(false);
-                return;
-            }
-            const data = await res.json().catch(()=>null);
-            const valid = data && (data.valid === true || data.available === true || data.ok === true);
-            setUsernameInvalid(!valid);
-        } catch  {
-            setUsernameInvalid(false);
-        } finally{
-            setCheckingUsername(false);
-        }
-    };
     const handleChange = (e)=>{
         setForm({
             ...form,
@@ -2021,202 +1891,57 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
         });
         setError('');
         setSuccess('');
-        if (e.target.name === 'username') setUsernameInvalid(false);
     };
-    const handleImageChange = (e)=>{
-        const file = e.target.files?.[0] || null;
-        if (file) {
-            if (imageUrl) setImageToDelete(imageUrl);
-            setImageFile(file);
-            setImagePreview(URL.createObjectURL(file));
-        }
-    };
-    const handleImageDelete = async ()=>{
-        if (imageUrl) setImageToDelete(imageUrl);
-        setImageFile(null);
-        setImageUrl('');
-        setImagePreview(null);
-        const idToUse = userId ?? initialRef.current?.id;
-        if (idToUse && imageUrl) {
-            try {
-                // Merged route: POST /api/users with JSON { imageUrl } to delete image
-                const res = await fetch('/api/users', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        imageUrl
-                    })
-                });
-                if (!res.ok) {
-                // ignore failures for delete-image
-                }
-            } catch  {
-            // ignore
-            }
-        }
-    };
-    // Animated dots for submit button
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        let dotInterval;
-        if (isSubmitting) {
-            dotInterval = setInterval(()=>{
-                setRegisterDot((prev)=>(prev + 1) % 3);
-            }, 400);
-        } else {
-            setRegisterDot(0);
-        }
-        return ()=>{
-            if (dotInterval) clearInterval(dotInterval);
-        };
-    }, [
-        isSubmitting
-    ]);
     const handleSubmit = async (e)=>{
         e.preventDefault();
         setError('');
         setSuccess('');
         setIsSubmitting(true);
-        // --- Validation ---
-        // If showOnly restricts the UI, validate only relevant fields
-        if (!isEdit) {
-            // create mode validation
-            if (showOnly === 'all' || showOnly === 'profile') {
-                if (!form.firstName || !form.lastName || !form.username || !form.email || !imageFile && !imagePreview) {
-                    setError('All profile fields and image are required');
-                    setIsSubmitting(false);
-                    return;
-                }
-            }
-            if (showOnly === 'all' || showOnly === 'password') {
-                if (!form.password || !form.confirmPassword) {
-                    setError('Password and confirmation are required');
-                    setIsSubmitting(false);
-                    return;
-                }
-                if (form.password !== form.confirmPassword) {
-                    setError('Passwords do not match');
-                    setIsSubmitting(false);
-                    return;
-                }
-            }
-        } else {
-            // edit mode validation
-            // Determine if username is being changed:
-            // - changeUsername checkbox (explicit)
-            // - OR user edited main username input (form.username !== orig.username)
-            const orig = initialRef.current ?? {};
-            const usernameEdited = form.username !== (orig.username ?? '');
-            const wantsUsernameChangeExplicit = changeUsername;
-            const wantsUsernameChange = wantsUsernameChangeExplicit || usernameEdited;
-            if (wantsUsernameChangeExplicit) {
-                // explicit flow requires newUsername + confirmNewUsername and they must match
-                if (!newUsername || !confirmNewUsername) {
-                    setError('Please provide the new username and confirmation');
-                    setIsSubmitting(false);
-                    return;
-                }
-                if (newUsername !== confirmNewUsername) {
-                    setError('New usernames do not match');
-                    setIsSubmitting(false);
-                    return;
-                }
-            }
-            if ((showOnly === 'all' || showOnly === 'password' || changePassword) && changePassword) {
-                if (!currentPassword) {
-                    setError('Please provide your current password to change to a new password.');
-                    setIsSubmitting(false);
-                    return;
-                }
-                if (!newPassword || !confirmNewPassword) {
-                    setError('Please provide the new password and confirmation');
-                    setIsSubmitting(false);
-                    return;
-                }
-                if (newPassword !== confirmNewPassword) {
-                    setError('New passwords do not match');
-                    setIsSubmitting(false);
-                    return;
-                }
-            }
-            if (usernameInvalid) {
-                setError('The Username appears invalid');
+        if (onlyPasswordFields) {
+            if (requireCurrentPassword && !currentPassword) {
+                setError('Current password is required.');
                 setIsSubmitting(false);
                 return;
             }
-            if (!userId && !initialRef.current?.id) {
-                setError('Invalid form mode or missing user ID');
+            if (!newPassword || !confirmNewPassword) {
+                setError('New password and confirmation are required.');
+                setIsSubmitting(false);
+                return;
+            }
+            if (newPassword !== confirmNewPassword) {
+                setError('New passwords do not match.');
+                setIsSubmitting(false);
+                return;
+            }
+        } else if (!hidePasswordFields) {
+            if (!isEdit && (!form.password || !form.confirmPassword)) {
+                setError('Password and confirmation required.');
+                setIsSubmitting(false);
+                return;
+            }
+            if (!isEdit && form.password !== form.confirmPassword) {
+                setError('Passwords do not match.');
                 setIsSubmitting(false);
                 return;
             }
         }
         try {
             const formData = new FormData();
-            if (!isEdit) {
-                if (showOnly === 'all' || showOnly === 'profile') {
-                    formData.append('firstName', form.firstName);
-                    formData.append('lastName', form.lastName);
-                    formData.append('username', form.username);
-                    formData.append('email', form.email);
-                    formData.append('about', form.about ?? '');
-                    if (imageFile) formData.append('image', imageFile);
-                }
-                if (showOnly === 'all' || showOnly === 'password') {
-                    formData.append('password', form.password);
-                }
-                // include role on create when present
-                if ((showOnly === 'all' || showOnly === 'profile') && form.role) {
-                    formData.append('role', form.role);
-                }
+            if (onlyPasswordFields) {
+                formData.append('password', newPassword);
+                if (requireCurrentPassword) formData.append('currentPassword', currentPassword);
             } else {
-                const orig = initialRef.current ?? {};
-                // include original username to help server-side checks
-                if (orig.username) formData.append('username', orig.username);
-                else if (form.username) formData.append('username', form.username);
-                if (showOnly === 'all' || showOnly === 'profile') {
-                    if (form.firstName !== (orig.firstName ?? '')) formData.append('firstName', form.firstName);
-                    if (form.lastName !== (orig.lastName ?? '')) formData.append('lastName', form.lastName);
-                    if (form.email !== (orig.email ?? '')) formData.append('email', form.email);
-                    // include about field change or empty string to allow clearing
-                    if (form.about !== (orig.about ?? '')) {
-                        formData.append('about', form.about ?? '');
-                    } else {
-                        // include anyway to keep server handling simple
-                        formData.append('about', form.about ?? '');
-                    }
-                    if (imageFile) formData.append('image', imageFile);
-                    if (imageToDelete) formData.append('oldImageUrl', imageToDelete);
-                    // include role in edit (always include if provided)
-                    if (form.role && form.role !== (orig.role ?? '')) {
-                        formData.append('role', form.role);
-                    } else if (form.role) {
-                        // even if unchanged, include to make server-side handling simple
-                        formData.append('role', form.role);
-                    }
-                }
-                // username change flow:
-                // - explicit (checkbox): use newUsername (and confirmation validated)
-                // - implicit (user edited main username input): send newUsername = form.username
-                const origUsername = orig.username ?? '';
-                if (changeUsername) {
-                    formData.append('newUsername', newUsername || form.username);
-                } else if (form.username !== origUsername) {
-                    // user edited the main username input without checking the box -> treat as username change
-                    formData.append('newUsername', form.username);
-                }
-                // password change flow (explicit or via showOnly)
-                if (changePassword || showOnly === 'password') {
-                    const pw = newPassword || form.password;
-                    if (pw) {
-                        formData.append('password', pw);
-                        // include current password for verification when editing password
-                        formData.append('currentPassword', currentPassword);
-                    }
-                } else if (form.password) {
-                    // backwards compatibility: if user typed in main password field, include it
+                if (!hideUsernameField) formData.append('username', form.username);
+                formData.append('firstName', form.firstName);
+                formData.append('lastName', form.lastName);
+                formData.append('email', form.email);
+                formData.append('about', form.about ?? '');
+                if (!hidePasswordFields && form.password) {
                     formData.append('password', form.password);
                 }
+                if (!hideRoleField && form.role) formData.append('role', form.role);
+                if (imageFile) formData.append('image', imageFile);
+                if (imageToDelete) formData.append('oldImageUrl', imageToDelete);
             }
             let res;
             if (isEdit) {
@@ -2234,150 +1959,277 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
             const data = await res.json().catch(()=>null);
             if (!res.ok) throw new Error(data && (data.error || data.message) || 'Operation failed');
             setSuccess(isEdit ? 'User updated!' : 'User created!');
-            // Call onSuccess with the returned user (for optimistic parent updates)
-            if (data?.user && onSuccess) {
-                try {
-                    onSuccess(data.user);
-                } catch  {
-                // ignore parent errors
-                }
-            } else if (onSuccess) {
-                try {
-                    onSuccess(data ?? undefined);
-                } catch  {
-                // ignore
-                }
-            }
+            if (data?.user && onSuccess) onSuccess(data.user);
+            else if (onSuccess) onSuccess(data ?? undefined);
             if (!isEdit) {
-                const cameFrom = getCameFrom();
-                sessionStorage.removeItem('came-from');
                 setTimeout(()=>{
-                    router.push(cameFrom);
+                    router.push('/');
                 }, 800);
-            } else {
-                if (data?.user) {
-                    setImageUrl(data.user.image || '');
-                    setImagePreview(data.user.image || null);
-                    setForm((f)=>({
-                            ...f,
-                            username: data.user.username || f.username,
-                            role: data.user.role ?? f.role,
-                            about: data.user.about ?? f.about
-                        }));
-                    initialRef.current = {
-                        ...initialRef.current || {},
-                        ...data.user
-                    };
-                }
             }
         } catch (err) {
             setError(err?.message || 'Something went wrong');
         } finally{
             setIsSubmitting(false);
-            // clear sensitive fields
             setCurrentPassword('');
             setNewPassword('');
             setConfirmNewPassword('');
+            setForm((f)=>({
+                    ...f,
+                    password: '',
+                    confirmPassword: ''
+                }));
         }
     };
     const handleCancel = ()=>{
         if (onCancel) onCancel();
         else router.back();
     };
-    const handleDelete = async ()=>{
-        const idToUse = userId ?? initialRef.current?.id;
-        if (!idToUse) return;
-        if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
-        setDeleting(true);
-        try {
-            const res = await fetch(`/api/users/${encodeURIComponent(String(idToUse))}`, {
-                method: 'DELETE'
-            });
-            if (!res.ok) {
-                const data = await res.json().catch(()=>null);
-                throw new Error(data?.error || 'Failed to delete user');
-            }
-            if (onDelete) onDelete(String(idToUse));
-            if (onSuccess) onSuccess(undefined);
-            router.refresh();
-            router.push('/admin/dashboard');
-        } catch (err) {
-            setError(err.message || 'Something went wrong');
-        } finally{
-            setDeleting(false);
-        }
-    };
-    // Retry fetch user (exposed in UI when fetchError is set)
-    const retryFetchUser = ()=>{
-        setFetchError(null);
-        fetchUserData();
-    };
-    // Render
-    // If showOnly restricts the UI, we render only matching sections:
-    const renderProfileFields = ()=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+    // Only render password fields if modal is for password change
+    if (onlyPasswordFields) {
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
+            onSubmit: handleSubmit,
+            className: "space-y-6 w-full",
             children: [
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "flex flex-col items-center",
+                requireCurrentPassword && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
                             className: "text-sm block mb-1",
-                            children: "Profile image"
+                            children: "Current password"
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 561,
-                            columnNumber: 9
+                            lineNumber: 213,
+                            columnNumber: 13
                         }, this),
-                        imagePreview ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "relative flex flex-col items-center",
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                            type: "password",
+                            placeholder: "Current password",
+                            value: currentPassword,
+                            onChange: (e)=>setCurrentPassword(e.target.value),
+                            className: "border p-2 rounded w-full",
+                            autoComplete: "current-password"
+                        }, void 0, false, {
+                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                            lineNumber: 214,
+                            columnNumber: 13
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                    lineNumber: 212,
+                    columnNumber: 11
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "flex gap-4",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "w-1/2",
                             children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
-                                    src: imagePreview,
-                                    alt: "User",
-                                    className: "w-24 h-24 rounded-full object-cover border mx-auto"
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                    className: "text-sm block mb-1",
+                                    children: "New password"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 564,
+                                    lineNumber: 226,
                                     columnNumber: 13
                                 }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                    type: "button",
-                                    className: "absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center -mt-2 -mr-2",
-                                    onClick: handleImageDelete,
-                                    title: "Delete Image",
-                                    children: "×"
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                    type: "password",
+                                    placeholder: "New password",
+                                    value: newPassword,
+                                    onChange: (e)=>setNewPassword(e.target.value),
+                                    className: "border p-2 rounded w-full",
+                                    autoComplete: "new-password"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 569,
+                                    lineNumber: 227,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 563,
-                            columnNumber: 11
-                        }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "w-24 h-24 rounded-full border flex items-center justify-center mb-2 text-gray-400",
-                            children: "No Image"
-                        }, void 0, false, {
-                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 579,
+                            lineNumber: 225,
                             columnNumber: 11
                         }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                            type: "file",
-                            accept: "image/*",
-                            onChange: handleImageChange,
-                            className: "mt-2 mb-2 block"
-                        }, void 0, false, {
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "w-1/2",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                    className: "text-sm block mb-1",
+                                    children: "Confirm new password"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                                    lineNumber: 237,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                    type: "password",
+                                    placeholder: "Confirm new password",
+                                    value: confirmNewPassword,
+                                    onChange: (e)=>setConfirmNewPassword(e.target.value),
+                                    className: "border p-2 rounded w-full",
+                                    autoComplete: "new-password"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                                    lineNumber: 238,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 583,
-                            columnNumber: 9
+                            lineNumber: 236,
+                            columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 560,
-                    columnNumber: 7
+                    lineNumber: 224,
+                    columnNumber: 9
+                }, this),
+                error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                    className: "text-red-500 text-sm",
+                    children: error
+                }, void 0, false, {
+                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                    lineNumber: 248,
+                    columnNumber: 19
+                }, this),
+                success && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                    className: "text-green-600 text-sm",
+                    children: success
+                }, void 0, false, {
+                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                    lineNumber: 249,
+                    columnNumber: 21
+                }, this),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "flex gap-3",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                            type: "submit",
+                            className: "w-1/2 bg-green-600 text-white py-2 rounded flex items-center justify-center",
+                            disabled: isSubmitting,
+                            children: "Change password"
+                        }, void 0, false, {
+                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                            lineNumber: 251,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                            type: "button",
+                            onClick: handleCancel,
+                            className: "w-1/2 bg-black text-white py-2 rounded",
+                            disabled: isSubmitting,
+                            children: "Cancel"
+                        }, void 0, false, {
+                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                            lineNumber: 258,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                    lineNumber: 250,
+                    columnNumber: 9
+                }, this),
+                showDeleteAccount && onDelete && !onlyPasswordFields && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "flex flex-col gap-2",
+                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        type: "button",
+                        onClick: ()=>onDelete(userId),
+                        className: "w-full bg-red-600 text-white py-2 rounded mt-2",
+                        disabled: isSubmitting,
+                        children: "Delete Account"
+                    }, void 0, false, {
+                        fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                        lineNumber: 269,
+                        columnNumber: 13
+                    }, this)
+                }, void 0, false, {
+                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                    lineNumber: 268,
+                    columnNumber: 11
+                }, this)
+            ]
+        }, void 0, true, {
+            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+            lineNumber: 210,
+            columnNumber: 7
+        }, this);
+    }
+    // Otherwise, normal form
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+        className: "flex max-w-lg items-center justify-center mx-auto",
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
+            onSubmit: handleSubmit,
+            className: "space-y-6 w-full",
+            children: [
+                !hideUsernameField && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "flex gap-4",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "w-1/2",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                    className: "text-sm block mb-1",
+                                    children: "Username"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                                    lineNumber: 290,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                    name: "username",
+                                    placeholder: "Username",
+                                    value: form.username,
+                                    onChange: handleChange,
+                                    className: "border p-2 rounded w-full",
+                                    autoComplete: "off"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                                    lineNumber: 291,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                            lineNumber: 289,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "w-1/2",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                    className: "text-sm block mb-1",
+                                    children: "Email"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                                    lineNumber: 301,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                    name: "email",
+                                    type: "email",
+                                    placeholder: "Email",
+                                    value: form.email,
+                                    onChange: handleChange,
+                                    className: "border p-2 rounded w-full",
+                                    autoComplete: "off"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                                    lineNumber: 302,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                            lineNumber: 300,
+                            columnNumber: 13
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
+                    lineNumber: 288,
+                    columnNumber: 11
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "flex gap-4",
@@ -2390,8 +2242,8 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     children: "First name"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 594,
-                                    columnNumber: 11
+                                    lineNumber: 316,
+                                    columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                     name: "firstName",
@@ -2401,14 +2253,14 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     className: "border p-2 rounded w-full"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 595,
-                                    columnNumber: 11
+                                    lineNumber: 317,
+                                    columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 593,
-                            columnNumber: 9
+                            lineNumber: 315,
+                            columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "w-1/2",
@@ -2418,8 +2270,8 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     children: "Last name"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 604,
-                                    columnNumber: 11
+                                    lineNumber: 326,
+                                    columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                     name: "lastName",
@@ -2429,92 +2281,22 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     className: "border p-2 rounded w-full"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 605,
-                                    columnNumber: 11
+                                    lineNumber: 327,
+                                    columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 603,
-                            columnNumber: 9
+                            lineNumber: 325,
+                            columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 592,
-                    columnNumber: 7
+                    lineNumber: 314,
+                    columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "flex gap-4",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "w-1/2",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                    className: "text-sm block mb-1",
-                                    children: "Username"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 618,
-                                    columnNumber: 11
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                    name: "username",
-                                    placeholder: "Username",
-                                    value: form.username,
-                                    onChange: handleChange,
-                                    onBlur: handleUsernameBlur,
-                                    className: `border p-2 rounded w-full ${usernameInvalid ? 'border-red-500' : ''}`,
-                                    autoComplete: "off",
-                                    disabled: changeUsername || showOnly === 'username'
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 619,
-                                    columnNumber: 11
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 617,
-                            columnNumber: 9
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "w-1/2",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                    className: "text-sm block mb-1",
-                                    children: "Email"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 631,
-                                    columnNumber: 11
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                    name: "email",
-                                    type: "email",
-                                    placeholder: "Email",
-                                    value: form.email,
-                                    onChange: handleChange,
-                                    className: "border p-2 rounded w-full",
-                                    autoComplete: "off"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 632,
-                                    columnNumber: 11
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 630,
-                            columnNumber: 9
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 616,
-                    columnNumber: 7
-                }, this),
-                isEdit && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "mt-2",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -2522,7 +2304,7 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                             children: "About"
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 647,
+                            lineNumber: 337,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -2537,16 +2319,16 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                             placeholder: "Tell us a few words about this user (optional)"
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 648,
+                            lineNumber: 338,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 646,
+                    lineNumber: 336,
                     columnNumber: 9
                 }, this),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                !hideRoleField && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "mt-2",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -2554,8 +2336,8 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                             children: "Role"
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 661,
-                            columnNumber: 9
+                            lineNumber: 349,
+                            columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
                             name: "role",
@@ -2568,357 +2350,30 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     children: "— select role —"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 668,
-                                    columnNumber: 11
+                                    lineNumber: 356,
+                                    columnNumber: 15
                                 }, this),
                                 ROLE_OPTIONS.map((r)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                         value: r.value,
                                         children: r.label
                                     }, r.value, false, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                        lineNumber: 670,
-                                        columnNumber: 13
+                                        lineNumber: 358,
+                                        columnNumber: 17
                                     }, this))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 662,
-                            columnNumber: 9
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 660,
-                    columnNumber: 7
-                }, this)
-            ]
-        }, void 0, true);
-    const renderUsernameChange = ()=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "border rounded p-3 bg-gray-50 dark:bg-gray-800",
-            children: [
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                    className: "flex items-center gap-2",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                            type: "checkbox",
-                            checked: changeUsername,
-                            onChange: ()=>{
-                                setChangeUsername(!changeUsername);
-                                setNewUsername('');
-                                setConfirmNewUsername('');
-                                setError('');
-                            }
-                        }, void 0, false, {
-                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 682,
-                            columnNumber: 9
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "text-sm font-medium",
-                            children: "Change username"
-                        }, void 0, false, {
-                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 692,
-                            columnNumber: 9
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 681,
-                    columnNumber: 7
-                }, this),
-                changeUsername && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "mt-3 space-y-2",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                    className: "text-sm block mb-1",
-                                    children: "New username"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 698,
-                                    columnNumber: 13
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                    placeholder: "New username",
-                                    value: newUsername,
-                                    onChange: (e)=>setNewUsername(e.target.value),
-                                    className: "border p-2 rounded w-full",
-                                    autoComplete: "off"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 699,
-                                    columnNumber: 13
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 697,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                    className: "text-sm block mb-1",
-                                    children: "Confirm new username"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 708,
-                                    columnNumber: 13
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                    placeholder: "Confirm new username",
-                                    value: confirmNewUsername,
-                                    onChange: (e)=>setConfirmNewUsername(e.target.value),
-                                    className: "border p-2 rounded w-full",
-                                    autoComplete: "off"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 709,
-                                    columnNumber: 13
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 707,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "text-xs text-muted-foreground",
-                            children: "If you change username, you'll be updating the account handle."
-                        }, void 0, false, {
-                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 717,
-                            columnNumber: 11
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 696,
-                    columnNumber: 9
-                }, this)
-            ]
-        }, void 0, true, {
-            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-            lineNumber: 680,
-            columnNumber: 5
-        }, this);
-    const renderPasswordChange = ()=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "border rounded p-3 bg-gray-50 dark:bg-gray-800",
-            children: [
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                    className: "flex items-center gap-2",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                            type: "checkbox",
-                            checked: changePassword,
-                            onChange: ()=>{
-                                setChangePassword(!changePassword);
-                                setNewPassword('');
-                                setConfirmNewPassword('');
-                                setCurrentPassword('');
-                                setError('');
-                            }
-                        }, void 0, false, {
-                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 728,
-                            columnNumber: 9
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "text-sm font-medium",
-                            children: "Change password"
-                        }, void 0, false, {
-                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 739,
-                            columnNumber: 9
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 727,
-                    columnNumber: 7
-                }, this),
-                changePassword && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "border rounded p-3 bg-gray-50 dark:bg-gray-800",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                    className: "text-sm block mb-1",
-                                    children: "Current password"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 745,
-                                    columnNumber: 13
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                    type: "password",
-                                    placeholder: "Current password",
-                                    value: currentPassword,
-                                    onChange: (e)=>setCurrentPassword(e.target.value),
-                                    className: "border p-2 rounded w-full",
-                                    autoComplete: "current-password"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 746,
-                                    columnNumber: 13
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 744,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex gap-4 mt-3",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "w-1/2",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                            className: "text-sm block mb-1",
-                                            children: "New password"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                            lineNumber: 758,
-                                            columnNumber: 15
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                            type: "password",
-                                            placeholder: "New password",
-                                            value: newPassword,
-                                            onChange: (e)=>setNewPassword(e.target.value),
-                                            className: "border p-2 rounded w-full",
-                                            autoComplete: "new-password"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                            lineNumber: 759,
-                                            columnNumber: 15
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 757,
-                                    columnNumber: 13
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "w-1/2",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                            className: "text-sm block mb-1",
-                                            children: "Confirm new password"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                            lineNumber: 769,
-                                            columnNumber: 15
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                            type: "password",
-                                            placeholder: "Confirm new password",
-                                            value: confirmNewPassword,
-                                            onChange: (e)=>setConfirmNewPassword(e.target.value),
-                                            className: "border p-2 rounded w-full",
-                                            autoComplete: "new-password"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                            lineNumber: 770,
-                                            columnNumber: 15
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 768,
-                                    columnNumber: 13
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 756,
-                            columnNumber: 11
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 743,
-                    columnNumber: 9
-                }, this),
-                !changePassword && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "text-xs text-muted-foreground mt-2",
-                    children: "Leave password blank to keep existing password."
-                }, void 0, false, {
-                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 783,
-                    columnNumber: 9
-                }, this)
-            ]
-        }, void 0, true, {
-            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-            lineNumber: 726,
-            columnNumber: 5
-        }, this);
-    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "flex max-w-lg items-center justify-center mx-auto",
-        children: loadingUser ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "p-6 text-center",
-            children: "Loading…"
-        }, void 0, false, {
-            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-            lineNumber: 793,
-            columnNumber: 9
-        }, this) : fetchError ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "p-6 text-center",
-            children: [
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "text-red-600 mb-2",
-                    children: [
-                        "Failed to load user: ",
-                        fetchError
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 796,
-                    columnNumber: 11
-                }, this),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "flex gap-2 justify-center",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                            onClick: retryFetchUser,
-                            className: "px-3 py-2 bg-blue-600 text-white rounded",
-                            children: "Retry"
-                        }, void 0, false, {
-                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 798,
-                            columnNumber: 13
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                            onClick: handleCancel,
-                            className: "px-3 py-2 bg-gray-200 rounded",
-                            children: "Close"
-                        }, void 0, false, {
-                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 801,
+                            lineNumber: 350,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 797,
+                    lineNumber: 348,
                     columnNumber: 11
-                }, this)
-            ]
-        }, void 0, true, {
-            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-            lineNumber: 795,
-            columnNumber: 9
-        }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
-            onSubmit: handleSubmit,
-            className: "space-y-6 w-full",
-            children: [
-                (showOnly === 'all' || showOnly === 'profile') && renderProfileFields(),
-                (showOnly === 'all' || showOnly === 'username') && isEdit && renderUsernameChange(),
-                !isEdit && (showOnly === 'all' || showOnly === 'password') && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                }, this),
+                !hidePasswordFields && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "flex gap-4",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2929,8 +2384,8 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     children: "Password"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 817,
-                                    columnNumber: 17
+                                    lineNumber: 368,
+                                    columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                     type: "password",
@@ -2942,14 +2397,14 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     autoComplete: "new-password"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 818,
-                                    columnNumber: 17
+                                    lineNumber: 369,
+                                    columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 816,
-                            columnNumber: 15
+                            lineNumber: 367,
+                            columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "w-1/2",
@@ -2959,8 +2414,8 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     children: "Confirm Password"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 829,
-                                    columnNumber: 17
+                                    lineNumber: 380,
+                                    columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                     type: "password",
@@ -2972,37 +2427,36 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                                     autoComplete: "new-password"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 830,
-                                    columnNumber: 17
+                                    lineNumber: 381,
+                                    columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 828,
-                            columnNumber: 15
+                            lineNumber: 379,
+                            columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 815,
-                    columnNumber: 13
+                    lineNumber: 366,
+                    columnNumber: 11
                 }, this),
-                isEdit && (showOnly === 'all' || showOnly === 'password') && renderPasswordChange(),
                 error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                     className: "text-red-500 text-sm",
                     children: error
                 }, void 0, false, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 845,
-                    columnNumber: 21
+                    lineNumber: 393,
+                    columnNumber: 19
                 }, this),
                 success && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                     className: "text-green-600 text-sm",
                     children: success
                 }, void 0, false, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 846,
-                    columnNumber: 23
+                    lineNumber: 394,
+                    columnNumber: 21
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "flex gap-3",
@@ -3010,77 +2464,57 @@ function CreateOrEditUserForm({ mode = 'create', userId, initialData, onSuccess,
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                             type: "submit",
                             className: "w-1/2 bg-green-600 text-white py-2 rounded flex items-center justify-center",
-                            disabled: isSubmitting || checkingUsername || usernameInvalid || !isEdit && (showOnly === 'password' ? form.password !== form.confirmPassword : showOnly === 'all' && form.password !== form.confirmPassword) || isEdit && changePassword && newPassword !== confirmNewPassword || isEdit && changeUsername && newUsername !== confirmNewUsername,
-                            children: [
-                                isEdit ? showOnly === 'password' ? 'Change password' : showOnly === 'username' ? 'Change username' : 'Save changes' : 'Register',
-                                isSubmitting && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                    className: "ml-2 flex",
-                                    children: [
-                                        0,
-                                        1,
-                                        2
-                                    ].map((i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: `transition-all w-1.5 h-1.5 rounded-full mx-0.5 inline-block ${registerDot === i ? 'bg-white' : 'bg-green-900 opacity-40'}`
-                                        }, i, false, {
-                                            fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                            lineNumber: 876,
-                                            columnNumber: 21
-                                        }, this))
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                                    lineNumber: 874,
-                                    columnNumber: 17
-                                }, this)
-                            ]
-                        }, void 0, true, {
+                            disabled: isSubmitting,
+                            children: isEdit ? 'Save changes' : 'Register'
+                        }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 851,
-                            columnNumber: 13
+                            lineNumber: 396,
+                            columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                             type: "button",
                             onClick: handleCancel,
                             className: "w-1/2 bg-black text-white py-2 rounded",
-                            disabled: deleting,
+                            disabled: isSubmitting,
                             children: "Cancel"
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                            lineNumber: 887,
-                            columnNumber: 13
+                            lineNumber: 403,
+                            columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 849,
-                    columnNumber: 11
+                    lineNumber: 395,
+                    columnNumber: 9
                 }, this),
-                isEdit && (userId ?? initialRef.current?.id) && showOnly !== 'password' && showOnly !== 'username' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                isEdit && onDelete && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "flex flex-col gap-2",
                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                         type: "button",
-                        onClick: handleDelete,
+                        onClick: ()=>onDelete && userId && onDelete(userId),
                         className: "w-full bg-red-600 text-white py-2 rounded mt-2",
-                        disabled: deleting,
-                        children: deleting ? 'Deleting...' : 'Delete User'
+                        disabled: isSubmitting,
+                        children: showDeleteAccount ? 'Delete Account' : 'Delete User'
                     }, void 0, false, {
                         fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                        lineNumber: 902,
-                        columnNumber: 17
+                        lineNumber: 414,
+                        columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-                    lineNumber: 901,
-                    columnNumber: 15
+                    lineNumber: 413,
+                    columnNumber: 11
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-            lineNumber: 807,
-            columnNumber: 9
+            lineNumber: 286,
+            columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/app/(admin)/admin/dashboard/createUserForm.tsx",
-        lineNumber: 791,
+        lineNumber: 285,
         columnNumber: 5
     }, this);
 }
@@ -3111,17 +2545,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 ;
 ;
 ;
-/**
- * SettingsSection
- *
- * - Header: "User Settings" title (icon) only.
- * - Profile block moved BELOW the title and the About is displayed to the right
- *   of the avatar/name/username/email (no different background/foreground).
- * - Action buttons are below the profile block and are laid out left-to-right.
- * - Role editing remains inside the embedded CreateUserForm (no duplicate Role select here).
- *
- * Full functionality preserved: fetching full profile, homepage editor, edit modal with CreateUserForm.
- */ const ROLE_OPTIONS = [
+const ROLE_OPTIONS = [
     {
         value: 'super',
         label: 'Super'
@@ -3147,24 +2571,14 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
     const { data: session, status } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$react$2f$index$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useSession"])();
     const sessionUser = session?.user ?? null;
     const sessionUserId = sessionUser?.id ?? null;
-    // prefer explicit prop id, otherwise session id
+    const userRole = sessionUser?.role ?? '';
     const id = currentUserId ?? sessionUserId;
     const loading = status === 'loading';
     const canEdit = !!sessionUser?.id;
-    // full user profile fetched from API (may include email/firstName/lastName/role,image,about)
     const [currentUser, setCurrentUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
-    const [currentUserLoading, setCurrentUserLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [currentUserError, setCurrentUserError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
-    // prefer displayUser (fetched) falling back to sessionUser
     const displayUser = currentUser ?? sessionUser ?? null;
-    // Local state for Edit Profile modal
-    const [openLocalEditModal, setOpenLocalEditModal] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [forceChangePassword, setForceChangePassword] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [forceChangeUsername, setForceChangeUsername] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
-    // delete account
-    const [deleteAccountLoading, setDeleteAccountLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [deleteAccountError, setDeleteAccountError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
-    const [deleteAccountSuccess, setDeleteAccountSuccess] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
+    // Modal User Edit/Profile/Password
+    const [openEditModal, setOpenEditModal] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     // homepage content
     const [homeModalOpen, setHomeModalOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [homeLoading, setHomeLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
@@ -3172,7 +2586,6 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
     const [homeError, setHomeError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [homeSuccess, setHomeSuccess] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [homeData, setHomeData] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
-    // upload state (modal-only)
     const [uploading, setUploading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [uploadProgress, setUploadProgress] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [uploadError, setUploadError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
@@ -3182,22 +2595,10 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
     }, [
         homeData
     ]);
-    // Helper to open local edit modal (used by user settings controls)
-    function openLocalEdit(forPassword = false, forUsername = false) {
-        if (onOpenEdit) {
-            try {
-                onOpenEdit({
-                    id,
-                    forceChangePassword: forPassword,
-                    forceChangeUsername: forUsername
-                });
-            } catch  {}
-        }
-        setForceChangePassword(Boolean(forPassword));
-        setForceChangeUsername(Boolean(forUsername));
-        setOpenLocalEditModal(true);
-    }
-    // fetch full current user profile when we have an id
+    // Account Delete logic
+    const [deleteAccountLoading, setDeleteAccountLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [deleteAccountError, setDeleteAccountError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [deleteAccountSuccess, setDeleteAccountSuccess] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         let cancelled = false;
         async function loadUser() {
@@ -3205,23 +2606,15 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                 setCurrentUser(null);
                 return;
             }
-            setCurrentUserLoading(true);
-            setCurrentUserError(null);
             try {
                 const res = await fetch(`/api/users/${encodeURIComponent(String(id))}`, {
                     credentials: 'same-origin'
                 });
-                if (!res.ok) {
-                    const txt = await res.text().catch(()=>'');
-                    throw new Error(txt || `Failed to load user (${res.status})`);
-                }
+                if (!res.ok) throw new Error(await res.text());
                 const json = await res.json();
                 if (!cancelled) setCurrentUser(json);
-            } catch (err) {
-                console.error('Failed to fetch current user', err);
-                if (!cancelled) setCurrentUserError(err?.message || 'Failed to load user');
-            } finally{
-                if (!cancelled) setCurrentUserLoading(false);
+            } catch  {
+                if (!cancelled) setCurrentUser(null);
             }
         }
         loadUser();
@@ -3231,71 +2624,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
     }, [
         id
     ]);
-    // Use new endpoint base
     const ENDPOINT_BASE = '/api/homepage';
-    // Helper to extract last path segment (filename) without extension
-    function getVideoNameFromUrl(url) {
-        if (!url) return '';
-        try {
-            const pathPart = url.split('?')[0].split('#')[0];
-            const last = pathPart.split('/').filter(Boolean).pop() ?? '';
-            return last.replace(/\.[^/.]+$/, '');
-        } catch  {
-            return '';
-        }
-    }
-    // Field icons (smaller: h-6 w-6) with tonal primary colors
-    function getFieldIcon(label) {
-        const base = 'h-6 w-6';
-        switch(label){
-            case 'Vision':
-                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$star$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Star$3e$__["Star"], {
-                    className: `${base} text-primary-400`,
-                    "aria-hidden": true
-                }, void 0, false, {
-                    fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                    lineNumber: 157,
-                    columnNumber: 16
-                }, this);
-            case 'Mission':
-                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$target$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Target$3e$__["Target"], {
-                    className: `${base} text-primary-500`,
-                    "aria-hidden": true
-                }, void 0, false, {
-                    fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                    lineNumber: 159,
-                    columnNumber: 16
-                }, this);
-            case 'Focus':
-                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__["Search"], {
-                    className: `${base} text-primary-600`,
-                    "aria-hidden": true
-                }, void 0, false, {
-                    fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                    lineNumber: 161,
-                    columnNumber: 16
-                }, this);
-            case 'Core values':
-                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$gem$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Gem$3e$__["Gem"], {
-                    className: `${base} text-primary-700`,
-                    "aria-hidden": true
-                }, void 0, false, {
-                    fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                    lineNumber: 163,
-                    columnNumber: 16
-                }, this);
-            default:
-                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$star$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Star$3e$__["Star"], {
-                    className: `${base} text-primary-500`,
-                    "aria-hidden": true
-                }, void 0, false, {
-                    fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                    lineNumber: 165,
-                    columnNumber: 16
-                }, this);
-        }
-    }
-    // Fetch latest homepage content
     async function fetchHomeContent() {
         setHomeLoading(true);
         setHomeError(null);
@@ -3304,12 +2633,8 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                 credentials: 'same-origin'
             });
             if (!res.ok) {
-                if (res.status === 404) {
-                    setHomeData(null);
-                } else {
-                    const txt = await res.text().catch(()=>'');
-                    throw new Error(txt || `Failed to load homepage (${res.status})`);
-                }
+                if (res.status === 404) setHomeData(null);
+                else throw new Error(await res.text());
             } else {
                 const json = await res.json();
                 setHomeData({
@@ -3322,7 +2647,6 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                 });
             }
         } catch (err) {
-            console.error('fetchHomeContent error:', err);
             setHomeError(err?.message || 'Failed to load homepage content');
         } finally{
             setHomeLoading(false);
@@ -3335,7 +2659,6 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
         }
         document.addEventListener('visibilitychange', handleVisibility);
         return ()=>document.removeEventListener('visibilitychange', handleVisibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     function openHomeModal() {
         setHomeError(null);
@@ -3350,36 +2673,26 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
         setUploadError(null);
         setUploadProgress(null);
     }
-    // Upload helper: upload file to POST /api/homepage (multipart/form-data)
     async function uploadHeroVideoFile(file) {
         setUploadError(null);
-        const maxSizeBytes = 50 * 1024 * 1024; // 50MB
-        if (file.size > maxSizeBytes) {
-            throw new Error('File is too large. Max 50MB allowed.');
-        }
+        const maxSizeBytes = 50 * 1024 * 1024;
+        if (file.size > maxSizeBytes) throw new Error('File is too large. Max 50MB allowed.');
         const ext = file.name?.split('.').pop()?.toLowerCase() ?? '';
         if (![
             'mov',
             'mp4',
             'gif'
-        ].includes(ext)) {
-            throw new Error('Unsupported file extension. Allowed: .mov, .mp4, .gif');
-        }
-        if (!file.type.startsWith('video/') && ext !== 'gif') {
-            throw new Error('Unsupported file type. Please select a video or gif file.');
-        }
+        ].includes(ext)) throw new Error('Unsupported file extension. Allowed: .mov, .mp4, .gif');
+        if (!file.type.startsWith('video/') && ext !== 'gif') throw new Error('Unsupported file type. Please select a video or gif file.');
         setUploading(true);
         setUploadProgress(0);
         return await new Promise((resolve, reject)=>{
             const xhr = new XMLHttpRequest();
             xhr.open('POST', ENDPOINT_BASE, true);
             xhr.withCredentials = true;
-            xhr.timeout = 120000; // 2 minutes
+            xhr.timeout = 120000;
             xhr.upload.onprogress = (ev)=>{
-                if (ev.lengthComputable) {
-                    const pct = Math.round(ev.loaded / ev.total * 100);
-                    setUploadProgress(pct);
-                }
+                if (ev.lengthComputable) setUploadProgress(Math.round(ev.loaded / ev.total * 100));
             };
             xhr.onload = ()=>{
                 setUploading(false);
@@ -3396,35 +2709,20 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                     if (json?.url) return resolve(json.url);
                     if (json?.heroVideo) return resolve(json.heroVideo);
                     if (typeof respText === 'string' && respText.startsWith('/')) return resolve(respText);
-                    if (respText.trim().startsWith('<')) {
-                        console.error('Server returned HTML during upload:', respText.slice(0, 300));
-                        return reject(new Error('Server error during upload (returned HTML). Check server logs.'));
-                    }
                     return reject(new Error('Upload succeeded but server did not return a usable url.'));
                 } else {
-                    const serverMsg = json?.error || json?.message || respText || `Upload failed (${status})`;
-                    if (typeof serverMsg === 'string' && serverMsg.trim().startsWith('<')) {
-                        console.error('Server returned HTML on error:', serverMsg.slice(0, 400));
-                        return reject(new Error(`Upload failed (${status}). Server returned HTML — check server logs.`));
-                    }
-                    return reject(new Error(serverMsg));
+                    return reject(new Error(json?.error || json?.message || respText || `Upload failed (${status})`));
                 }
             };
             xhr.onerror = ()=>{
                 setUploading(false);
                 setUploadProgress(null);
-                const respText = xhr.responseText ?? '';
-                if (respText.trim().startsWith('<')) {
-                    console.error('XHR network error, server returned HTML:', respText.slice(0, 400));
-                    return reject(new Error('Network error during upload and server returned HTML. Check server logs.'));
-                }
-                const status = xhr.status || 0;
-                return reject(new Error(respText || `Network error during upload (status ${status}).`));
+                return reject(new Error('Network error during upload.'));
             };
             xhr.ontimeout = ()=>{
                 setUploading(false);
                 setUploadProgress(null);
-                reject(new Error('Upload timed out. Try a smaller file or check your connection.'));
+                reject(new Error('Upload timed out.'));
             };
             const form = new FormData();
             form.append('file', file, file.name);
@@ -3432,20 +2730,18 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
             xhr.send(form);
         });
     }
-    // Modal file input handler
     async function handleHeroFileChange(e) {
         setUploadError(null);
         const file = e.target.files?.[0];
         if (!file) return;
         try {
-            const url = await uploadHeroVideoFile(file);
+            const videoUrl = await uploadHeroVideoFile(file);
             setHomeData((d)=>({
                     ...d ?? {},
-                    heroVideo: url
+                    heroVideo: videoUrl
                 }));
             setUploadError(null);
         } catch (err) {
-            console.error('handleHeroFileChange error:', err);
             setUploadError(err?.message || 'Upload failed');
         } finally{
             try {
@@ -3453,7 +2749,6 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
             } catch  {}
         }
     }
-    // Save homepage content (create or update)
     async function saveHomeContent(e) {
         if (e) e.preventDefault();
         setHomeError(null);
@@ -3469,33 +2764,25 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
             setHomeError('All fields are required');
             return;
         }
-        const previous = homeDataRef.current;
-        setHomeData((d)=>({
-                ...d ?? {},
-                ...dataToSend
-            }));
         setHomeSaving(true);
         try {
             let res;
-            if (homeData?.id) {
-                res = await fetch(`${ENDPOINT_BASE}/${homeData.id}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'same-origin',
-                    body: JSON.stringify(dataToSend)
-                });
-            } else {
-                res = await fetch(ENDPOINT_BASE, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'same-origin',
-                    body: JSON.stringify(dataToSend)
-                });
-            }
+            if (homeData?.id) res = await fetch(`${ENDPOINT_BASE}/${homeData.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(dataToSend)
+            });
+            else res = await fetch(ENDPOINT_BASE, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(dataToSend)
+            });
             const text = await res.text().catch(()=>'');
             let payload = null;
             try {
@@ -3503,14 +2790,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
             } catch  {
                 payload = null;
             }
-            if (!res.ok) {
-                const serverMsg = payload?.error || payload?.message || text || `Save failed (${res.status})`;
-                if (typeof serverMsg === 'string' && serverMsg.trim().startsWith('<')) {
-                    console.error('Server returned HTML on save:', serverMsg.slice(0, 800));
-                    throw new Error('Server error during save (returned HTML). Check server logs.');
-                }
-                throw new Error(serverMsg);
-            }
+            if (!res.ok) throw new Error(payload?.error || payload?.message || text || 'Save failed');
             const body = payload ?? null;
             setHomeData({
                 id: body?.id ?? homeData?.id,
@@ -3521,19 +2801,11 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                 coreValues: body?.coreValues ?? dataToSend.coreValues
             });
             setHomeSuccess('Homepage content saved');
-            try {
-                window.dispatchEvent(new CustomEvent('homepage:updated', {
-                    detail: {
-                        homepage: body
-                    }
-                }));
-            } catch  {}
             setTimeout(()=>{
                 setHomeSuccess(null);
                 setHomeModalOpen(false);
             }, 900);
         } catch (err) {
-            console.error('saveHomeContent error:', err);
             setHomeError(err?.message || 'Failed to save homepage content');
             try {
                 fetchHomeContent();
@@ -3542,13 +2814,11 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
             setHomeSaving(false);
         }
     }
-    // Delete homepage content
     async function deleteHomeContent() {
         if (!homeData?.id) return;
         if (!confirm('Are you sure you want to delete the homepage content?')) return;
         setHomeSaving(true);
         setHomeError(null);
-        const previous = homeDataRef.current;
         setHomeData(null);
         try {
             const res = await fetch(`${ENDPOINT_BASE}/${homeData.id}`, {
@@ -3556,24 +2826,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                 credentials: 'same-origin'
             });
             const payload = await res.json().catch(()=>null);
-            if (!res.ok) {
-                setHomeData(previous ?? null);
-                throw new Error(payload && payload.error || `Delete failed (${res.status})`);
-            }
+            if (!res.ok) throw new Error(payload?.error || `Delete failed`);
             setHomeSuccess('Homepage content deleted');
-            try {
-                window.dispatchEvent(new CustomEvent('homepage:deleted', {
-                    detail: {
-                        id: homeData.id
-                    }
-                }));
-            } catch  {}
             setTimeout(()=>{
                 setHomeSuccess(null);
                 setHomeModalOpen(false);
             }, 900);
         } catch (err) {
-            console.error('deleteHomeContent error:', err);
             setHomeError(err?.message || 'Failed to delete homepage content');
             try {
                 fetchHomeContent();
@@ -3582,38 +2841,6 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
             setHomeSaving(false);
         }
     }
-    // createDeletionRequest helper (POST /api/messages)
-    async function createDeletionRequest(payload) {
-        const res = await fetch('/api/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify(payload)
-        });
-        const text = await res.text().catch(()=>'');
-        let json = null;
-        try {
-            json = text ? JSON.parse(text) : null;
-        } catch  {
-            json = null;
-        }
-        if (!res.ok) {
-            const serverMsg = json?.error || json?.message || text || `HTTP ${res.status}`;
-            const err = new Error(serverMsg);
-            err.server = {
-                status: res.status,
-                bodyText: text,
-                bodyJson: json
-            };
-            throw err;
-        }
-        return json ?? {
-            ok: true
-        };
-    }
-    // Delete account handler
     async function handleDeleteAccount() {
         setDeleteAccountError(null);
         setDeleteAccountSuccess(null);
@@ -3621,57 +2848,122 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
             setDeleteAccountError('No user id available.');
             return;
         }
-        if (!confirm('Are you sure you want to delete your account? This action is permanent?')) {
+        if (!confirm('Are you sure you want to delete your account? This action is permanent!')) {
             return;
         }
-        const role = (displayUser?.role ?? '').toString();
         setDeleteAccountLoading(true);
         try {
+            const role = displayUser?.role ?? sessionUser?.role ?? '';
             if (role === 'super') {
                 const res = await fetch(`/api/users/${id}`, {
                     method: 'DELETE',
                     credentials: 'same-origin'
                 });
-                if (!res.ok) {
-                    const txt = await res.text().catch(()=>'');
-                    throw new Error(txt || 'Failed to delete account');
-                }
+                if (!res.ok) throw new Error(await res.text() || 'Failed to delete account');
                 await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$react$2f$index$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["signOut"])({
                     callbackUrl: '/'
-                });
+                }); // End session and redirect
                 return;
-            } else {
-                const title = 'Account Deletion Request';
-                const content = `User ${displayUser?.firstName || displayUser?.lastName ? `${displayUser.firstName ?? ''} ${displayUser.lastName ?? ''}`.trim() : displayUser?.username ?? displayUser?.email} (id: ${id}) requests account deletion.`;
-                const payload = {
-                    title,
-                    content,
-                    messageCategory: 'request',
-                    allowResponses: true,
-                    senderEmail: displayUser?.email ?? undefined,
-                    meta: {
-                        type: 'account-deletion-request',
-                        requesterId: id
-                    }
-                };
-                await createDeletionRequest(payload);
-                setDeleteAccountSuccess('Deletion request submitted. Administrators have been notified.');
             }
+            // Others: submit a deletion request to admins
+            const payload = {
+                title: 'Account Deletion Request',
+                content: `User ${displayUser?.firstName || displayUser?.lastName ? `${displayUser.firstName ?? ''} ${displayUser.lastName ?? ''}`.trim() : displayUser?.username ?? displayUser?.email} (id: ${id}) requests account deletion.`,
+                messageCategory: 'request',
+                allowResponses: true,
+                senderEmail: displayUser?.email ?? undefined,
+                meta: {
+                    type: 'account-deletion-request',
+                    requesterId: id
+                }
+            };
+            const res = await fetch('/api/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+                const txt = await res.text().catch(()=>'');
+                throw new Error(txt || 'Failed to submit deletion request');
+            }
+            setDeleteAccountSuccess('Deletion request submitted. Administrators have been notified.');
         } catch (err) {
-            console.error('Delete account error:', err, err?.server);
             setDeleteAccountError(err?.message || 'Failed to process request');
         } finally{
             setDeleteAccountLoading(false);
         }
     }
-    // UI helpers
+    // Helpers
+    const getVideoNameFromUrl = (url)=>{
+        if (!url) return '';
+        try {
+            const pathPart = url.split('?')[0].split('#')[0];
+            const last = pathPart.split('/').filter(Boolean).pop() ?? '';
+            return last.replace(/\.[^/.]+$/, '');
+        } catch  {
+            return '';
+        }
+    };
+    const getFieldIcon = (label)=>{
+        const base = 'h-6 w-6';
+        switch(label){
+            case 'Vision':
+                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$star$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Star$3e$__["Star"], {
+                    className: `${base} text-primary-400`,
+                    "aria-hidden": true
+                }, void 0, false, {
+                    fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
+                    lineNumber: 392,
+                    columnNumber: 16
+                }, this);
+            case 'Mission':
+                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$target$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Target$3e$__["Target"], {
+                    className: `${base} text-primary-500`,
+                    "aria-hidden": true
+                }, void 0, false, {
+                    fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
+                    lineNumber: 394,
+                    columnNumber: 16
+                }, this);
+            case 'Focus':
+                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__["Search"], {
+                    className: `${base} text-primary-600`,
+                    "aria-hidden": true
+                }, void 0, false, {
+                    fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
+                    lineNumber: 396,
+                    columnNumber: 16
+                }, this);
+            case 'Core values':
+                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$gem$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Gem$3e$__["Gem"], {
+                    className: `${base} text-primary-700`,
+                    "aria-hidden": true
+                }, void 0, false, {
+                    fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
+                    lineNumber: 398,
+                    columnNumber: 16
+                }, this);
+            default:
+                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$star$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Star$3e$__["Star"], {
+                    className: `${base} text-primary-500`,
+                    "aria-hidden": true
+                }, void 0, false, {
+                    fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
+                    lineNumber: 400,
+                    columnNumber: 16
+                }, this);
+        }
+    };
     const renderRich = (text)=>{
         if (!text) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
             className: "text-muted-foreground",
             children: "— not set —"
         }, void 0, false, {
             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-            lineNumber: 554,
+            lineNumber: 404,
             columnNumber: 23
         }, this);
         const paragraphs = String(text).split(/\n\s*\n/);
@@ -3683,23 +2975,23 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 line,
                                 idx < p.split(/\n/).length - 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {}, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                    lineNumber: 563,
+                                    lineNumber: 413,
                                     columnNumber: 52
                                 }, this)
                             ]
                         }, idx, true, {
                             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                            lineNumber: 561,
+                            lineNumber: 411,
                             columnNumber: 15
                         }, this))
                 }, i, false, {
                     fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                    lineNumber: 559,
+                    lineNumber: 409,
                     columnNumber: 11
                 }, this))
         }, void 0, false, {
             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-            lineNumber: 557,
+            lineNumber: 407,
             columnNumber: 7
         }, this);
     };
@@ -3714,7 +3006,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                             children: getFieldIcon(label)
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                            lineNumber: 578,
+                            lineNumber: 427,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3722,13 +3014,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                             children: label
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                            lineNumber: 579,
+                            lineNumber: 428,
                             columnNumber: 9
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                    lineNumber: 577,
+                    lineNumber: 426,
                     columnNumber: 7
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3736,13 +3028,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                     children: renderRich(value)
                 }, void 0, false, {
                     fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                    lineNumber: 581,
+                    lineNumber: 430,
                     columnNumber: 7
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-            lineNumber: 576,
+            lineNumber: 425,
             columnNumber: 5
         }, this);
     const renderAvatar = (user)=>{
@@ -3750,37 +3042,31 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
         const first = user?.firstName ?? user?.name?.split(' ')?.[0] ?? '';
         const last = user?.lastName ?? (user?.name ? user.name.split(' ').slice(1).join(' ') : '');
         const initials = (first?.[0] ?? '') + ((last && last?.[0]) ?? user?.username?.[0] ?? '');
-        if (img) {
-            return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
-                src: img,
-                alt: `${first} ${last}`.trim() || user?.username || 'avatar',
-                className: "w-14 h-14 rounded-full object-cover"
-            }, void 0, false, {
-                fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                lineNumber: 593,
-                columnNumber: 9
-            }, this);
-        }
+        if (img) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
+            src: img,
+            alt: `${first} ${last}`.trim() || user?.username || 'avatar',
+            className: "w-14 h-14 rounded-full object-cover"
+        }, void 0, false, {
+            fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
+            lineNumber: 440,
+            columnNumber: 9
+        }, this);
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
             className: "w-14 h-14 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-lg font-semibold text-gray-700 dark:text-gray-100",
             children: initials.toUpperCase() || 'U'
         }, void 0, false, {
             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-            lineNumber: 601,
+            lineNumber: 447,
             columnNumber: 7
         }, this);
     };
     const fullName = ()=>{
         const u = displayUser;
         if (!u) return '';
-        if (u.firstName || u.lastName) {
-            return `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim();
-        }
+        if (u.firstName || u.lastName) return `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim();
         return u.name ?? u.username ?? '';
     };
-    const videoName = getVideoNameFromUrl(homeData?.heroVideo);
-    // whether current session user can manage roles
-    const canManageRoles = sessionUser?.role === 'super' || sessionUser?.role === 'admin';
+    // --- MAIN RENDER ---
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "w-full max-w-4xl mx-auto space-y-6",
         children: [
@@ -3795,7 +3081,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 "aria-hidden": true
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 626,
+                                lineNumber: 465,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -3803,13 +3089,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 children: "Home Page Content"
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 627,
+                                lineNumber: 466,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 625,
+                        lineNumber: 464,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3817,7 +3103,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                         children: 'Preview homepage content. Click "Edit homepage content" to upload a hero video or modify fields.'
                     }, void 0, false, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 630,
+                        lineNumber: 468,
                         columnNumber: 9
                     }, this),
                     homeLoading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3825,14 +3111,14 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                         children: "Loading homepage content…"
                     }, void 0, false, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 636,
+                        lineNumber: 473,
                         columnNumber: 11
                     }, this) : homeError ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "text-sm text-red-500",
                         children: homeError
                     }, void 0, false, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 638,
+                        lineNumber: 475,
                         columnNumber: 11
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "grid md:grid-cols-2 gap-4",
@@ -3844,7 +3130,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                         children: "Hero video URL / preview"
                                     }, void 0, false, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 642,
+                                        lineNumber: 479,
                                         columnNumber: 15
                                     }, this),
                                     homeData?.heroVideo ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3858,14 +3144,14 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                         src: homeData.heroVideo
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                        lineNumber: 646,
+                                                        lineNumber: 483,
                                                         columnNumber: 21
                                                     }, this),
                                                     "Your browser does not support the video tag."
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 645,
+                                                lineNumber: 482,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3873,34 +3159,34 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: homeData.heroVideo
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 649,
+                                                lineNumber: 486,
                                                 columnNumber: 19
                                             }, this),
-                                            videoName ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            getVideoNameFromUrl(homeData.heroVideo) ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "text-sm font-medium mt-1",
-                                                children: videoName
+                                                children: getVideoNameFromUrl(homeData.heroVideo)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 653,
-                                                columnNumber: 32
+                                                lineNumber: 490,
+                                                columnNumber: 21
                                             }, this) : null
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 644,
+                                        lineNumber: 481,
                                         columnNumber: 17
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "mb-3 text-sm text-muted-foreground",
                                         children: "No hero video set."
                                     }, void 0, false, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 656,
+                                        lineNumber: 496,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 641,
+                                lineNumber: 478,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3912,13 +3198,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 660,
+                                lineNumber: 499,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 640,
+                        lineNumber: 477,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3931,7 +3217,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                     children: "Edit homepage content"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                    lineNumber: 672,
+                                    lineNumber: 510,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -3941,7 +3227,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                     children: "Refresh"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                    lineNumber: 675,
+                                    lineNumber: 513,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -3951,7 +3237,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                     children: homeSaving ? 'Saving…' : 'Save homepage'
                                 }, void 0, false, {
                                     fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                    lineNumber: 682,
+                                    lineNumber: 520,
                                     columnNumber: 15
                                 }, this)
                             ]
@@ -3962,18 +3248,18 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                             children: "Refresh"
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                            lineNumber: 691,
+                            lineNumber: 529,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 669,
+                        lineNumber: 507,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                lineNumber: 624,
+                lineNumber: 463,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -3987,7 +3273,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 "aria-hidden": true
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 705,
+                                lineNumber: 543,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -3995,13 +3281,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 children: "User Settings"
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 706,
+                                lineNumber: 544,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 704,
+                        lineNumber: 542,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4012,7 +3298,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 children: renderAvatar(displayUser)
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 711,
+                                lineNumber: 547,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4023,7 +3309,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                         children: fullName() || 'You'
                                     }, void 0, false, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 713,
+                                        lineNumber: 549,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4037,20 +3323,20 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 715,
+                                                lineNumber: 551,
                                                 columnNumber: 40
                                             }, this) : null,
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                 children: displayUser?.email ?? 'no email'
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 716,
+                                                lineNumber: 552,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 714,
+                                        lineNumber: 550,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4058,19 +3344,19 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                         children: displayUser?.about && String(displayUser.about).trim().length > 0 ? displayUser.about : 'None'
                                     }, void 0, false, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 720,
+                                        lineNumber: 554,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 712,
+                                lineNumber: 548,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 710,
+                        lineNumber: 546,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4078,55 +3364,45 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                         children: "Edit your profile or change your password. The form opens in a modal."
                     }, void 0, false, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 728,
+                        lineNumber: 561,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex flex-wrap items-center gap-2",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
-                                onClick: ()=>openLocalEdit(false, false),
+                                onClick: ()=>setOpenEditModal('profile'),
                                 disabled: !id || loading,
                                 children: "Edit my profile"
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 734,
+                                lineNumber: 565,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
-                                onClick: ()=>openLocalEdit(true, false),
+                                onClick: ()=>setOpenEditModal('password'),
                                 disabled: !id || loading,
                                 variant: "outline",
                                 children: "Change my password"
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 737,
-                                columnNumber: 11
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
-                                onClick: ()=>openLocalEdit(false, true),
-                                disabled: !id || loading,
-                                variant: "outline",
-                                children: "Change my username"
-                            }, void 0, false, {
-                                fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 744,
+                                lineNumber: 568,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
                                 onClick: handleDeleteAccount,
                                 disabled: !id || deleteAccountLoading,
-                                className: "bg-pink-700 text-white hover:bg-pink-800",
+                                className: "bg-pink-900 text-white hover:bg-pink-800",
                                 children: deleteAccountLoading ? 'Processing…' : 'Delete account'
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 751,
+                                lineNumber: 575,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 733,
+                        lineNumber: 564,
                         columnNumber: 9
                     }, this),
                     deleteAccountError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4134,7 +3410,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                         children: deleteAccountError
                     }, void 0, false, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 761,
+                        lineNumber: 584,
                         columnNumber: 11
                     }, this),
                     deleteAccountSuccess && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4142,100 +3418,94 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                         children: deleteAccountSuccess
                     }, void 0, false, {
                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                        lineNumber: 764,
+                        lineNumber: 587,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                lineNumber: 703,
+                lineNumber: 541,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Dialog"], {
-                open: openLocalEditModal,
-                onOpenChange: (val)=>!val && setOpenLocalEditModal(false),
+                open: openEditModal !== null,
+                onOpenChange: (val)=>!val && setOpenEditModal(null),
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogContent"], {
                     className: "max-w-3xl w-full max-h-[85vh] p-0 sm:rounded-lg overflow-hidden",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogHeader"], {
                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogTitle"], {
                                 className: "px-4 py-3 border-b",
-                                children: "Edit profile"
+                                children: openEditModal === 'profile' ? 'Edit Profile' : openEditModal === 'password' ? 'Change Password' : ''
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 775,
+                                lineNumber: 595,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                            lineNumber: 774,
+                            lineNumber: 594,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "p-4 overflow-y-auto max-h-[72vh] space-y-4",
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                children: id ? // eslint-disable-next-line @typescript-eslint/no-var-requires
-                                __turbopack_context__.r("[project]/app/(admin)/admin/dashboard/createUserForm.tsx [app-ssr] (ecmascript)").default ? // @ts-ignore - require used to avoid client-side import issues in some setups
-                                /*#__PURE__*/ __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].createElement(__turbopack_context__.r("[project]/app/(admin)/admin/dashboard/createUserForm.tsx [app-ssr] (ecmascript)").default, {
-                                    mode: 'edit',
-                                    userId: String(id),
-                                    forceChangePassword,
-                                    forceChangeUsername,
-                                    onSuccess: async ()=>{
-                                        setOpenLocalEditModal(false);
-                                        setForceChangePassword(false);
-                                        setForceChangeUsername(false);
-                                        // refresh current user profile after successful edit
-                                        try {
-                                            const r = await fetch(`/api/users/${id}`, {
-                                                credentials: 'same-origin'
-                                            });
-                                            if (r.ok) {
-                                                const j = await r.json();
-                                                setCurrentUser(j);
-                                            }
-                                        } catch  {}
-                                    },
-                                    onCancel: ()=>{
-                                        setOpenLocalEditModal(false);
-                                        setForceChangePassword(false);
-                                        setForceChangeUsername(false);
-                                    },
-                                    canManageRoles
-                                }) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "text-sm text-red-500",
-                                    children: "CreateUserForm not available"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                    lineNumber: 813,
-                                    columnNumber: 19
-                                }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "text-sm text-red-600",
-                                    children: "No user id available for editing."
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                    lineNumber: 816,
-                                    columnNumber: 17
-                                }, this)
+                            children: id && (__turbopack_context__.r("[project]/app/(admin)/admin/dashboard/createUserForm.tsx [app-ssr] (ecmascript)").default ? /*#__PURE__*/ __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].createElement(__turbopack_context__.r("[project]/app/(admin)/admin/dashboard/createUserForm.tsx [app-ssr] (ecmascript)").default, openEditModal === 'profile' ? {
+                                mode: 'edit',
+                                userId: String(id),
+                                hideUsernameField: true,
+                                hidePasswordFields: true,
+                                hideRoleField: true,
+                                onSuccess: async ()=>{
+                                    setOpenEditModal(null);
+                                    try {
+                                        const r = await fetch(`/api/users/${id}`, {
+                                            credentials: 'same-origin'
+                                        });
+                                        if (r.ok) setCurrentUser(await r.json());
+                                    } catch  {}
+                                },
+                                onCancel: ()=>setOpenEditModal(null)
+                            } : {
+                                mode: 'edit',
+                                userId: String(id),
+                                onlyPasswordFields: true,
+                                requireCurrentPassword: userRole !== 'super',
+                                showDeleteAccount: true,
+                                onSuccess: async ()=>{
+                                    setOpenEditModal(null);
+                                    try {
+                                        const r = await fetch(`/api/users/${id}`, {
+                                            credentials: 'same-origin'
+                                        });
+                                        if (r.ok) setCurrentUser(await r.json());
+                                    } catch  {}
+                                },
+                                onCancel: ()=>setOpenEditModal(null),
+                                onDelete: async ()=>{
+                                    await handleDeleteAccount();
+                                }
+                            }) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "text-sm text-red-500",
+                                children: "CreateUserForm not available"
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 779,
-                                columnNumber: 13
-                            }, this)
+                                lineNumber: 648,
+                                columnNumber: 17
+                            }, this))
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                            lineNumber: 778,
+                            lineNumber: 603,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                    lineNumber: 773,
+                    lineNumber: 593,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                lineNumber: 769,
+                lineNumber: 592,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -4250,12 +3520,12 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 children: homeData?.id ? 'Edit homepage content' : 'Create homepage content'
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 827,
+                                lineNumber: 657,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                            lineNumber: 826,
+                            lineNumber: 656,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4265,7 +3535,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                 children: "Loading…"
                             }, void 0, false, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 834,
+                                lineNumber: 663,
                                 columnNumber: 15
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
                                 onSubmit: saveHomeContent,
@@ -4276,7 +3546,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                         children: homeError
                                     }, void 0, false, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 837,
+                                        lineNumber: 666,
                                         columnNumber: 31
                                     }, this),
                                     homeSuccess && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4284,7 +3554,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                         children: homeSuccess
                                     }, void 0, false, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 838,
+                                        lineNumber: 667,
                                         columnNumber: 33
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4294,7 +3564,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Hero video URL"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 841,
+                                                lineNumber: 669,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -4308,13 +3578,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 placeholder: "https://... (or upload a file below)"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 842,
+                                                lineNumber: 670,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 840,
+                                        lineNumber: 668,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4324,7 +3594,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Upload hero video (.mov, .mp4, .gif)"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 855,
+                                                lineNumber: 681,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4338,7 +3608,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                         className: "text-sm"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                        lineNumber: 857,
+                                                        lineNumber: 683,
                                                         columnNumber: 21
                                                     }, this),
                                                     uploading && uploadProgress !== null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4350,33 +3620,21 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                        lineNumber: 865,
+                                                        lineNumber: 691,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 856,
+                                                lineNumber: 682,
                                                 columnNumber: 19
-                                            }, this),
-                                            uploading && uploadProgress !== null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "text-sm text-muted-foreground",
-                                                children: [
-                                                    "Uploading: ",
-                                                    uploadProgress,
-                                                    "%"
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 871,
-                                                columnNumber: 21
                                             }, this),
                                             uploadError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "text-sm text-red-500 mt-1",
                                                 children: uploadError
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 875,
+                                                lineNumber: 696,
                                                 columnNumber: 35
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4384,13 +3642,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Max file size: 50MB."
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 876,
+                                                lineNumber: 697,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 854,
+                                        lineNumber: 680,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4400,7 +3658,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Vision"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 880,
+                                                lineNumber: 700,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -4412,13 +3670,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 className: "w-full border p-2 rounded h-24"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 881,
+                                                lineNumber: 701,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 879,
+                                        lineNumber: 699,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4428,7 +3686,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Mission"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 889,
+                                                lineNumber: 708,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -4440,13 +3698,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 className: "w-full border p-2 rounded h-24"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 890,
+                                                lineNumber: 709,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 888,
+                                        lineNumber: 707,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4456,7 +3714,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Focus"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 900,
+                                                lineNumber: 718,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -4468,13 +3726,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 className: "w-full border p-2 rounded h-20"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 901,
+                                                lineNumber: 719,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 899,
+                                        lineNumber: 717,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4484,7 +3742,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Core values (comma separated)"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 909,
+                                                lineNumber: 726,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -4498,13 +3756,13 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 placeholder: "Integrity, Inclusion, ... "
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 910,
+                                                lineNumber: 727,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 908,
+                                        lineNumber: 725,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4516,7 +3774,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: homeSaving ? 'Saving…' : homeData?.id ? 'Save changes' : 'Create content'
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 922,
+                                                lineNumber: 738,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -4526,7 +3784,7 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Cancel"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 925,
+                                                lineNumber: 741,
                                                 columnNumber: 19
                                             }, this),
                                             homeData?.id && canEdit && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -4536,41 +3794,41 @@ function SettingsSection({ currentUserId, onOpenEdit }) {
                                                 children: "Delete"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                                lineNumber: 929,
+                                                lineNumber: 745,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                        lineNumber: 921,
+                                        lineNumber: 737,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                                lineNumber: 836,
+                                lineNumber: 665,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                            lineNumber: 832,
+                            lineNumber: 661,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                    lineNumber: 825,
+                    lineNumber: 655,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-                lineNumber: 824,
+                lineNumber: 654,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/(admin)/admin/dashboard/components/sections/SettingsSection.tsx",
-        lineNumber: 622,
+        lineNumber: 461,
         columnNumber: 5
     }, this);
 }

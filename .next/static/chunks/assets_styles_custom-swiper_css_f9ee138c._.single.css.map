@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["turbopack:///[project]/assets/styles/custom-swiper.css"],"sourcesContent":["/* custom-swiper.css */\r\n.swiper-button-next,\r\n.swiper-button-prev {\r\n  color: #9f004d;\r\n  font-weight: bold;\r\n  transition: transform 0.2s;\r\n}\r\n\r\n.swiper-button-next:hover,\r\n.swiper-button-prev:hover {\r\n  transform: scale(1.15);\r\n}\r\n\r\n.swiper-pagination-bullet {\r\n  background-color: #e2e2e2;\r\n  opacity: 1;\r\n}\r\n\r\n.swiper-pagination-bullet-active {\r\n  background-color: #9f004d;\r\n}\r\n"],"names":[],"mappings":"AACA;;;;;;AAOA;;;;AAKA;;;;;AAKA"}}]
-}

@@ -15,12 +15,12 @@ async function main() {
     update: {
       // keep password updated for seed runs (optional)
       password: hashedPassword,
-      email: 'super@gogirlsict.org',
-      firstName: 'Admin',
-      lastName: 'Super',
+      email: 'evayayir@gogirlsict.org',
+      firstName: 'Eva',
+      lastName: 'Yayi',
       image: '/assets/images/users/evayayi.jpg',
-      about: 'Super Admin User',
-      role: 'super',
+      about: 'Co-founder and Admin User',
+      role: 'admin',
       lastLogin: new Date(),
       loginStatus: 'active',
       failedLoginCount: 0,
