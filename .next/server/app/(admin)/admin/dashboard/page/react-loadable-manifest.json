@@ -7,7 +7,7 @@
       "static/chunks/node_modules_@popperjs_core_lib_e7041586._.js",
       "static/chunks/node_modules_7e0656ce._.js",
       "static/chunks/components_editor_tiptap-json-viewer_tsx_944cf97d._.js",
-      "static/chunks/components_editor_tiptap-json-viewer_tsx_994f44d2._.js"
+      "static/chunks/components_editor_tiptap-json-viewer_tsx_154b1fb0._.js"
     ]
   },
   "[project]/components/editor/editor-client.tsx [app-client] (ecmascript, next/dynamic entry)": {
@@ -18,7 +18,7 @@
       "static/chunks/node_modules_@popperjs_core_lib_e7041586._.js",
       "static/chunks/node_modules_7e0656ce._.js",
       "static/chunks/components_editor_editor-client_tsx_777b267e._.js",
-      "static/chunks/components_editor_editor-client_tsx_994f44d2._.js"
+      "static/chunks/components_editor_editor-client_tsx_154b1fb0._.js"
     ]
   }
 }
