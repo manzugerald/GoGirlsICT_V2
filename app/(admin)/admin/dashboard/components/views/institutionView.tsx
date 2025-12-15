@@ -52,6 +52,11 @@ export default function InstitutionView({
               </span>
             ) : null}
           </div>
+          {data.institutionType && (
+            <div className="text-xs text-muted-foreground mt-1 capitalize">
+              Type: {data.institutionType.replace(/_/g, ' ')}
+            </div>
+          )}
         </div>
 
         <div className="text-sm text-gray-500 text-right">
@@ -103,7 +108,10 @@ export default function InstitutionView({
             {data.locations.map((loc) => (
               <li key={String(loc.id) || `${loc.locationName}`}>
                 {loc.locationName ?? '-'}{' '}
-                {loc.latitude !== undefined && loc.longitude !== undefined
+                {loc.latitude !== undefined &&
+                loc.latitude !== null &&
+                loc.longitude !== undefined &&
+                loc.longitude !== null
                   ? `· (${loc.latitude}, ${loc.longitude})`
                   : null}
               </li>
