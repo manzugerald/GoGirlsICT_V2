@@ -49,7 +49,7 @@ import BeneficiaryView from './components/views/beneficiaryView';
 import MessageView from './components/views/messageView';
 import ResponseView from './components/views/responseView';
 import UserView from './components/views/userView';
-import ProjectView from './components/views/projectView';
+import ProjectView from './components/views/projectViewWWWW';
 import ReportView from './components/views/reportView';
 import EventView from './components/views/eventView';
 import InstitutionView from './components/views/institutionView';
