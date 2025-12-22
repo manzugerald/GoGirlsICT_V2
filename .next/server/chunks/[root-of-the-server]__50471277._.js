@@ -8878,59 +8878,104 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$db$2f$prisma$2e$ts__$5b$app$
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next-auth/index.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$api$2f$auth$2f5b2e2e2e$nextauth$5d2f$route$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/app/api/auth/[...nextauth]/route.ts [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/utils.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$utils$2f$redis$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/utils/redis.ts [app-route] (ecmascript)");
 ;
 ;
 ;
 ;
 ;
-;
+// Make Redis usage optional (can be disabled with DISABLE_REDIS=1)
+let redis = null;
+if (process.env.DISABLE_REDIS !== '1') {
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        redis = __turbopack_context__.r("[project]/utils/redis.ts [app-route] (ecmascript)").redis;
+    } catch (e) {
+        // If import fails, continue without redis
+        console.warn('[/api/reports] redis not available, continuing without cache', e);
+        redis = null;
+    }
+}
 const REPORTS_CACHE_KEY = 'reports:all';
 const REPORTS_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
-async function GET() {
-    try {
-        // Try Redis cache first
-        const cached = await __TURBOPACK__imported__module__$5b$project$5d2f$utils$2f$redis$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redis"].get(REPORTS_CACHE_KEY);
-        if (cached) {
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(JSON.parse(cached));
-        }
-        const reports = await __TURBOPACK__imported__module__$5b$project$5d2f$db$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].report.findMany({
-            orderBy: {
-                createdAt: 'asc'
+async function fetchReportsFromDb() {
+    return __TURBOPACK__imported__module__$5b$project$5d2f$db$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].report.findMany({
+        orderBy: {
+            createdAt: 'asc'
+        },
+        include: {
+            createdBy: {
+                select: {
+                    firstName: true,
+                    lastName: true,
+                    image: true
+                }
             },
-            include: {
-                createdBy: {
-                    select: {
-                        firstName: true,
-                        lastName: true,
-                        image: true
-                    }
-                },
-                approvedBy: {
-                    select: {
-                        firstName: true,
-                        lastName: true
-                    }
-                },
-                updatedBy: {
-                    select: {
-                        firstName: true,
-                        lastName: true
-                    }
-                },
-                project: {
-                    select: {
-                        title: true,
-                        id: true
-                    }
+            approvedBy: {
+                select: {
+                    firstName: true,
+                    lastName: true
+                }
+            },
+            updatedBy: {
+                select: {
+                    firstName: true,
+                    lastName: true
+                }
+            },
+            project: {
+                select: {
+                    title: true,
+                    id: true
                 }
             }
-        });
-        // Cache the result
-        await __TURBOPACK__imported__module__$5b$project$5d2f$utils$2f$redis$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redis"].set(REPORTS_CACHE_KEY, JSON.stringify(reports), 'EX', REPORTS_CACHE_TTL);
+        }
+    });
+}
+async function GET(req) {
+    try {
+        const url = new URL(req.url);
+        const noCache = url.searchParams.get('noCache');
+        // Try Redis cache unless disabled or bypass requested
+        if (redis && !noCache) {
+            try {
+                const cached = await redis.get(REPORTS_CACHE_KEY);
+                if (cached) {
+                    try {
+                        const parsed = JSON.parse(cached);
+                        // If cached contains a non-empty array, return it
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            console.log('[/api/reports] returning cached reports count=', parsed.length);
+                            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(parsed);
+                        }
+                        // If cached is empty array, fall through to DB fetch and refresh cache
+                        console.log('[/api/reports] cached reports empty — refreshing from DB');
+                    } catch (parseErr) {
+                        console.warn('[/api/reports] failed to parse cached value, will fetch DB', parseErr);
+                    }
+                } else {
+                    console.log('[/api/reports] no cached value found');
+                }
+            } catch (redisErr) {
+                console.warn('[/api/reports] redis.get error, will fetch DB', redisErr);
+            }
+        } else {
+            if (!redis) console.log('[/api/reports] redis disabled, fetching DB');
+            else console.log('[/api/reports] bypassing cache (noCache=1)');
+        }
+        // Fetch from DB
+        const reports = await fetchReportsFromDb();
+        console.log('[/api/reports] fetched from DB, count=', Array.isArray(reports) ? reports.length : 0);
+        // Update cache (best-effort)
+        if (redis) {
+            try {
+                await redis.set(REPORTS_CACHE_KEY, JSON.stringify(reports), 'EX', REPORTS_CACHE_TTL);
+            } catch (cacheErr) {
+                console.warn('[/api/reports] redis.set error', cacheErr);
+            }
+        }
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(reports);
     } catch (err) {
-        console.error('Error fetching reports:', err);
+        console.error('[/api/reports] Error fetching reports:', err);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             error: 'Internal Server Error'
         }, {
@@ -8987,11 +9032,18 @@ async function POST(req) {
                 projectId: projectId ?? null
             }
         });
-        // Invalidate cache after write
-        await __TURBOPACK__imported__module__$5b$project$5d2f$utils$2f$redis$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redis"].del(REPORTS_CACHE_KEY);
+        // Invalidate cache after write (if redis available)
+        if (redis) {
+            try {
+                await redis.del(REPORTS_CACHE_KEY);
+                console.log('[/api/reports] cleared reports cache after create');
+            } catch (cacheErr) {
+                console.warn('[/api/reports] failed to delete cache after create', cacheErr);
+            }
+        }
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(report);
     } catch (error) {
-        console.error('Failed to create report:', error);
+        console.error('[/api/reports] Failed to create report:', error);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             error: 'Internal Server Error'
         }, {

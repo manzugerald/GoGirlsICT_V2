@@ -3,42 +3,94 @@ import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { slugify } from '@/lib/utils';
-import { redis } from '@/utils/redis';
+
+// Make Redis usage optional (can be disabled with DISABLE_REDIS=1)
+let redis: any = null;
+if (process.env.DISABLE_REDIS !== '1') {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    redis = require('@/utils/redis').redis;
+  } catch (e) {
+    // If import fails, continue without redis
+    console.warn('[/api/reports] redis not available, continuing without cache', e);
+    redis = null;
+  }
+}
 
 const REPORTS_CACHE_KEY = 'reports:all';
 const REPORTS_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
 
+async function fetchReportsFromDb() {
+  return prisma.report.findMany({
+    orderBy: { createdAt: 'asc' },
+    include: {
+      createdBy: {
+        select: {
+          firstName: true,
+          lastName: true,
+          image: true,
+        },
+      },
+      approvedBy: { select: { firstName: true, lastName: true } },
+      updatedBy: { select: { firstName: true, lastName: true } },
+      project: { select: { title: true, id: true } },
+    },
+  });
+}
+
 // Handle GET (fetch all reports) -- PUBLIC
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    // Try Redis cache first
-    const cached = await redis.get(REPORTS_CACHE_KEY);
-    if (cached) {
-      return NextResponse.json(JSON.parse(cached));
+    const url = new URL(req.url);
+    const noCache = url.searchParams.get('noCache');
+
+    // Try Redis cache unless disabled or bypass requested
+    if (redis && !noCache) {
+      try {
+        const cached = await redis.get(REPORTS_CACHE_KEY);
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            // If cached contains a non-empty array, return it
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              console.log('[/api/reports] returning cached reports count=', parsed.length);
+              return NextResponse.json(parsed);
+            }
+            // If cached is empty array, fall through to DB fetch and refresh cache
+            console.log('[/api/reports] cached reports empty — refreshing from DB');
+          } catch (parseErr) {
+            console.warn('[/api/reports] failed to parse cached value, will fetch DB', parseErr);
+          }
+        } else {
+          console.log('[/api/reports] no cached value found');
+        }
+      } catch (redisErr) {
+        console.warn('[/api/reports] redis.get error, will fetch DB', redisErr);
+      }
+    } else {
+      if (!redis) console.log('[/api/reports] redis disabled, fetching DB');
+      else console.log('[/api/reports] bypassing cache (noCache=1)');
     }
 
-    const reports = await prisma.report.findMany({
-      orderBy: { createdAt: 'asc' },
-      include: {
-        createdBy: {
-          select: {
-            firstName: true,
-            lastName: true,
-            image: true,
-          },
-        },
-        approvedBy: { select: { firstName: true, lastName: true } },
-        updatedBy: { select: { firstName: true, lastName: true } },
-        project: { select: { title: true, id: true } },
-      },
-    });
+    // Fetch from DB
+    const reports = await fetchReportsFromDb();
+    console.log(
+      '[/api/reports] fetched from DB, count=',
+      Array.isArray(reports) ? reports.length : 0
+    );
 
-    // Cache the result
-    await redis.set(REPORTS_CACHE_KEY, JSON.stringify(reports), 'EX', REPORTS_CACHE_TTL);
+    // Update cache (best-effort)
+    if (redis) {
+      try {
+        await redis.set(REPORTS_CACHE_KEY, JSON.stringify(reports), 'EX', REPORTS_CACHE_TTL);
+      } catch (cacheErr) {
+        console.warn('[/api/reports] redis.set error', cacheErr);
+      }
+    }
 
     return NextResponse.json(reports);
   } catch (err) {
-    console.error('Error fetching reports:', err);
+    console.error('[/api/reports] Error fetching reports:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
@@ -95,12 +147,19 @@ export async function POST(req: Request) {
       },
     });
 
-    // Invalidate cache after write
-    await redis.del(REPORTS_CACHE_KEY);
+    // Invalidate cache after write (if redis available)
+    if (redis) {
+      try {
+        await redis.del(REPORTS_CACHE_KEY);
+        console.log('[/api/reports] cleared reports cache after create');
+      } catch (cacheErr) {
+        console.warn('[/api/reports] failed to delete cache after create', cacheErr);
+      }
+    }
 
     return NextResponse.json(report);
   } catch (error) {
-    console.error('Failed to create report:', error);
+    console.error('[/api/reports] Failed to create report:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
