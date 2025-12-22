@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import '@/assets/styles/tiptap-editor.css';
 
+// Load your Tiptap JSON viewer/editor (client-only)
 const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-viewer'), {
   ssr: false,
 });
@@ -28,6 +29,7 @@ type ProjectType = {
 
 /**
  * ProjectView - display a single project's details inside a modal/dialog
+ * Uses the TiptapJsonViewer to render tiptap JSON content when available.
  */
 export default function ProjectView({
   data,
@@ -38,20 +40,25 @@ export default function ProjectView({
 }) {
   if (!data) return null;
 
-  const renderContent = (c: unknown) => {
-    if (c === undefined || c === null) return <span className="text-sm text-muted">-</span>;
-    if (typeof c === 'object') {
-      return (
-        <div className="rounded border bg-white dark:bg-gray-900 p-3">
-          <TiptapJsonViewer content={c} className="tiptap tiptap-view-only" />
-        </div>
-      );
-    }
-    return <div className="whitespace-pre-line">{String(c)}</div>;
-  };
-
   const created = data.createdAt ? new Date(data.createdAt).toLocaleString() : '-';
   const updated = data.updatedAt ? new Date(data.updatedAt).toLocaleString() : '-';
+
+  // Determine if content is tiptap JSON (object) or a plain string
+  const isTiptapJson =
+    data.content !== undefined && data.content !== null && typeof data.content === 'object';
+
+  // If content is a string, attempt to parse it as JSON (in case it's serialized tiptap JSON)
+  let parsedContent: any = null;
+  if (!isTiptapJson && typeof data.content === 'string') {
+    try {
+      const maybe = JSON.parse(data.content);
+      if (maybe && typeof maybe === 'object') {
+        parsedContent = maybe;
+      }
+    } catch {
+      parsedContent = null;
+    }
+  }
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4 space-y-4">
@@ -77,7 +84,23 @@ export default function ProjectView({
 
       <div>
         <div className="text-sm text-gray-500">Content</div>
-        <div className="mt-2">{renderContent(data.content)}</div>
+
+        <div className="mt-2">
+          {isTiptapJson || parsedContent ? (
+            // Use your Tiptap JSON viewer to render editor content (read-only)
+            <div className="rounded border bg-white dark:bg-gray-900 p-3">
+              <TiptapJsonViewer
+                content={isTiptapJson ? data.content : parsedContent}
+                className="tiptap tiptap-view-only"
+              />
+            </div>
+          ) : data.content ? (
+            // Plain string content (not JSON) — render as text
+            <div className="whitespace-pre-line">{String(data.content)}</div>
+          ) : (
+            <div className="text-sm text-muted">No content</div>
+          )}
+        </div>
       </div>
 
       {Array.isArray(data.images) && data.images.length > 0 && (

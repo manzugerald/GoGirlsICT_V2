@@ -8865,42 +8865,75 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$utils$2f$redis$2e$ts__$5b$ap
 ;
 const PROJECTS_CACHE_KEY = 'projects:all';
 const PROJECTS_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
-async function GET() {
-    try {
-        // Try Redis cache first
-        const cached = await __TURBOPACK__imported__module__$5b$project$5d2f$utils$2f$redis$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redis"].get(PROJECTS_CACHE_KEY);
-        if (cached) {
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(JSON.parse(cached));
-        }
-        const projects = await __TURBOPACK__imported__module__$5b$project$5d2f$db$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].project.findMany({
-            orderBy: {
-                createdAt: 'desc'
+// Helper: fetch projects from DB
+async function fetchProjectsFromDb() {
+    const projects = await __TURBOPACK__imported__module__$5b$project$5d2f$db$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].project.findMany({
+        orderBy: {
+            createdAt: 'desc'
+        },
+        include: {
+            createdBy: {
+                select: {
+                    username: true
+                }
             },
-            include: {
-                createdBy: {
-                    select: {
-                        username: true
+            approvedBy: {
+                select: {
+                    username: true
+                }
+            },
+            updatedBy: {
+                select: {
+                    username: true
+                }
+            },
+            reports: true
+        }
+    });
+    return projects;
+}
+async function GET(req) {
+    try {
+        const url = new URL(req.url);
+        const noCache = url.searchParams.get('noCache'); // set to "1" to bypass
+        // Try Redis cache unless bypass requested
+        if (!noCache) {
+            try {
+                const cached = await __TURBOPACK__imported__module__$5b$project$5d2f$utils$2f$redis$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redis"].get(PROJECTS_CACHE_KEY);
+                if (cached) {
+                    try {
+                        const parsed = JSON.parse(cached);
+                        // If cache contains a non-empty array, return it immediately
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            console.log('[/api/projects] returning cached projects count=', parsed.length);
+                            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(parsed);
+                        }
+                        // If cached is an empty array, fall through to fetch DB and refresh cache
+                        console.log('[/api/projects] cached projects is empty — refreshing from DB');
+                    } catch (parseErr) {
+                        console.warn('[/api/projects] failed to parse cached value, will fetch DB', parseErr);
                     }
-                },
-                approvedBy: {
-                    select: {
-                        username: true
-                    }
-                },
-                updatedBy: {
-                    select: {
-                        username: true
-                    }
-                },
-                reports: true
+                } else {
+                    console.log('[/api/projects] no cached value found');
+                }
+            } catch (redisErr) {
+                console.warn('[/api/projects] redis get error, will fetch DB', redisErr);
             }
-        });
-        console.log('Projects:', projects.map((p)=>p.id));
-        // Cache the result
-        await __TURBOPACK__imported__module__$5b$project$5d2f$utils$2f$redis$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redis"].set(PROJECTS_CACHE_KEY, JSON.stringify(projects), 'EX', PROJECTS_CACHE_TTL);
+        } else {
+            console.log('[/api/projects] bypassing cache (noCache=1)');
+        }
+        // Fetch from DB
+        const projects = await fetchProjectsFromDb();
+        console.log('[/api/projects] fetched from DB, count=', Array.isArray(projects) ? projects.length : 0);
+        // Update cache (best-effort)
+        try {
+            await __TURBOPACK__imported__module__$5b$project$5d2f$utils$2f$redis$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redis"].set(PROJECTS_CACHE_KEY, JSON.stringify(projects), 'EX', PROJECTS_CACHE_TTL);
+        } catch (cacheErr) {
+            console.warn('[/api/projects] redis set error', cacheErr);
+        }
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(projects);
     } catch (err) {
-        console.error('Error fetching projects:', err);
+        console.error('[/api/projects] Error fetching projects:', err);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             error: 'Internal Server Error'
         }, {
@@ -8942,10 +8975,15 @@ async function POST(req) {
             }
         });
         // Invalidate cache after write
-        await __TURBOPACK__imported__module__$5b$project$5d2f$utils$2f$redis$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redis"].del(PROJECTS_CACHE_KEY);
+        try {
+            await __TURBOPACK__imported__module__$5b$project$5d2f$utils$2f$redis$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redis"].del(PROJECTS_CACHE_KEY);
+            console.log('[/api/projects] cleared projects cache after create');
+        } catch (cacheErr) {
+            console.warn('[/api/projects] failed to delete cache after create', cacheErr);
+        }
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(project);
     } catch (error) {
-        console.error('Failed to create project:', error);
+        console.error('[/api/projects] Failed to create project:', error);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             error: 'Internal Server Error'
         }, {
