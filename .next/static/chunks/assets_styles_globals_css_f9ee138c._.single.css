@@ -1249,6 +1249,10 @@
     min-width: 100px;
   }
 
+  .min-w-max {
+    min-width: max-content;
+  }
+
   .flex-1 {
     flex: 1;
   }
