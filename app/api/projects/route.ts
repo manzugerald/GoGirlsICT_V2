@@ -7,35 +7,70 @@ import { redis } from '@/utils/redis';
 const PROJECTS_CACHE_KEY = 'projects:all';
 const PROJECTS_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
 
+// Helper: fetch projects from DB
+async function fetchProjectsFromDb() {
+  const projects = await prisma.project.findMany({
+    orderBy: { createdAt: 'desc' },
+    include: {
+      createdBy: { select: { username: true } },
+      approvedBy: { select: { username: true } },
+      updatedBy: { select: { username: true } },
+      reports: true,
+    },
+  });
+  return projects;
+}
+
 // Handle GET (fetch all projects, no auth required)
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    // Try Redis cache first
-    const cached = await redis.get(PROJECTS_CACHE_KEY);
-    if (cached) {
-      return NextResponse.json(JSON.parse(cached));
+    const url = new URL(req.url);
+    const noCache = url.searchParams.get('noCache'); // set to "1" to bypass
+
+    // Try Redis cache unless bypass requested
+    if (!noCache) {
+      try {
+        const cached = await redis.get(PROJECTS_CACHE_KEY);
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            // If cache contains a non-empty array, return it immediately
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              console.log('[/api/projects] returning cached projects count=', parsed.length);
+              return NextResponse.json(parsed);
+            }
+            // If cached is an empty array, fall through to fetch DB and refresh cache
+            console.log('[/api/projects] cached projects is empty — refreshing from DB');
+          } catch (parseErr) {
+            console.warn('[/api/projects] failed to parse cached value, will fetch DB', parseErr);
+          }
+        } else {
+          console.log('[/api/projects] no cached value found');
+        }
+      } catch (redisErr) {
+        console.warn('[/api/projects] redis get error, will fetch DB', redisErr);
+      }
+    } else {
+      console.log('[/api/projects] bypassing cache (noCache=1)');
     }
 
-    const projects = await prisma.project.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        createdBy: { select: { username: true } },
-        approvedBy: { select: { username: true } },
-        updatedBy: { select: { username: true } },
-        reports: true,
-      },
-    });
+    // Fetch from DB
+    const projects = await fetchProjectsFromDb();
     console.log(
-      'Projects:',
-      projects.map((p) => p.id)
+      '[/api/projects] fetched from DB, count=',
+      Array.isArray(projects) ? projects.length : 0
     );
 
-    // Cache the result
-    await redis.set(PROJECTS_CACHE_KEY, JSON.stringify(projects), 'EX', PROJECTS_CACHE_TTL);
+    // Update cache (best-effort)
+    try {
+      await redis.set(PROJECTS_CACHE_KEY, JSON.stringify(projects), 'EX', PROJECTS_CACHE_TTL);
+    } catch (cacheErr) {
+      console.warn('[/api/projects] redis set error', cacheErr);
+    }
 
     return NextResponse.json(projects);
   } catch (err) {
-    console.error('Error fetching projects:', err);
+    console.error('[/api/projects] Error fetching projects:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
@@ -73,11 +108,16 @@ export async function POST(req: Request) {
     });
 
     // Invalidate cache after write
-    await redis.del(PROJECTS_CACHE_KEY);
+    try {
+      await redis.del(PROJECTS_CACHE_KEY);
+      console.log('[/api/projects] cleared projects cache after create');
+    } catch (cacheErr) {
+      console.warn('[/api/projects] failed to delete cache after create', cacheErr);
+    }
 
     return NextResponse.json(project);
   } catch (error) {
-    console.error('Failed to create project:', error);
+    console.error('[/api/projects] Failed to create project:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
