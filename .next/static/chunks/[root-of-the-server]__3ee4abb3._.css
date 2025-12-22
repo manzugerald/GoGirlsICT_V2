@@ -1288,6 +1288,10 @@
     max-height: var(--radix-dropdown-menu-content-available-height);
   }
 
+  .max-h-28 {
+    max-height: calc(var(--spacing) * 28);
+  }
+
   .max-h-64 {
     max-height: calc(var(--spacing) * 64);
   }

@@ -1,10 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import ProjectView from '@/app/(admin)/admin/dashboard/components/views/projectView';
 import CreateProjectForm from '@/app/(admin)/admin/dashboard/createProjectForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+
+// Dynamically load the Tiptap JSON viewer (no SSR)
+const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-viewer'), {
+  ssr: false,
+});
 
 export default function ProjectsSection({
   paginatedData,
@@ -29,6 +35,17 @@ export default function ProjectsSection({
 }) {
   const [viewing, setViewing] = useState<any | null>(null);
   const [openCreate, setOpenCreate] = useState(false);
+
+  // Debug: log incoming paginatedData
+  useEffect(() => {
+    console.log(
+      '[ProjectsSection] paginatedData length:',
+      Array.isArray(paginatedData) ? paginatedData.length : 0
+    );
+    if (Array.isArray(paginatedData) && paginatedData.length > 0) {
+      console.log('[ProjectsSection] sample item:', paginatedData[0]);
+    }
+  }, [paginatedData]);
 
   return (
     <>
@@ -55,20 +72,24 @@ export default function ProjectsSection({
               ? new Date(project.createdAt).toLocaleString()
               : '-';
 
-            // Short snippet for content
-            let snippet = '-';
-            if (project.content !== undefined && project.content !== null) {
-              if (typeof project.content === 'string') {
-                snippet = project.content;
-              } else {
-                try {
-                  // try JSON -> string
-                  snippet = JSON.stringify(project.content);
-                } catch {
-                  snippet = String(project.content);
+            // Try to determine tiptap JSON content:
+            // - If content is already an object, use it.
+            // - If content is a string, attempt to parse JSON (some items store serialized tiptap JSON).
+            let tiptapContent: any = null;
+            if (project.content && typeof project.content === 'object') {
+              tiptapContent = project.content;
+            } else if (project.content && typeof project.content === 'string') {
+              try {
+                const parsed = JSON.parse(project.content);
+                if (parsed && typeof parsed === 'object') {
+                  tiptapContent = parsed;
                 }
+              } catch {
+                tiptapContent = null;
               }
             }
+
+            const isTiptapContent = tiptapContent !== null;
 
             return (
               <div
@@ -101,7 +122,24 @@ export default function ProjectsSection({
                     </div>
 
                     <div className="text-sm text-muted-foreground mt-2">
-                      <div className="truncate">{snippet === '-' ? '-' : snippet}</div>
+                      {isTiptapContent ? (
+                        // Render tiptap JSON preview; limit height so list stays compact
+                        <div className="overflow-hidden rounded border bg-white dark:bg-gray-900">
+                          <div className="max-h-28 overflow-hidden">
+                            {/* Use your Tiptap viewer to render a readable overview instead of raw JSON */}
+                            <TiptapJsonViewer
+                              content={tiptapContent}
+                              className="tiptap tiptap-preview"
+                            />
+                          </div>
+                        </div>
+                      ) : project.content ? (
+                        // Plain string content — truncate
+                        <div className="truncate">{String(project.content)}</div>
+                      ) : (
+                        <div className="text-sm text-muted">No content</div>
+                      )}
+
                       <div className="text-xs text-gray-500 mt-2">
                         By: {createdByLabel} · Created: {createdAt}
                       </div>
