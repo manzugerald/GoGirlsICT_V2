@@ -49,10 +49,9 @@ import BeneficiaryView from './components/views/beneficiaryView';
 import MessageView from './components/views/messageView';
 import ResponseView from './components/views/responseView';
 import UserView from './components/views/userView';
-import ProjectView from './components/views/projectViewWWWW';
-import ReportView from './components/views/reportView';
 import EventView from './components/views/eventView';
 import InstitutionView from './components/views/institutionView';
+import ReportView from './components/views/reportView';
 
 // Table controls component for search/filter/add/export
 function TableControls({
@@ -77,19 +76,21 @@ function TableControls({
   addNewLabel?: string;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
-      <div className="flex items-center gap-2 flex-1">
+    <div className="flex flex-wrap items-center gap-2 justify-start mb-4">
+      <div className="flex items-center gap-2 flex-1 min-w-0">
         {!hideSearch && (
           <input
             type="text"
-            className="border px-3 py-2 rounded w-64 focus:outline-pink-500 dark:bg-gray-800 dark:text-white"
+            className="border px-3 py-2 rounded w-64 max-w-full focus:outline-pink-500 dark:bg-gray-800 dark:text-white"
             placeholder={`Search ${sectionLabels[activeSection] || 'records'}...`}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         )}
+
+        {/* Export / Download / Add New - inline group */}
         {!hideSearch && (
-          <>
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               className="px-2 py-1 border rounded text-sm bg-green-50 hover:bg-green-100 dark:bg-gray-800 dark:hover:bg-green-900"
               title="Export to Excel"
@@ -104,17 +105,16 @@ function TableControls({
             >
               Download as PDF
             </button>
-          </>
-        )}
-      </div>
-      <div>
-        {addNewLabel && (
-          <button
-            className="px-4 py-2 bg-pink-700 text-white rounded hover:bg-pink-900 text-sm font-semibold"
-            onClick={onAddNew}
-          >
-            {addNewLabel}
-          </button>
+
+            {addNewLabel && (
+              <button
+                className="px-4 py-2 bg-pink-700 text-white rounded hover:bg-pink-900 text-sm font-semibold"
+                onClick={onAddNew}
+              >
+                {addNewLabel}
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -172,6 +172,20 @@ const sectionLabels: Record<Section, string> = {
   messages: 'Messages',
   responses: 'Responses',
   users: 'Users',
+  settings: 'Settings',
+};
+
+// Singular labels map (used for "Add a new ..." CTA)
+const singularLabels: Record<Section, string> = {
+  home: 'Home',
+  projects: 'Project',
+  events: 'Event',
+  reports: 'Report',
+  institutions: 'Institution',
+  beneficiaries: 'Beneficiary',
+  messages: 'Message',
+  responses: 'Response',
+  users: 'User',
   settings: 'Settings',
 };
 
@@ -471,11 +485,49 @@ export default function AdminDashboardPage() {
         case 'beneficiaries':
           return <BeneficiaryView data={viewRecord} onClose={handleCloseView} />;
         case 'projects':
-          return <ProjectView data={viewRecord} onClose={handleCloseView} />;
+          return (
+            <ProjectsSection
+              paginatedData={paginatedData}
+              page={page}
+              rowsPerPage={rowsPerPage}
+              handleEdit={handleEdit}
+              handleView={(r: any) => handleView(r, 'projects')}
+              handleDelete={handleDelete}
+              TableActions={() => null}
+              deleteId={deleteId}
+              deleteLoading={deleteLoading}
+            />
+          );
         case 'events':
-          return <EventView data={viewRecord} onClose={handleCloseView} />;
+          return (
+            <EventsSection
+              paginatedData={paginatedData}
+              page={page}
+              rowsPerPage={rowsPerPage}
+              handleEdit={handleEdit}
+              handleView={(r: any) => handleView(r, 'events')}
+              handleDelete={handleDelete}
+              TableActions={() => null}
+              deleteId={deleteId}
+              deleteLoading={deleteLoading}
+            />
+          );
         case 'reports':
-          return <ReportView data={viewRecord} onClose={handleCloseView} />;
+          // ReportsSection handles inline viewing and uses onToggleControls to hide top controls
+          return (
+            <ReportsSection
+              paginatedData={paginatedData}
+              page={page}
+              rowsPerPage={rowsPerPage}
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+              currentUserRole={(session?.user as any)?.role ?? ''}
+              TableActions={() => null}
+              deleteId={deleteId}
+              deleteLoading={deleteLoading}
+              onToggleControls={(hide: boolean) => setHideControls(hide)}
+            />
+          );
         case 'institutions':
           return <InstitutionView data={viewRecord} onClose={handleCloseView} />;
         case 'home':
@@ -603,11 +655,12 @@ export default function AdminDashboardPage() {
             page={page}
             rowsPerPage={rowsPerPage}
             handleEdit={handleEdit}
-            handleView={(r: any) => handleView(r, 'reports')}
             handleDelete={handleDelete}
+            currentUserRole={(session?.user as any)?.role ?? ''}
             TableActions={() => null}
             deleteId={deleteId}
             deleteLoading={deleteLoading}
+            onToggleControls={(hide: boolean) => setHideControls(hide)}
           />
         );
       case 'institutions':
@@ -700,6 +753,9 @@ export default function AdminDashboardPage() {
   }
 
   const isSettingsSection = activeSection === 'settings';
+  const singularLabel =
+    singularLabels[activeSection] ?? sectionLabels[activeSection].replace(/s$/i, '');
+  const isHome = activeSection === 'home';
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -762,28 +818,33 @@ export default function AdminDashboardPage() {
 
       {/* Main Content */}
       <main className="flex-1 min-w-0 overflow-y-auto p-4 bg-white dark:bg-gray-900 transition-colors">
-        {/* Top bar */}
-        <div className="flex items-center gap-2 mb-8">
-          <span className="text-2xl">{sectionIcons[activeSection]}</span>
-          <span className="text-xl font-bold text-gray-700 dark:text-gray-100">
-            {sectionLabels[activeSection]}
-          </span>
-        </div>
+        {/* Section header: title left-aligned and larger */}
+        <div className="mb-4">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">{sectionIcons[activeSection]}</span>
+            <h1 className="text-3xl font-extrabold text-left text-gray-800 dark:text-gray-100">
+              {sectionLabels[activeSection]}
+            </h1>
+          </div>
 
-        {/* Controls */}
-        {!hideControls && (
-          <TableControls
-            search={search}
-            setSearch={setSearch}
-            onAddNew={handleAddNew}
-            exportExcel={handleExportExcel}
-            downloadPDF={handleDownloadPDFButton}
-            activeSection={activeSection}
-            sectionLabels={sectionLabels}
-            hideSearch={false}
-            addNewLabel={isSettingsSection ? undefined : `Add New ${sectionLabels[activeSection]}`}
-          />
-        )}
+          {/* Controls row (search / export / download / add), left-aligned below the title.
+              For Home, hide the search box and the Add button per request. */}
+          {!hideControls && (
+            <div className="mt-4">
+              <TableControls
+                search={search}
+                setSearch={setSearch}
+                onAddNew={handleAddNew}
+                exportExcel={handleExportExcel}
+                downloadPDF={handleDownloadPDFButton}
+                activeSection={activeSection}
+                sectionLabels={sectionLabels}
+                hideSearch={isHome}
+                addNewLabel={isSettingsSection || isHome ? undefined : `Add a new ${singularLabel}`}
+              />
+            </div>
+          )}
+        </div>
 
         {/* Section Content */}
         <div className="w-full flex flex-col">

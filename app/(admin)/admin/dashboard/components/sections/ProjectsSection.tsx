@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import CreateProjectForm from '@/app/(admin)/admin/dashboard/createProjectForm';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
 // Dynamically load the Tiptap JSON viewer (no SSR)
@@ -21,6 +19,7 @@ export default function ProjectsSection({
   TableActions,
   deleteId,
   deleteLoading,
+  onToggleControls,
 }: {
   paginatedData: any[];
   page: number;
@@ -31,9 +30,9 @@ export default function ProjectsSection({
   TableActions?: React.FC<any>;
   deleteId?: string | number | null;
   deleteLoading?: boolean;
+  onToggleControls?: (hide: boolean) => void;
 }) {
   const [viewing, setViewing] = useState<any | null>(null);
-  const [openCreate, setOpenCreate] = useState(false);
 
   // Debug: log incoming paginatedData
   useEffect(() => {
@@ -45,6 +44,14 @@ export default function ProjectsSection({
       console.log('[ProjectsSection] sample item:', paginatedData[0]);
     }
   }, [paginatedData]);
+
+  // Notify parent to hide/show controls when viewing inline
+  useEffect(() => {
+    if (typeof onToggleControls === 'function') onToggleControls(!!viewing);
+    return () => {
+      if (typeof onToggleControls === 'function') onToggleControls(false);
+    };
+  }, [viewing, onToggleControls]);
 
   // Extract plain text from tiptap JSON structure
   function extractTextFromTiptap(node: any): string {
@@ -98,7 +105,7 @@ export default function ProjectsSection({
     return fullText.slice(0, maxChars).trim() + '...';
   }
 
-  // Render full project details (previously in ProjectView) inline
+  // Render full project details inline (title left-aligned, actions below meta)
   function renderFullProject(project: any) {
     const created = project.createdAt ? new Date(project.createdAt).toLocaleString() : '-';
     const updated = project.updatedAt ? new Date(project.updatedAt).toLocaleString() : '-';
@@ -116,26 +123,45 @@ export default function ProjectsSection({
       }
     }
 
+    const firstImage =
+      Array.isArray(project.images) && project.images.length > 0 ? project.images[0] : null;
+
     return (
       <div className="w-full max-w-4xl mx-auto p-4 space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-semibold">{project.title}</h2>
-            <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-              {project.createdBy
-                ? `${project.createdBy.firstName ?? ''} ${project.createdBy.lastName ?? ''}`.trim()
-                : 'System'}
-            </div>
+        <div>
+          <h1 className="text-2xl font-semibold text-left">{project.title ?? 'Project'}</h1>
+          <div className="text-sm text-gray-500 mt-2">
+            By:{' '}
+            {project.createdBy
+              ? `${project.createdBy.firstName ?? ''} ${project.createdBy.lastName ?? ''}`.trim()
+              : 'System'}{' '}
+            · Created: {created} · Updated: {updated}
           </div>
+        </div>
 
-          <div className="text-sm text-gray-500 text-right">
-            <div>
-              Status: <span className="font-medium">{project.projectStatus ?? '-'}</span>
-            </div>
-            <div>
-              Publish: <span className="font-medium">{project.publishStatus ?? '-'}</span>
-            </div>
-          </div>
+        {/* Actions inline (Download not typical for projects, so keep Edit/Delete here) */}
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              handleEdit(project);
+            }}
+          >
+            Edit
+          </Button>
+
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={async () => {
+              await handleDelete(project.id);
+              setViewing(null);
+            }}
+            disabled={Boolean(deleteLoading && deleteId === project.id)}
+          >
+            {deleteLoading && deleteId === project.id ? 'Deleting...' : 'Delete'}
+          </Button>
         </div>
 
         <div>
@@ -153,7 +179,7 @@ export default function ProjectsSection({
           </div>
         </div>
 
-        {Array.isArray(project.images) && project.images.length > 0 && (
+        {firstImage && (
           <div>
             <div className="text-sm text-gray-500 mb-2">Images</div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -183,30 +209,13 @@ export default function ProjectsSection({
             >
               Back
             </Button>
-            <Button
-              onClick={() => {
-                handleEdit(project);
-              }}
-            >
-              Edit
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={async () => {
-                await handleDelete(project.id);
-                setViewing(null);
-              }}
-              disabled={Boolean(deleteLoading && deleteId === project.id)}
-            >
-              {deleteLoading && deleteId === project.id ? 'Deleting...' : 'Delete'}
-            </Button>
           </div>
         </div>
       </div>
     );
   }
 
-  // When a project is selected to view inline, render the ProjectView here (not a modal)
+  // When a project is selected to view inline, render it here (not a modal)
   if (viewing) {
     return (
       <div className="space-y-4">
@@ -220,53 +229,13 @@ export default function ProjectsSection({
             >
               ← Back
             </Button>
-            <h2 className="text-lg font-semibold">{viewing.title || 'Project'}</h2>
+            {/* Title moved into renderFullProject to avoid duplication */}
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                handleEdit(viewing);
-              }}
-            >
-              Edit
-            </Button>
-
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={async () => {
-                await handleDelete(viewing.id);
-                setViewing(null);
-              }}
-              disabled={Boolean(deleteLoading && deleteId === viewing.id)}
-            >
-              {deleteLoading && deleteId === viewing.id ? 'Deleting...' : 'Delete'}
-            </Button>
-          </div>
+          {/* Actions moved into renderFullProject (below meta) */}
         </div>
 
         <div className="p-0">{renderFullProject(viewing)}</div>
-
-        {/* Keep the create dialog accessible while viewing */}
-        <Dialog open={openCreate} onOpenChange={(val) => !val && setOpenCreate(false)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create Project</DialogTitle>
-            </DialogHeader>
-            <div className="p-4">
-              <CreateProjectForm
-                mode="create"
-                onSuccess={() => {
-                  setOpenCreate(false);
-                }}
-                onCancel={() => setOpenCreate(false)}
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     );
   }
@@ -274,14 +243,7 @@ export default function ProjectsSection({
   // Default listing view (no inline project open)
   return (
     <>
-      <div className="flex items-center justify-between mb-4">
-        <div />
-        <div className="flex items-center gap-2">
-          <Button onClick={() => setOpenCreate(true)} className="bg-green-600 text-white">
-            Create Project
-          </Button>
-        </div>
-      </div>
+      {/* Top "Create Project" button removed — creation is handled via dashboard "Add New" control */}
 
       <div className="space-y-4">
         {(!Array.isArray(paginatedData) || paginatedData.length === 0) && (
@@ -305,7 +267,7 @@ export default function ProjectsSection({
                 className="p-4 border rounded-md bg-white dark:bg-gray-900 hover:shadow-sm transition-shadow"
               >
                 <div className="flex items-start justify-between gap-4">
-                  {/* Clickable left area opens the ProjectView inline */}
+                  {/* Clickable left area opens the Project inline view */}
                   <div
                     className="flex-1 min-w-0 cursor-pointer"
                     onClick={() => setViewing(project)}
@@ -405,24 +367,6 @@ export default function ProjectsSection({
           <TableActions data={paginatedData} columns={[]} tableRef={React.createRef()} />
         ) : null}
       </div>
-
-      {/* Create dialog */}
-      <Dialog open={openCreate} onOpenChange={(val) => !val && setOpenCreate(false)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create Project</DialogTitle>
-          </DialogHeader>
-          <div className="p-4">
-            <CreateProjectForm
-              mode="create"
-              onSuccess={() => {
-                setOpenCreate(false);
-              }}
-              onCancel={() => setOpenCreate(false)}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
