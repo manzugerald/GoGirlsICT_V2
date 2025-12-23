@@ -1301,10 +1301,6 @@
     max-height: var(--radix-dropdown-menu-content-available-height);
   }
 
-  .max-h-28 {
-    max-height: calc(var(--spacing) * 28);
-  }
-
   .max-h-60 {
     max-height: calc(var(--spacing) * 60);
   }
@@ -1335,10 +1331,6 @@
 
   .min-h-16 {
     min-height: calc(var(--spacing) * 16);
-  }
-
-  .min-h-\[1px\] {
-    min-height: 1px;
   }
 
   .min-h-\[40px\] {
@@ -3856,26 +3848,8 @@
   }
 
   @media (width >= 40rem) {
-    .sm\:mt-0 {
-      margin-top: calc(var(--spacing) * 0);
-    }
-  }
-
-  @media (width >= 40rem) {
-    .sm\:ml-auto {
-      margin-left: auto;
-    }
-  }
-
-  @media (width >= 40rem) {
     .sm\:block {
       display: block;
-    }
-  }
-
-  @media (width >= 40rem) {
-    .sm\:w-auto {
-      width: auto;
     }
   }
 
@@ -3930,12 +3904,6 @@
   @media (width >= 40rem) {
     .sm\:justify-end {
       justify-content: flex-end;
-    }
-  }
-
-  @media (width >= 40rem) {
-    .sm\:gap-3 {
-      gap: calc(var(--spacing) * 3);
     }
   }
 

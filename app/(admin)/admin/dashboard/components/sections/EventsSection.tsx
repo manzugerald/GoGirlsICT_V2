@@ -58,193 +58,125 @@ export default function EventsSection({
     }
   }
 
-  // Extract plain text from tiptap-style JSON or return string
-  function extractTextFromTiptap(node: any): string {
-    if (!node) return '';
-    if (typeof node === 'string') return node;
-    let text = '';
-    if (Array.isArray(node)) {
-      for (const n of node) text += extractTextFromTiptap(n);
-      return text;
-    }
-    if (typeof node === 'object') {
-      if (typeof node.text === 'string') {
-        text += node.text;
-      }
-      if (Array.isArray(node.content)) {
-        for (const child of node.content) {
-          text += extractTextFromTiptap(child);
-        }
-      }
-      return text;
-    }
-    return '';
-  }
-
-  function buildPreview(content: any, maxChars = 120) {
-    if (content == null) return '';
-    let fullText = '';
-    if (typeof content === 'string') {
+  // Try to parse JSON-like strings, otherwise return raw
+  function tryParseMaybeString(v: any) {
+    if (v == null) return null;
+    if (typeof v !== 'string') return v;
+    const s = v.trim();
+    if (!s) return null;
+    if ((s.startsWith('{') && s.endsWith('}')) || (s.startsWith('[') && s.endsWith(']'))) {
       try {
-        const parsed = JSON.parse(content);
-        if (parsed && typeof parsed === 'object') {
-          fullText = extractTextFromTiptap(parsed);
-        } else {
-          fullText = content;
-        }
+        return JSON.parse(s);
       } catch {
-        fullText = content;
+        return s;
       }
-    } else if (typeof content === 'object') {
-      fullText = extractTextFromTiptap(content);
-    } else {
-      fullText = String(content);
     }
-    fullText = fullText.replace(/\s+/g, ' ').trim();
-    if (fullText.length <= maxChars) return fullText;
-    return fullText.slice(0, maxChars).trim() + '...';
+    return s;
   }
 
-  // Banner extraction: prefer explicit banner field (eventBanner / banner),
-  // do NOT return array images here — banner is separate from images array.
-  function getBannerUrl(event: any): string | null {
-    const candidates: any[] = [event?.eventBanner, event?.banner, event?.cover];
-    for (const c of candidates) {
-      if (typeof c === 'string' && c.trim()) return c;
+  // Extract a single URL from candidate (string | object | array)
+  function extractUrlFromCandidate(candidate: any): string | null {
+    if (!candidate) return null;
+    const value = tryParseMaybeString(candidate);
+    if (!value) return null;
+
+    if (typeof value === 'string') {
+      return value.trim() || null;
+    }
+    if (Array.isArray(value)) {
+      for (const it of value) {
+        if (typeof it === 'string' && it.trim()) return it.trim();
+        if (it && typeof it === 'object') {
+          const maybe = it.url ?? it.src ?? it.path;
+          if (maybe && typeof maybe === 'string' && maybe.trim()) return maybe.trim();
+        }
+      }
+      return null;
+    }
+    if (typeof value === 'object') {
+      return (value.url ?? value.src ?? value.path ?? null) as string | null;
     }
     return null;
   }
 
-  // First image from eventImages array (or event.images) — used as "image" (separate from banner).
-  function getFirstArrayImage(event: any): string | null {
-    if (Array.isArray(event?.eventImages)) {
-      const firstValid = event.eventImages.find(
-        (i: any) => typeof i === 'string' && i.trim().length > 0
-      );
-      if (firstValid) return firstValid;
+  // Extract an array of urls from candidate (string/array/object)
+  function extractArrayFromCandidate(candidate: any): string[] {
+    const out: string[] = [];
+    if (candidate == null) return out;
+    const value = tryParseMaybeString(candidate);
+    if (!value) return out;
+
+    if (Array.isArray(value)) {
+      for (const it of value) {
+        if (!it) continue;
+        if (typeof it === 'string' && it.trim()) out.push(it.trim());
+        else if (typeof it === 'object') {
+          const maybe = it.url ?? it.src ?? it.path;
+          if (maybe && typeof maybe === 'string' && maybe.trim()) out.push(maybe.trim());
+        }
+      }
+      return out;
     }
-    if (Array.isArray(event?.images)) {
-      const firstValid = event.images.find(
-        (i: any) => typeof i === 'string' && i.trim().length > 0
-      );
-      if (firstValid) return firstValid;
+
+    if (typeof value === 'string' && value.trim()) {
+      // handle comma-separated fallback
+      if (value.includes(',')) {
+        const parts = value
+          .split(',')
+          .map((p) => p.trim())
+          .filter(Boolean);
+        out.push(...parts);
+      } else {
+        out.push(value.trim());
+      }
+      return out;
     }
-    return null;
+
+    if (typeof value === 'object') {
+      const maybe = value.url ?? value.src ?? value.path;
+      if (maybe && typeof maybe === 'string' && maybe.trim()) out.push(maybe.trim());
+      return out;
+    }
+
+    return out;
   }
 
-  function getPdfUrl(event: any): string | null {
-    if (event?.eventFile && typeof event.eventFile === 'string') {
-      return event.eventFile;
+  // Convert possibly-relative url to absolute using current origin (if available)
+  function toAbsoluteUrl(origin: string | null, url: string | null | undefined): string | null {
+    if (!url) return null;
+    const s = String(url).trim();
+    if (!s) return null;
+    if (/^https?:\/\//i.test(s)) return s;
+    if (s.startsWith('//')) {
+      // protocol relative - assume https from origin if missing
+      if (origin) {
+        return `${new URL(origin).protocol}${s}`;
+      }
+      return `https:${s}`;
     }
-    if (Array.isArray(event?.eventFiles) && event.eventFiles.length > 0) {
-      const pdf = event.eventFiles.find(
-        (f: string) => typeof f === 'string' && f.toLowerCase().endsWith('.pdf')
-      );
-      if (pdf) return pdf;
-      return typeof event.eventFiles[0] === 'string' ? event.eventFiles[0] : null;
+    if (s.startsWith('/')) {
+      return origin ? `${origin}${s}` : s;
     }
-    if (Array.isArray(event?.files) && event.files.length > 0) {
-      const pdf = event.files.find(
-        (f: string) => typeof f === 'string' && f.toLowerCase().endsWith('.pdf')
-      );
-      if (pdf) return pdf;
-      return typeof event.files[0] === 'string' ? event.files[0] : null;
-    }
-    return null;
+    // treat as relative path
+    return origin ? `${origin}/${s}` : s;
   }
 
-  // Render the full event inline (title left-aligned, banner directly below title spanning full width)
-  // After details/description, display the first array image (if any).
-  function renderFullEvent(ev: any) {
-    const created = formatDate(ev.createdAt ?? ev.eventStartDate);
-    const updated = formatDate(ev.updatedAt ?? ev.eventEndDate);
-    const pdfUrl = getPdfUrl(ev);
+  // Choose banner (single) and first array image (separate)
+  function getBannerUrl(ev: any, origin: string | null) {
+    const rawBanner = ev?.eventBanner ?? ev?.banner ?? ev?.cover ?? null;
+    const bannerCandidate = extractUrlFromCandidate(rawBanner);
+    return toAbsoluteUrl(origin, bannerCandidate);
+  }
 
-    const title = ev.eventTitle ?? ev.title ?? 'Event';
-    const bannerUrl = getBannerUrl(ev);
-    const firstImage = getFirstArrayImage(ev);
-
-    return (
-      <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-left">{title}</h1>
-
-          {/* Banner below the title spanning full width */}
-          {bannerUrl ? (
-            <div className="mt-4 w-full">
-              <img src={bannerUrl} alt={title} className="w-full h-[360px] object-cover rounded" />
-            </div>
-          ) : null}
-
-          <div className="text-sm text-gray-500 mt-4">
-            By:{' '}
-            {ev.createdBy
-              ? `${ev.createdBy.firstName ?? ''} ${ev.createdBy.lastName ?? ''}`.trim()
-              : 'System'}{' '}
-            · Created: {created} · Updated: {updated}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {pdfUrl && (
-            <a
-              href={pdfUrl}
-              download
-              rel="noopener noreferrer"
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Download Event File
-            </a>
-          )}
-
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              handleEdit(ev);
-            }}
-          >
-            Edit
-          </Button>
-
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={async () => {
-              await handleDelete(ev.id);
-              setViewingEvent(null);
-            }}
-            disabled={Boolean(deleteLoading && deleteId === ev.id)}
-          >
-            {deleteLoading && deleteId === ev.id ? 'Deleting...' : 'Delete'}
-          </Button>
-        </div>
-
-        <div>
-          <div className="text-sm text-gray-500 mb-2">Details</div>
-          <div className="rounded border bg-white dark:bg-gray-900 p-3">
-            {/* Prefer EventView for full rendering if present */}
-            <EventView data={ev} onClose={() => setViewingEvent(null)} />
-          </div>
-        </div>
-
-        {/* After the details/description, show the first image from the images array (if any) */}
-        {firstImage && (
-          <div className="flex justify-start">
-            <img
-              src={firstImage}
-              alt={`${title} image`}
-              className="max-h-60 w-auto object-cover rounded border"
-            />
-          </div>
-        )}
-      </div>
-    );
+  function getFirstArrayImage(ev: any, origin: string | null) {
+    const raw = ev?.eventImages ?? ev?.images ?? null;
+    const arr = extractArrayFromCandidate(raw);
+    if (arr.length === 0) return null;
+    return toAbsoluteUrl(origin, arr[0]);
   }
 
   // Card/grid listing
-  // Each card shows title, image (below title, from array), then status/start/end, short preview, and actions
-  function renderGrid() {
+  function renderGrid(origin: string | null) {
     if (!Array.isArray(data) || data.length === 0) {
       return <div className="text-center py-8 text-gray-500">No events found.</div>;
     }
@@ -257,14 +189,15 @@ export default function EventsSection({
           const end = formatDate(event.eventEndDate);
           const status = event.eventStatus ?? event.status ?? '-';
           const preview = buildPreview(event.eventDescription ?? event.eventDetails);
-          const pdfUrl = getPdfUrl(event);
-          const firstImage = getFirstArrayImage(event);
+          const pdfUrl = extractUrlFromCandidate(event.eventFile ?? event.file ?? null);
+          const firstImageRaw =
+            extractArrayFromCandidate(event.eventImages ?? event.images ?? null)[0] ?? null;
+          const firstImage = toAbsoluteUrl(origin, firstImageRaw);
 
           return (
             <div
               key={event.id}
               className="flex flex-col p-4 border rounded-md bg-white dark:bg-gray-900 hover:shadow-sm transition-shadow"
-              // make the entire card focusable and clickable for accessibility
               role="button"
               tabIndex={0}
               onClick={() => setViewingEvent(event)}
@@ -272,17 +205,16 @@ export default function EventsSection({
                 if (e.key === 'Enter' || e.key === ' ') setViewingEvent(event);
               }}
             >
-              {/* Title on top (only once) */}
+              {/* Title on top */}
               <h3 className="font-semibold text-lg truncate">{title}</h3>
 
-              {/* Image below title (use first image from event.eventImages array) */}
+              {/* Image below title (first from images array) */}
               {firstImage ? (
                 <img
                   src={firstImage}
                   alt={title}
                   onClick={(e) => {
                     e.stopPropagation();
-                    // clicking the image opens the inline view; banner will be shown below title in detailed view
                     setViewingEvent(event);
                   }}
                   className="w-full h-40 object-cover rounded mt-3 mb-3 cursor-pointer"
@@ -317,15 +249,13 @@ export default function EventsSection({
                 )}
               </div>
 
-              {/* Actions: stop propagation so buttons don't trigger card click */}
+              {/* Actions */}
               <div className="mt-4 flex items-center gap-2">
                 {pdfUrl ? (
                   <a
-                    href={pdfUrl}
+                    href={toAbsoluteUrl(window?.location?.origin ?? null, pdfUrl) ?? pdfUrl}
                     download
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
+                    onClick={(e) => e.stopPropagation()}
                     className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
                   >
                     Download
@@ -376,28 +306,166 @@ export default function EventsSection({
     );
   }
 
-  // If an event is selected, show full inline view (not modal)
-  if (viewingEvent) {
+  // small preview builder reused in cards
+  function buildPreview(content: any, maxChars = 120) {
+    if (content == null) return '';
+    let fullText = '';
+    if (typeof content === 'string') {
+      try {
+        const parsed = JSON.parse(content);
+        if (parsed && typeof parsed === 'object') {
+          fullText = extractTextFromTiptap(parsed);
+        } else {
+          fullText = content;
+        }
+      } catch {
+        fullText = content;
+      }
+    } else if (typeof content === 'object') {
+      fullText = extractTextFromTiptap(content);
+    } else {
+      fullText = String(content);
+    }
+    fullText = fullText.replace(/\s+/g, ' ').trim();
+    if (fullText.length <= maxChars) return fullText;
+    return fullText.slice(0, maxChars).trim() + '...';
+  }
+
+  // Extract plain text from tiptap-style JSON or return string
+  function extractTextFromTiptap(node: any): string {
+    if (!node) return '';
+    if (typeof node === 'string') return node;
+    let text = '';
+    if (Array.isArray(node)) {
+      for (const n of node) text += extractTextFromTiptap(n);
+      return text;
+    }
+    if (typeof node === 'object') {
+      if (typeof node.text === 'string') {
+        text += node.text;
+      }
+      if (Array.isArray(node.content)) {
+        for (const child of node.content) {
+          text += extractTextFromTiptap(child);
+        }
+      }
+      return text;
+    }
+    return '';
+  }
+
+  // Render full inline event view (respect requested order)
+  function renderFullEvent(ev: any, origin: string | null) {
+    const title = ev.eventTitle ?? ev.title ?? 'Event';
+    const bannerUrl = getBannerUrl(ev, origin);
+    const firstImage = getFirstArrayImage(ev, origin);
+
+    const createdBy = ev?.createdBy
+      ? `${ev.createdBy.firstName ?? ''} ${ev.createdBy.lastName ?? ''}`.trim() ||
+        ev.createdBy.username
+      : 'System';
+    const createdAt = formatDate(ev.createdAt ?? ev.eventStartDate);
+    const updatedAt = formatDate(ev.updatedAt ?? ev.eventEndDate);
+    const pdfUrl = extractUrlFromCandidate(ev.eventFile ?? ev.file ?? ev.files ?? null);
+
     return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" onClick={() => setViewingEvent(null)}>
-              ← Back
-            </Button>
-            {/* Title & banner rendered inside renderFullEvent */}
+      <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
+        {/* 1. Title (only once) */}
+        <div>
+          <h1 className="text-2xl font-semibold text-left">{title}</h1>
+        </div>
+
+        {/* 2. Full banner spanning left→right */}
+        {bannerUrl ? (
+          <div className="w-full">
+            <img src={bannerUrl} alt={title} className="w-full h-[360px] object-cover rounded" />
+          </div>
+        ) : null}
+
+        {/* 3. Created By / Created at / Updated at */}
+        <div className="text-sm text-gray-500">
+          <div>Created By: {createdBy}</div>
+          <div>
+            Created at: {createdAt} {updatedAt ? `· Updated at: ${updatedAt}` : null}
           </div>
         </div>
 
-        <div className="p-0">{renderFullEvent(viewingEvent)}</div>
+        {/* 4. Buttons */}
+        <div className="flex items-center gap-2">
+          {pdfUrl ? (
+            <a
+              href={toAbsoluteUrl(window?.location?.origin ?? origin, pdfUrl) ?? pdfUrl}
+              download
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Download Event File
+            </a>
+          ) : null}
+
+          <Button
+            onClick={() => {
+              handleEdit(ev);
+            }}
+            variant="outline"
+            size="sm"
+          >
+            Edit
+          </Button>
+
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={async () => {
+              await handleDelete(ev.id);
+              setViewingEvent(null);
+            }}
+            disabled={Boolean(deleteLoading && deleteId === ev.id)}
+          >
+            {deleteLoading && deleteId === ev.id ? 'Deleting...' : 'Delete'}
+          </Button>
+        </div>
+
+        {/* 5. Details */}
+        <div>
+          <div className="text-sm text-gray-500 mb-2">Details</div>
+          <div className="rounded border bg-white dark:bg-gray-900 p-3">
+            <EventView data={ev} onClose={() => setViewingEvent(null)} />
+          </div>
+        </div>
+
+        {/* 6. Full image (first image from array) */}
+        {firstImage ? (
+          <div className="w-full">
+            <img src={firstImage} alt={`${title} image`} className="w-full object-cover rounded" />
+          </div>
+        ) : null}
       </div>
     );
   }
 
-  // Default: grid cards
+  // Determine origin for URL resolution (server might not be available in client render, so use window origin if present)
+  const origin = typeof window !== 'undefined' ? window.location.origin : null;
+
+  // Viewing mode
+  if (viewingEvent) {
+    return (
+      <div className="space-y-4">
+        {/* Back control */}
+        <div className="flex items-center mb-2">
+          <Button variant="ghost" onClick={() => setViewingEvent(null)}>
+            ← Back
+          </Button>
+        </div>
+
+        <div className="p-0">{renderFullEvent(viewingEvent, origin)}</div>
+      </div>
+    );
+  }
+
+  // Default: show cards grid
   return (
     <>
-      {renderGrid()}
+      {renderGrid(origin)}
 
       {/* Optional TableActions (kept for compatibility) */}
       <div className="mt-4">
