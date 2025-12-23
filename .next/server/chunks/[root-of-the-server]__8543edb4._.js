@@ -8925,6 +8925,92 @@ async function fetchEventsFromDb() {
         }
     });
 }
+// small helper: try parse JSON if value is a JSON-ish string, otherwise return original
+function tryParseMaybeString(v) {
+    if (v == null) return null;
+    if (typeof v !== 'string') return v;
+    const s = v.trim();
+    if (!s) return null;
+    if (s.startsWith('{') && s.endsWith('}') || s.startsWith('[') && s.endsWith(']')) {
+        try {
+            return JSON.parse(s);
+        } catch  {
+            return s;
+        }
+    }
+    return s;
+}
+// normalize candidate (string | object | array) to a single url string (or null)
+function extractUrlFromCandidate(candidate) {
+    if (!candidate) return null;
+    // parse if it's a JSON string
+    const value = tryParseMaybeString(candidate);
+    if (typeof value === 'string') {
+        return value.trim() || null;
+    }
+    if (Array.isArray(value)) {
+        // prefer first string entry, then first object with url/src/path
+        for (const it of value){
+            if (typeof it === 'string' && it.trim()) return it.trim();
+            if (it && typeof it === 'object') {
+                const maybe = it.url ?? it.src ?? it.path;
+                if (maybe && maybe.trim()) return maybe.trim();
+            }
+        }
+        return null;
+    }
+    if (typeof value === 'object') {
+        return value.url ?? value.src ?? value.path ?? null;
+    }
+    return null;
+}
+// normalize candidate (string | object | array) into array of url strings (may be empty)
+function extractArrayFromCandidate(candidate) {
+    const out = [];
+    if (candidate == null) return out;
+    const value = tryParseMaybeString(candidate);
+    if (Array.isArray(value)) {
+        for (const it of value){
+            if (!it) continue;
+            if (typeof it === 'string' && it.trim()) out.push(it.trim());
+            else if (typeof it === 'object') {
+                const maybe = it.url ?? it.src ?? it.path;
+                if (maybe && maybe.trim()) out.push(maybe.trim());
+            }
+        }
+        return out;
+    }
+    if (typeof value === 'string' && value.trim()) {
+        // handle comma-separated strings as fallback
+        if (value.includes(',')) {
+            const parts = value.split(',').map((p)=>p.trim()).filter(Boolean);
+            out.push(...parts);
+        } else {
+            out.push(value.trim());
+        }
+        return out;
+    }
+    if (typeof value === 'object') {
+        const maybe = value.url ?? value.src ?? value.path;
+        if (maybe && maybe.trim()) out.push(maybe.trim());
+        return out;
+    }
+    return out;
+}
+// Convert a possibly-relative url ("/...") to absolute using the request origin.
+// If url is already absolute (http/https) return as-is.
+function toAbsoluteUrl(origin, url) {
+    if (!url) return null;
+    const s = url.trim();
+    if (!s) return null;
+    if (/^https?:\/\//i.test(s)) return s;
+    // If starts with '//' treat as protocol-relative (preserve)
+    if (s.startsWith('//')) return `${new URL(origin).protocol}${s}`;
+    // If starts with '/', prefix origin
+    if (s.startsWith('/')) return `${origin}${s}`;
+    // otherwise treat as relative path and prefix origin
+    return `${origin}/${s}`;
+}
 async function GET(req) {
     try {
         const url = new URL(req.url);
@@ -8957,15 +9043,50 @@ async function GET(req) {
         // Fetch from DB
         const events = await fetchEventsFromDb();
         console.log('[/api/events] fetched from DB, count=', Array.isArray(events) ? events.length : 0);
-        // Update cache (best-effort)
+        // Normalize banner and images so frontend always gets usable URLs
+        const origin = url.origin;
+        const normalizedEvents = events.map((ev)=>{
+            // banner: prefer eventBanner field
+            const rawBannerCandidate = ev.eventBanner ?? ev.banner ?? ev.cover ?? null;
+            const bannerCandidate = tryParseMaybeString(rawBannerCandidate);
+            const bannerUrlRaw = extractUrlFromCandidate(bannerCandidate);
+            const bannerUrl = toAbsoluteUrl(origin, bannerUrlRaw);
+            // images array: eventImages or images
+            const rawImagesCandidate = ev.eventImages ?? ev.images ?? null;
+            const imagesListRaw = extractArrayFromCandidate(rawImagesCandidate);
+            const images = imagesListRaw.map((it)=>toAbsoluteUrl(origin, it)).filter(Boolean);
+            // pdf/file normalization (keep compatibility with existing eventFile)
+            const rawFileCandidate = ev.eventFile ?? ev.file ?? ev.files ?? null;
+            let pdfUrl = null;
+            if (rawFileCandidate) {
+                // if it's an array, pick first pdf-like; if string, use it
+                const filesArr = extractArrayFromCandidate(rawFileCandidate);
+                if (filesArr.length > 0) {
+                    const found = filesArr.find((f)=>typeof f === 'string' && f.toLowerCase().endsWith('.pdf'));
+                    const chosen = found ?? filesArr[0];
+                    pdfUrl = toAbsoluteUrl(origin, chosen);
+                } else if (typeof rawFileCandidate === 'string' && rawFileCandidate.trim()) {
+                    pdfUrl = toAbsoluteUrl(origin, rawFileCandidate);
+                }
+            }
+            return {
+                ...ev,
+                // overwrite with normalized values
+                eventBanner: bannerUrl,
+                eventImages: images,
+                // expose normalized eventFile/pdf if helpful
+                eventFile: pdfUrl ?? ev.eventFile
+            };
+        });
+        // Update cache (best-effort) with normalized payload
         if (redis) {
             try {
-                await redis.set(EVENTS_CACHE_KEY, JSON.stringify(events), 'EX', EVENTS_CACHE_TTL);
+                await redis.set(EVENTS_CACHE_KEY, JSON.stringify(normalizedEvents), 'EX', EVENTS_CACHE_TTL);
             } catch (cacheErr) {
                 console.warn('[/api/events] redis.set error', cacheErr);
             }
         }
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(events);
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(normalizedEvents);
     } catch (err) {
         console.error('[/api/events] Error fetching events:', err);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
