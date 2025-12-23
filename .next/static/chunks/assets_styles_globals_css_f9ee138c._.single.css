@@ -998,6 +998,10 @@
     height: 350px;
   }
 
+  .h-\[360px\] {
+    height: 360px;
+  }
+
   .h-\[800px\] {
     height: 800px;
   }
@@ -1056,6 +1060,10 @@
 
   .min-h-16 {
     min-height: calc(var(--spacing) * 16);
+  }
+
+  .min-h-\[1px\] {
+    min-height: 1px;
   }
 
   .min-h-\[40px\] {

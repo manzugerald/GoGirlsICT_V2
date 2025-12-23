@@ -8857,76 +8857,117 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$serv
 var __TURBOPACK__imported__module__$5b$project$5d2f$db$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/db/prisma.ts [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$auth$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next-auth/index.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$api$2f$auth$2f5b2e2e2e$nextauth$5d2f$route$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/app/api/auth/[...nextauth]/route.ts [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$utils$2f$redis$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/utils/redis.ts [app-route] (ecmascript)");
 ;
 ;
 ;
 ;
-;
+// Make Redis optional and controllable via DISABLE_REDIS=1
+let redis = null;
+if (process.env.DISABLE_REDIS !== '1') {
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        redis = __turbopack_context__.r("[project]/utils/redis.ts [app-route] (ecmascript)").redis;
+    } catch (e) {
+        console.warn('[/api/events] redis not available, continuing without cache', e);
+        redis = null;
+    }
+}
 const EVENTS_CACHE_KEY = 'events:all';
 const EVENTS_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
-async function GET() {
-    try {
-        // 1. Try Redis cache first
-        const cached = await __TURBOPACK__imported__module__$5b$project$5d2f$utils$2f$redis$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redis"].get(EVENTS_CACHE_KEY);
-        if (cached) {
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(JSON.parse(cached));
-        }
-        // 2. Not cached: fetch from DB
-        const events = await __TURBOPACK__imported__module__$5b$project$5d2f$db$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].event.findMany({
-            orderBy: {
-                createdAt: 'desc'
+async function fetchEventsFromDb() {
+    return __TURBOPACK__imported__module__$5b$project$5d2f$db$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].event.findMany({
+        orderBy: {
+            createdAt: 'desc'
+        },
+        select: {
+            id: true,
+            slug: true,
+            eventTitle: true,
+            eventStartDate: true,
+            eventEndDate: true,
+            eventStatus: true,
+            eventLocation: true,
+            eventImages: true,
+            eventBanner: true,
+            eventFile: true,
+            eventTags: true,
+            maxAttendees: true,
+            eventDetails: true,
+            eventDescription: true,
+            publishStatus: true,
+            createdAt: true,
+            updatedAt: true,
+            deletedAt: true,
+            createdBy: {
+                select: {
+                    firstName: true,
+                    lastName: true,
+                    username: true
+                }
             },
-            select: {
-                id: true,
-                slug: true,
-                eventTitle: true,
-                eventStartDate: true,
-                eventEndDate: true,
-                eventStatus: true,
-                eventLocation: true,
-                eventImages: true,
-                eventBanner: true,
-                eventFile: true,
-                eventTags: true,
-                maxAttendees: true,
-                eventDetails: true,
-                eventDescription: true,
-                publishStatus: true,
-                createdAt: true,
-                updatedAt: true,
-                deletedAt: true,
-                createdBy: {
-                    select: {
-                        firstName: true,
-                        lastName: true,
-                        username: true
-                    }
-                },
-                updatedBy: {
-                    select: {
-                        username: true
-                    }
-                },
-                project: {
-                    select: {
-                        title: true,
-                        id: true
-                    }
-                },
-                report: {
-                    select: {
-                        title: true,
-                        id: true
-                    }
+            updatedBy: {
+                select: {
+                    username: true
+                }
+            },
+            project: {
+                select: {
+                    title: true,
+                    id: true
+                }
+            },
+            report: {
+                select: {
+                    title: true,
+                    id: true
                 }
             }
-        });
-        // 3. Cache the result
-        await __TURBOPACK__imported__module__$5b$project$5d2f$utils$2f$redis$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redis"].set(EVENTS_CACHE_KEY, JSON.stringify(events), 'EX', EVENTS_CACHE_TTL);
+        }
+    });
+}
+async function GET(req) {
+    try {
+        const url = new URL(req.url);
+        const noCache = url.searchParams.get('noCache');
+        // Try Redis cache unless disabled or bypass requested
+        if (redis && !noCache) {
+            try {
+                const cached = await redis.get(EVENTS_CACHE_KEY);
+                if (cached) {
+                    try {
+                        const parsed = JSON.parse(cached);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            console.log('[/api/events] returning cached events count=', parsed.length);
+                            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(parsed);
+                        }
+                        console.log('[/api/events] cached events empty — refreshing from DB');
+                    } catch (parseErr) {
+                        console.warn('[/api/events] failed to parse cached value, will fetch DB', parseErr);
+                    }
+                } else {
+                    console.log('[/api/events] no cached value found');
+                }
+            } catch (redisErr) {
+                console.warn('[/api/events] redis.get error, will fetch DB', redisErr);
+            }
+        } else {
+            if (!redis) console.log('[/api/events] redis disabled, fetching DB');
+            else console.log('[/api/events] bypassing cache (noCache=1)');
+        }
+        // Fetch from DB
+        const events = await fetchEventsFromDb();
+        console.log('[/api/events] fetched from DB, count=', Array.isArray(events) ? events.length : 0);
+        // Update cache (best-effort)
+        if (redis) {
+            try {
+                await redis.set(EVENTS_CACHE_KEY, JSON.stringify(events), 'EX', EVENTS_CACHE_TTL);
+            } catch (cacheErr) {
+                console.warn('[/api/events] redis.set error', cacheErr);
+            }
+        }
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(events);
     } catch (err) {
-        console.error('Error fetching events:', err);
+        console.error('[/api/events] Error fetching events:', err);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             error: 'Internal Server Error'
         }, {
@@ -8978,11 +9019,18 @@ async function POST(req) {
                 reportId: reportId ?? null
             }
         });
-        // Invalidate cache after write
-        await __TURBOPACK__imported__module__$5b$project$5d2f$utils$2f$redis$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redis"].del(EVENTS_CACHE_KEY);
+        // Invalidate cache after write (if redis available)
+        if (redis) {
+            try {
+                await redis.del(EVENTS_CACHE_KEY);
+                console.log('[/api/events] cleared events cache after create');
+            } catch (cacheErr) {
+                console.warn('[/api/events] failed to delete cache after create', cacheErr);
+            }
+        }
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(event);
     } catch (error) {
-        console.error('Failed to create event:', error);
+        console.error('[/api/events] Failed to create event:', error);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             error: 'Internal Server Error'
         }, {
