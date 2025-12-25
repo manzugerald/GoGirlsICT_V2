@@ -510,6 +510,8 @@ export default function AdminDashboardPage() {
               TableActions={() => null}
               deleteId={deleteId}
               deleteLoading={deleteLoading}
+              // ensure EventsSection notifies parent to hide/show controls
+              onToggleControls={(hide: boolean) => setHideControls(hide)}
             />
           );
         case 'reports':
@@ -646,6 +648,8 @@ export default function AdminDashboardPage() {
             TableActions={() => null}
             deleteId={deleteId}
             deleteLoading={deleteLoading}
+            // ensure EventsSection notifies parent to hide/show controls (same pattern as ReportsSection)
+            onToggleControls={(hide: boolean) => setHideControls(hide)}
           />
         );
       case 'reports':
