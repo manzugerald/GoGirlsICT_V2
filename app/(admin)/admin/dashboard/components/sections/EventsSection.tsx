@@ -1,23 +1,35 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import EventView from '@/app/(admin)/admin/dashboard/components/views/eventView';
 import { Button } from '@/components/ui/button';
 
-// Dynamically load the Tiptap JSON viewer (no SSR) — kept for description rendering if needed
+// JSON / Tiptap viewer (no SSR)
 const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-viewer'), {
   ssr: false,
 });
+
+/**
+ * EventsSection
+ *
+ * - Grid of events by default (cards use banner as preview).
+ * - When an event is selected, renders full detail view inside this component:
+ *   Title -> By / Created / Updated -> Text preview -> Banner -> Actions (Back, Download, Edit, Delete)
+ *   -> Details card (uses JSON/Tiptap viewer for any JSON-like content) -> Event Images slider.
+ * - Calls onToggleControls(true) when opening a detail and onToggleControls(false) when closing.
+ *
+ * Hooks are top-level (no hook calls inside nested/conditional functions).
+ */
 
 export default function EventsSection({
   paginatedData,
   page,
   rowsPerPage,
   handleEdit,
+  handleView, // optional callback
   handleDelete,
   currentUserRole,
-  TableActions, // kept for compatibility though not used for card UI
+  TableActions,
   deleteId,
   deleteLoading,
   onToggleControls,
@@ -26,6 +38,7 @@ export default function EventsSection({
   page: number;
   rowsPerPage: number;
   handleEdit: (record: any) => void;
+  handleView?: (r: any) => void;
   handleDelete: (id: string | number) => void;
   currentUserRole?: string;
   TableActions?: React.FC<any>;
@@ -33,14 +46,11 @@ export default function EventsSection({
   deleteLoading?: boolean;
   onToggleControls?: (hide: boolean) => void;
 }) {
-  const [viewingEvent, setViewingEvent] = useState<any | null>(null);
   const [data, setData] = useState<any[]>(paginatedData ?? []);
+  const [viewingEvent, setViewingEvent] = useState<any | null>(null);
 
-  useEffect(() => {
-    setData(paginatedData ?? []);
-  }, [paginatedData]);
+  useEffect(() => setData(paginatedData ?? []), [paginatedData]);
 
-  // Notify parent (dashboard) to hide/show controls when an event is opened inline
   useEffect(() => {
     if (typeof onToggleControls === 'function') onToggleControls(!!viewingEvent);
     return () => {
@@ -48,17 +58,7 @@ export default function EventsSection({
     };
   }, [viewingEvent, onToggleControls]);
 
-  // Helpers
-  function formatDate(d: any) {
-    if (!d) return '-';
-    try {
-      return new Date(d).toLocaleString();
-    } catch {
-      return String(d);
-    }
-  }
-
-  // Try to parse JSON-like strings, otherwise return raw
+  // ---------- helpers ----------
   function tryParseMaybeString(v: any) {
     if (v == null) return null;
     if (typeof v !== 'string') return v;
@@ -74,32 +74,27 @@ export default function EventsSection({
     return s;
   }
 
-  // Extract a single URL from candidate (string | object | array)
   function extractUrlFromCandidate(candidate: any): string | null {
     if (!candidate) return null;
     const value = tryParseMaybeString(candidate);
     if (!value) return null;
-
-    if (typeof value === 'string') {
-      return value.trim() || null;
-    }
+    if (typeof value === 'string') return value.trim() || null;
     if (Array.isArray(value)) {
       for (const it of value) {
         if (typeof it === 'string' && it.trim()) return it.trim();
         if (it && typeof it === 'object') {
-          const maybe = it.url ?? it.src ?? it.path;
+          const maybe = (it as any).url ?? (it as any).src ?? (it as any).path;
           if (maybe && typeof maybe === 'string' && maybe.trim()) return maybe.trim();
         }
       }
       return null;
     }
     if (typeof value === 'object') {
-      return (value.url ?? value.src ?? value.path ?? null) as string | null;
+      return (value as any).url ?? (value as any).src ?? (value as any).path ?? null;
     }
     return null;
   }
 
-  // Extract an array of urls from candidate (string/array/object)
   function extractArrayFromCandidate(candidate: any): string[] {
     const out: string[] = [];
     if (candidate == null) return out;
@@ -111,7 +106,7 @@ export default function EventsSection({
         if (!it) continue;
         if (typeof it === 'string' && it.trim()) out.push(it.trim());
         else if (typeof it === 'object') {
-          const maybe = it.url ?? it.src ?? it.path;
+          const maybe = (it as any).url ?? (it as any).src ?? (it as any).path;
           if (maybe && typeof maybe === 'string' && maybe.trim()) out.push(maybe.trim());
         }
       }
@@ -119,13 +114,13 @@ export default function EventsSection({
     }
 
     if (typeof value === 'string' && value.trim()) {
-      // handle comma-separated fallback
       if (value.includes(',')) {
-        const parts = value
-          .split(',')
-          .map((p) => p.trim())
-          .filter(Boolean);
-        out.push(...parts);
+        out.push(
+          ...value
+            .split(',')
+            .map((p: string) => p.trim())
+            .filter(Boolean)
+        );
       } else {
         out.push(value.trim());
       }
@@ -133,7 +128,7 @@ export default function EventsSection({
     }
 
     if (typeof value === 'object') {
-      const maybe = value.url ?? value.src ?? value.path;
+      const maybe = (value as any).url ?? (value as any).src ?? (value as any).path;
       if (maybe && typeof maybe === 'string' && maybe.trim()) out.push(maybe.trim());
       return out;
     }
@@ -141,197 +136,32 @@ export default function EventsSection({
     return out;
   }
 
-  // Convert possibly-relative url to absolute using current origin (if available)
-  function toAbsoluteUrl(origin: string | null, url: string | null | undefined): string | null {
+  function toAbsoluteUrl(url: string | null | undefined): string | null {
     if (!url) return null;
     const s = String(url).trim();
     if (!s) return null;
     if (/^https?:\/\//i.test(s)) return s;
     if (s.startsWith('//')) {
-      // protocol relative - assume https from origin if missing
-      if (origin) {
-        return `${new URL(origin).protocol}${s}`;
-      }
+      if (typeof window !== 'undefined') return `${window.location.protocol}${s}`;
       return `https:${s}`;
     }
     if (s.startsWith('/')) {
-      return origin ? `${origin}${s}` : s;
+      if (typeof window !== 'undefined') return `${window.location.origin}${s}`;
+      return s;
     }
-    // treat as relative path
-    return origin ? `${origin}/${s}` : s;
+    if (typeof window !== 'undefined') return `${window.location.origin}/${s}`;
+    return s;
   }
 
-  // Choose banner (single) and first array image (separate)
-  function getBannerUrl(ev: any, origin: string | null) {
-    const rawBanner = ev?.eventBanner ?? ev?.banner ?? ev?.cover ?? null;
-    const bannerCandidate = extractUrlFromCandidate(rawBanner);
-    return toAbsoluteUrl(origin, bannerCandidate);
-  }
-
-  function getFirstArrayImage(ev: any, origin: string | null) {
-    const raw = ev?.eventImages ?? ev?.images ?? null;
-    const arr = extractArrayFromCandidate(raw);
-    if (arr.length === 0) return null;
-    return toAbsoluteUrl(origin, arr[0]);
-  }
-
-  // Card/grid listing
-  function renderGrid(origin: string | null) {
-    if (!Array.isArray(data) || data.length === 0) {
-      return <div className="text-center py-8 text-gray-500">No events found.</div>;
+  function formatDate(d: any) {
+    if (!d) return '-';
+    try {
+      return new Date(d).toLocaleString();
+    } catch {
+      return String(d);
     }
-
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-        {data.map((event) => {
-          const title = event.eventTitle ?? event.title ?? 'Untitled Event';
-          const start = formatDate(event.eventStartDate);
-          const end = formatDate(event.eventEndDate);
-          const status = event.eventStatus ?? event.status ?? '-';
-          const preview = buildPreview(event.eventDescription ?? event.eventDetails);
-          const pdfUrl = extractUrlFromCandidate(event.eventFile ?? event.file ?? null);
-          const firstImageRaw =
-            extractArrayFromCandidate(event.eventImages ?? event.images ?? null)[0] ?? null;
-          const firstImage = toAbsoluteUrl(origin, firstImageRaw);
-
-          return (
-            <div
-              key={event.id}
-              className="flex flex-col p-4 border rounded-md bg-white dark:bg-gray-900 hover:shadow-sm transition-shadow"
-              role="button"
-              tabIndex={0}
-              onClick={() => setViewingEvent(event)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') setViewingEvent(event);
-              }}
-            >
-              {/* Title on top */}
-              <h3 className="font-semibold text-lg truncate">{title}</h3>
-
-              {/* Image below title (first from images array) */}
-              {firstImage ? (
-                <img
-                  src={firstImage}
-                  alt={title}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setViewingEvent(event);
-                  }}
-                  className="w-full h-40 object-cover rounded mt-3 mb-3 cursor-pointer"
-                />
-              ) : (
-                <div className="w-full h-40 bg-gray-100 dark:bg-gray-800 rounded mt-3 mb-3" />
-              )}
-
-              {/* Status / Dates */}
-              <div className="text-sm text-gray-600">
-                <div className="whitespace-nowrap font-medium">Status: {status}</div>
-                <div className="whitespace-nowrap">Start: {start}</div>
-                <div className="whitespace-nowrap">End: {end}</div>
-              </div>
-
-              {/* Preview */}
-              <div className="mt-3 text-sm text-gray-700 dark:text-gray-300 flex-1">
-                {preview ? (
-                  <div
-                    style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {preview}
-                  </div>
-                ) : (
-                  <div className="text-sm text-muted">No description</div>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="mt-4 flex items-center gap-2">
-                {pdfUrl ? (
-                  <a
-                    href={toAbsoluteUrl(window?.location?.origin ?? null, pdfUrl) ?? pdfUrl}
-                    download
-                    onClick={(e) => e.stopPropagation()}
-                    className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
-                  >
-                    Download
-                  </a>
-                ) : null}
-
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setViewingEvent(event);
-                  }}
-                >
-                  View
-                </Button>
-
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEdit(event);
-                  }}
-                >
-                  Edit
-                </Button>
-
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="destructive"
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    await handleDelete(event.id);
-                  }}
-                  disabled={Boolean(deleteLoading && deleteId === event.id)}
-                >
-                  {deleteLoading && deleteId === event.id ? 'Deleting...' : 'Delete'}
-                </Button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
   }
 
-  // small preview builder reused in cards
-  function buildPreview(content: any, maxChars = 120) {
-    if (content == null) return '';
-    let fullText = '';
-    if (typeof content === 'string') {
-      try {
-        const parsed = JSON.parse(content);
-        if (parsed && typeof parsed === 'object') {
-          fullText = extractTextFromTiptap(parsed);
-        } else {
-          fullText = content;
-        }
-      } catch {
-        fullText = content;
-      }
-    } else if (typeof content === 'object') {
-      fullText = extractTextFromTiptap(content);
-    } else {
-      fullText = String(content);
-    }
-    fullText = fullText.replace(/\s+/g, ' ').trim();
-    if (fullText.length <= maxChars) return fullText;
-    return fullText.slice(0, maxChars).trim() + '...';
-  }
-
-  // Extract plain text from tiptap-style JSON or return string
   function extractTextFromTiptap(node: any): string {
     if (!node) return '';
     if (typeof node === 'string') return node;
@@ -341,80 +171,432 @@ export default function EventsSection({
       return text;
     }
     if (typeof node === 'object') {
-      if (typeof node.text === 'string') {
-        text += node.text;
-      }
-      if (Array.isArray(node.content)) {
-        for (const child of node.content) {
-          text += extractTextFromTiptap(child);
-        }
-      }
+      if (typeof node.text === 'string') text += node.text;
+      if (Array.isArray(node.content))
+        for (const child of node.content) text += extractTextFromTiptap(child);
       return text;
     }
     return '';
   }
 
-  // Render full inline event view (respect requested order)
-  function renderFullEvent(ev: any, origin: string | null) {
-    const title = ev.eventTitle ?? ev.title ?? 'Event';
-    const bannerUrl = getBannerUrl(ev, origin);
-    const firstImage = getFirstArrayImage(ev, origin);
+  function buildPreview(content: any, maxChars = 120) {
+    if (content == null) return '';
+    let fullText = '';
+    if (typeof content === 'string') {
+      try {
+        const parsed = JSON.parse(content);
+        if (parsed && typeof parsed === 'object') fullText = extractTextFromTiptap(parsed);
+        else fullText = content;
+      } catch {
+        fullText = content;
+      }
+    } else if (typeof content === 'object') {
+      fullText = extractTextFromTiptap(content);
+    } else fullText = String(content);
 
-    const createdBy = ev?.createdBy
-      ? `${ev.createdBy.firstName ?? ''} ${ev.createdBy.lastName ?? ''}`.trim() ||
-        ev.createdBy.username
-      : 'System';
-    const createdAt = formatDate(ev.createdAt ?? ev.eventStartDate);
-    const updatedAt = formatDate(ev.updatedAt ?? ev.eventEndDate);
-    const pdfUrl = extractUrlFromCandidate(ev.eventFile ?? ev.file ?? ev.files ?? null);
+    fullText = fullText.replace(/\s+/g, ' ').trim();
+    if (fullText.length <= maxChars) return fullText;
+    return fullText.slice(0, maxChars).trim() + '...';
+  }
+
+  // detect tiptap-like doc loosely
+  function isTiptapDoc(obj: any): boolean {
+    if (!obj || typeof obj !== 'object') return false;
+    if (obj.type === 'doc') return true;
+    if (Array.isArray(obj.content)) return true;
+    if (typeof obj.content === 'object') return true;
+    return false;
+  }
+
+  // Render arbitrary JSON in a friendly way:
+  function humanizeKey(k: string) {
+    return String(k)
+      .replace(/[_\-]/g, ' ')
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  function renderArbitraryJson(obj: any): React.ReactNode {
+    if (obj == null) return <div className="text-sm text-gray-500">—</div>;
+
+    if (Array.isArray(obj)) {
+      return (
+        <ul className="list-disc list-inside text-sm">
+          {obj.map((it, i) => (
+            <li key={i}>{typeof it === 'object' ? renderArbitraryJson(it) : String(it)}</li>
+          ))}
+        </ul>
+      );
+    }
+
+    if (typeof obj !== 'object') {
+      return <div className="whitespace-pre-line text-sm">{String(obj)}</div>;
+    }
+
+    const entries = Object.entries(obj);
+    return (
+      <div className="space-y-3">
+        {entries.map(([key, val]) => {
+          const label = humanizeKey(key);
+          if (val == null || val === '') {
+            return (
+              <div key={key}>
+                <div className="text-sm font-medium">{label}</div>
+                <div className="text-sm text-gray-500">—</div>
+              </div>
+            );
+          }
+
+          if (Array.isArray(val)) {
+            return (
+              <div key={key}>
+                <div className="text-sm font-medium">{label}</div>
+                <ul className="list-disc list-inside mt-1 text-sm">
+                  {val.map((it, i) => (
+                    <li key={i}>{typeof it === 'object' ? renderArbitraryJson(it) : String(it)}</li>
+                  ))}
+                </ul>
+              </div>
+            );
+          }
+
+          if (typeof val === 'object') {
+            return (
+              <div key={key}>
+                <div className="text-sm font-medium">{label}</div>
+                <div className="mt-1">{renderArbitraryJson(val)}</div>
+              </div>
+            );
+          }
+
+          return (
+            <div key={key}>
+              <div className="text-sm font-medium">{label}</div>
+              <div className="text-sm mt-1">{String(val)}</div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Log parsed data when viewingEvent changes (debug)
+  useEffect(() => {
+    if (!viewingEvent) return;
+    const parsedDetails = tryParseMaybeString(viewingEvent.eventDetails ?? null);
+    const parsedDescription = tryParseMaybeString(viewingEvent.eventDescription ?? null);
+
+    // eslint-disable-next-line no-console
+    console.debug('[EventsSection] viewing.eventDetails raw:', viewingEvent.eventDetails);
+    // eslint-disable-next-line no-console
+    console.debug('[EventsSection] viewing.parsedDetails:', parsedDetails);
+    // eslint-disable-next-line no-console
+    console.debug('[EventsSection] viewing.eventDescription raw:', viewingEvent.eventDescription);
+    // eslint-disable-next-line no-console
+    console.debug('[EventsSection] viewing.parsedDescription:', parsedDescription);
+  }, [viewingEvent]);
+
+  // ---------- grid ----------
+  function renderGrid() {
+    if (!Array.isArray(data) || data.length === 0) {
+      return <div className="text-center py-8 text-gray-500">No events found.</div>;
+    }
 
     return (
-      <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
-        {/* 1. Title (only once) */}
-        <div>
+      <div className="grid grid-cols-1 gap-4">
+        {data.map((ev) => {
+          const title = ev.eventTitle ?? ev.title ?? 'Untitled Event';
+
+          // use banner for card preview
+          const bannerRaw = extractUrlFromCandidate(
+            ev.eventBanner ?? ev.banner ?? ev.cover ?? null
+          );
+          const bannerSrc = toAbsoluteUrl(bannerRaw) ?? null;
+
+          const preview = buildPreview(ev.eventDescription ?? ev.eventDetails);
+          const start = formatDate(ev.eventStartDate);
+          const end = formatDate(ev.eventEndDate);
+          const pdf = extractUrlFromCandidate(ev.eventFile ?? ev.file ?? null);
+
+          return (
+            <div
+              key={ev.id}
+              className="p-0 border rounded-md bg-white dark:bg-gray-900 hover:shadow-sm transition-shadow overflow-hidden"
+            >
+              {/* Title & meta above the banner */}
+              <div className="p-3">
+                <h3
+                  className="font-semibold text-lg truncate cursor-pointer"
+                  onClick={() => {
+                    setViewingEvent(ev);
+                    if (typeof handleView === 'function') handleView(ev);
+                  }}
+                >
+                  {title}
+                </h3>
+                <div className="mt-2 text-sm text-gray-600 flex flex-wrap gap-4">
+                  <div className="whitespace-nowrap">
+                    By:{' '}
+                    {ev.createdBy
+                      ? `${ev.createdBy.firstName ?? ''} ${ev.createdBy.lastName ?? ''}`.trim()
+                      : 'System'}
+                  </div>
+                  <div className="whitespace-nowrap">Start: {start}</div>
+                  <div className="whitespace-nowrap">End: {end}</div>
+                </div>
+
+                {/* Text preview above the banner */}
+                <div className="mt-3 text-sm text-gray-700 dark:text-gray-300">
+                  {preview ? (
+                    <div
+                      style={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {preview}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted">No description</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Banner area (clickable) */}
+              <div
+                className="relative w-full h-40 md:h-44 cursor-pointer"
+                onClick={() => {
+                  setViewingEvent(ev);
+                  if (typeof handleView === 'function') handleView(ev);
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    setViewingEvent(ev);
+                    if (typeof handleView === 'function') handleView(ev);
+                  }
+                }}
+              >
+                {bannerSrc ? (
+                  <img src={bannerSrc} alt={title} className="w-full h-full object-cover" />
+                ) : (
+                  (() => {
+                    const firstImage =
+                      extractArrayFromCandidate(ev?.eventImages ?? ev?.images ?? null)[0] ?? null;
+                    if (firstImage) {
+                      return (
+                        <img
+                          src={toAbsoluteUrl(firstImage) ?? undefined}
+                          alt={title}
+                          className="w-full h-full object-cover"
+                        />
+                      );
+                    }
+                    return <div className="w-full h-full bg-gray-100 dark:bg-gray-800" />;
+                  })()
+                )}
+              </div>
+
+              {/* Buttons immediately below the banner */}
+              <div className="p-3 flex items-center justify-end gap-2 border-t dark:border-gray-800 bg-white dark:bg-gray-900">
+                {pdf ? (
+                  <a
+                    href={toAbsoluteUrl(pdf) ?? undefined}
+                    download
+                    onClick={(e) => e.stopPropagation()}
+                    className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
+                  >
+                    Download
+                  </a>
+                ) : null}
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setViewingEvent(ev);
+                    if (typeof handleView === 'function') handleView(ev);
+                  }}
+                >
+                  View
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEdit(ev);
+                  }}
+                >
+                  Edit
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    await handleDelete(ev.id);
+                  }}
+                  disabled={Boolean(deleteLoading && deleteId === ev.id)}
+                >
+                  {deleteLoading && deleteId === ev.id ? 'Deleting...' : 'Delete'}
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // ---------- detail view - nested component for image slider ----------
+  function EventImagesSlider({ images }: { images: string[] }) {
+    const valid = images.map((i) => toAbsoluteUrl(i)).filter(Boolean) as string[];
+    const [idx, setIdx] = useState(0);
+    const imagesKey = useMemo(() => JSON.stringify(valid), [valid]);
+
+    useEffect(() => setIdx(0), [imagesKey]);
+
+    if (valid.length === 0) return null;
+    if (valid.length === 1) {
+      return (
+        <div className="w-full">
+          <img src={valid[0]} alt="Event image" className="w-full h-80 object-cover rounded" />
+        </div>
+      );
+    }
+
+    return (
+      <div className="w-full">
+        <div className="relative">
+          <img
+            src={valid[idx]}
+            alt={`Event image ${idx + 1}`}
+            className="w-full h-80 object-cover rounded"
+          />
+          <button
+            aria-label="Prev image"
+            onClick={() => setIdx((i) => (i - 1 + valid.length) % valid.length)}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full"
+          >
+            ‹
+          </button>
+          <button
+            aria-label="Next image"
+            onClick={() => setIdx((i) => (i + 1) % valid.length)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full"
+          >
+            ›
+          </button>
+        </div>
+
+        {/* indicators */}
+        <div className="flex items-center justify-center gap-2 mt-2">
+          {valid.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setIdx(i)}
+              className={`w-2 h-2 rounded-full ${
+                i === idx ? 'bg-gray-800' : 'bg-gray-300 dark:bg-gray-600'
+              }`}
+              aria-label={`Go to image ${i + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- full event renderer ----------
+  function renderFullEvent(ev: any) {
+    const bannerRaw = extractUrlFromCandidate(ev.eventBanner ?? ev.banner ?? ev.cover ?? null);
+    const bannerSrc = toAbsoluteUrl(bannerRaw) ?? undefined;
+    const title = ev.eventTitle ?? ev.title ?? 'Event';
+    const createdBy =
+      ev.createdBy && (ev.createdBy.firstName || ev.createdBy.lastName)
+        ? `${ev.createdBy.firstName ?? ''} ${ev.createdBy.lastName ?? ''}`.trim()
+        : ev.createdBy?.username ?? 'System';
+    const createdAt = formatDate(ev.createdAt ?? ev.eventStartDate);
+    const updatedAt = formatDate(ev.updatedAt ?? ev.eventEndDate);
+    const pdfUrl = extractUrlFromCandidate(ev.eventFile ?? ev.file ?? null);
+    const pdfSrc = toAbsoluteUrl(pdfUrl) ?? undefined;
+    const images = extractArrayFromCandidate(ev.eventImages ?? ev.images ?? null);
+
+    // parse description/details for JSON-like content (use JSON viewer for tiptap docs, renderArbitraryJson otherwise)
+    const parsedDescription = (() => {
+      const d = ev.eventDescription ?? null;
+      if (!d) return null;
+      const maybe = tryParseMaybeString(d);
+      if (maybe && typeof maybe === 'object') return maybe;
+      return null;
+    })();
+
+    const parsedDetails = (() => {
+      const d = ev.eventDetails ?? null;
+      if (!d) return null;
+      const maybe = tryParseMaybeString(d);
+      if (maybe && typeof maybe === 'object') return maybe;
+      return null;
+    })();
+
+    // parse tags (array or JSON string or comma separated)
+    const tags = extractArrayFromCandidate(ev.eventTags ?? ev.tags ?? null);
+
+    // other simple fields
+    const location = ev.eventLocation ?? ev.location ?? '';
+    const startDate = formatDate(ev.eventStartDate);
+    const endDate = formatDate(ev.eventEndDate);
+    const status = ev.eventStatus ?? ev.status ?? '';
+    const publishStatus = ev.publishStatus ?? '';
+
+    return (
+      <div className="w-full max-w-4xl mx-auto">
+        {/* Title & meta (on top) */}
+        <div className="px-2">
           <h1 className="text-2xl font-semibold text-left">{title}</h1>
-        </div>
-
-        {/* 2. Full banner spanning left→right */}
-        {bannerUrl ? (
-          <div className="w-full">
-            <img src={bannerUrl} alt={title} className="w-full h-[360px] object-cover rounded" />
-          </div>
-        ) : null}
-
-        {/* 3. Created By / Created at / Updated at */}
-        <div className="text-sm text-gray-500">
-          <div>Created By: {createdBy}</div>
-          <div>
-            Created at: {createdAt} {updatedAt ? `· Updated at: ${updatedAt}` : null}
+          <div className="text-sm text-gray-500 mt-2">
+            By: {createdBy} · Created: {createdAt}
+            {updatedAt ? ` · Updated: ${updatedAt}` : null}
           </div>
         </div>
 
-        {/* 4. Buttons */}
-        <div className="flex items-center gap-2">
-          {pdfUrl ? (
+        {/* Banner (below title/meta) */}
+        {bannerSrc && (
+          <div className="w-full my-4">
+            <img src={bannerSrc} alt={title} className="w-full h-[320px] object-cover rounded-md" />
+          </div>
+        )}
+
+        {/* Actions (below banner) */}
+        <div className="px-2 mt-1 flex flex-wrap items-center gap-2">
+          <Button variant="ghost" onClick={() => setViewingEvent(null)}>
+            ← Back
+          </Button>
+
+          {pdfSrc && (
             <a
-              href={toAbsoluteUrl(window?.location?.origin ?? origin, pdfUrl) ?? pdfUrl}
+              href={pdfSrc}
               download
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
               Download Event File
             </a>
-          ) : null}
+          )}
 
-          <Button
-            onClick={() => {
-              handleEdit(ev);
-            }}
-            variant="outline"
-            size="sm"
-          >
+          <Button size="sm" variant="outline" onClick={() => handleEdit(ev)}>
             Edit
           </Button>
 
           <Button
-            variant="destructive"
             size="sm"
+            variant="destructive"
             onClick={async () => {
               await handleDelete(ev.id);
               setViewingEvent(null);
@@ -425,49 +607,112 @@ export default function EventsSection({
           </Button>
         </div>
 
-        {/* 5. Details */}
-        <div>
-          <div className="text-sm text-gray-500 mb-2">Details</div>
-          <div className="rounded border bg-white dark:bg-gray-900 p-3">
-            <EventView data={ev} onClose={() => setViewingEvent(null)} />
+        {/* Details card */}
+        <div className="px-2 mt-4">
+          <div className="rounded border bg-white dark:bg-gray-900 p-4 space-y-4">
+            <div className="text-sm text-gray-500">Details</div>
+
+            {/* Event Details */}
+            <div>
+              <div className="text-sm font-medium mb-1">Event Details</div>
+              {parsedDetails ? (
+                isTiptapDoc(parsedDetails) ? (
+                  <div className="prose dark:prose-invert">
+                    <TiptapJsonViewer content={parsedDetails} />
+                  </div>
+                ) : (
+                  renderArbitraryJson(parsedDetails)
+                )
+              ) : ev.eventDetails ? (
+                <div className="whitespace-pre-line">{String(ev.eventDetails)}</div>
+              ) : (
+                <div className="text-sm text-gray-500">No event details</div>
+              )}
+            </div>
+
+            {/* Event Description */}
+            <div>
+              <div className="text-sm font-medium mb-1">Event Description</div>
+              {parsedDescription ? (
+                isTiptapDoc(parsedDescription) ? (
+                  <div className="prose dark:prose-invert">
+                    <TiptapJsonViewer content={parsedDescription} />
+                  </div>
+                ) : (
+                  renderArbitraryJson(parsedDescription)
+                )
+              ) : ev.eventDescription ? (
+                <div className="whitespace-pre-line">{String(ev.eventDescription)}</div>
+              ) : (
+                <div className="text-sm text-gray-500">No description</div>
+              )}
+            </div>
+
+            {/* Metadata grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <div className="text-sm font-medium">Event Location</div>
+                <div className="text-sm text-gray-700">{location || '-'}</div>
+              </div>
+
+              <div>
+                <div className="text-sm font-medium">Event Start</div>
+                <div className="text-sm text-gray-700">{startDate}</div>
+              </div>
+
+              <div>
+                <div className="text-sm font-medium">Event End</div>
+                <div className="text-sm text-gray-700">{endDate}</div>
+              </div>
+
+              <div>
+                <div className="text-sm font-medium">Event Status</div>
+                <div className="text-sm text-gray-700">{status || '-'}</div>
+              </div>
+
+              <div>
+                <div className="text-sm font-medium">Publish Status</div>
+                <div className="text-sm text-gray-700">{publishStatus || '-'}</div>
+              </div>
+
+              <div>
+                <div className="text-sm font-medium">Event Tags</div>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {Array.isArray(tags) && tags.length > 0 ? (
+                    tags.map((t, i) => (
+                      <span
+                        key={i}
+                        className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-xs rounded-full cursor-help"
+                        title={t}
+                        aria-label={`Tag: ${t}`}
+                      >
+                        {t}
+                      </span>
+                    ))
+                  ) : (
+                    <div className="text-sm text-gray-500">—</div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* 6. Full image (first image from array) */}
-        {firstImage ? (
-          <div className="w-full">
-            <img src={firstImage} alt={`${title} image`} className="w-full object-cover rounded" />
-          </div>
-        ) : null}
+        {/* Event Images section */}
+        <div className="px-2 mt-6">
+          <h3 className="text-lg font-medium mb-2">Event Images</h3>
+          <EventImagesSlider images={images} />
+        </div>
       </div>
     );
   }
 
-  // Determine origin for URL resolution (server might not be available in client render, so use window origin if present)
-  const origin = typeof window !== 'undefined' ? window.location.origin : null;
-
-  // Viewing mode
-  if (viewingEvent) {
-    return (
-      <div className="space-y-4">
-        {/* Back control */}
-        <div className="flex items-center mb-2">
-          <Button variant="ghost" onClick={() => setViewingEvent(null)}>
-            ← Back
-          </Button>
-        </div>
-
-        <div className="p-0">{renderFullEvent(viewingEvent, origin)}</div>
-      </div>
-    );
-  }
-
-  // Default: show cards grid
-  return (
+  // ---------- render ----------
+  return viewingEvent ? (
+    <div className="space-y-4">{renderFullEvent(viewingEvent)}</div>
+  ) : (
     <>
-      {renderGrid(origin)}
-
-      {/* Optional TableActions (kept for compatibility) */}
+      {renderGrid()}
       <div className="mt-4">
         {TableActions ? (
           <TableActions data={data} columns={[]} tableRef={React.createRef()} />
