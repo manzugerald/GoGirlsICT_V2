@@ -131,7 +131,6 @@
     --color-pink-900: oklch(40.8% .153 2.432);
     --color-pink-950: oklch(28.4% .109 3.907);
     --color-rose-800: oklch(45.5% .188 13.697);
-    --color-slate-50: oklch(98.4% .003 247.858);
     --color-slate-100: oklch(96.8% .007 247.896);
     --color-gray-50: oklch(98.5% .002 247.839);
     --color-gray-100: oklch(96.7% .003 264.542);
@@ -469,10 +468,6 @@
     container: card-header / inline-size;
   }
 
-  .pointer-events-auto {
-    pointer-events: auto;
-  }
-
   .pointer-events-none {
     pointer-events: none;
   }
@@ -593,10 +588,6 @@
     bottom: calc(var(--spacing) * 1);
   }
 
-  .bottom-3 {
-    bottom: calc(var(--spacing) * 3);
-  }
-
   .bottom-8 {
     bottom: calc(var(--spacing) * 8);
   }
@@ -607,10 +598,6 @@
 
   .left-2 {
     left: calc(var(--spacing) * 2);
-  }
-
-  .left-4 {
-    left: calc(var(--spacing) * 4);
   }
 
   .left-\[50\%\] {
@@ -997,10 +984,6 @@
 
   .h-60 {
     height: calc(var(--spacing) * 60);
-  }
-
-  .h-64 {
-    height: calc(var(--spacing) * 64);
   }
 
   .h-80 {
@@ -1402,10 +1385,6 @@
     list-style-position: inside;
   }
 
-  .list-decimal {
-    list-style-type: decimal;
-  }
-
   .list-disc {
     list-style-type: disc;
   }
@@ -1572,10 +1551,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
-  }
-
-  .overflow-auto {
-    overflow: auto;
   }
 
   .overflow-hidden {
@@ -1990,10 +1965,6 @@
 
   .bg-secondary {
     background-color: var(--secondary);
-  }
-
-  .bg-slate-50 {
-    background-color: var(--color-slate-50);
   }
 
   .bg-slate-100 {
@@ -2426,10 +2397,6 @@
     white-space: pre-line;
   }
 
-  .whitespace-pre-wrap {
-    white-space: pre-wrap;
-  }
-
   .text-\[\#9f004d\] {
     color: #9f004d;
   }
@@ -2584,16 +2551,6 @@
 
   .text-white {
     color: var(--color-white);
-  }
-
-  .text-white\/90 {
-    color: #ffffffe6;
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .text-white\/90 {
-      color: color-mix(in oklab, var(--color-white) 90%, transparent);
-    }
   }
 
   .text-yellow-400 {
