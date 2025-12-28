@@ -20,6 +20,7 @@ import {
   FaUniversity,
   FaAngleLeft,
   FaAngleRight,
+  FaQuestionCircle,
 } from 'react-icons/fa';
 
 // Sections we keep + Charts/Home + Projects/Events/Reports/Institutions
@@ -33,6 +34,7 @@ import ProjectsSection from './components/sections/ProjectsSection';
 import EventsSection from './components/sections/EventsSection';
 import ReportsSection from './components/sections/ReportsSection';
 import InstitutionsSection from './components/sections/InstitutionsSection';
+import FAQsSection from './components/sections/FAQsSection';
 
 // Create/edit forms we keep + new ones
 import CreateBeneficiaryForm from './createBeneficiaryForm';
@@ -43,6 +45,7 @@ import CreateProjectForm from './createProjectForm';
 import CreateReportForm from './createReportForm';
 import CreateEventForm from './createEventForm';
 import CreateInstitutionForm from './createInstitutionForm';
+import CreateFAQForm from './createFAQForm';
 
 // View-only components we keep + new ones
 import BeneficiaryView from './components/views/beneficiaryView';
@@ -121,13 +124,14 @@ function TableControls({
   );
 }
 
-// Sections (added 'home', 'projects', 'events', 'reports', 'institutions')
+// Sections (added 'home', 'projects', 'events', 'reports', 'institutions', 'faqs')
 const sections = [
   'home',
   'projects',
   'events',
   'reports',
   'institutions',
+  'faqs',
   'beneficiaries',
   'messages',
   'responses', // kept in list so section can still be used programmatically
@@ -142,6 +146,7 @@ const sectionFeatures: Record<Section, { apiRoute?: string }> = {
   events: { apiRoute: '/api/events' },
   reports: { apiRoute: '/api/reports' },
   institutions: { apiRoute: '/api/institutions' },
+  faqs: { apiRoute: '/api/faq' },
   beneficiaries: { apiRoute: '/api/beneficiaries' },
   messages: { apiRoute: '/api/messages' },
   responses: { apiRoute: '/api/responses' },
@@ -155,6 +160,7 @@ const sectionIcons: Record<Section, React.ReactNode> = {
   events: <FaCalendarAlt className="text-green-600 dark:text-green-400" />,
   reports: <FaFilePdf className="text-red-600 dark:text-red-400" />,
   institutions: <FaUniversity className="text-blue-600 dark:text-blue-400" />,
+  faqs: <FaQuestionCircle className="text-indigo-600 dark:text-indigo-400" />,
   beneficiaries: <FaUsers className="text-indigo-600 dark:text-indigo-400" />,
   messages: <FaEnvelope className="text-orange-500 dark:text-orange-400" />,
   responses: <FaReply className="text-purple-600 dark:text-purple-400" />,
@@ -168,6 +174,7 @@ const sectionLabels: Record<Section, string> = {
   events: 'Events',
   reports: 'Reports',
   institutions: 'Institutions',
+  faqs: 'FAQs',
   beneficiaries: 'Beneficiaries',
   messages: 'Messages',
   responses: 'Responses',
@@ -182,6 +189,7 @@ const singularLabels: Record<Section, string> = {
   events: 'Event',
   reports: 'Report',
   institutions: 'Institution',
+  faqs: 'FAQ',
   beneficiaries: 'Beneficiary',
   messages: 'Message',
   responses: 'Response',
@@ -220,13 +228,25 @@ export default function AdminDashboardPage() {
     const searchType = (searchParams.get('type') as Section) ?? null;
     const sectionToLoad: Section =
       searchType && sections.includes(searchType) ? searchType : 'beneficiaries';
-    handleMenuClick(sectionToLoad);
+    // Call handleMenuClick but do not replace the URL on initial mount to avoid unnecessary router.replace loops
+    handleMenuClick(sectionToLoad, false);
     // eslint-disable-next-line
   }, []);
 
-  async function handleMenuClick(section: Section) {
+  async function handleMenuClick(section: Section, replaceUrl = true) {
     const newUrl = `${pathname}?type=${section}`;
-    router.replace(newUrl);
+    // Only replace the URL when requested (avoid infinite updates on initial mount)
+    if (replaceUrl) {
+      try {
+        router.replace(newUrl);
+      } catch {
+        // ignore replace errors
+      }
+    } else {
+      // still sync the pathname in the router history (do not force replace)
+      // no-op when replaceUrl === false
+    }
+
     setActiveSection(section);
     sectionRef.current = section;
     setEditRecord(null);
@@ -378,11 +398,9 @@ export default function AdminDashboardPage() {
     }
 
     // NEW: If the request came from users, fetch full user details before showing UserView
-    // This handles cases where UsersSection only passes an id (or a partial record).
     if (source === 'users' || sectionRef.current === 'users') {
       try {
         const id = record?.id ?? record;
-        // Attempt to fetch the full user record from the API
         const res = await fetch(`/api/users/${id}`);
         if (res.ok) {
           const fullRecord = await res.json();
@@ -390,7 +408,6 @@ export default function AdminDashboardPage() {
           setActiveSection('users');
           return;
         }
-        // If fetch fails (403/404), fall back to using the passed record (if it's an object)
       } catch {
         // ignore and fallback below
       }
@@ -498,45 +515,13 @@ export default function AdminDashboardPage() {
               deleteLoading={deleteLoading}
             />
           );
-        case 'events':
-          return (
-            <EventsSection
-              paginatedData={paginatedData}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              handleEdit={handleEdit}
-              handleView={(r: any) => handleView(r, 'events')}
-              handleDelete={handleDelete}
-              TableActions={() => null}
-              deleteId={deleteId}
-              deleteLoading={deleteLoading}
-              // ensure EventsSection notifies parent to hide/show controls
-              onToggleControls={(hide: boolean) => setHideControls(hide)}
-            />
-          );
-        case 'reports':
-          // ReportsSection handles inline viewing and uses onToggleControls to hide top controls
-          return (
-            <ReportsSection
-              paginatedData={paginatedData}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              handleEdit={handleEdit}
-              handleDelete={handleDelete}
-              currentUserRole={(session?.user as any)?.role ?? ''}
-              TableActions={() => null}
-              deleteId={deleteId}
-              deleteLoading={deleteLoading}
-              onToggleControls={(hide: boolean) => setHideControls(hide)}
-            />
-          );
         case 'institutions':
           return <InstitutionView data={viewRecord} onClose={handleCloseView} />;
         case 'home':
           return <ChartSection />;
         case 'settings':
-          // Settings section manages its own modal / edit UI internally
           return <SettingsSection currentUserId={(session?.user as any)?.id} />;
+        // no special view for faqs here - FAQsSection handles inline viewing itself
         default:
           return null;
       }
@@ -604,12 +589,21 @@ export default function AdminDashboardPage() {
             />
           );
         case 'users':
-          // Render the existing create/edit user form in edit mode.
           return (
             <CreateUserForm
               mode="edit"
               userId={String(editRecord?.id ?? editRecord?.userId ?? '')}
               initialData={editRecord?.initialData ?? undefined}
+              onSuccess={handleSaveEdit}
+              onCancel={handleCancelEdit}
+            />
+          );
+        case 'faqs':
+          return (
+            <CreateFAQForm
+              mode={editRecord?.id ? 'edit' : 'create'}
+              initialData={editRecord?.id ? editRecord : undefined}
+              currentUserId={(session?.user as any)?.id}
               onSuccess={handleSaveEdit}
               onCancel={handleCancelEdit}
             />
@@ -648,7 +642,6 @@ export default function AdminDashboardPage() {
             TableActions={() => null}
             deleteId={deleteId}
             deleteLoading={deleteLoading}
-            // ensure EventsSection notifies parent to hide/show controls (same pattern as ReportsSection)
             onToggleControls={(hide: boolean) => setHideControls(hide)}
           />
         );
@@ -681,6 +674,15 @@ export default function AdminDashboardPage() {
             deleteLoading={deleteLoading}
           />
         );
+      case 'faqs':
+        return (
+          <FAQsSection
+            paginatedData={paginatedData}
+            handleEdit={handleEdit}
+            handleDelete={handleDelete}
+            onToggleControls={(hide: boolean) => setHideControls(hide)}
+          />
+        );
       case 'beneficiaries':
         return (
           <BeneficiariesSection
@@ -695,7 +697,6 @@ export default function AdminDashboardPage() {
             currentUserRole={(session?.user as any)?.role ?? ''}
             TableActions={() => null}
             onAddMessage={(id: string) => {
-              // open create message modal bound to beneficiary
               setHideControls(true);
               setEditRecord({ beneficiaryId: id });
             }}
@@ -749,7 +750,6 @@ export default function AdminDashboardPage() {
           />
         );
       case 'settings':
-        // SettingsSection is rendered above when viewRecord is not set; here we also render it when selected as activeSection
         return <SettingsSection currentUserId={(session?.user as any)?.id} />;
       default:
         return null;
