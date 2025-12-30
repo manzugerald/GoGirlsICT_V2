@@ -1,17 +1,14 @@
+'use server';
+
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import bcrypt from 'bcrypt';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
-// import { redis } from '@/utils/redis';
 import { isPwned } from '@/lib/hibp';
 import { sendPasswordChangeEmail } from '@/lib/email';
 import { getIpFromRequest } from '@/lib/getIp';
-
-const USERS_CACHE_KEY = 'users:all';
-const SINGLE_USER_CACHE_PREFIX = 'users:';
-// const CACHE_TTL = 60 * 60 * 24 * 7;
 
 const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '12', 10);
 const MAX_HISTORY = parseInt(process.env.MAX_HISTORY || '5', 10);
@@ -94,21 +91,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         return NextResponse.json({ error: 'Current password incorrect' }, { status: 401 });
       }
 
-      const historyRows = await prisma.passwordHistory.findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
-        take: MAX_HISTORY,
-        select: { passwordHash: true },
-      });
-      const hashesToCheck = [user.password, ...historyRows.map((r) => r.passwordHash)];
-      for (const h of hashesToCheck) {
-        if (!h) continue;
-        const match = await bcrypt.compare(password, h);
-        if (match) {
-          return NextResponse.json({ error: 'Cannot reuse a previous password' }, { status: 400 });
-        }
-      }
-
+      // NOTE: Removed previous-password reuse check per request.
+      // Keep HIBP check as best-effort
       try {
         const { pwned, count } = await isPwned(password);
         if (pwned) {
@@ -270,16 +254,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       },
     });
 
-    // Invalidate cache (redis commented)
-    // try {
-    //   await Promise.all([
-    //     redis.del(SINGLE_USER_CACHE_PREFIX + userId),
-    //     redis.del(USERS_CACHE_KEY),
-    //   ]);
-    // } catch (err) {
-    //   console.warn('Redis del failed during PATCH:', err);
-    // }
-
     return NextResponse.json({ message: 'User updated', user: updatedUser });
   } catch (err: any) {
     console.error('PATCH /api/users/:id error', err);
@@ -305,16 +279,6 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
     }
 
     await prisma.user.delete({ where: { id: userId } });
-
-    // Invalidate cache (redis commented)
-    // try {
-    //   await Promise.all([
-    //     redis.del(SINGLE_USER_CACHE_PREFIX + userId),
-    //     redis.del(USERS_CACHE_KEY),
-    //   ]);
-    // } catch (err) {
-    //   console.warn('Redis del failed during DELETE:', err);
-    // }
 
     return NextResponse.json({ message: 'User deleted' });
   } catch (err: any) {

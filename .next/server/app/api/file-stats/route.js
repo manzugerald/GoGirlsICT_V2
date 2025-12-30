@@ -1,7 +1,12 @@
 const CHUNK_PUBLIC_PATH = "server/app/api/file-stats/route.js";
 const runtime = require("../../../chunks/[turbopack]_runtime.js");
-runtime.loadChunk("server/chunks/[root-of-the-server]__ac5aab86._.js");
-runtime.loadChunk("server/chunks/node_modules_8d5a785d._.js");
+runtime.loadChunk("server/chunks/[externals]_node:crypto_aca617c2._.js");
+runtime.loadChunk("server/chunks/lib_generated_prisma_runtime_client_9488471d.js");
+runtime.loadChunk("server/chunks/lib_generated_prisma_query_compiler_bg_wasm-base64_fc02a2fd.js");
+runtime.loadChunk("server/chunks/lib_generated_prisma_bc742b67._.js");
+runtime.loadChunk("server/chunks/_08c8ffa2._.js");
+runtime.loadChunk("server/chunks/[root-of-the-server]__ba549a6e._.js");
+runtime.loadChunk("server/chunks/node_modules_f2425094._.js");
 runtime.getOrInstantiateRuntimeModule("[project]/.next-internal/server/app/api/file-stats/route/actions.js [app-rsc] (server actions loader, ecmascript)", CHUNK_PUBLIC_PATH);
 runtime.getOrInstantiateRuntimeModule("[project]/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/app/api/file-stats/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)", CHUNK_PUBLIC_PATH);
 module.exports = runtime.getOrInstantiateRuntimeModule("[project]/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/app/api/file-stats/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)", CHUNK_PUBLIC_PATH).exports;
