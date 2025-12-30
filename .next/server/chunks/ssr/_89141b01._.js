@@ -11,7 +11,7 @@ __turbopack_context__.s({
     "SERVER_URL": (()=>SERVER_URL)
 });
 const APP_NAME = ("TURBOPACK compile-time value", "GOGIRLS ICT INITIATIVE") || 'GOGIRLS ICT INTIATIVE';
-const APP_DESCRIPTION = ("TURBOPACK compile-time value", "'STEAM Mentorship for Girls';") || 'STEAM Mentorship for Girls';
+const APP_DESCRIPTION = ("TURBOPACK compile-time value", "STEAM Mentorship for Girls") || 'STEAM Mentorship for Girls';
 const SERVER_URL = ("TURBOPACK compile-time value", "http://localhost:3000") || 'http://localhost:3000';
 }}),
 "[project]/lib/utils.ts [app-ssr] (ecmascript)": ((__turbopack_context__) => {

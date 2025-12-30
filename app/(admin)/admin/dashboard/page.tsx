@@ -21,6 +21,7 @@ import {
   FaAngleLeft,
   FaAngleRight,
   FaQuestionCircle,
+  FaLightbulb,
 } from 'react-icons/fa';
 
 // Sections we keep + Charts/Home + Projects/Events/Reports/Institutions
@@ -51,7 +52,6 @@ import CreateFAQForm from './createFAQForm';
 import BeneficiaryView from './components/views/beneficiaryView';
 import MessageView from './components/views/messageView';
 import ResponseView from './components/views/responseView';
-import UserView from './components/views/userView';
 import EventView from './components/views/eventView';
 import InstitutionView from './components/views/institutionView';
 import ReportView from './components/views/reportView';
@@ -67,6 +67,7 @@ function TableControls({
   sectionLabels,
   hideSearch,
   addNewLabel,
+  hideAllControls,
 }: {
   search: string;
   setSearch: (s: string) => void;
@@ -77,6 +78,8 @@ function TableControls({
   sectionLabels: Record<string, string>;
   hideSearch?: boolean;
   addNewLabel?: string;
+  // when true, hide export/download/add buttons regardless of hideSearch
+  hideAllControls?: boolean;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2 justify-start mb-4">
@@ -92,7 +95,7 @@ function TableControls({
         )}
 
         {/* Export / Download / Add New - inline group */}
-        {!hideSearch && (
+        {!hideSearch && !hideAllControls && (
           <div className="flex items-center gap-2 flex-wrap">
             <button
               className="px-2 py-1 border rounded text-sm bg-green-50 hover:bg-green-100 dark:bg-gray-800 dark:hover:bg-green-900"
@@ -160,7 +163,7 @@ const sectionIcons: Record<Section, React.ReactNode> = {
   events: <FaCalendarAlt className="text-green-600 dark:text-green-400" />,
   reports: <FaFilePdf className="text-red-600 dark:text-red-400" />,
   institutions: <FaUniversity className="text-blue-600 dark:text-blue-400" />,
-  faqs: <FaQuestionCircle className="text-indigo-600 dark:text-indigo-400" />,
+  faqs: <FaLightbulb className="text-yellow-600 dark:text-yellow-400" />,
   beneficiaries: <FaUsers className="text-indigo-600 dark:text-indigo-400" />,
   messages: <FaEnvelope className="text-orange-500 dark:text-orange-400" />,
   responses: <FaReply className="text-purple-600 dark:text-purple-400" />,
@@ -345,7 +348,7 @@ export default function AdminDashboardPage() {
   }
 
   // Unified view handler used by sections.
-
+  // NOTE: we intentionally do NOT set viewRecord for users here — UsersSection now handles inline viewing.
   async function handleView(record: any, source?: Section) {
     setHideControls(true);
 
@@ -354,7 +357,7 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    // If the request came from the messages list, show the MessageView (with responses)
+    // Messages: fetch full message + responses and show MessageView
     if (source === 'messages' || sectionRef.current === 'messages') {
       try {
         const id = record?.id ?? record;
@@ -381,7 +384,7 @@ export default function AdminDashboardPage() {
       }
     }
 
-    // If the request came from responses, show ResponseView
+    // Responses: fetch full response
     if (source === 'responses' || sectionRef.current === 'responses') {
       try {
         const id = record?.id ?? record;
@@ -397,23 +400,7 @@ export default function AdminDashboardPage() {
       }
     }
 
-    // NEW: If the request came from users, fetch full user details before showing UserView
-    if (source === 'users' || sectionRef.current === 'users') {
-      try {
-        const id = record?.id ?? record;
-        const res = await fetch(`/api/users/${id}`);
-        if (res.ok) {
-          const fullRecord = await res.json();
-          setViewRecord(fullRecord);
-          setActiveSection('users');
-          return;
-        }
-      } catch {
-        // ignore and fallback below
-      }
-    }
-
-    // For beneficiaries, projects, events, reports, institutions or fallback, set viewRecord directly
+    // For other sections we'll just set viewRecord directly
     setViewRecord(record);
   }
 
@@ -443,6 +430,13 @@ export default function AdminDashboardPage() {
       setDeleteLoading(false);
       setDeleteId(null);
     }
+  }
+
+  // NEW: open password-only edit flow (admin forced change)
+  function handlePasswordEdit(record: any) {
+    setHideControls(true);
+    // Mark editRecord as password-only by attaching a flag
+    setEditRecord({ ...record, _passwordOnly: true });
   }
 
   function getCurrentColumns(): any[] {
@@ -521,7 +515,8 @@ export default function AdminDashboardPage() {
           return <ChartSection />;
         case 'settings':
           return <SettingsSection currentUserId={(session?.user as any)?.id} />;
-        // no special view for faqs here - FAQsSection handles inline viewing itself
+        // Note: we intentionally do NOT render a dedicated UserView here.
+        // UsersSection handles inline viewing of a single user.
         default:
           return null;
       }
@@ -593,7 +588,14 @@ export default function AdminDashboardPage() {
             <CreateUserForm
               mode="edit"
               userId={String(editRecord?.id ?? editRecord?.userId ?? '')}
-              initialData={editRecord?.initialData ?? undefined}
+              // pass the full record so the form doesn't need to re-fetch
+              initialData={editRecord ?? undefined}
+              // If editRecord._passwordOnly is true, show only password fields (admin forced change)
+              onlyPasswordFields={!!editRecord?._passwordOnly}
+              // When password-only, admin change shouldn't require the user's current password.
+              // When editing other details, we hide password fields instead.
+              requireCurrentPassword={!editRecord?._passwordOnly}
+              hidePasswordFields={!editRecord?._passwordOnly}
               onSuccess={handleSaveEdit}
               onCancel={handleCancelEdit}
             />
@@ -628,6 +630,7 @@ export default function AdminDashboardPage() {
             TableActions={() => null}
             deleteId={deleteId}
             deleteLoading={deleteLoading}
+            onToggleControls={(hide: boolean) => setHideControls(hide)}
           />
         );
       case 'events':
@@ -678,7 +681,12 @@ export default function AdminDashboardPage() {
         return (
           <FAQsSection
             paginatedData={paginatedData}
-            handleEdit={handleEdit}
+            // IMPORTANT: don't call handleEdit inside this prop (avoid name collision / recursion).
+            // Instead directly set local state so controls/pagination hide correctly.
+            handleEdit={(rec) => {
+              setHideControls(true);
+              setEditRecord(rec);
+            }}
             handleDelete={handleDelete}
             onToggleControls={(hide: boolean) => setHideControls(hide)}
           />
@@ -736,17 +744,13 @@ export default function AdminDashboardPage() {
           />
         );
       case 'users':
+        // Render UsersSection directly. It now handles inline "View" (expanded details)
         return (
           <UsersSection
             paginatedData={paginatedData}
-            page={page}
-            rowsPerPage={rowsPerPage}
             handleEdit={handleEdit}
-            handleView={(r: any) => handleView(r, 'users')}
+            handlePasswordEdit={handlePasswordEdit}
             handleDelete={handleDelete}
-            TableActions={() => null}
-            deleteId={deleteId}
-            deleteLoading={deleteLoading}
           />
         );
       case 'settings':
@@ -760,6 +764,10 @@ export default function AdminDashboardPage() {
   const singularLabel =
     singularLabels[activeSection] ?? sectionLabels[activeSection].replace(/s$/i, '');
   const isHome = activeSection === 'home';
+
+  // Effective hide: hide controls/pagination when hideControls is true OR
+  // when an edit or view form is open. This ensures controls are hidden reliably.
+  const effectiveHideControls = hideControls || Boolean(editRecord) || Boolean(viewRecord);
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -833,7 +841,7 @@ export default function AdminDashboardPage() {
 
           {/* Controls row (search / export / download / add), left-aligned below the title.
               For Home, hide the search box and the Add button per request. */}
-          {!hideControls && (
+          {!effectiveHideControls && (
             <div className="mt-4">
               <TableControls
                 search={search}
@@ -845,6 +853,8 @@ export default function AdminDashboardPage() {
                 sectionLabels={sectionLabels}
                 hideSearch={isHome}
                 addNewLabel={isSettingsSection || isHome ? undefined : `Add a new ${singularLabel}`}
+                // also pass hideControls so TableControls can hide export/add when editing
+                hideAllControls={effectiveHideControls}
               />
             </div>
           )}
@@ -856,7 +866,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Pagination */}
-        {pageCount > 1 && !hideControls && (
+        {pageCount > 1 && !effectiveHideControls && (
           <div className="flex gap-2 mt-4 justify-end items-center">
             <button
               className="px-2 py-1 rounded border dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"

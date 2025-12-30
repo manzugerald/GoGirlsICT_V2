@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 
-// JSON / Tiptap viewer (no SSR)
+// JSON / Tiptap viewer (no SSR) — keep available if you want the rich renderer later
 const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-viewer'), {
   ssr: false,
 });
@@ -36,16 +36,39 @@ export default function FAQsSection({
   handleDelete: (id: string | number) => void;
   onToggleControls?: (hide: boolean) => void;
 }) {
-  const [viewing, setViewing] = useState<FAQWithRelations | null>(null);
+  // Only one expanded FAQ at a time (store the expanded id or null)
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
-    if (typeof onToggleControls === 'function') onToggleControls(!!viewing);
     return () => {
       if (typeof onToggleControls === 'function') onToggleControls(false);
     };
-  }, [viewing, onToggleControls]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Helpers for parsing/rendering
+  function toggleExpand(id: number) {
+    setExpandedId((prev) => (prev === id ? null : id));
+  }
+
+  // When clicking anywhere in the card, toggle — except when the click originates from
+  // interactive controls (buttons, links, inputs, selects, textareas) so Edit/Delete still work.
+  function handleCardClick(e: React.MouseEvent, id: number) {
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+    // if the click originated from an interactive element, ignore
+    const interactive = target.closest('button, a, input, textarea, select, [data-no-toggle]');
+    if (interactive) return;
+    toggleExpand(id);
+  }
+
+  function handleCardKeyDown(e: React.KeyboardEvent, id: number) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleExpand(id);
+    }
+  }
+
+  // Helpers for parsing/rich rendering
   function tryParseMaybeString(v: any) {
     if (v == null) return null;
     if (typeof v !== 'string') return v;
@@ -88,12 +111,10 @@ export default function FAQsSection({
     if (!parsed) return '';
     if (isTiptapDoc(parsed)) {
       const txt = extractTextFromTiptap(parsed);
-      return (
-        txt.replace(/\s+/g, ' ').trim().slice(0, maxChars) + (txt.length > maxChars ? '...' : '')
-      );
+      const cleaned = txt.replace(/\s+/g, ' ').trim();
+      return cleaned.slice(0, maxChars) + (cleaned.length > maxChars ? '...' : '');
     }
     if (typeof parsed === 'object') {
-      // if object has 'text' or 'title' or 'question' keys try them
       const possible =
         parsed.text ??
         parsed.title ??
@@ -110,11 +131,40 @@ export default function FAQsSection({
           s.replace(/\s+/g, ' ').trim().slice(0, maxChars) + (s.length > maxChars ? '...' : '')
         );
       }
-      // fallback pretty JSON snippet
       const s = JSON.stringify(parsed);
       return s.slice(0, maxChars) + (s.length > maxChars ? '...' : '');
     }
     return String(parsed).slice(0, maxChars) + (String(parsed).length > maxChars ? '...' : '');
+  }
+
+  // Prefer plain text extraction for answers
+  function getPlainTextFromMaybeDoc(value: any): string | null {
+    const parsed = tryParseMaybeString(value);
+    if (parsed == null) return null;
+
+    if (isTiptapDoc(parsed)) {
+      const txt = extractTextFromTiptap(parsed);
+      return txt.replace(/\s+/g, ' ').trim();
+    }
+
+    if (typeof parsed === 'object') {
+      if (typeof parsed.text === 'string') return parsed.text.trim();
+      if (parsed.content) {
+        const txt = extractTextFromTiptap(parsed.content);
+        if (txt) return txt.replace(/\s+/g, ' ').trim();
+      }
+      if (typeof parsed.answer === 'string') return parsed.answer.trim();
+      if (typeof parsed.description === 'string') return parsed.description.trim();
+      if (typeof parsed.paragraph === 'string') return parsed.paragraph.trim();
+      try {
+        return JSON.stringify(parsed);
+      } catch {
+        return String(parsed);
+      }
+    }
+
+    if (typeof parsed === 'string') return parsed.trim();
+    return null;
   }
 
   function renderArbitraryJson(obj: any): React.ReactNode {
@@ -137,7 +187,6 @@ export default function FAQsSection({
     if (typeof obj !== 'object') {
       return <div className="whitespace-pre-line text-sm">{String(obj)}</div>;
     }
-    // object: render keys
     return (
       <div className="space-y-2 text-sm">
         {Object.entries(obj).map(([k, v]) => (
@@ -156,173 +205,123 @@ export default function FAQsSection({
     );
   }
 
-  function renderFullFAQ(f: FAQWithRelations) {
-    const parsedQuestion = tryParseMaybeString(f.question);
-    const parsedAnswer = tryParseMaybeString(f.answer);
+  // Render the answer area (shown when card expanded) — ONLY the answer content
+  function renderAnswerArea(faq: FAQWithRelations) {
+    const plain = getPlainTextFromMaybeDoc(faq.answer);
+    if (plain) {
+      return <div className="mt-2 whitespace-pre-line text-sm text-foreground">{plain}</div>;
+    }
 
-    return (
-      <div className="w-full max-w-4xl mx-auto p-4 space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="text-2xl font-semibold text-left">
-              {/* If question is plain text or tiptap, try to extract a short heading */}
-              {(() => {
-                if (isTiptapDoc(parsedQuestion)) {
-                  const txt = extractTextFromTiptap(parsedQuestion);
-                  return txt ? txt.slice(0, 80) : 'FAQ';
-                }
-                if (typeof parsedQuestion === 'string') return parsedQuestion.slice(0, 80);
-                if (typeof parsedQuestion === 'object') {
-                  // try common keys
-                  const maybe =
-                    parsedQuestion.title ??
-                    parsedQuestion.question ??
-                    JSON.stringify(parsedQuestion);
-                  return String(maybe).slice(0, 80);
-                }
-                return 'FAQ';
-              })()}
-            </h1>
+    const parsedAnswer = tryParseMaybeString(faq.answer);
+    if (!parsedAnswer) {
+      return <div className="text-sm text-gray-500">No answer provided.</div>;
+    }
 
-            <div className="text-sm text-gray-500 mt-1">
-              Category: {f.category ?? 'general'} · Status: {f.publishStatus ?? 'draft'} · Created:{' '}
-              {f.createdAt ? new Date(f.createdAt).toLocaleString() : '-'}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                handleEdit(f);
-              }}
-            >
-              Edit
-            </Button>
-
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={async () => {
-                await handleDelete(f.id);
-                setViewing(null);
-              }}
-            >
-              Delete
-            </Button>
-          </div>
+    if (isTiptapDoc(parsedAnswer)) {
+      return (
+        <div className="prose dark:prose-invert mt-2">
+          <TiptapJsonViewer content={parsedAnswer} />
         </div>
+      );
+    }
 
-        <div className="p-0">
-          <div className="rounded border bg-white dark:bg-gray-900 p-4 space-y-4">
-            <div>
-              <div className="text-sm font-medium mb-2">Question</div>
-              {parsedQuestion ? (
-                isTiptapDoc(parsedQuestion) ? (
-                  <div className="prose dark:prose-invert">
-                    <TiptapJsonViewer content={parsedQuestion} />
-                  </div>
-                ) : typeof parsedQuestion === 'object' ? (
-                  renderArbitraryJson(parsedQuestion)
-                ) : (
-                  <div className="whitespace-pre-line">{String(parsedQuestion)}</div>
-                )
-              ) : (
-                <div className="text-sm text-gray-500">No question</div>
-              )}
-            </div>
-
-            <div>
-              <div className="text-sm font-medium mb-2">Answer</div>
-              {parsedAnswer ? (
-                isTiptapDoc(parsedAnswer) ? (
-                  <div className="prose dark:prose-invert">
-                    <TiptapJsonViewer content={parsedAnswer} />
-                  </div>
-                ) : typeof parsedAnswer === 'object' ? (
-                  renderArbitraryJson(parsedAnswer)
-                ) : (
-                  <div className="whitespace-pre-line">{String(parsedAnswer)}</div>
-                )
-              ) : (
-                <div className="text-sm text-gray-500">No answer</div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <div className="mt-2">{renderArbitraryJson(parsedAnswer)}</div>;
   }
 
-  // If viewing, render inline details
-  if (viewing) {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" onClick={() => setViewing(null)}>
-              ← Back
-            </Button>
-          </div>
-        </div>
-
-        <div className="p-0">{renderFullFAQ(viewing)}</div>
-      </div>
-    );
-  }
-
-  // Default grid listing
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 gap-4 mb-6">
         {(!Array.isArray(paginatedData) || paginatedData.length === 0) && (
-          <div className="text-center py-8 col-span-3 text-gray-500">No FAQs found.</div>
+          <div className="text-center py-8 text-gray-500">No FAQs found.</div>
         )}
 
         {Array.isArray(paginatedData) &&
-          paginatedData.map((faq) => (
-            <div
-              key={faq.id}
-              className="flex flex-col p-4 border rounded-md bg-white dark:bg-gray-900 hover:shadow-sm transition-shadow"
-            >
-              {/* Preview of question */}
+          paginatedData.map((faq) => {
+            const isExpanded = expandedId === faq.id;
+            const preview = buildPreviewFromJson(faq.question, 200) || 'Untitled FAQ';
+
+            return (
               <div
-                className="cursor-pointer"
-                onClick={() => setViewing(faq)}
+                key={faq.id}
+                // whole card is clickable — attach click/key handlers to the card root
+                onClick={(e) => handleCardClick(e, faq.id)}
+                onKeyDown={(e) => handleCardKeyDown(e, faq.id)}
                 role="button"
                 tabIndex={0}
+                aria-expanded={isExpanded}
+                className={`w-full border rounded-md bg-white dark:bg-gray-900 shadow-sm transition-all overflow-hidden cursor-pointer focus:outline-pink-500`}
               >
-                <div
-                  className="font-medium text-lg truncate"
-                  title={buildPreviewFromJson(faq.question, 200)}
-                >
-                  {buildPreviewFromJson(faq.question, 120) || 'Untitled FAQ'}
-                </div>
-                <div className="text-sm text-gray-500 mt-2">
-                  Category: {faq.category ?? 'general'} · {faq.publishStatus ?? 'draft'}
-                </div>
-              </div>
+                <div className="p-4 flex items-start justify-between gap-4">
+                  <div className="min-w-0 w-full">
+                    <div className="flex items-start gap-3 w-full">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-lg truncate" title={preview}>
+                          {preview}
+                        </div>
+                        <div className="text-sm text-gray-500 mt-1">
+                          Category: {faq.category ?? 'general'} · {faq.publishStatus ?? 'draft'}
+                        </div>
+                      </div>
 
-              {/* Actions */}
-              <div className="flex items-center gap-2 mt-4">
-                <Button type="button" size="sm" variant="outline" onClick={() => setViewing(faq)}>
-                  View
-                </Button>
-                <Button type="button" size="sm" variant="outline" onClick={() => handleEdit(faq)}>
-                  Edit
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => handleDelete(faq.id)}
-                >
-                  Delete
-                </Button>
+                      {/* Larger + / − with primary color */}
+                      <div className="flex-shrink-0 ml-3">
+                        <span
+                          aria-hidden
+                          className={`text-2xl font-bold ${
+                            isExpanded
+                              ? 'text-pink-600 dark:text-pink-400'
+                              : 'text-pink-600/80 dark:text-pink-400/80'
+                          }`}
+                          style={{ lineHeight: 1 }}
+                        >
+                          {isExpanded ? '−' : '+'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expanded content: ONLY the answer content (no "Question" / "Answer" headings) */}
+                {isExpanded && (
+                  <div className="px-4 pb-4 pt-0 border-t">
+                    <div className="py-2">
+                      <div className="text-sm text-foreground">{renderAnswerArea(faq)}</div>
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-4">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e: React.MouseEvent) => {
+                          // prevent the card click handler from firing when Edit button clicked
+                          e.stopPropagation();
+                          // hide parent controls (search / export / add) when editing
+                          if (typeof onToggleControls === 'function') onToggleControls(true);
+                          handleEdit(faq);
+                        }}
+                        data-no-toggle
+                      >
+                        Edit
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={async (e: React.MouseEvent) => {
+                          e.stopPropagation(); // prevent toggling when deleting
+                          await handleDelete(faq.id);
+                          setExpandedId((prev) => (prev === faq.id ? null : prev));
+                        }}
+                        data-no-toggle
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
       </div>
 
       <div className="mt-4">{/* placeholder for TableActions if parent provides */}</div>

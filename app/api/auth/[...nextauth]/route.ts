@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
@@ -57,7 +58,7 @@ type UserPayload = {
 };
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma as any),
   session: {
     strategy: 'jwt',
   },
