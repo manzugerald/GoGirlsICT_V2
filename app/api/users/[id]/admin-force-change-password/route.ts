@@ -6,36 +6,30 @@ import bcrypt from 'bcrypt';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { isPwned } from '@/lib/hibp';
-// Use the new admin-forced email helper
-import sendAdminForceChangeEmail from '@/lib/admin-force-change-password/sendAdminForceChangePassword';
+import sendAdminForceChangePassword from '@/lib/admin-force-change-password/sendAdminForceChangePassword';
 import { getIpFromRequest } from '@/lib/getIp';
 
 const MAX_HISTORY = parseInt(process.env.MAX_HISTORY || '5', 10);
 const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '12', 10);
 
+function escapeHtml(str: string | null | undefined) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 /**
  * PATCH /api/users/:id/admin-force-change-password
  *
- * Behaviour:
- * - Caller must be authenticated.
- * - If actorId provided and not equal to callerId, caller must be 'super'.
- * - If actorId omitted or equals target user id => treat as self-change and require currentPassword.
- * - Enforces complexity, HIBP, reuse prevention (against current + last MAX_HISTORY).
- * - In a transaction:
- *    - archive old password to PasswordHistory
- *    - update users.password
- *    - create PasswordChangeLog
- *    - create a system message (informing user an admin changed their password; plaintext NOT included there)
- *    - prune old history rows
- *    - revoke active sessions
- *    - set user.loginStatus = 'inactive' (force re-login)
- * - Sends an email to user containing the temporary password (plaintext) and explicit instructions:
- *    - do NOT share the password
- *    - change it within 3 days or account will be suspended
+ * Server-side admin-forced password reset. Sends email with the exact structured message.
  */
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions as any);
     if (!session) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
@@ -137,7 +131,95 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
     const newHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
     const now = new Date();
+    // Use explicit 48 hours expiry text as requested
+    const expiryText = '48 hours';
 
+    // Build the plain text message that will be persisted and emailed
+    const messagePlainLines: string[] = [];
+    const displayName =
+      [targetUser.firstName, targetUser.lastName].filter(Boolean).join(' ') ||
+      targetUser.username ||
+      'there';
+    messagePlainLines.push(`Dear ${displayName}:`);
+    messagePlainLines.push('');
+    messagePlainLines.push(
+      `Your account's password (email: ${
+        targetUser.email
+      }) has been reset on ${now.toLocaleString()}.`
+    );
+    messagePlainLines.push('');
+    messagePlainLines.push(`IP: ${ip ?? 'unknown'}`);
+    messagePlainLines.push(`User agent: ${userAgent ?? 'unknown'}`);
+    messagePlainLines.push('');
+    messagePlainLines.push('IMPORTANT: Do NOT share this password with anyone.');
+    messagePlainLines.push('');
+    messagePlainLines.push('Temporary password (use this to sign in):');
+    messagePlainLines.push('');
+    messagePlainLines.push(`${newPassword}`);
+    messagePlainLines.push('');
+    messagePlainLines.push(
+      `You must change this temporary password within ${expiryText} to avoid the suspension of your account.`
+    );
+    messagePlainLines.push('');
+    messagePlainLines.push('If you did not request this change, contact support immediately.');
+    messagePlainLines.push('');
+    messagePlainLines.push('Security team: admin@gogirlsict.org');
+
+    const messagePlain = messagePlainLines.join('\n');
+
+    // Build HTML variant for message content (matches the same structured content)
+    const messageHtmlParts: string[] = [];
+    messageHtmlParts.push(
+      `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial;font-size:16px;color:#111;line-height:1.5">`
+    );
+    // Dear FirstName LastName in bold
+    messageHtmlParts.push(`<p><strong>Dear ${escapeHtml(displayName)}:</strong></p>`);
+    messageHtmlParts.push(
+      `<p>Your account's password (email: <strong>${escapeHtml(
+        targetUser.email ?? ''
+      )}</strong>) has been reset on <strong>${escapeHtml(now.toLocaleString())}</strong>.</p>`
+    );
+    messageHtmlParts.push(
+      `<div style="margin:8px 0"><strong>IP:</strong> ${escapeHtml(String(ip ?? 'unknown'))}</div>`
+    );
+    messageHtmlParts.push(
+      `<div style="margin:8px 0"><strong>User agent:</strong> ${escapeHtml(
+        String(userAgent ?? 'unknown')
+      )}</div>`
+    );
+
+    // IMPORTANT red bold
+    messageHtmlParts.push(
+      `<p style="color:#b91c1c;font-weight:700;margin-top:12px">IMPORTANT: Do NOT share this password with anyone.</p>`
+    );
+
+    // Temporary password block (red)
+    messageHtmlParts.push(
+      `<div style="margin-top:10px;color:#b91c1c;font-weight:600;">
+        <div style="margin-bottom:8px;"><strong>Temporary password (use this to sign in):</strong></div>
+        <pre style="background:#fff0f0;border:1px solid #ffd6d6;padding:12px;border-radius:6px;font-size:16px;white-space:pre-wrap;word-break:break-word;color:#b91c1c;">${escapeHtml(
+          newPassword
+        )}</pre>
+      </div>`
+    );
+
+    // Bold black instruction about changing within expiry
+    messageHtmlParts.push(
+      `<p style="font-weight:700;color:#111;margin-top:12px">You must change this temporary password within ${escapeHtml(
+        expiryText
+      )} to avoid the suspension of your account.</p>`
+    );
+
+    messageHtmlParts.push(
+      `<p>If you did not request this change, please contact support immediately.</p>`
+    );
+    messageHtmlParts.push(
+      `<p>Security team: <a href="mailto:admin@gogirlsict.org">admin@gogirlsict.org</a></p>`
+    );
+    messageHtmlParts.push('</div>');
+    const messageHtml = messageHtmlParts.join('\n');
+
+    // Persist changes and create message inside a transaction
     await prisma.$transaction(async (tx) => {
       if (targetUser.password) {
         await tx.passwordHistory.create({
@@ -159,12 +241,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         },
       });
 
-      // CREATE SYSTEM MESSAGE FOR USER (informational — do NOT include plaintext password here)
+      // Persist the system message — ensure plain text is stored in content.text
       await tx.message.create({
         data: {
-          title: 'Your password was changed by an administrator',
+          title: 'Admin reset your password',
           content: {
-            text: `An administrator reset your account password on ${now.toLocaleString()} from IP ${ip}. For your security, please change this temporary password within 3 days and do not share it with anyone.`,
+            text: messagePlain,
+            html: messageHtml,
           },
           messageCategory: 'system',
           allowResponses: false,
@@ -199,15 +282,15 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     // Notify user via admin-forced email helper (best-effort) — include the temporary plaintext password and clear instructions.
     if (targetUser.email) {
       try {
-        await sendAdminForceChangeEmail(targetUser.email, {
+        await sendAdminForceChangePassword(targetUser.email, {
           time: now.toISOString(),
           ip,
           userAgent,
           username: targetUser.username,
           firstName: targetUser.firstName,
+          lastName: targetUser.lastName,
           temporaryPassword: newPassword,
-          note: `An administrator has reset your password. Do NOT share this password with anyone.`,
-          expiresInDays: 3,
+          expiryText, // explicit 48 hours string
         });
       } catch (e) {
         console.warn('Failed to send admin-forced password change email', e);

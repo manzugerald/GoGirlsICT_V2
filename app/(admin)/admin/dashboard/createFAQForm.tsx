@@ -1,529 +1,540 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import '@/assets/styles/tiptap-editor.css';
+import React, { useState } from 'react';
+import DOMPurify from 'dompurify';
+import { Message } from '@/lib/generated/prisma';
 
-const EditorClient = dynamic(() => import('@/components/editor/editor-client'), {
-  ssr: false,
-});
-
-const publishOptions = ['draft', 'published'] as const;
-type PublishStatus = (typeof publishOptions)[number];
-
-const categoryOptions = [
-  'general',
-  'beneficiaries',
-  'institutions',
-  'projects',
-  'events',
-  'reports',
-  'technnology',
-  'other',
-] as const;
-type FAQCategory = (typeof categoryOptions)[number];
-
-type FAQInitialData = {
-  id?: string | number;
-  question?: any;
-  answer?: any;
-  category?: FAQCategory | string;
-  publishStatus?: PublishStatus;
-  createdById?: string;
+type MessageWithRelations = Message & {
+  beneficiary?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  } | null;
+  createdBy?: {
+    id: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    username?: string | null;
+    email?: string | null;
+  } | null;
 };
-
-type CreateFAQFormProps = {
-  mode?: 'create' | 'edit';
-  initialData?: FAQInitialData;
-  onSuccess?: () => void;
-  onCancel?: () => void;
-  currentUserId?: string | number;
-};
-
-/* Minimal empty Tiptap doc used as default */
-const emptyDoc = {
-  type: 'doc',
-  content: [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }],
-} as const;
 
 /**
- * Normalizer that handles:
- * - full Tiptap doc { type: 'doc', content: [...] }
- * - single node shapes like { type: 'paragraph', content: "text" }
- * - stringified JSON / HTML / plain text
+ * MessagesSection
+ *
+ * - Renders a list of messages.
+ * - When a message is "viewed" it fetches the full message + responses and renders an inline full view
+ *   inside this component (same pattern as EventsSection).
+ * - Uses the same background / foreground color scheme and container styles as CreateFAQForm:
+ *     bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-200
+ *   with rounded-xl, shadow and p-6.
+ *
+ * Notes:
+ * - This component renders inline detail view and DOES NOT trigger parent navigation to Responses.
  */
-function ensureTiptapDoc(value: any) {
-  if (!value) return emptyDoc;
 
-  if (typeof value === 'object') {
-    if (value.type === 'doc' && Array.isArray(value.content)) return value;
+export default function MessagesSection({
+  paginatedData,
+  page,
+  rowsPerPage,
+  handleEdit,
+  handleView, // optional analytics/navigation callback — will NOT be used to trigger parent navigation
+  handleDelete,
+  onRespond,
+  currentUserRole,
+  TableActions,
+  deleteId,
+  deleteLoading,
+  onToggleControls,
+}: {
+  paginatedData: MessageWithRelations[] | any[];
+  page: number;
+  rowsPerPage: number;
+  handleEdit: (record: any) => void;
+  handleView?: (record: any, source?: 'messages' | 'responses' | string) => void;
+  handleDelete: (id: string | number) => void;
+  onRespond?: (messageId: number | string) => void;
+  currentUserRole?: string;
+  TableActions?: React.FC<any>;
+  deleteId?: string | number | null;
+  deleteLoading?: boolean;
+  onToggleControls?: (hide: boolean) => void;
+}) {
+  const [viewingMessage, setViewingMessage] = useState<any | null>(null);
+  const [loadingView, setLoadingView] = useState(false);
 
-    if (value.type && value.type !== 'doc') {
-      // content string => text node
-      if (typeof value.content === 'string') {
-        return {
-          type: 'doc',
-          content: [
-            {
-              type: value.type,
-              content: [{ type: 'text', text: value.content }],
-            },
-          ],
-        };
-      }
+  const ownerLabel = (m: MessageWithRelations) => {
+    if (m.name && `${m.name}`.trim().length > 0) return m.name;
+    if (m.beneficiary) return `${m.beneficiary.firstName} ${m.beneficiary.lastName}`;
+    return 'System';
+  };
 
-      // content array => normalize inner text
-      if (Array.isArray(value.content)) {
-        const normalizedInner = value.content.map((item: any) =>
-          typeof item === 'string' ? { type: 'text', text: item } : item
-        );
-        return {
-          type: 'doc',
-          content: [
-            {
-              type: value.type,
-              content: normalizedInner,
-            },
-          ],
-        };
-      }
-
-      return { type: 'doc', content: [value] };
+  const createdByLabel = (m: MessageWithRelations) => {
+    if (m.createdBy) {
+      const parts = [m.createdBy.firstName, m.createdBy.lastName].filter(Boolean);
+      if (parts.length > 0) return parts.join(' ');
+      if (m.createdBy.username) return m.createdBy.username;
+      if (m.createdBy.email) return m.createdBy.email;
     }
+    if (m.createdByName) return m.createdByName;
+    if (m.createdByUsername) return m.createdByUsername;
+    return 'System';
+  };
 
-    // otherwise unknown object shape -> attempt to return as doc, else emptyDoc
+  const isHtmlString = (s: string) => /<\/?[a-z][\s\S]*>/i.test(s);
+
+  const tryParseJson = (s: string) => {
     try {
-      if (value.type === 'doc' && Array.isArray(value.content)) return value;
+      return JSON.parse(s);
     } catch {
-      return emptyDoc;
+      return null;
     }
+  };
 
-    return emptyDoc;
-  }
+  const stripHtmlTags = (html: string) => {
+    try {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || '';
+    } catch {
+      return html.replace(/<\/?[^>]+(>|$)/g, '');
+    }
+  };
 
-  if (typeof value === 'string') {
-    const trimmed = value.trim();
+  const getContentCandidate = (m: any) => {
+    if (!m) return null;
 
-    // try parse JSON
-    if (
-      (trimmed.startsWith('{') || trimmed.startsWith('[')) &&
-      (trimmed.endsWith('}') || trimmed.endsWith(']'))
-    ) {
-      try {
-        const parsed = JSON.parse(trimmed);
-        return ensureTiptapDoc(parsed);
-      } catch {
-        // fallthrough
+    const candidates = ['content', 'body', 'messageContent', 'text', 'html', 'message'];
+    let c: any = null;
+    for (const key of candidates) {
+      if (Object.prototype.hasOwnProperty.call(m, key) && m[key] != null) {
+        c = m[key];
+        break;
       }
     }
 
-    // html -> extract text (browser runtime)
-    if (trimmed.includes('<') && typeof window !== 'undefined') {
-      try {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(trimmed, 'text/html');
-        const text = doc.body.textContent || '';
-        return {
-          type: 'doc',
-          content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
-        };
-      } catch {
-        // fallthrough
-      }
+    if (!c && m.content && typeof m.content === 'object') c = m.content;
+
+    if (!c) return null;
+
+    if (typeof c === 'object') {
+      if (c.html) return { type: 'html', value: String(c.html) };
+      if (c.text) return { type: 'text', value: String(c.text) };
+      return { type: 'json', value: c };
     }
 
-    // plain text
-    return {
-      type: 'doc',
-      content: [{ type: 'paragraph', content: [{ type: 'text', text: trimmed }] }],
-    };
-  }
+    if (typeof c === 'string') {
+      const maybeJson = tryParseJson(c);
+      if (maybeJson) {
+        if (maybeJson.html) return { type: 'html', value: String(maybeJson.html) };
+        if (maybeJson.text) return { type: 'text', value: String(maybeJson.text) };
+        return { type: 'json', value: maybeJson };
+      }
+      if (isHtmlString(c)) {
+        return { type: 'html', value: c };
+      }
+      return { type: 'text', value: c };
+    }
 
-  return emptyDoc;
-}
-
-/** Extract readable plain text (handles doc and node-only shapes) */
-function tiptapDocToPlainText(doc: any) {
-  if (!doc) return '';
-  if (typeof doc === 'string') return doc;
-
-  const walk = (node: any): string => {
-    if (!node) return '';
-    if (node.type === 'text') return node.text || '';
-    if (typeof node.content === 'string') return node.content;
-    if (Array.isArray(node.content)) return node.content.map(walk).join('');
-    return '';
+    return null;
   };
 
-  if (doc.type === 'doc' && Array.isArray(doc.content)) {
-    return doc.content.map(walk).join('\n\n');
-  }
+  const PREVIEW_CHAR_LIMIT = 300;
 
-  return walk(doc);
-}
+  const renderContent = (m: any, full = false) => {
+    const candidate = getContentCandidate(m);
+    if (!candidate) {
+      return <div className="text-sm text-gray-500 dark:text-gray-400">— No content —</div>;
+    }
 
-function plainTextToTiptapDoc(text: string) {
-  return {
-    type: 'doc',
-    content: [{ type: 'paragraph', content: [{ type: 'text', text: text || '' }] }],
-  };
-}
-
-export default function CreateFAQForm({
-  mode = 'create',
-  initialData,
-  onSuccess,
-  onCancel,
-  currentUserId,
-}: CreateFAQFormProps) {
-  const router = useRouter();
-
-  const [form, setForm] = useState({
-    question: emptyDoc as any,
-    answer: emptyDoc as any,
-    category: '' as FAQCategory | string,
-    publishStatus: 'draft' as PublishStatus,
-  });
-
-  const [questionText, setQuestionText] = useState('');
-  const [answerText, setAnswerText] = useState('');
-
-  const [editorMode, setEditorMode] = useState<'rich' | 'plain'>('rich');
-  const [activeField, setActiveField] = useState<'question' | 'answer'>('question');
-
-  const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(false);
-
-  // label spacing applied when in plain mode
-  const labelClass = editorMode === 'plain' ? 'mb-2' : '';
-
-  // Populate when editing (fetch latest)
-  useEffect(() => {
-    let aborted = false;
-
-    const populateFromData = (data?: FAQInitialData) => {
-      const q = ensureTiptapDoc(data?.question);
-      const a = ensureTiptapDoc(data?.answer);
-      setForm({
-        question: q,
-        answer: a,
-        category: (data?.category as FAQCategory) ?? '',
-        publishStatus: data?.publishStatus ?? 'draft',
+    if (candidate.type === 'html') {
+      const raw = String(candidate.value ?? '');
+      const clean = DOMPurify.sanitize(raw, {
+        ALLOWED_TAGS: [
+          'a',
+          'b',
+          'i',
+          'strong',
+          'em',
+          'p',
+          'br',
+          'ul',
+          'ol',
+          'li',
+          'span',
+          'div',
+          'pre',
+          'code',
+          'blockquote',
+          'img',
+          'h1',
+          'h2',
+          'h3',
+          'h4',
+        ],
+        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'style'],
       });
-      setQuestionText(tiptapDocToPlainText(q));
-      setAnswerText(tiptapDocToPlainText(a));
-    };
 
-    const fetchFAQ = async (id: string | number) => {
-      setFetching(true);
-      try {
-        const res = await fetch(`/api/faq/${id}`);
-        if (!res.ok) throw new Error(`Failed to fetch FAQ (${res.status})`);
-        const data = await res.json();
-        if (aborted) return;
-        populateFromData(data);
-      } catch (err) {
-        console.error('Error fetching FAQ:', err);
-        if (!aborted && initialData) {
-          populateFromData(initialData);
+      if (!full) {
+        const textFallback = stripHtmlTags(clean).trim();
+        if (textFallback.length === 0) {
+          return (
+            <div
+              className="mt-2 text-sm prose max-w-none text-slate-900 dark:text-slate-200"
+              dangerouslySetInnerHTML={{ __html: clean }}
+            />
+          );
         }
-      } finally {
-        if (!aborted) setFetching(false);
-      }
-    };
-
-    if (mode === 'edit' && initialData?.id) {
-      fetchFAQ(initialData.id);
-    } else if (initialData) {
-      populateFromData(initialData);
-    } else {
-      setForm({ question: emptyDoc, answer: emptyDoc, category: '', publishStatus: 'draft' });
-      setQuestionText('');
-      setAnswerText('');
-    }
-
-    return () => {
-      aborted = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, initialData?.id]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Editor -> update appropriate field (activeField)
-  const handleRichEditorChange = (doc: object) => {
-    setForm((prev) => ({ ...prev, [activeField]: doc }));
-    if (activeField === 'question') {
-      setQuestionText(tiptapDocToPlainText(doc));
-    } else {
-      setAnswerText(tiptapDocToPlainText(doc));
-    }
-  };
-
-  // Plain textareas update both plain text and tiptap doc in state
-  const handleQuestionTextChange = (txt: string) => {
-    setQuestionText(txt);
-    setForm((prev) => ({ ...prev, question: plainTextToTiptapDoc(txt) }));
-  };
-
-  const handleAnswerTextChange = (txt: string) => {
-    setAnswerText(txt);
-    setForm((prev) => ({ ...prev, answer: plainTextToTiptapDoc(txt) }));
-  };
-
-  const isEditorEmpty = (doc: any) => {
-    if (!doc) return true;
-    try {
-      const s = JSON.stringify(doc);
-      return s === '{}' || s === 'null' || s.trim().length === 0;
-    } catch {
-      return false;
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-
-    if (isEditorEmpty(form.question)) {
-      alert('Please provide a question for the FAQ.');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const payload = {
-        question: form.question,
-        answer: form.answer,
-        category: form.category?.trim() || undefined,
-        publishStatus: form.publishStatus,
-        createdById: currentUserId ? String(currentUserId) : undefined,
-      };
-
-      let res: Response;
-      if (mode === 'edit' && initialData?.id) {
-        res = await fetch(`/api/faq/${initialData.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-      } else {
-        res = await fetch('/api/faq', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
+        if (textFallback.length > PREVIEW_CHAR_LIMIT) {
+          const truncatedText = textFallback.slice(0, PREVIEW_CHAR_LIMIT) + '…';
+          return (
+            <div className="mt-2 text-sm text-slate-900 dark:text-slate-200">
+              <div className="mb-1" aria-hidden>
+                {truncatedText}
+              </div>
+            </div>
+          );
+        }
       }
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        throw new Error(err?.error || `Failed to ${mode === 'edit' ? 'update' : 'create'} FAQ`);
-      }
-
-      if (onSuccess) onSuccess();
-      router.refresh();
-      router.push('/admin/dashboard');
-    } catch (err) {
-      console.error(err);
-      alert(
-        `There was an error ${mode === 'edit' ? 'updating' : 'creating'} the FAQ. Please try again.`
+      return (
+        <div
+          className="mt-2 text-sm prose max-w-none text-slate-900 dark:text-slate-200"
+          dangerouslySetInnerHTML={{ __html: clean }}
+        />
       );
+    }
+
+    if (candidate.type === 'text') {
+      const raw = String(candidate.value ?? '');
+      const trimmed = raw.trim();
+      if (!trimmed)
+        return <div className="text-sm text-gray-500 dark:text-gray-400">— No content —</div>;
+      if (!full) {
+        const preview =
+          trimmed.length > PREVIEW_CHAR_LIMIT
+            ? trimmed.slice(0, PREVIEW_CHAR_LIMIT) + '…'
+            : trimmed;
+        return (
+          <div className="mt-2 text-sm text-slate-900 dark:text-slate-200 whitespace-pre-wrap">
+            {preview}
+          </div>
+        );
+      }
+      return (
+        <div className="mt-2 text-sm text-slate-900 dark:text-slate-200 whitespace-pre-wrap">
+          {trimmed}
+        </div>
+      );
+    }
+
+    if (candidate.type === 'json') {
+      try {
+        const pretty = JSON.stringify(candidate.value, null, 2);
+        if (!full) {
+          const preview =
+            pretty.length > PREVIEW_CHAR_LIMIT ? pretty.slice(0, PREVIEW_CHAR_LIMIT) + '…' : pretty;
+          return (
+            <pre className="mt-2 text-sm text-slate-900 dark:text-slate-200 whitespace-pre-wrap max-h-48 overflow-auto">
+              {preview}
+            </pre>
+          );
+        }
+        return (
+          <pre className="mt-2 text-sm text-slate-900 dark:text-slate-200 whitespace-pre-wrap overflow-auto">
+            {pretty}
+          </pre>
+        );
+      } catch {
+        return (
+          <pre className="mt-2 text-sm text-slate-900 dark:text-slate-200 whitespace-pre-wrap">
+            {String(candidate.value)}
+          </pre>
+        );
+      }
+    }
+
+    return (
+      <div className="text-sm text-gray-500 dark:text-gray-400">— Unsupported content type —</div>
+    );
+  };
+
+  // When a message is selected for view, fetch full message and responses and render inside this component
+  const openMessage = async (record: any) => {
+    const id = record?.id ?? record;
+    if (!id) return;
+    setLoadingView(true);
+    if (typeof onToggleControls === 'function') onToggleControls(true);
+    try {
+      let msgData: any = null;
+      try {
+        const res = await fetch(`/api/messages/${id}`);
+        msgData = res.ok ? await res.json() : null;
+      } catch {
+        msgData = null;
+      }
+      const base = msgData ?? record;
+
+      let responses: any[] = [];
+      try {
+        const respRes = await fetch('/api/responses');
+        const respData = respRes.ok ? await respRes.json() : [];
+        const parentId = base?.id
+          ? typeof base.id === 'number'
+            ? base.id
+            : Number(base.id)
+          : Number(id);
+        if (Array.isArray(respData)) {
+          responses = respData.filter(
+            (r: any) =>
+              (r.message && (r.message.id === parentId || Number(r.message.id) === parentId)) ||
+              (r.messageId && Number(r.messageId) === parentId)
+          );
+        }
+      } catch {
+        responses = [];
+      }
+
+      // IMPORTANT: render inline (don't call parent handleView to avoid switching sections)
+      setViewingMessage({ ...base, responses: responses ?? [] });
     } finally {
-      setLoading(false);
+      setLoadingView(false);
     }
   };
 
-  if (fetching) {
+  const closeMessage = () => {
+    setViewingMessage(null);
+    if (typeof onToggleControls === 'function') onToggleControls(false);
+  };
+
+  // Full message renderer (inline)
+  const renderFullMessage = (m: any) => {
+    const category = m.messageCategory ?? m.category ?? 'System';
+    const title = m.title ?? m.subject ?? m.messageTitle ?? m.name ?? '-';
+    const createdAt = m.createdAt ? new Date(m.createdAt).toLocaleString() : '-';
+    const updatedAt = m.updatedAt ? new Date(m.updatedAt).toLocaleString() : null;
+    const showUpdated = updatedAt && updatedAt !== createdAt;
+    const createdBy =
+      String(category ?? '').toLowerCase() === 'system' ? 'System' : createdByLabel(m);
+
     return (
-      <div className="w-full max-w-4xl mx-auto mt-4 p-6 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-xl shadow text-center">
-        <div className="text-lg font-medium">Loading FAQ...</div>
-      </div>
-    );
-  }
+      <div className="w-full">
+        <div className="px-2">
+          <h2 className="text-xl font-semibold">{title}</h2>
+          <div className="text-sm text-slate-700 dark:text-slate-300 mt-1">
+            Category: <strong>{category}</strong> · Created: {createdAt}
+            {showUpdated ? <> · Updated: {updatedAt}</> : null} · Created by: {createdBy}
+          </div>
+        </div>
 
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full max-w-4xl mx-auto mt-4 space-y-6 p-6 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-200 rounded-xl shadow"
-    >
-      <div className="text-2xl font-bold mb-4 text-center">
-        {mode === 'edit' ? 'Edit FAQ' : 'Create New FAQ'}
-      </div>
+        <div className="mt-4 px-2">
+          <div className="rounded p-4" style={{ background: 'transparent' }}>
+            {/* message content */}
+            <div className="mb-4">{renderContent(m, true)}</div>
 
-      {/* Editor mode toggle */}
-      <div className="flex items-center gap-4">
-        <Label className={labelClass}>Editor Mode</Label>
-        <label className="inline-flex items-center gap-2 cursor-pointer">
-          <input
-            type="radio"
-            name="editorMode"
-            checked={editorMode === 'rich'}
-            onChange={() => setEditorMode('rich')}
-          />
-          <span className="ml-1">Rich editor (single instance)</span>
-        </label>
-        <label className="inline-flex items-center gap-2 cursor-pointer">
-          <input
-            type="radio"
-            name="editorMode"
-            checked={editorMode === 'plain'}
-            onChange={() => setEditorMode('plain')}
-          />
-          <span className="ml-1">Plain text editor</span>
-        </label>
-      </div>
+            {/* actions */}
+            <div className="flex flex-wrap gap-2 items-center">
+              <button
+                className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded"
+                onClick={() => closeMessage()}
+              >
+                ← Back
+              </button>
 
-      {/* Rich editor: single instance used for both question and answer */}
-      {editorMode === 'rich' ? (
-        <div className="space-y-4">
-          <div className="flex gap-2 items-center">
-            <button
-              type="button"
-              onClick={() => setActiveField('question')}
-              className={`px-3 py-1 rounded-md ${
-                activeField === 'question'
-                  ? 'bg-[#9f004d] text-white'
-                  : 'bg-gray-300 text-slate-900 hover:bg-gray-400 dark:bg-slate-700 dark:text-slate-200'
-              }`}
-            >
-              Edit Question
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveField('answer')}
-              className={`px-3 py-1 rounded-md ${
-                activeField === 'answer'
-                  ? 'bg-[#9f004d] text-white'
-                  : 'bg-gray-300 text-slate-900 hover:bg-gray-400 dark:bg-slate-700 dark:text-slate-200'
-              }`}
-            >
-              Edit Answer
-            </button>
-            <div className="ml-auto text-sm opacity-80 self-center">
-              Currently editing: <strong>{activeField}</strong>
+              {/* Respond only for non-system and when allowResponses */}
+              {String(category).toLowerCase() !== 'system' && onRespond && m.allowResponses && (
+                <button
+                  className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  onClick={() => {
+                    onRespond(m.id);
+                  }}
+                >
+                  Respond
+                </button>
+              )}
+
+              <button
+                className="px-3 py-2 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-700 dark:hover:bg-yellow-600 text-yellow-800 dark:text-white rounded"
+                onClick={() => handleEdit(m)}
+              >
+                Edit
+              </button>
+
+              <button
+                className="px-3 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-700 dark:hover:bg-red-600 text-red-800 dark:text-white rounded"
+                onClick={() => handleDelete(m.id)}
+                disabled={Boolean(deleteLoading && deleteId === m.id)}
+              >
+                {deleteLoading && deleteId === m.id ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+
+            {/* Responses */}
+            <div className="mt-6">
+              <h3 className="font-medium">
+                Responses ({Array.isArray(m.responses) ? m.responses.length : 0})
+              </h3>
+              <div className="space-y-3 mt-3">
+                {Array.isArray(m.responses) && m.responses.length > 0 ? (
+                  m.responses.map((r: any) => (
+                    <div
+                      key={r.id}
+                      className="p-3 rounded border"
+                      style={{ background: 'rgba(0,0,0,0.03)' }}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-medium">
+                            {r.name ?? r.createdByName ?? 'User'}
+                          </div>
+                          <div className="text-xs text-slate-600 dark:text-slate-400">
+                            {r.createdAt ? new Date(r.createdAt).toLocaleString() : '-'}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <button
+                            className="px-2 py-1 text-xs bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-700 dark:hover:bg-yellow-600 text-yellow-800 dark:text-white rounded"
+                            onClick={() => handleEdit(r)}
+                          >
+                            Edit
+                          </button>
+                        </div>
+                      </div>
+                      <div className="mt-2 text-sm">{renderContent(r, true)}</div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    No responses yet.
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-
-          {/* boxed editor area */}
-          <div
-            className="border border-gray-300 dark:border-slate-600 rounded-md p-3 bg-gray-50 dark:bg-slate-700 min-h-[160px]"
-            aria-label={`Rich editor container for ${activeField}`}
-          >
-            <EditorClient
-              // force remount when switching activeField so content is always replaced
-              key={`editor-${activeField}-${initialData?.id ?? 'new'}`}
-              content={activeField === 'question' ? form.question : form.answer}
-              onChange={handleRichEditorChange}
-              showLinkUnlink
-            />
-          </div>
         </div>
+      </div>
+    );
+  };
+
+  // Outer container uses same colors/styles as CreateFAQForm
+  const outerClass =
+    'w-full max-w-4xl mx-auto mt-4 space-y-4 p-6 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-200 rounded-xl shadow';
+
+  return (
+    <div className={outerClass}>
+      {/* When viewingMessage is set, render the full message view (inline). */}
+      {viewingMessage ? (
+        <div>{renderFullMessage(viewingMessage)}</div>
       ) : (
-        // Plain mode: show two independent textareas for question and answer
-        <div className="space-y-4">
-          <div>
-            <Label className={labelClass} htmlFor="questionPlain">
-              Question (plain text)
-            </Label>
-            <textarea
-              id="questionPlain"
-              value={questionText}
-              onChange={(e) => handleQuestionTextChange(e.target.value)}
-              className="w-full min-h-[64px] border border-input rounded-md p-2 text-sm bg-gray-50 dark:bg-slate-700 text-slate-900 dark:text-slate-200"
-              placeholder="Enter question (plain text)"
-            />
-          </div>
+        <>
+          {(!Array.isArray(paginatedData) || paginatedData.length === 0) && (
+            <div className="text-center py-8 text-slate-600 dark:text-slate-300">
+              No messages found.
+            </div>
+          )}
 
+          {Array.isArray(paginatedData) &&
+            paginatedData.map((m: any) => {
+              const createdAt = m.createdAt ? new Date(m.createdAt) : null;
+              const updatedAt = m.updatedAt ? new Date(m.updatedAt) : null;
+              const showUpdated =
+                createdAt && updatedAt && createdAt.getTime() !== updatedAt.getTime();
+
+              const category = (m.messageCategory ?? m.category ?? 'System') as string;
+              const title = m.title ?? m.subject ?? m.messageTitle ?? m.name ?? '-';
+              const isSystem = String(category ?? '').toLowerCase() === 'system';
+              const createdBy = isSystem ? 'System' : createdByLabel(m);
+
+              return (
+                <div
+                  key={m.id}
+                  className="p-4 border rounded-md"
+                  // keep background transparent to show outer container color
+                >
+                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                    <div
+                      className="flex-1 min-w-0 cursor-pointer"
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') openMessage(m);
+                      }}
+                      onClick={() => openMessage(m)}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-sm font-semibold">
+                            {category}
+                          </div>
+
+                          <div className="flex flex-col min-w-0">
+                            <div className="font-medium truncate text-ellipsis">{title}</div>
+                            <div className="text-xs text-slate-600 dark:text-slate-400">
+                              Created at: {createdAt ? createdAt.toLocaleString() : '-'}
+                              {showUpdated && (
+                                <> • Updated at: {updatedAt ? updatedAt.toLocaleString() : '-'}</>
+                              )}
+                            </div>
+                            <div className="text-xs text-slate-600 dark:text-slate-400">
+                              Created by: {createdBy}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openMessage(m)}
+                        className="px-3 py-1 rounded text-sm bg-blue-50 hover:bg-blue-100 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-800 dark:text-white"
+                        aria-expanded={false}
+                        aria-controls={`message-body-${m.id}`}
+                      >
+                        View
+                      </button>
+
+                      {/* Respond button only for non-system messages and when allowResponses is true */}
+                      {!isSystem && onRespond && m.allowResponses && (
+                        <button
+                          type="button"
+                          className="px-3 py-1 rounded text-sm bg-green-600 text-white hover:bg-green-700"
+                          onClick={() => onRespond(m.id)}
+                        >
+                          Respond
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        className="px-3 py-1 rounded text-sm bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-700 dark:hover:bg-yellow-600 text-yellow-800 dark:text-white"
+                        onClick={() => handleEdit(m)}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        className="px-3 py-1 rounded text-sm bg-red-50 hover:bg-red-100 dark:bg-red-700 dark:hover:bg-red-600 text-red-800 dark:text-white"
+                        onClick={() => handleDelete(m.id)}
+                        disabled={Boolean(deleteLoading && deleteId === m.id)}
+                      >
+                        {deleteLoading && deleteId === m.id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+          {/* TableActions optional */}
           <div>
-            <Label className={labelClass} htmlFor="answerPlain">
-              Answer (plain text)
-            </Label>
-            <textarea
-              id="answerPlain"
-              value={answerText}
-              onChange={(e) => handleAnswerTextChange(e.target.value)}
-              className="w-full min-h-[120px] border border-input rounded-md p-2 text-sm bg-gray-50 dark:bg-slate-700 text-slate-900 dark:text-slate-200"
-              placeholder="Enter answer (plain text)"
-            />
+            {TableActions ? (
+              <TableActions data={paginatedData} columns={[]} tableRef={React.createRef()} />
+            ) : null}
           </div>
-        </div>
+        </>
       )}
-
-      {/* Category + Publish status (same row) */}
-      <div className="flex gap-4">
-        <div className="flex-1 space-y-4">
-          <Label className={labelClass} htmlFor="category">
-            Category
-          </Label>
-          <select
-            id="category"
-            name="category"
-            value={form.category}
-            onChange={handleChange}
-            className="w-full border border-input rounded-md p-2 text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200"
-          >
-            <option value="">Select a category</option>
-            {categoryOptions.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="w-1/2 space-y-4">
-          <Label className={labelClass} htmlFor="publishStatus">
-            Publish Status
-          </Label>
-          <select
-            id="publishStatus"
-            name="publishStatus"
-            value={form.publishStatus}
-            onChange={(e) =>
-              setForm((prev) => ({ ...prev, publishStatus: e.target.value as PublishStatus }))
-            }
-            className="w-full border border-input rounded-md p-2 text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200"
-          >
-            {publishOptions.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="flex justify-center gap-4">
-        <Button
-          type="submit"
-          disabled={loading}
-          className="w-40 bg-[#9f004d] hover:bg-[#8a0042] text-white"
-        >
-          {loading
-            ? mode === 'edit'
-              ? 'Updating...'
-              : 'Creating...'
-            : mode === 'edit'
-            ? 'Update FAQ'
-            : 'Create FAQ'}
-        </Button>
-
-        <Button
-          type="button"
-          onClick={onCancel}
-          disabled={loading}
-          className="w-40 bg-slate-700 hover:bg-slate-600 text-white dark:bg-slate-600"
-        >
-          Cancel
-        </Button>
-      </div>
-    </form>
+    </div>
   );
 }
