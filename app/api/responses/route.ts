@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 const CACHE_KEY = 'responses:all';
 
 // Role helpers
-type Role = 'super' | 'admin' | 'moderator' | 'beneficiary' | 'guest';
+type Role = 'super' | 'admin' | 'moderator' | 'beneficiary' | 'user' | 'guest';
 const asRole = (r: any): Role => (r ?? 'guest') as Role;
 
 function getNames(session: any) {
@@ -105,16 +105,15 @@ export async function GET() {
 /**
  * POST:
  * - Auth required.
- * - For beneficiaries: responderType = 'beneficiary', responderBeneficiaryId resolved via session.
- *   Beneficiaries may only respond to messages tied to their beneficiary profile.
- * - For privileged users (super/admin/moderator): responderType = 'user' and responderUserId = session.user.id.
- * - If the signed-in user is the creator of the message, server will tag responderRole = 'AUTHOR'.
- * - System responder is not supported via this endpoint.
+ * - Authorization rules:
+ *   - super/admin/moderator: may respond to any message.
+ *   - authenticated "user": may respond only to messages they authored.
+ *   - beneficiary: may respond if message is tied to their beneficiary profile OR they are the author.
+ *   - guests: forbidden.
  *
- * NOTE: we detect at runtime if the Prisma schema/database has the responderRole field.
- * If it does not (PrismaClientValidationError: Unknown argument `responderRole`), we retry
- * creating the response without that field. This lets you deploy the API code before running
- * a migration; but you should still add the enum/column to your schema and run migrations.
+ * - For beneficiaries: responderType = 'beneficiary', responderBeneficiaryId resolved via session.
+ * - For privileged users (super/admin/moderator) and authors: responderType = 'user' and responderUserId = session.user.id.
+ * - If the signed-in user is the creator of the message, server will tag responderRole = 'AUTHOR'.
  */
 export async function POST(req: Request) {
   try {
@@ -161,14 +160,25 @@ export async function POST(req: Request) {
       );
     }
 
-    // Build responder fields
+    // Authorization logic: determine who can respond per your rules
+    const isAdmin = canAdminManage(role);
+    const isBeneficiaryRole = role === 'beneficiary';
+    const sessionUserId = session.user?.id ?? null;
+    const isAuthorUser = !!(sessionUserId && msg.createdById && sessionUserId === msg.createdById);
+
     let responderType: 'user' | 'beneficiary' | 'system' = 'user';
     let responderUserId: string | undefined = undefined;
     let responderBeneficiaryId: string | undefined = undefined;
     // Responder role enum: USER | BENEFICIARY | AUTHOR | SYSTEM
     let responderRole: 'USER' | 'BENEFICIARY' | 'AUTHOR' | 'SYSTEM' = 'USER';
 
-    if (role === 'beneficiary') {
+    if (isAdmin) {
+      // admins/moderators/super can respond as user
+      responderType = 'user';
+      responderUserId = sessionUserId ?? undefined;
+      responderRole = isAuthorUser ? 'AUTHOR' : 'USER';
+    } else if (isBeneficiaryRole) {
+      // beneficiary: resolve own beneficiary id
       const ownId = await getOwnBeneficiaryIdFromSession(session);
       if (!ownId) {
         return NextResponse.json(
@@ -176,25 +186,29 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
-      // Beneficiaries can only respond to messages linked to their beneficiary profile
-      if (msg.beneficiaryId && msg.beneficiaryId !== ownId) {
+      // allow if message is tied to this beneficiary OR the session user is the message author
+      if (msg.beneficiaryId && msg.beneficiaryId === ownId) {
+        responderType = 'beneficiary';
+        responderBeneficiaryId = ownId;
+        responderRole = 'BENEFICIARY';
+      } else if (isAuthorUser) {
+        // beneficiary who is also the message author -> treat as author (user)
+        responderType = 'user';
+        responderUserId = sessionUserId ?? undefined;
+        responderRole = 'AUTHOR';
+      } else {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
-      responderType = 'beneficiary';
-      responderBeneficiaryId = ownId;
-      responderRole = 'BENEFICIARY';
-    } else if (role === 'super' || role === 'admin' || role === 'moderator') {
-      responderType = 'user';
-      responderUserId = session.user.id;
-      responderRole = 'USER';
     } else {
-      // guests cannot create responses
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    // If the session user is the message creator, set AUTHOR role
-    if (session.user?.id && msg.createdById && session.user.id === msg.createdById) {
-      responderRole = 'AUTHOR';
+      // other authenticated users (e.g., regular "user") can respond only if they are the message author
+      if (isAuthorUser) {
+        responderType = 'user';
+        responderUserId = sessionUserId ?? undefined;
+        responderRole = 'AUTHOR';
+      } else {
+        // guests or authenticated non-authors cannot respond
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
     }
 
     // attempt to create with responderRole; if the DB/schema doesn't have the field, retry without it

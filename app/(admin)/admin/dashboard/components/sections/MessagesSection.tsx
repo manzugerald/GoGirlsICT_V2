@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import DOMPurify from 'dompurify';
 import { Message } from '@/lib/generated/prisma';
+import CreateResponseForm from '@/app/(admin)/admin/dashboard/createResponseForm';
 
 type MessageWithRelations = Message & {
   beneficiary?: {
@@ -20,20 +21,12 @@ type MessageWithRelations = Message & {
 };
 
 /**
- * MessagesSection
+ * MessagesSection (updated)
  *
- * - Tabbed interface (Inbox / Sent) where the bottom edge of the tabs aligns exactly
- *   with the top border of the messages container (tabs visually sit on top of the container).
- * - Tabs are square (no rounded corners) and the active tab receives a background color.
- * - Provides spacing between individual message cards.
- * - Inline viewing/composing for messages and responses (no navigation to separate section).
- * - Sanitized HTML + dark-mode normalization (preserve red).
- *
- * Adjustments made:
- * - tabs are translated upward by calc(-100% - 1px) to ensure their bottom edge sits flush
- *   with the container top border (this moves them slightly up to compensate for borders).
- * - message list is rendered inside an element with class `.messages-list` and each
- *   individual card has class `message-card` with margin to create padding between cards.
+ * - Inline composer: clicking "Respond" opens an inline CreateResponseForm inside the message view.
+ * - After successful create, the created response is shown inline under its parent message.
+ * - The UI now displays "Author, at <timestamp>" instead of "Created by: <Author>" and a separate created-at line.
+ *   Example: "Manzu Gerald, at 8:41:12 PM, 1/1/2026"
  */
 
 export default function MessagesSection({
@@ -70,11 +63,10 @@ export default function MessagesSection({
   const [responses, setResponses] = useState<any[] | null>(null);
   const [loadingResponses, setLoadingResponses] = useState(false);
 
-  // Reply composer state (inline)
+  // Inline composer control
   const [replyingToMessageId, setReplyingToMessageId] = useState<string | number | null>(null);
-  const [replyContent, setReplyContent] = useState<string>('');
-  const [sendingReply, setSendingReply] = useState(false);
 
+  // Helpers
   const createdByLabel = (m: any) => {
     if (m.createdBy) {
       const parts = [m.createdBy.firstName, m.createdBy.lastName].filter(Boolean);
@@ -86,6 +78,14 @@ export default function MessagesSection({
     if (m.createdByUsername) return m.createdByUsername;
     if (m.name) return m.name;
     return 'System';
+  };
+
+  const formatCreatedByAt = (m: any) => {
+    const name = createdByLabel(m);
+    const createdAt = m.createdAt ? new Date(m.createdAt) : null;
+    if (!createdAt) return name;
+    // Use toLocaleString for human-friendly formatting (adjust locale if needed)
+    return `${name}, at ${createdAt.toLocaleString()}`;
   };
 
   const isHtmlString = (s: string) => /<\/?[a-z][\s\S]*>/i.test(s);
@@ -105,6 +105,7 @@ export default function MessagesSection({
       return html.replace(/<\/?[^>]+(>|$)/g, '');
     }
   };
+  const PREVIEW_CHAR_LIMIT = 300;
 
   const getContentCandidate = (m: any) => {
     if (!m) return null;
@@ -135,8 +136,6 @@ export default function MessagesSection({
     }
     return null;
   };
-
-  const PREVIEW_CHAR_LIMIT = 300;
 
   function normalizeHtmlForDark(sanitizedHtml: string) {
     if (typeof document === 'undefined') return sanitizedHtml;
@@ -362,75 +361,83 @@ export default function MessagesSection({
   const closeView = () => {
     setViewingItem(null);
     setReplyingToMessageId(null);
-    setReplyContent('');
     if (typeof onToggleControls === 'function') onToggleControls(false);
   };
 
-  const openReplyComposer = (messageId: string | number) => {
-    setReplyingToMessageId(messageId);
-    setReplyContent('');
-    const msg = (paginatedData ?? []).find((x: any) => String(x.id) === String(messageId));
-    if (msg) openMessage(msg);
-  };
-
-  const sendReply = async () => {
-    if (!replyingToMessageId || !replyContent.trim()) {
-      alert('Please write a message before sending.');
+  // When a response is created successfully:
+  // - if the message is already open, append the response into that array
+  // - otherwise open the parent message and show the response inline
+  const handleResponseCreated = (created: any) => {
+    const parentId = created?.message?.id ?? created?.messageId ?? null;
+    if (!parentId) {
+      setResponses((prev) => (prev ? [created, ...prev] : [created]));
       return;
     }
-    setSendingReply(true);
-    try {
-      const payload = {
-        messageId: replyingToMessageId,
-        text: replyContent,
-        content: replyContent,
-      };
-      const res = await fetch('/api/responses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        throw new Error(err?.error ?? `Failed to send (${res.status})`);
-      }
-      const created = await res.json();
-      if (
-        viewingItem &&
-        viewingItem.type === 'message' &&
-        String(viewingItem.payload?.id) === String(replyingToMessageId)
-      ) {
-        viewingItem.payload.responses = viewingItem.payload.responses ?? [];
-        viewingItem.payload.responses.unshift(created);
-        setViewingItem({ ...viewingItem });
-      }
-      setResponses((prev) => (prev ? [created, ...prev] : [created]));
+
+    // If currently viewing the parent message, append
+    if (
+      viewingItem &&
+      viewingItem.type === 'message' &&
+      String(viewingItem.payload?.id) === String(parentId)
+    ) {
+      viewingItem.payload.responses = viewingItem.payload.responses ?? [];
+      viewingItem.payload.responses.push(created);
+      setViewingItem({ ...viewingItem });
       setReplyingToMessageId(null);
-      setReplyContent('');
-    } catch (e: any) {
-      console.error('sendReply error', e);
-      alert('Failed to send reply: ' + (e?.message ?? e));
-    } finally {
-      setSendingReply(false);
+      return;
     }
+
+    // If not viewing, open the parent message and ensure the created response shows up
+    (async () => {
+      try {
+        const res = await fetch(`/api/messages/${parentId}`);
+        const msg = res.ok ? await res.json() : null;
+        const respRes = await fetch('/api/responses');
+        const respData = respRes.ok ? await respRes.json() : [];
+        const list = Array.isArray(respData)
+          ? respData.filter(
+              (r: any) =>
+                (r.message && (r.message.id === parentId || Number(r.message.id) === parentId)) ||
+                (r.messageId && Number(r.messageId) === parentId)
+            )
+          : [];
+        const exists = list.find((r) => String(r.id) === String(created.id));
+        if (!exists) list.push(created);
+        setViewingItem({ type: 'message', payload: { ...msg, responses: list } });
+        setActiveTab('inbox');
+      } catch {
+        setResponses((prev) => (prev ? [created, ...prev] : [created]));
+      } finally {
+        setReplyingToMessageId(null);
+      }
+    })();
+  };
+
+  // open composer: ensure message is open, then set replyingToMessageId
+  const openComposerForMessage = async (messageId: number | string) => {
+    const msg = (paginatedData ?? []).find((x: any) => String(x.id) === String(messageId));
+    if (msg) {
+      await openMessage(msg);
+      setReplyingToMessageId(messageId);
+      return;
+    }
+    await openMessage({ id: messageId });
+    setReplyingToMessageId(messageId);
   };
 
   const renderFullMessage = (m: any) => {
     const category = m.messageCategory ?? m.category ?? 'System';
     const title = m.title ?? m.subject ?? m.messageTitle ?? m.name ?? '-';
-    const createdAt = m.createdAt ? new Date(m.createdAt).toLocaleString() : '-';
     const updatedAt = m.updatedAt ? new Date(m.updatedAt).toLocaleString() : null;
-    const showUpdated = updatedAt && updatedAt !== createdAt;
-    const createdBy =
-      String(category ?? '').toLowerCase() === 'system' ? 'System' : createdByLabel(m);
+    const createdByAt = formatCreatedByAt(m);
 
     return (
       <div className="w-full">
         <div className="px-2">
           <h2 className="text-xl font-semibold">{title}</h2>
           <div className="text-sm text-slate-700 dark:text-slate-300 mt-1">
-            Category: <strong>{category}</strong> · Created: {createdAt}
-            {showUpdated ? <> · Updated: {updatedAt}</> : null} · Created by: {createdBy}
+            {createdByAt}
+            {updatedAt ? <> · Updated: {updatedAt}</> : null}
           </div>
         </div>
 
@@ -449,9 +456,9 @@ export default function MessagesSection({
               {String(category).toLowerCase() !== 'system' && m.allowResponses && (
                 <button
                   className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                  onClick={() => openReplyComposer(m.id)}
+                  onClick={() => openComposerForMessage(m.id)}
                 >
-                  Reply
+                  Respond
                 </button>
               )}
 
@@ -471,36 +478,18 @@ export default function MessagesSection({
               </button>
             </div>
 
+            {/* Composer shown inline when replyingToMessageId matches this message */}
             {String(replyingToMessageId) === String(m.id) && (
               <div className="mt-4">
-                <textarea
-                  value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value)}
-                  rows={4}
-                  placeholder="Write your response..."
-                  className="w-full border border-input rounded p-2 text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200"
+                <CreateResponseForm
+                  messageId={m.id}
+                  onCancel={() => setReplyingToMessageId(null)}
+                  onSuccess={(created) => handleResponseCreated(created)}
                 />
-                <div className="mt-2 flex gap-2">
-                  <button
-                    className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                    onClick={sendReply}
-                    disabled={sendingReply}
-                  >
-                    {sendingReply ? 'Sending...' : 'Send'}
-                  </button>
-                  <button
-                    className="px-3 py-2 bg-gray-100 dark:bg-slate-700 text-slate-900 dark:text-slate-200 rounded hover:bg-gray-200"
-                    onClick={() => {
-                      setReplyingToMessageId(null);
-                      setReplyContent('');
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
               </div>
             )}
 
+            {/* Responses list shown inline */}
             <div className="mt-6">
               <h3 className="font-medium">
                 Responses ({Array.isArray(m.responses) ? m.responses.length : 0})
@@ -609,53 +598,15 @@ export default function MessagesSection({
     .rich-content [data-preserve-red], .rich-content [data-preserve-red] * { color: #b91c1c !important; }
     .dark .rich-content [data-preserve-red], .dark .rich-content [data-preserve-red] * { color: #b91c1c !important; }
 
-    /* Tabs: square, positioned so their bottom edge aligns exactly with container top border */
-    .tabs-top {
-      position: absolute;
-      left: 24px;
-      top: 0;
-      /* move up slightly beyond -100% to sit exactly on top of container border */
-      transform: translateY(calc(-100% - 1px));
-      display:flex;
-      gap:0;
-      z-index:20;
-    }
-    .tab-pill {
-      padding:10px 16px;
-      height:40px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      border:1px solid transparent;
-      border-bottom: none; /* visually connect with container top border */
-      border-radius:0;
-      cursor:pointer;
-      background:transparent;
-      color:inherit;
-      font-weight:600;
-      box-sizing: border-box;
-    }
-    .tab-pill + .tab-pill { margin-left: -1px; } /* collapse borders between pills */
-    .tab-pill:hover { background: rgba(0,0,0,0.03); }
-    .tab-active {
-      background: #eef2ff; /* light active background */
-      color: #111;
-      border-color: rgba(15,23,42,0.06);
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-    }
-    .dark .tab-active {
-      background: #0b1220; /* dark active background */
-      color: #fff;
-      border-color: rgba(255,255,255,0.04);
-      box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-    }
+    .tabs-top { position: absolute; left: 24px; top: 0; transform: translateY(calc(-100% - 1px)); display:flex; gap:0; z-index:20; }
+    .tab-pill { padding:10px 16px; height:40px; display:inline-flex; align-items:center; justify-content:center; border:1px solid transparent; border-bottom: none; border-radius:0; cursor:pointer; background:transparent; color:inherit; font-weight:600; box-sizing: border-box; }
+    .tab-pill + .tab-pill { margin-left: -1px; }
+    .tab-active { background: #eef2ff; color: #111; border-color: rgba(15,23,42,0.06); box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    .dark .tab-active { background: #0b1220; color: #fff; border-color: rgba(255,255,255,0.04); box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
 
-    /* messages list spacing: gives padding between individual cards */
     .messages-list { display:block; margin-top: 8px; }
     .messages-list .message-card { margin-bottom: 12px; }
     .messages-list .message-card:last-child { margin-bottom: 0; }
-
-    /* ensure the top border of the container remains visible under tabs */
     .container-top-border { border-top-width: 1px; border-top-style: solid; border-top-color: inherit; padding-top: 12px; }
   `;
 
@@ -663,7 +614,6 @@ export default function MessagesSection({
     <div className={outerClass}>
       <style>{injectedCss}</style>
 
-      {/* Tabs (square) placed so bottom of tabs aligns with top border of the messages container */}
       <div className="tabs-top" role="tablist" aria-label="Messages tabs">
         <div
           role="tab"
@@ -684,9 +634,7 @@ export default function MessagesSection({
         </div>
       </div>
 
-      {/* Container wrapper with explicit top border so tabs visually sit on it */}
       <div className="container-top-border">
-        {/* Inline view if open */}
         {viewingItem ? (
           <div>
             {viewingItem.type === 'message' && renderFullMessage(viewingItem.payload)}
@@ -712,7 +660,7 @@ export default function MessagesSection({
                       const category = (m.messageCategory ?? m.category ?? 'System') as string;
                       const title = m.title ?? m.subject ?? m.messageTitle ?? m.name ?? '-';
                       const isSystem = String(category ?? '').toLowerCase() === 'system';
-                      const createdBy = isSystem ? 'System' : createdByLabel(m);
+                      const createdByAt = formatCreatedByAt(m);
 
                       return (
                         <div key={m.id} className="message-card p-4 border rounded-md">
@@ -737,7 +685,7 @@ export default function MessagesSection({
                                       {title}
                                     </div>
                                     <div className="text-xs text-slate-600 dark:text-slate-400">
-                                      Created at: {createdAt ? createdAt.toLocaleString() : '-'}
+                                      {createdByAt}
                                       {showUpdated && (
                                         <>
                                           {' '}
@@ -745,9 +693,6 @@ export default function MessagesSection({
                                           {updatedAt ? updatedAt.toLocaleString() : '-'}
                                         </>
                                       )}
-                                    </div>
-                                    <div className="text-xs text-slate-600 dark:text-slate-400">
-                                      Created by: {createdBy}
                                     </div>
                                   </div>
                                 </div>
@@ -769,7 +714,7 @@ export default function MessagesSection({
                                   className="px-3 py-1 rounded text-sm bg-green-600 text-white hover:bg-green-700"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    openReplyComposer(m.id);
+                                    openComposerForMessage(m.id);
                                   }}
                                 >
                                   Respond
