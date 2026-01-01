@@ -21,12 +21,11 @@ type MessageWithRelations = Message & {
 };
 
 /**
- * MessagesSection (updated)
+ * MessagesSection
  *
  * - Inline composer: clicking "Respond" opens an inline CreateResponseForm inside the message view.
  * - After successful create, the created response is shown inline under its parent message.
- * - The UI now displays "Author, at <timestamp>" instead of "Created by: <Author>" and a separate created-at line.
- * - If Updated timestamp equals Created timestamp, the "Updated" info is omitted.
+ * - Message and Response authors are displayed as: "Name, at <timestamp>" (omits Updated when equal to Created).
  */
 
 export default function MessagesSection({
@@ -66,7 +65,7 @@ export default function MessagesSection({
   // Inline composer control
   const [replyingToMessageId, setReplyingToMessageId] = useState<string | number | null>(null);
 
-  // Helpers
+  // Helpers for message author (reused previously)
   const createdByLabel = (m: any) => {
     if (m.createdBy) {
       const parts = [m.createdBy.firstName, m.createdBy.lastName].filter(Boolean);
@@ -80,9 +79,35 @@ export default function MessagesSection({
     return 'System';
   };
 
+  // New helpers for responses/responder display
+  const responderLabel = (r: any) => {
+    // Prefer explicit name fields, then responderUser, then responderBeneficiary, then fallback
+    if (r.name) return r.name;
+    if (r.responderUser) {
+      const parts = [r.responderUser.firstName, r.responderUser.lastName].filter(Boolean);
+      if (parts.length > 0) return parts.join(' ');
+    }
+    if (r.responderBeneficiary) {
+      const parts = [r.responderBeneficiary.firstName, r.responderBeneficiary.lastName].filter(
+        Boolean
+      );
+      if (parts.length > 0) return parts.join(' ');
+    }
+    if (r.createdByName) return r.createdByName;
+    if (r.createdByUsername) return r.createdByUsername;
+    return 'User';
+  };
+
   const formatCreatedByAt = (m: any) => {
     const name = createdByLabel(m);
     const createdAt = m.createdAt ? new Date(m.createdAt) : null;
+    if (!createdAt) return name;
+    return `${name}, at ${createdAt.toLocaleString()}`;
+  };
+
+  const formatResponderAt = (r: any) => {
+    const name = responderLabel(r);
+    const createdAt = r.createdAt ? new Date(r.createdAt) : null;
     if (!createdAt) return name;
     return `${name}, at ${createdAt.toLocaleString()}`;
   };
@@ -165,7 +190,7 @@ export default function MessagesSection({
   const renderContent = (m: any, full = false) => {
     const candidate = getContentCandidate(m);
     if (!candidate)
-      return <div className="text-sm text-slate-600 dark:text-slate-300">— No content —</div>;
+      return <div className="text-sm text-slate-600 dark:text-slate-400">— No content —</div>;
 
     if (candidate.type === 'html') {
       const raw = String(candidate.value ?? '');
@@ -225,7 +250,7 @@ export default function MessagesSection({
       const raw = String(candidate.value ?? '');
       const trimmed = raw.trim();
       if (!trimmed)
-        return <div className="text-sm text-slate-600 dark:text-slate-300">— No content —</div>;
+        return <div className="text-sm text-slate-600 dark:text-slate-400">— No content —</div>;
       const preview =
         !full && trimmed.length > PREVIEW_CHAR_LIMIT
           ? trimmed.slice(0, PREVIEW_CHAR_LIMIT) + '…'
@@ -259,7 +284,7 @@ export default function MessagesSection({
     }
 
     return (
-      <div className="text-sm text-slate-600 dark:text-slate-300">— Unsupported content type —</div>
+      <div className="text-sm text-slate-600 dark:text-slate-400">— Unsupported content type —</div>
     );
   };
 
@@ -509,12 +534,7 @@ export default function MessagesSection({
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <div className="text-sm font-medium">
-                            {r.name ?? r.createdByName ?? 'User'}
-                          </div>
-                          <div className="text-xs text-slate-600 dark:text-slate-400">
-                            {r.createdAt ? new Date(r.createdAt).toLocaleString() : '-'}
-                          </div>
+                          <div className="text-sm font-medium">{formatResponderAt(r)}</div>
                         </div>
                         <div className="text-right">
                           <button
@@ -543,18 +563,13 @@ export default function MessagesSection({
 
   const renderFullResponse = (r: any) => {
     const title = r.subject ?? r.title ?? `Response to ${r.messageId ?? ''}`;
-    const createdAt = r.createdAt ? new Date(r.createdAt).toLocaleString() : '-';
-    const createdBy = r.name ?? r.createdByName ?? 'You';
+    // Show responder name + timestamp in the requested format
+    const responderAt = formatResponderAt(r);
     return (
       <div className="w-full">
         <div className="px-2">
           <h2 className="text-xl font-semibold">{title}</h2>
-          <div className="text-sm text-slate-700 dark:text-slate-300 mt-1">
-            Sent: {createdAt} · From: {createdBy}
-            {r.parent
-              ? ` · In reply to: ${r.parent.title ?? r.parent.subject ?? r.parent.name}`
-              : null}
-          </div>
+          <div className="text-sm text-slate-700 dark:text-slate-300 mt-1">{responderAt}</div>
         </div>
 
         <div className="mt-4 px-2">
@@ -771,9 +786,8 @@ export default function MessagesSection({
                   {!loadingResponses &&
                     Array.isArray(responses) &&
                     responses.map((r: any) => {
-                      const createdAt = r.createdAt ? new Date(r.createdAt) : null;
+                      const responderAt = formatResponderAt(r);
                       const title = r.subject ?? r.title ?? `Response to ${r.messageId ?? ''}`;
-                      const createdBy = r.name ?? r.createdByName ?? 'You';
                       return (
                         <div key={r.id} className="message-card p-4 border rounded-md">
                           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -797,10 +811,7 @@ export default function MessagesSection({
                                       {title}
                                     </div>
                                     <div className="text-xs text-slate-600 dark:text-slate-400">
-                                      Sent at: {createdAt ? createdAt.toLocaleString() : '-'}
-                                    </div>
-                                    <div className="text-xs text-slate-600 dark:text-slate-400">
-                                      From: {createdBy}
+                                      {responderAt}
                                     </div>
                                   </div>
                                 </div>
