@@ -26,7 +26,7 @@ type MessageWithRelations = Message & {
  * - Inline composer: clicking "Respond" opens an inline CreateResponseForm inside the message view.
  * - After successful create, the created response is shown inline under its parent message.
  * - The UI now displays "Author, at <timestamp>" instead of "Created by: <Author>" and a separate created-at line.
- *   Example: "Manzu Gerald, at 8:41:12 PM, 1/1/2026"
+ * - If Updated timestamp equals Created timestamp, the "Updated" info is omitted.
  */
 
 export default function MessagesSection({
@@ -84,7 +84,6 @@ export default function MessagesSection({
     const name = createdByLabel(m);
     const createdAt = m.createdAt ? new Date(m.createdAt) : null;
     if (!createdAt) return name;
-    // Use toLocaleString for human-friendly formatting (adjust locale if needed)
     return `${name}, at ${createdAt.toLocaleString()}`;
   };
 
@@ -428,8 +427,14 @@ export default function MessagesSection({
   const renderFullMessage = (m: any) => {
     const category = m.messageCategory ?? m.category ?? 'System';
     const title = m.title ?? m.subject ?? m.messageTitle ?? m.name ?? '-';
-    const updatedAt = m.updatedAt ? new Date(m.updatedAt).toLocaleString() : null;
+
+    const createdAtDate = m.createdAt ? new Date(m.createdAt) : null;
+    const updatedAtDate = m.updatedAt ? new Date(m.updatedAt) : null;
     const createdByAt = formatCreatedByAt(m);
+
+    // showUpdated only when both dates exist and differ in time
+    const showUpdated =
+      createdAtDate && updatedAtDate && createdAtDate.getTime() !== updatedAtDate.getTime();
 
     return (
       <div className="w-full">
@@ -437,7 +442,7 @@ export default function MessagesSection({
           <h2 className="text-xl font-semibold">{title}</h2>
           <div className="text-sm text-slate-700 dark:text-slate-300 mt-1">
             {createdByAt}
-            {updatedAt ? <> · Updated: {updatedAt}</> : null}
+            {showUpdated ? <> · Updated: {updatedAtDate?.toLocaleString()}</> : null}
           </div>
         </div>
 
@@ -653,10 +658,12 @@ export default function MessagesSection({
                 <div className="messages-list">
                   {Array.isArray(paginatedData) &&
                     paginatedData.map((m: any) => {
-                      const createdAt = m.createdAt ? new Date(m.createdAt) : null;
-                      const updatedAt = m.updatedAt ? new Date(m.updatedAt) : null;
+                      const createdAtDate = m.createdAt ? new Date(m.createdAt) : null;
+                      const updatedAtDate = m.updatedAt ? new Date(m.updatedAt) : null;
                       const showUpdated =
-                        createdAt && updatedAt && createdAt.getTime() !== updatedAt.getTime();
+                        createdAtDate &&
+                        updatedAtDate &&
+                        createdAtDate.getTime() !== updatedAtDate.getTime();
                       const category = (m.messageCategory ?? m.category ?? 'System') as string;
                       const title = m.title ?? m.subject ?? m.messageTitle ?? m.name ?? '-';
                       const isSystem = String(category ?? '').toLowerCase() === 'system';
@@ -690,7 +697,7 @@ export default function MessagesSection({
                                         <>
                                           {' '}
                                           • Updated at:{' '}
-                                          {updatedAt ? updatedAt.toLocaleString() : '-'}
+                                          {updatedAtDate ? updatedAtDate.toLocaleString() : '-'}
                                         </>
                                       )}
                                     </div>
