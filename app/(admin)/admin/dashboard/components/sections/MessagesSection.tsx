@@ -25,7 +25,11 @@ type MessageWithRelations = Message & {
  *
  * - Inline composer: clicking "Respond" opens an inline CreateResponseForm inside the message view.
  * - After successful create, the created response is shown inline under its parent message.
- * - Message and Response authors are displayed as: "Name, at <timestamp>" (omits Updated when equal to Created).
+ * - Message and Response authors/time are displayed using the requested format:
+ *     <Name>, at <hh:mm:ss AM/PM> <MON> <D> <YYYY>
+ *   e.g. "Eva Yayi, at 8:48:12 PM JAN 20 2025"
+ * - If a responder is the same user who wrote the message, an "Author" tooltip/badge is shown next to the responder name.
+ * - If Updated timestamp equals Created timestamp, the "Updated" info is omitted.
  */
 
 export default function MessagesSection({
@@ -65,7 +69,7 @@ export default function MessagesSection({
   // Inline composer control
   const [replyingToMessageId, setReplyingToMessageId] = useState<string | number | null>(null);
 
-  // Helpers for message author (reused previously)
+  // Helpers for message author label
   const createdByLabel = (m: any) => {
     if (m.createdBy) {
       const parts = [m.createdBy.firstName, m.createdBy.lastName].filter(Boolean);
@@ -79,9 +83,8 @@ export default function MessagesSection({
     return 'System';
   };
 
-  // New helpers for responses/responder display
+  // Helpers for responder/responder labels
   const responderLabel = (r: any) => {
-    // Prefer explicit name fields, then responderUser, then responderBeneficiary, then fallback
     if (r.name) return r.name;
     if (r.responderUser) {
       const parts = [r.responderUser.firstName, r.responderUser.lastName].filter(Boolean);
@@ -98,18 +101,54 @@ export default function MessagesSection({
     return 'User';
   };
 
-  const formatCreatedByAt = (m: any) => {
-    const name = createdByLabel(m);
-    const createdAt = m.createdAt ? new Date(m.createdAt) : null;
-    if (!createdAt) return name;
-    return `${name}, at ${createdAt.toLocaleString()}`;
+  // Format date to "h:mm:ss AM/PM MON DD YYYY"
+  const formatDateForDisplay = (d?: string | Date | null) => {
+    if (!d) return '';
+    const date = d instanceof Date ? d : new Date(d);
+    if (Number.isNaN(date.getTime())) return '';
+    const time = date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
+    const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase(); // JAN
+    const day = date.getDate();
+    const year = date.getFullYear();
+    return `${time} ${month} ${day} ${year}`;
   };
 
-  const formatResponderAt = (r: any) => {
+  const formatCreatedByAt = (m: any) => {
+    const name = createdByLabel(m);
+    const createdAt = formatDateForDisplay(m?.createdAt);
+    return createdAt ? `${name}, at ${createdAt}` : name;
+  };
+
+  // Render responder label + optional Author tooltip/badge + timestamp (JSX)
+  const renderResponderAt = (r: any, messageOwnerId?: string | number | null) => {
     const name = responderLabel(r);
-    const createdAt = r.createdAt ? new Date(r.createdAt) : null;
-    if (!createdAt) return name;
-    return `${name}, at ${createdAt.toLocaleString()}`;
+    const responderUserId = r?.responderUser?.id ?? r?.responderUserId ?? null;
+    const createdAt = formatDateForDisplay(r?.createdAt);
+    const isAuthor =
+      messageOwnerId && responderUserId && String(responderUserId) === String(messageOwnerId);
+
+    return (
+      <>
+        <span>{name}</span>
+        {isAuthor && (
+          <span
+            title="Author"
+            aria-label="Author"
+            className="ml-2 inline-flex items-center px-2 py-0.5 text-xs font-medium rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-white"
+          >
+            Author
+          </span>
+        )}
+        {createdAt && (
+          <span className="ml-2 text-xs text-slate-600 dark:text-slate-400">at {createdAt}</span>
+        )}
+      </>
+    );
   };
 
   const isHtmlString = (s: string) => /<\/?[a-z][\s\S]*>/i.test(s);
@@ -534,7 +573,9 @@ export default function MessagesSection({
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <div className="text-sm font-medium">{formatResponderAt(r)}</div>
+                          <div className="text-sm font-medium">
+                            {renderResponderAt(r, m?.createdById)}
+                          </div>
                         </div>
                         <div className="text-right">
                           <button
@@ -563,13 +604,15 @@ export default function MessagesSection({
 
   const renderFullResponse = (r: any) => {
     const title = r.subject ?? r.title ?? `Response to ${r.messageId ?? ''}`;
-    // Show responder name + timestamp in the requested format
-    const responderAt = formatResponderAt(r);
+    // determine parent creator ID if available (r.parent or r.message)
+    const parentCreatorId = r?.parent?.createdById ?? r?.message?.createdById ?? null;
     return (
       <div className="w-full">
         <div className="px-2">
           <h2 className="text-xl font-semibold">{title}</h2>
-          <div className="text-sm text-slate-700 dark:text-slate-300 mt-1">{responderAt}</div>
+          <div className="text-sm text-slate-700 dark:text-slate-300 mt-1">
+            {renderResponderAt(r, parentCreatorId)}
+          </div>
         </div>
 
         <div className="mt-4 px-2">
@@ -786,7 +829,7 @@ export default function MessagesSection({
                   {!loadingResponses &&
                     Array.isArray(responses) &&
                     responses.map((r: any) => {
-                      const responderAt = formatResponderAt(r);
+                      const responderAt = renderResponderAt(r, r?.message?.createdById ?? null);
                       const title = r.subject ?? r.title ?? `Response to ${r.messageId ?? ''}`;
                       return (
                         <div key={r.id} className="message-card p-4 border rounded-md">
