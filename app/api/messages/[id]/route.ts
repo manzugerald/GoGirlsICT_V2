@@ -7,7 +7,15 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 export const runtime = 'nodejs';
 
 type Role = 'super' | 'admin' | 'moderator' | 'beneficiary' | 'user' | 'guest';
-const asRole = (r: any): Role => (r ?? 'guest') as Role;
+const asRole = (r: any): Role => {
+  const normalized = String(r ?? 'guest')
+    .trim()
+    .toLowerCase();
+  if (['super', 'admin', 'moderator', 'beneficiary', 'user', 'guest'].includes(normalized)) {
+    return normalized as Role;
+  }
+  return 'guest';
+};
 
 function getNames(session: any) {
   const firstName = (session?.user?.firstName ?? '').trim();
@@ -80,7 +88,17 @@ export async function DELETE(_req: Request, context: { params: any }) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const role = asRole(session.user.role);
+
+    const role = asRole(session.user?.role);
+    // debug log - remove in production if desired
+    console.debug(
+      'DELETE /api/messages/[id] - session.user.id:',
+      session.user?.id,
+      'session.role:',
+      session.user?.role,
+      'normalized role:',
+      role
+    );
 
     // fetch message with creator info
     const existing = await prisma.message.findUnique({
@@ -94,6 +112,14 @@ export async function DELETE(_req: Request, context: { params: any }) {
     const isCreator = !!(existing.createdById && session.user.id === existing.createdById);
 
     if (!isAdmin && !isCreator) {
+      console.warn(
+        'DELETE /api/messages/[id] - Forbidden. user:',
+        session.user?.id,
+        'role:',
+        role,
+        'message.createdById:',
+        existing.createdById
+      );
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
