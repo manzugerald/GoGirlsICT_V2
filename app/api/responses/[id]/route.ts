@@ -37,15 +37,18 @@ const canAdminDelete = (role: Role) => role === 'super' || role === 'admin';
 // GET: fetch a single response by id (include parent message and related responder info)
 export async function GET(_req: Request, context: { params: any }) {
   try {
-    // Per Next.js dynamic API rules, params must be awaited
     const params = await context.params;
+    const idRaw = params?.id;
+    const id = Number(idRaw);
+    if (!Number.isFinite(id)) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    }
 
     const response = await prisma.response.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         responderUser: { select: { id: true, firstName: true, lastName: true, email: true } },
         responderBeneficiary: { select: { id: true, firstName: true, lastName: true } },
-        // include message and other responses for parent (with responderRole)
         message: {
           select: {
             id: true,
@@ -87,6 +90,12 @@ export async function GET(_req: Request, context: { params: any }) {
 export async function PATCH(req: Request, context: { params: any }) {
   try {
     const params = await context.params;
+    const idRaw = params?.id;
+    const id = Number(idRaw);
+    if (!Number.isFinite(id)) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    }
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -94,7 +103,7 @@ export async function PATCH(req: Request, context: { params: any }) {
     const role = asRole(session.user.role);
 
     const existing = await prisma.response.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         responderType: true,
@@ -117,7 +126,6 @@ export async function PATCH(req: Request, context: { params: any }) {
     // - If responderRole === 'USER' -> allow if responderUserId === session.user.id
     // - If responderRole === 'AUTHOR' -> allow if session.user.id === message.createdById OR responderUserId === session.user.id
     // - If responderRole === 'BENEFICIARY' -> allow if session beneficiary maps to responderBeneficiaryId
-    // - SYSTEM responses cannot be edited via API
     let allowed = false;
     const roleEnum = existing.responderRole as string | null;
 
@@ -135,11 +143,10 @@ export async function PATCH(req: Request, context: { params: any }) {
       const ownBeneficiaryId = await getOwnBeneficiaryIdFromSession(session);
       allowed = ownBeneficiaryId !== null && ownBeneficiaryId === existing.responderBeneficiaryId;
     } else {
-      // SYSTEM or unknown
       allowed = false;
     }
 
-    // additionally: allow message author to edit the response (useful if they want to moderate)
+    // additionally: allow message author to edit the response
     if (
       !allowed &&
       existing.message?.createdById &&
@@ -151,7 +158,7 @@ export async function PATCH(req: Request, context: { params: any }) {
     if (!allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const updated = await prisma.response.update({
-      where: { id: params.id },
+      where: { id },
       data: { content },
       include: {
         responderUser: { select: { id: true, firstName: true, lastName: true, email: true } },
@@ -167,10 +174,16 @@ export async function PATCH(req: Request, context: { params: any }) {
   }
 }
 
-// DELETE: delete a response (owner, message creator for AUTHOR, or super/admin)
+// DELETE: delete a response (owner, message creator, or super/admin)
 export async function DELETE(_req: Request, context: { params: any }) {
   try {
     const params = await context.params;
+    const idRaw = params?.id;
+    const id = Number(idRaw);
+    if (!Number.isFinite(id)) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    }
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -178,7 +191,7 @@ export async function DELETE(_req: Request, context: { params: any }) {
     const role = asRole(session.user.role);
 
     const existing = await prisma.response.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         responderType: true,
@@ -223,7 +236,7 @@ export async function DELETE(_req: Request, context: { params: any }) {
 
     if (!allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    await prisma.response.delete({ where: { id: params.id } });
+    await prisma.response.delete({ where: { id } });
 
     return NextResponse.json({ message: 'Deleted' });
   } catch (error: any) {

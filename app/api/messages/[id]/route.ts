@@ -38,8 +38,14 @@ const canAdminDelete = (role: Role) => role === 'super' || role === 'admin';
 export async function GET(_req: Request, context: { params: any }) {
   try {
     const params = await context.params;
+    const idRaw = params?.id;
+    const id = Number(idRaw);
+    if (!Number.isFinite(id)) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    }
+
     const message = await prisma.message.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         beneficiary: { select: { id: true, firstName: true, lastName: true } },
         createdBy: { select: { id: true, firstName: true, lastName: true } },
@@ -64,6 +70,12 @@ export async function GET(_req: Request, context: { params: any }) {
 export async function DELETE(_req: Request, context: { params: any }) {
   try {
     const params = await context.params;
+    const idRaw = params?.id;
+    const id = Number(idRaw);
+    if (!Number.isFinite(id)) {
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    }
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -72,7 +84,7 @@ export async function DELETE(_req: Request, context: { params: any }) {
 
     // fetch message with creator info
     const existing = await prisma.message.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { id: true, createdById: true },
     });
     if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
