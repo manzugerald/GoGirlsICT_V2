@@ -6,7 +6,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export const runtime = 'nodejs';
 
-type Role = 'super' | 'admin' | 'moderator' | 'beneficiary' | 'guest';
+type Role = 'super' | 'admin' | 'moderator' | 'beneficiary' | 'user' | 'guest';
 const asRole = (r: any): Role => (r ?? 'guest') as Role;
 
 function getNames(session: any) {
@@ -31,6 +31,7 @@ async function getOwnBeneficiaryIdFromSession(session: any): Promise<string | nu
   return match?.id ?? null;
 }
 
+// Only super and admin have unconditional delete/edit rights
 const canAdminDelete = (role: Role) => role === 'super' || role === 'admin';
 
 // GET: fetch a single response by id (include parent message and related responder info)
@@ -77,6 +78,7 @@ export async function GET(_req: Request, context: { params: any }) {
 
     return NextResponse.json(response);
   } catch (error) {
+    console.error('GET /api/responses/[id] error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
@@ -111,7 +113,7 @@ export async function PATCH(req: Request, context: { params: any }) {
     const { content } = body as { content: unknown };
 
     // Authorization rules (using responderRole):
-    // - Admins/moderators/super can edit any response
+    // - super/admin can edit any response
     // - If responderRole === 'USER' -> allow if responderUserId === session.user.id
     // - If responderRole === 'AUTHOR' -> allow if session.user.id === message.createdById OR responderUserId === session.user.id
     // - If responderRole === 'BENEFICIARY' -> allow if session beneficiary maps to responderBeneficiaryId
@@ -137,6 +139,15 @@ export async function PATCH(req: Request, context: { params: any }) {
       allowed = false;
     }
 
+    // additionally: allow message author to edit the response (useful if they want to moderate)
+    if (
+      !allowed &&
+      existing.message?.createdById &&
+      session.user.id === existing.message.createdById
+    ) {
+      allowed = true;
+    }
+
     if (!allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const updated = await prisma.response.update({
@@ -151,11 +162,12 @@ export async function PATCH(req: Request, context: { params: any }) {
 
     return NextResponse.json(updated);
   } catch (error) {
+    console.error('PATCH /api/responses/[id] error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-// DELETE: delete a response (owner, message creator for AUTHOR, or admins)
+// DELETE: delete a response (owner, message creator for AUTHOR, or super/admin)
 export async function DELETE(_req: Request, context: { params: any }) {
   try {
     const params = await context.params;
@@ -178,11 +190,12 @@ export async function DELETE(_req: Request, context: { params: any }) {
     });
     if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    // Authorization: owner (user/beneficiary) OR message creator (for AUTHOR) OR admin/super can delete
+    // Authorization: owner (user/beneficiary) OR message creator OR super/admin can delete
     let allowed = false;
     const roleEnum = existing.responderRole as string | null;
 
     if (canAdminDelete(role)) {
+      // super/admin may delete any response (including system)
       allowed = true;
     } else if (roleEnum === 'USER') {
       allowed = existing.responderUserId === session.user.id;
@@ -199,6 +212,15 @@ export async function DELETE(_req: Request, context: { params: any }) {
       allowed = false;
     }
 
+    // additionally allow message creator to delete ANY response attached to their message
+    if (
+      !allowed &&
+      existing.message?.createdById &&
+      session.user.id === existing.message.createdById
+    ) {
+      allowed = true;
+    }
+
     if (!allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     await prisma.response.delete({ where: { id: params.id } });
@@ -208,6 +230,7 @@ export async function DELETE(_req: Request, context: { params: any }) {
     if (error?.code === 'P2025') {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
+    console.error('DELETE /api/responses/[id] error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
