@@ -30,6 +30,7 @@ type MessageWithRelations = Message & {
  *   e.g. "Eva Yayi, at 8:48:12 PM JAN 20 2025"
  * - If a responder is the same user who wrote the message, an "Author" tooltip/badge is shown next to the responder name.
  * - If Updated timestamp equals Created timestamp, the "Updated" info is omitted.
+ * - Edit button for messages is hidden when category is "request" or "system".
  */
 
 export default function MessagesSection({
@@ -69,7 +70,7 @@ export default function MessagesSection({
   // Inline composer control
   const [replyingToMessageId, setReplyingToMessageId] = useState<string | number | null>(null);
 
-  // Helpers for message author label
+  // Helpers for message author
   const createdByLabel = (m: any) => {
     if (m.createdBy) {
       const parts = [m.createdBy.firstName, m.createdBy.lastName].filter(Boolean);
@@ -83,7 +84,7 @@ export default function MessagesSection({
     return 'System';
   };
 
-  // Helpers for responder/responder labels
+  // Helpers for responder display
   const responderLabel = (r: any) => {
     if (r.name) return r.name;
     if (r.responderUser) {
@@ -101,7 +102,7 @@ export default function MessagesSection({
     return 'User';
   };
 
-  // Format date to "h:mm:ss AM/PM MON DD YYYY"
+  // Format date to "h:mm:ss AM/PM MON DD YYYY" then prefix with name
   const formatDateForDisplay = (d?: string | Date | null) => {
     if (!d) return '';
     const date = d instanceof Date ? d : new Date(d);
@@ -124,31 +125,10 @@ export default function MessagesSection({
     return createdAt ? `${name}, at ${createdAt}` : name;
   };
 
-  // Render responder label + optional Author tooltip/badge + timestamp (JSX)
-  const renderResponderAt = (r: any, messageOwnerId?: string | number | null) => {
+  const formatResponderAt = (r: any) => {
     const name = responderLabel(r);
-    const responderUserId = r?.responderUser?.id ?? r?.responderUserId ?? null;
     const createdAt = formatDateForDisplay(r?.createdAt);
-    const isAuthor =
-      messageOwnerId && responderUserId && String(responderUserId) === String(messageOwnerId);
-
-    return (
-      <>
-        <span>{name}</span>
-        {isAuthor && (
-          <span
-            title="Author"
-            aria-label="Author"
-            className="ml-2 inline-flex items-center px-2 py-0.5 text-xs font-medium rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-white"
-          >
-            Author
-          </span>
-        )}
-        {createdAt && (
-          <span className="ml-2 text-xs text-slate-600 dark:text-slate-400">at {createdAt}</span>
-        )}
-      </>
-    );
+    return createdAt ? `${name}, at ${createdAt}` : name;
   };
 
   const isHtmlString = (s: string) => /<\/?[a-z][\s\S]*>/i.test(s);
@@ -229,7 +209,7 @@ export default function MessagesSection({
   const renderContent = (m: any, full = false) => {
     const candidate = getContentCandidate(m);
     if (!candidate)
-      return <div className="text-sm text-slate-600 dark:text-slate-400">— No content —</div>;
+      return <div className="text-sm text-slate-600 dark:text-slate-300">— No content —</div>;
 
     if (candidate.type === 'html') {
       const raw = String(candidate.value ?? '');
@@ -289,7 +269,7 @@ export default function MessagesSection({
       const raw = String(candidate.value ?? '');
       const trimmed = raw.trim();
       if (!trimmed)
-        return <div className="text-sm text-slate-600 dark:text-slate-400">— No content —</div>;
+        return <div className="text-sm text-slate-600 dark:text-slate-300">— No content —</div>;
       const preview =
         !full && trimmed.length > PREVIEW_CHAR_LIMIT
           ? trimmed.slice(0, PREVIEW_CHAR_LIMIT) + '…'
@@ -323,7 +303,7 @@ export default function MessagesSection({
     }
 
     return (
-      <div className="text-sm text-slate-600 dark:text-slate-400">— Unsupported content type —</div>
+      <div className="text-sm text-slate-600 dark:text-slate-300">— Unsupported content type —</div>
     );
   };
 
@@ -500,6 +480,8 @@ export default function MessagesSection({
     const showUpdated =
       createdAtDate && updatedAtDate && createdAtDate.getTime() !== updatedAtDate.getTime();
 
+    const isEditableCategory = !['request', 'system'].includes(String(category).toLowerCase());
+
     return (
       <div className="w-full">
         <div className="px-2">
@@ -531,12 +513,14 @@ export default function MessagesSection({
                 </button>
               )}
 
-              <button
-                className="px-3 py-2 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-700 dark:hover:bg-yellow-600 text-yellow-800 dark:text-white rounded"
-                onClick={() => handleEdit(m)}
-              >
-                Edit
-              </button>
+              {isEditableCategory && (
+                <button
+                  className="px-3 py-2 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-700 dark:hover:bg-yellow-600 text-yellow-800 dark:text-white rounded"
+                  onClick={() => handleEdit(m)}
+                >
+                  Edit
+                </button>
+              )}
 
               <button
                 className="px-3 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-700 dark:hover:bg-red-600 text-red-800 dark:text-white rounded"
@@ -573,9 +557,7 @@ export default function MessagesSection({
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <div className="text-sm font-medium">
-                            {renderResponderAt(r, m?.createdById)}
-                          </div>
+                          <div className="text-sm font-medium">{formatResponderAt(r)}</div>
                         </div>
                         <div className="text-right">
                           <button
@@ -604,15 +586,12 @@ export default function MessagesSection({
 
   const renderFullResponse = (r: any) => {
     const title = r.subject ?? r.title ?? `Response to ${r.messageId ?? ''}`;
-    // determine parent creator ID if available (r.parent or r.message)
-    const parentCreatorId = r?.parent?.createdById ?? r?.message?.createdById ?? null;
+    const responderAt = formatResponderAt(r);
     return (
       <div className="w-full">
         <div className="px-2">
           <h2 className="text-xl font-semibold">{title}</h2>
-          <div className="text-sm text-slate-700 dark:text-slate-300 mt-1">
-            {renderResponderAt(r, parentCreatorId)}
-          </div>
+          <div className="text-sm text-slate-700 dark:text-slate-300 mt-1">{responderAt}</div>
         </div>
 
         <div className="mt-4 px-2">
@@ -716,16 +695,17 @@ export default function MessagesSection({
                 <div className="messages-list">
                   {Array.isArray(paginatedData) &&
                     paginatedData.map((m: any) => {
-                      const createdAtDate = m.createdAt ? new Date(m.createdAt) : null;
-                      const updatedAtDate = m.updatedAt ? new Date(m.updatedAt) : null;
+                      const createdAt = m.createdAt ? new Date(m.createdAt) : null;
+                      const updatedAt = m.updatedAt ? new Date(m.updatedAt) : null;
                       const showUpdated =
-                        createdAtDate &&
-                        updatedAtDate &&
-                        createdAtDate.getTime() !== updatedAtDate.getTime();
+                        createdAt && updatedAt && createdAt.getTime() !== updatedAt.getTime();
                       const category = (m.messageCategory ?? m.category ?? 'System') as string;
                       const title = m.title ?? m.subject ?? m.messageTitle ?? m.name ?? '-';
                       const isSystem = String(category ?? '').toLowerCase() === 'system';
                       const createdByAt = formatCreatedByAt(m);
+                      const isEditableCategory = !['request', 'system'].includes(
+                        String(category).toLowerCase()
+                      );
 
                       return (
                         <div key={m.id} className="message-card p-4 border rounded-md">
@@ -755,7 +735,7 @@ export default function MessagesSection({
                                         <>
                                           {' '}
                                           • Updated at:{' '}
-                                          {updatedAtDate ? updatedAtDate.toLocaleString() : '-'}
+                                          {updatedAt ? updatedAt.toLocaleString() : '-'}
                                         </>
                                       )}
                                     </div>
@@ -786,13 +766,15 @@ export default function MessagesSection({
                                 </button>
                               )}
 
-                              <button
-                                type="button"
-                                className="px-3 py-1 rounded text-sm bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-700 dark:hover:bg-yellow-600 text-yellow-800 dark:text-white"
-                                onClick={() => handleEdit(m)}
-                              >
-                                Edit
-                              </button>
+                              {isEditableCategory && (
+                                <button
+                                  type="button"
+                                  className="px-3 py-1 rounded text-sm bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-700 dark:hover:bg-yellow-600 text-yellow-800 dark:text-white"
+                                  onClick={() => handleEdit(m)}
+                                >
+                                  Edit
+                                </button>
+                              )}
 
                               <button
                                 type="button"
@@ -829,7 +811,7 @@ export default function MessagesSection({
                   {!loadingResponses &&
                     Array.isArray(responses) &&
                     responses.map((r: any) => {
-                      const responderAt = renderResponderAt(r, r?.message?.createdById ?? null);
+                      const responderAt = formatResponderAt(r);
                       const title = r.subject ?? r.title ?? `Response to ${r.messageId ?? ''}`;
                       return (
                         <div key={r.id} className="message-card p-4 border rounded-md">
