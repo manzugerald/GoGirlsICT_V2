@@ -7,14 +7,13 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 export const runtime = 'nodejs';
 
 type Role = 'super' | 'admin' | 'moderator' | 'beneficiary' | 'user' | 'guest';
-const asRole = (r: any): Role => {
+const KNOWN_ROLES = ['super', 'admin', 'moderator', 'beneficiary', 'user', 'guest'];
+
+const normalizeRole = (r: any): Role => {
   const normalized = String(r ?? 'guest')
     .trim()
     .toLowerCase();
-  // ensure we only return one of the known values; fallback to 'guest'
-  if (['super', 'admin', 'moderator', 'beneficiary', 'user', 'guest'].includes(normalized)) {
-    return normalized as Role;
-  }
+  if (KNOWN_ROLES.includes(normalized)) return normalized as Role;
   return 'guest';
 };
 
@@ -25,7 +24,7 @@ function getNames(session: any) {
 }
 
 async function getOwnBeneficiaryIdFromSession(session: any): Promise<string | null> {
-  const role = asRole(session?.user?.role);
+  const role = normalizeRole(session?.user?.role);
   if (role !== 'beneficiary') return null;
   const { firstName, lastName } = getNames(session);
   if (!firstName || !lastName) return null;
@@ -112,15 +111,22 @@ export async function PATCH(req: Request, context: { params: any }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const role = asRole(session.user?.role);
-    // debug log - remove in production if desired
+    // resolve user's role from DB (authoritative) then fallback to session.role
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, role: true },
+    });
+    const resolvedRole = normalizeRole(dbUser?.role ?? session.user?.role);
+
     console.debug(
-      'PATCH /api/responses/[id] - session.user.id:',
+      'PATCH /api/responses/[id] - userId:',
       session.user?.id,
-      'session.role:',
+      'dbRole:',
+      dbUser?.role,
+      'sessionRole:',
       session.user?.role,
-      'normalized role:',
-      role
+      'resolvedRole:',
+      resolvedRole
     );
 
     const existing = await prisma.response.findUnique({
@@ -150,7 +156,7 @@ export async function PATCH(req: Request, context: { params: any }) {
     let allowed = false;
     const roleEnum = existing.responderRole as string | null;
 
-    if (canAdminDelete(role)) {
+    if (canAdminDelete(resolvedRole)) {
       allowed = true;
     } else if (roleEnum === 'USER') {
       allowed = existing.responderUserId === session.user.id;
@@ -180,8 +186,8 @@ export async function PATCH(req: Request, context: { params: any }) {
       console.warn(
         'PATCH /api/responses/[id] - Forbidden. user:',
         session.user?.id,
-        'role:',
-        role,
+        'resolvedRole:',
+        resolvedRole,
         'existing:',
         existing
       );
@@ -220,15 +226,22 @@ export async function DELETE(_req: Request, context: { params: any }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const role = asRole(session.user?.role);
-    // debug log - remove in production if desired
+    // resolve user's role from DB (authoritative) then fallback to session.role
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, role: true },
+    });
+    const resolvedRole = normalizeRole(dbUser?.role ?? session.user?.role);
+
     console.debug(
-      'DELETE /api/responses/[id] - session.user.id:',
+      'DELETE /api/responses/[id] - userId:',
       session.user?.id,
-      'session.role:',
+      'dbRole:',
+      dbUser?.role,
+      'sessionRole:',
       session.user?.role,
-      'normalized role:',
-      role
+      'resolvedRole:',
+      resolvedRole
     );
 
     const existing = await prisma.response.findUnique({
@@ -244,11 +257,10 @@ export async function DELETE(_req: Request, context: { params: any }) {
     });
     if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    // Authorization: owner (user/beneficiary) OR message creator OR super/admin can delete
     let allowed = false;
     const roleEnum = existing.responderRole as string | null;
 
-    if (canAdminDelete(role)) {
+    if (canAdminDelete(resolvedRole)) {
       // super/admin may delete any response (including system)
       allowed = true;
     } else if (roleEnum === 'USER') {
@@ -279,8 +291,8 @@ export async function DELETE(_req: Request, context: { params: any }) {
       console.warn(
         'DELETE /api/responses/[id] - Forbidden. user:',
         session.user?.id,
-        'role:',
-        role,
+        'resolvedRole:',
+        resolvedRole,
         'existing:',
         existing
       );

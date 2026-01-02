@@ -7,13 +7,13 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 export const runtime = 'nodejs';
 
 type Role = 'super' | 'admin' | 'moderator' | 'beneficiary' | 'user' | 'guest';
-const asRole = (r: any): Role => {
+const KNOWN_ROLES = ['super', 'admin', 'moderator', 'beneficiary', 'user', 'guest'];
+
+const normalizeRole = (r: any): Role => {
   const normalized = String(r ?? 'guest')
     .trim()
     .toLowerCase();
-  if (['super', 'admin', 'moderator', 'beneficiary', 'user', 'guest'].includes(normalized)) {
-    return normalized as Role;
-  }
+  if (KNOWN_ROLES.includes(normalized)) return normalized as Role;
   return 'guest';
 };
 
@@ -24,7 +24,7 @@ function getNames(session: any) {
 }
 
 async function getOwnBeneficiaryIdFromSession(session: any): Promise<string | null> {
-  const role = asRole(session?.user?.role);
+  const role = normalizeRole(session?.user?.role);
   if (role !== 'beneficiary') return null;
   const { firstName, lastName } = getNames(session);
   if (!firstName || !lastName) return null;
@@ -89,41 +89,51 @@ export async function DELETE(_req: Request, context: { params: any }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const role = asRole(session.user?.role);
-    // debug log - remove in production if desired
+    // Use DB-stored role when possible (authoritative)
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, role: true },
+    });
+    const resolvedRole = normalizeRole(dbUser?.role ?? session.user?.role);
+
+    // debug: will help diagnose if role mismatch occurs (remove when stable)
     console.debug(
-      'DELETE /api/messages/[id] - session.user.id:',
+      'DELETE /api/messages/[id] - userId:',
       session.user?.id,
-      'session.role:',
+      'dbRole:',
+      dbUser?.role,
+      'sessionRole:',
       session.user?.role,
-      'normalized role:',
-      role
+      'resolvedRole:',
+      resolvedRole
     );
 
-    // fetch message with creator info
+    // fetch message with creator info and category
     const existing = await prisma.message.findUnique({
       where: { id },
-      select: { id: true, createdById: true },
+      select: { id: true, createdById: true, messageCategory: true },
     });
     if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     // Authorization: allow if super/admin OR session user is the message creator
-    const isAdmin = canAdminDelete(role);
+    const isAdmin = canAdminDelete(resolvedRole);
     const isCreator = !!(existing.createdById && session.user.id === existing.createdById);
 
     if (!isAdmin && !isCreator) {
       console.warn(
         'DELETE /api/messages/[id] - Forbidden. user:',
         session.user?.id,
-        'role:',
-        role,
+        'resolvedRole:',
+        resolvedRole,
         'message.createdById:',
-        existing.createdById
+        existing.createdById,
+        'messageCategory:',
+        existing.messageCategory
       );
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Delete in a transaction: responses then message.
+    // If allowed, perform deletion in transaction: responses then message.
     await prisma.$transaction([
       prisma.response.deleteMany({ where: { messageId: existing.id } }),
       prisma.message.delete({ where: { id: existing.id } }),
