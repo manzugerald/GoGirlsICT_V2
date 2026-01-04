@@ -251,7 +251,12 @@ export default function FAQsSection({
                 aria-expanded={isExpanded}
                 className={`w-full border rounded-md bg-white dark:bg-gray-900 shadow-sm transition-all overflow-hidden cursor-pointer focus:outline-pink-500`}
               >
-                <div className="p-4 flex items-start justify-between gap-4">
+                {/* Question area — highlight when active to match sidebar active style */}
+                <div
+                  className={`p-4 flex items-start justify-between gap-4 ${
+                    isExpanded ? 'bg-pink-100 dark:bg-pink-950 rounded-t-md' : ''
+                  }`}
+                >
                   <div className="min-w-0 w-full">
                     <div className="flex items-start gap-3 w-full">
                       <div className="flex-1 min-w-0">
@@ -283,7 +288,13 @@ export default function FAQsSection({
 
                 {/* Expanded content: ONLY the answer content (no "Question" / "Answer" headings) */}
                 {isExpanded && (
-                  <div className="px-4 pb-4 pt-0 border-t">
+                  <div
+                    className={`px-4 pb-4 pt-0 border-t ${
+                      isExpanded
+                        ? 'border-pink-200 dark:border-pink-900'
+                        : 'border-gray-200 dark:border-gray-700'
+                    }`}
+                  >
                     <div className="py-2">
                       <div className="text-sm text-foreground">{renderAnswerArea(faq)}</div>
                     </div>
