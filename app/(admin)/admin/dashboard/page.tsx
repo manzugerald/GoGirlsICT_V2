@@ -42,7 +42,12 @@ import ReportsSection from './components/sections/ReportsSection';
 import InstitutionsSection from './components/sections/InstitutionsSection';
 import FAQsSection from './components/sections/FAQsSection';
 import FacebookSection from './components/sections/FacebookSection';
-import YouTubeSection from './components/sections/YouTubeSection'; // <-- added
+import YouTubeSection from './components/sections/YouTubeSection';
+import SiteSettings from './components/sections/SiteSettings';
+import AccountSettings from './components/sections/AccountSettings';
+
+// Sidebar Dropdown (reusable)
+import SidebarDropdown from './components/sidebar/SidebarDropdown';
 
 // Create/edit forms we keep + new ones
 import CreateBeneficiaryForm from './createBeneficiaryForm';
@@ -134,8 +139,7 @@ function TableControls({
   );
 }
 
-// Sections (added facebook/youtube/account/site/logout)
-// Note: 'responses' is intentionally kept out of the sidebar rendering below.
+// Sections (we still list all for type safety)
 const sections = [
   'home',
   'projects',
@@ -145,7 +149,7 @@ const sections = [
   'faqs',
   'beneficiaries',
   'messages',
-  'responses', // kept in list so section can still be used programmatically (hidden in sidebar)
+  'responses',
   'facebook_posts',
   'youtube_videos',
   'account_settings',
@@ -272,9 +276,6 @@ export default function AdminDashboardPage() {
   async function handleMenuClick(section: Section, replaceUrl = true) {
     // If the user clicks Logout in the sidebar, we will handle that specially:
     if (section === 'logout') {
-      // For now we prompt a confirmation and sign out — this is reasonable UX for a Logout item.
-      // If you prefer logout to be a no-op, change this to simply return.
-      // Using signOut() from next-auth will perform the sign-out flow.
       if (confirm('Sign out from the admin dashboard?')) {
         signOut();
       }
@@ -282,16 +283,10 @@ export default function AdminDashboardPage() {
     }
 
     const newUrl = `${pathname}?type=${section}`;
-    // Only replace the URL when requested (avoid infinite updates on initial mount)
     if (replaceUrl) {
       try {
         router.replace(newUrl);
-      } catch {
-        // ignore replace errors
-      }
-    } else {
-      // still sync the pathname in the router history (do not force replace)
-      // no-op when replaceUrl === false
+      } catch {}
     }
 
     setActiveSection(section);
@@ -311,13 +306,9 @@ export default function AdminDashboardPage() {
           return;
         }
         const rawData = await res.json();
-        if (Array.isArray(rawData)) {
-          setData(rawData);
-        } else if (rawData == null) {
-          setData([]);
-        } else {
-          setData([rawData]);
-        }
+        if (Array.isArray(rawData)) setData(rawData);
+        else if (rawData == null) setData([]);
+        else setData([rawData]);
       } catch {
         setData([]);
       }
@@ -839,11 +830,11 @@ export default function AdminDashboardPage() {
       case 'facebook_posts':
         return <FacebookSection />;
       case 'youtube_videos':
-        return <YouTubeSection />; // <- connected here
+        return <YouTubeSection />;
       case 'account_settings':
-        return <Placeholder title="Account Settings" />;
+        return <AccountSettings currentUserId={(session?.user as any)?.id} />;
       case 'site_settings':
-        return <Placeholder title="Site Settings" />;
+        return <SiteSettings />;
       case 'logout':
         return (
           <div className="p-8">
@@ -906,10 +897,83 @@ export default function AdminDashboardPage() {
             {sidebarCollapsed ? <FaAngleRight size={18} /> : <FaAngleLeft size={18} />}
           </button>
         </div>
+
         <nav className="mt-2 flex-1 overflow-y-auto">
+          {/* Render Home first */}
+          <div>
+            <button
+              onClick={() => handleMenuClick('home')}
+              className={`w-full flex items-center gap-3 pl-4 pr-2 py-2 rounded transition-all font-medium
+                ${
+                  activeSection === 'home'
+                    ? 'bg-pink-100 dark:bg-pink-950 text-pink-600 dark:text-pink-400'
+                    : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900 hover:text-pink-700 dark:hover:text-pink-400'
+                }
+              `}
+              style={{ minWidth: 0 }}
+            >
+              <span
+                className={`transition-all ${activeSection === 'home' ? 'text-2xl' : 'text-xl'}`}
+              >
+                {sectionIcons.home}
+              </span>
+              {!sidebarCollapsed && (
+                <span
+                  className={`truncate ${
+                    activeSection === 'home' ? 'text-lg font-semibold' : 'text-sm'
+                  }`}
+                >
+                  {sectionLabels.home}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Content dropdown right after Home */}
+          <SidebarDropdown
+            id="content-dropdown"
+            label="Content"
+            icon={<FaClipboardList className="text-yellow-600 dark:text-yellow-400" />}
+            items={[
+              {
+                key: 'projects',
+                label: 'Projects',
+                subtitle: 'Manage projects',
+                icon: sectionIcons.projects,
+              },
+              {
+                key: 'events',
+                label: 'Events',
+                subtitle: 'Manage events',
+                icon: sectionIcons.events,
+              },
+              {
+                key: 'reports',
+                label: 'Reports',
+                subtitle: 'Manage reports',
+                icon: sectionIcons.reports,
+              },
+            ]}
+            activeKey={activeSection}
+            onNavigate={(k) => handleMenuClick(k as Section)}
+            sidebarCollapsed={sidebarCollapsed}
+          />
+
+          {/* Remaining top-level items (skipping ones grouped into dropdowns) */}
           {sections.map((section) => {
-            // Keep responses out of the sidebar UI
-            if (section === 'responses') {
+            // hide grouped and special entries (they are rendered elsewhere)
+            if (
+              section === 'home' ||
+              section === 'projects' ||
+              section === 'events' ||
+              section === 'reports' ||
+              section === 'beneficiaries' ||
+              section === 'institutions' ||
+              section === 'account_settings' ||
+              section === 'site_settings' ||
+              section === 'settings' ||
+              section === 'logout'
+            ) {
               return null;
             }
             const isActive = activeSection === section;
@@ -941,7 +1005,68 @@ export default function AdminDashboardPage() {
               </button>
             );
           })}
+
+          {/* Partners dropdown (Beneficiaries / Institutions) */}
+          <SidebarDropdown
+            id="partners-dropdown"
+            label="Partners"
+            icon={<FaUsers className="text-indigo-600 dark:text-indigo-400" />}
+            items={[
+              {
+                key: 'beneficiaries',
+                label: 'Beneficiaries',
+                subtitle: 'Manage beneficiaries',
+                icon: sectionIcons.beneficiaries,
+              },
+              {
+                key: 'institutions',
+                label: 'Institutions',
+                subtitle: 'Manage institutions',
+                icon: sectionIcons.institutions,
+              },
+            ]}
+            activeKey={activeSection}
+            onNavigate={(k) => handleMenuClick(k as Section)}
+            sidebarCollapsed={sidebarCollapsed}
+          />
+
+          {/* Settings dropdown */}
+          <SidebarDropdown
+            id="settings-dropdown"
+            label="Settings"
+            icon={<FaCogs className="text-gray-700 dark:text-gray-300" />}
+            items={[
+              {
+                key: 'site_settings',
+                label: 'Site Settings',
+                subtitle: 'Homepage content',
+                icon: sectionIcons.site_settings,
+              },
+              {
+                key: 'account_settings',
+                label: 'Account Settings',
+                subtitle: 'Profile & password',
+                icon: sectionIcons.account_settings,
+              },
+            ]}
+            activeKey={activeSection}
+            onNavigate={(k) => handleMenuClick(k as Section)}
+            sidebarCollapsed={sidebarCollapsed}
+          />
         </nav>
+
+        {/* Logout moved to bottom */}
+        <div className="border-t dark:border-gray-800 p-3">
+          <button
+            onClick={() => {
+              if (confirm('Sign out from the admin dashboard?')) signOut();
+            }}
+            className="w-full flex items-center gap-3 pl-4 pr-2 py-2 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900"
+          >
+            <span className="text-xl">{sectionIcons.logout}</span>
+            {!sidebarCollapsed && <span className="truncate text-sm">{sectionLabels.logout}</span>}
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
