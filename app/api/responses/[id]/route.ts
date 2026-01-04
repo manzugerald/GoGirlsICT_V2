@@ -7,58 +7,95 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 export const runtime = 'nodejs';
 
 type Role = 'super' | 'admin' | 'moderator' | 'beneficiary' | 'user' | 'guest';
-const KNOWN_ROLES = ['super', 'admin', 'moderator', 'beneficiary', 'user', 'guest'];
 
-const normalizeRole = (r: any): Role => {
-  const normalized = String(r ?? 'guest')
+const KNOWN_ROLES = ['super', 'admin', 'moderator', 'beneficiary', 'user', 'guest'] as const;
+function normalizeRole(r: any): Role {
+  const v = String(r ?? 'guest')
     .trim()
     .toLowerCase();
-  if (KNOWN_ROLES.includes(normalized)) return normalized as Role;
+  if ((KNOWN_ROLES as readonly string[]).includes(v)) return v as Role;
   return 'guest';
-};
+}
 
-function getNames(session: any) {
-  const firstName = (session?.user?.firstName ?? '').trim();
-  const lastName = (session?.user?.lastName ?? '').trim();
-  return { firstName, lastName };
+async function resolveDbUser(session: any) {
+  if (!session?.user) return null;
+  const email = session.user?.email;
+  if (email) {
+    try {
+      const byEmail = await prisma.user.findUnique({ where: { email } });
+      if (byEmail) {
+        console.debug('resolveDbUser: found by email', { email, dbUserId: byEmail.id });
+        return byEmail;
+      }
+      console.debug('resolveDbUser: no user found by email', { email });
+    } catch (e) {
+      console.debug('resolveDbUser: email lookup threw', { email, error: (e as Error).message });
+    }
+  }
+
+  try {
+    const idStr = String(session.user?.id ?? '').trim();
+    if (idStr) {
+      const byId = await prisma.user.findUnique({ where: { id: idStr as any } });
+      if (byId) {
+        console.debug('resolveDbUser: found by id', { id: idStr });
+        return byId;
+      }
+      console.debug('resolveDbUser: no user found by id', { id: idStr });
+    } else {
+      console.debug('resolveDbUser: session.user.id missing or empty');
+    }
+  } catch (e) {
+    console.debug('resolveDbUser: id lookup threw', {
+      id: session?.user?.id,
+      error: (e as Error).message,
+    });
+  }
+
+  return null;
 }
 
 async function getOwnBeneficiaryIdFromSession(session: any): Promise<string | null> {
   const role = normalizeRole(session?.user?.role);
   if (role !== 'beneficiary') return null;
-  const { firstName, lastName } = getNames(session);
+  const firstName = (session?.user?.firstName ?? '').trim();
+  const lastName = (session?.user?.lastName ?? '').trim();
   if (!firstName || !lastName) return null;
-
-  const match = await prisma.beneficiary.findFirst({
-    where: {
-      firstName: { equals: firstName, mode: 'insensitive' },
-      lastName: { equals: lastName, mode: 'insensitive' },
-    },
-    select: { id: true },
-  });
-  return match?.id ?? null;
+  try {
+    const match = await prisma.beneficiary.findFirst({
+      where: {
+        firstName: { equals: firstName, mode: 'insensitive' },
+        lastName: { equals: lastName, mode: 'insensitive' },
+      },
+      select: { id: true },
+    });
+    console.debug('getOwnBeneficiaryIdFromSession:', { firstName, lastName, found: !!match });
+    return match?.id ?? null;
+  } catch (e) {
+    console.debug('getOwnBeneficiaryIdFromSession: prisma error', { error: (e as Error).message });
+    return null;
+  }
 }
 
-// Only super and admin have unconditional delete/edit rights
 const canAdminDelete = (role: Role) => role === 'super' || role === 'admin';
 
-// GET: fetch a single response by id (include parent message and related responder info)
+export async function OPTIONS() {
+  return NextResponse.json(null, { status: 204 });
+}
+
+// GET: fetch a single response
 export async function GET(_req: Request, context: { params: any }) {
   try {
-    // Per Next.js dynamic API rules, params must be awaited
     const params = await context.params;
-    const idRaw = params?.id;
-    const id = Number(idRaw);
-    if (!Number.isFinite(id)) {
-      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
-    }
+    const id = String(params?.id ?? '').trim();
+    console.debug('GET /api/responses/[id] - id:', id);
+    if (!id) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
 
     const response = await prisma.response.findUnique({
       where: { id },
       include: {
         responderUser: { select: { id: true, firstName: true, lastName: true, email: true } },
         responderBeneficiary: { select: { id: true, firstName: true, lastName: true } },
-        // include message and other responses for parent (with responderRole)
         message: {
           select: {
             id: true,
@@ -67,25 +104,13 @@ export async function GET(_req: Request, context: { params: any }) {
             messageStatus: true,
             createdById: true,
             beneficiary: { select: { id: true, firstName: true, lastName: true } },
-            responses: {
-              select: {
-                id: true,
-                content: true,
-                createdAt: true,
-                updatedAt: true,
-                responderType: true,
-                responderRole: true,
-                responderUser: { select: { id: true, firstName: true, lastName: true } },
-                responderBeneficiary: { select: { id: true, firstName: true, lastName: true } },
-              },
-              orderBy: { createdAt: 'asc' },
-            },
           },
         },
       },
     });
 
     if (!response) {
+      console.debug('GET /api/responses/[id] - not found', { id });
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
@@ -100,97 +125,77 @@ export async function GET(_req: Request, context: { params: any }) {
 export async function PATCH(req: Request, context: { params: any }) {
   try {
     const params = await context.params;
-    const idRaw = params?.id;
-    const id = Number(idRaw);
-    if (!Number.isFinite(id)) {
-      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
-    }
+    const id = String(params?.id ?? '').trim();
+    console.debug('PATCH /api/responses/[id] - id:', id);
+    if (!id) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
 
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
+      console.debug('PATCH /api/responses/[id] - unauthorized (no session user)', {});
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // resolve user's role from DB (authoritative) then fallback to session.role
-    const dbUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, role: true },
-    });
+    const dbUser = await resolveDbUser(session);
     const resolvedRole = normalizeRole(dbUser?.role ?? session.user?.role);
-
-    console.debug(
-      'PATCH /api/responses/[id] - userId:',
-      session.user?.id,
-      'dbRole:',
-      dbUser?.role,
-      'sessionRole:',
-      session.user?.role,
-      'resolvedRole:',
-      resolvedRole
-    );
+    console.debug('PATCH /api/responses/[id] - session:', {
+      sessionUserId: session.user?.id,
+      sessionUserEmail: session.user?.email,
+      dbUserId: dbUser?.id,
+      resolvedRole,
+    });
 
     const existing = await prisma.response.findUnique({
       where: { id },
       select: {
         id: true,
-        responderType: true,
         responderUserId: true,
         responderBeneficiaryId: true,
-        responderRole: true,
+        responderType: true,
         message: { select: { id: true, createdById: true } },
       },
     });
-    if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    if (!existing) {
+      console.debug('PATCH /api/responses/[id] - not found', { id });
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+    console.debug('PATCH /api/responses/[id] - existing:', existing);
 
     const body = await req.json().catch(() => null);
     if (!body || body.content === undefined) {
+      console.debug('PATCH /api/responses/[id] - missing content', {});
       return NextResponse.json({ error: 'Missing required field: content' }, { status: 400 });
     }
     const { content } = body as { content: unknown };
 
-    // Authorization rules (using responderRole):
-    // - super/admin can edit any response
-    // - If responderRole === 'USER' -> allow if responderUserId === session.user.id
-    // - If responderRole === 'AUTHOR' -> allow if session.user.id === message.createdById OR responderUserId === session.user.id
-    // - If responderRole === 'BENEFICIARY' -> allow if session beneficiary maps to responderBeneficiaryId
-    let allowed = false;
-    const roleEnum = existing.responderRole as string | null;
+    const sessionUserId = String(dbUser?.id ?? session.user?.id ?? '');
+    const responderId = existing.responderUserId ?? existing.responderBeneficiaryId ?? null;
+    const messageCreatorId = existing.message?.createdById ?? null;
 
+    let allowed = false;
     if (canAdminDelete(resolvedRole)) {
       allowed = true;
-    } else if (roleEnum === 'USER') {
-      allowed = existing.responderUserId === session.user.id;
-    } else if (roleEnum === 'AUTHOR') {
-      const isCreator = !!(
-        existing.message?.createdById && session.user.id === existing.message.createdById
-      );
-      const isResponderUser = existing.responderUserId === session.user.id;
-      allowed = isCreator || isResponderUser;
-    } else if (roleEnum === 'BENEFICIARY') {
-      const ownBeneficiaryId = await getOwnBeneficiaryIdFromSession(session);
-      allowed = ownBeneficiaryId !== null && ownBeneficiaryId === existing.responderBeneficiaryId;
-    } else {
-      allowed = false;
-    }
-
-    // additionally: allow message author to edit the response (moderation)
-    if (
-      !allowed &&
-      existing.message?.createdById &&
-      session.user.id === existing.message.createdById
-    ) {
+      console.debug('PATCH allowed: admin', { resolvedRole });
+    } else if (responderId && responderId === sessionUserId) {
       allowed = true;
+      console.debug('PATCH allowed: responder is session user', { responderId, sessionUserId });
+    } else if (messageCreatorId && messageCreatorId === sessionUserId) {
+      allowed = true;
+      console.debug('PATCH allowed: message creator', { messageCreatorId, sessionUserId });
+    } else if (existing.responderBeneficiaryId) {
+      const ownBeneficiaryId = await getOwnBeneficiaryIdFromSession(session);
+      if (ownBeneficiaryId && ownBeneficiaryId === existing.responderBeneficiaryId) {
+        allowed = true;
+        console.debug('PATCH allowed: beneficiary owner', { ownBeneficiaryId });
+      }
     }
 
     if (!allowed) {
-      console.warn(
-        'PATCH /api/responses/[id] - Forbidden. user:',
-        session.user?.id,
-        'resolvedRole:',
+      console.warn('PATCH /api/responses/[id] - Forbidden', {
+        sessionUserId,
         resolvedRole,
-        'existing:',
-        existing
-      );
+        existing,
+      });
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -204,109 +209,156 @@ export async function PATCH(req: Request, context: { params: any }) {
       },
     });
 
+    console.debug('PATCH /api/responses/[id] - updated:', { id: updated.id });
     return NextResponse.json(updated);
   } catch (error) {
-    console.error('PATCH /api/responses/[id] error:', error);
+    console.error('PATCH /api/responses/[id] error (stack):', (error as Error).stack ?? error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-// DELETE: delete a response (owner, message creator, or super/admin)
+// DELETE: delete a response (responder, message creator, or super/admin)
 export async function DELETE(_req: Request, context: { params: any }) {
+  const debugContext: Record<string, unknown> = {};
   try {
     const params = await context.params;
-    const idRaw = params?.id;
-    const id = Number(idRaw);
-    if (!Number.isFinite(id)) {
+    const id = String(params?.id ?? '').trim();
+    debugContext.requestId = id;
+    console.debug('DELETE /api/responses/[id] - request id:', id);
+
+    if (!id) {
+      console.debug('DELETE invalid id', { id });
       return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
     }
 
     const session = await getServerSession(authOptions);
+    debugContext.sessionPresent = !!session;
     if (!session?.user?.id) {
+      console.debug('DELETE unauthorized - no session user', { session: Boolean(session) });
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // resolve user's role from DB (authoritative) then fallback to session.role
-    const dbUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, role: true },
-    });
+    const sessionSummary = {
+      sessionUserId: session.user?.id,
+      sessionUserEmail: session.user?.email,
+      sessionUserRole: session.user?.role,
+      sessionFirstName: session.user?.firstName,
+      sessionLastName: session.user?.lastName,
+    };
+    console.debug('DELETE session summary', sessionSummary);
+    debugContext.sessionSummary = sessionSummary;
+
+    const dbUser = await resolveDbUser(session);
+    debugContext.dbUserId = dbUser?.id ?? null;
     const resolvedRole = normalizeRole(dbUser?.role ?? session.user?.role);
+    console.debug('DELETE resolved dbUser/role', { dbUserId: dbUser?.id ?? null, resolvedRole });
+    debugContext.resolvedRole = resolvedRole;
 
-    console.debug(
-      'DELETE /api/responses/[id] - userId:',
-      session.user?.id,
-      'dbRole:',
-      dbUser?.role,
-      'sessionRole:',
-      session.user?.role,
-      'resolvedRole:',
-      resolvedRole
-    );
-
-    const existing = await prisma.response.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        responderType: true,
-        responderUserId: true,
-        responderBeneficiaryId: true,
-        responderRole: true,
-        message: { select: { id: true, createdById: true } },
-      },
-    });
-    if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-
-    let allowed = false;
-    const roleEnum = existing.responderRole as string | null;
-
-    if (canAdminDelete(resolvedRole)) {
-      // super/admin may delete any response (including system)
-      allowed = true;
-    } else if (roleEnum === 'USER') {
-      allowed = existing.responderUserId === session.user.id;
-    } else if (roleEnum === 'AUTHOR') {
-      const isCreator = !!(
-        existing.message?.createdById && session.user.id === existing.message.createdById
-      );
-      const isResponderUser = existing.responderUserId === session.user.id;
-      allowed = isCreator || isResponderUser;
-    } else if (roleEnum === 'BENEFICIARY') {
-      const ownBeneficiaryId = await getOwnBeneficiaryIdFromSession(session);
-      allowed = ownBeneficiaryId !== null && ownBeneficiaryId === existing.responderBeneficiaryId;
-    } else {
-      allowed = false;
+    let existing;
+    try {
+      existing = await prisma.response.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          responderUserId: true,
+          responderBeneficiaryId: true,
+          responderType: true,
+          message: { select: { id: true, createdById: true } },
+        },
+      });
+      console.debug('DELETE prisma.findUnique returned', { existing });
+      debugContext.existing = existing;
+    } catch (e) {
+      console.error('DELETE prisma.findUnique threw', {
+        id,
+        error: (e as any)?.message ?? e,
+        stack: (e as any)?.stack,
+      });
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 
-    // additionally allow message creator to delete ANY response attached to their message
-    if (
-      !allowed &&
-      existing.message?.createdById &&
-      session.user.id === existing.message.createdById
-    ) {
+    if (!existing) {
+      console.debug('DELETE item not found', { id });
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+
+    const sessionUserId = String(dbUser?.id ?? session.user?.id ?? '');
+    const responderId = existing.responderUserId ?? existing.responderBeneficiaryId ?? null;
+    const messageCreatorId = existing.message?.createdById ?? null;
+
+    debugContext.authCheck = { sessionUserId, responderId, messageCreatorId, resolvedRole };
+
+    let allowed = false;
+    if (canAdminDelete(resolvedRole)) {
       allowed = true;
+      console.debug('DELETE allowed by role (admin/super)', { resolvedRole });
+    } else if (responderId && String(responderId) === sessionUserId) {
+      allowed = true;
+      console.debug('DELETE allowed: requester is responder', { responderId, sessionUserId });
+    } else if (messageCreatorId && String(messageCreatorId) === sessionUserId) {
+      allowed = true;
+      console.debug('DELETE allowed: requester is message creator', {
+        messageCreatorId,
+        sessionUserId,
+      });
+    } else if (existing.responderBeneficiaryId) {
+      try {
+        const ownBeneficiaryId = await getOwnBeneficiaryIdFromSession(session);
+        console.debug('DELETE beneficiary mapping check', {
+          ownBeneficiaryId,
+          responderBeneficiaryId: existing.responderBeneficiaryId,
+        });
+        if (ownBeneficiaryId && ownBeneficiaryId === existing.responderBeneficiaryId) {
+          allowed = true;
+          console.debug('DELETE allowed: beneficiary owner');
+        }
+      } catch (e) {
+        console.debug('DELETE beneficiary mapping threw', { error: (e as Error).message });
+      }
     }
 
     if (!allowed) {
-      console.warn(
-        'DELETE /api/responses/[id] - Forbidden. user:',
-        session.user?.id,
-        'resolvedRole:',
+      console.warn('DELETE /api/responses/[id] - Forbidden', {
+        sessionUserId,
         resolvedRole,
-        'existing:',
-        existing
-      );
+        existing,
+      });
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await prisma.response.delete({ where: { id } });
+    try {
+      await prisma.response.delete({ where: { id: existing.id } });
+      console.debug('DELETE /api/responses/[id] - deleted:', { id: existing.id });
+    } catch (e) {
+      const err = e as any;
+      console.error('DELETE prisma.delete failed', {
+        id: existing.id,
+        errorMessage: err?.message ?? err,
+        errorCode: err?.code ?? null,
+        errorMeta: err?.meta ?? null,
+        stack: err?.stack ?? null,
+      });
+
+      try {
+        const deleteManyRes = await prisma.response.deleteMany({ where: { id: existing.id } });
+        console.debug('DELETE fallback deleteMany result', { deleteManyRes });
+        if (deleteManyRes.count > 0) {
+          return NextResponse.json({ message: 'Deleted (fallback)' });
+        }
+      } catch (e2) {
+        console.error('DELETE fallback deleteMany also failed', {
+          id: existing.id,
+          errorMessage: (e2 as any)?.message ?? e2,
+          stack: (e2 as any)?.stack ?? null,
+        });
+      }
+
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
 
     return NextResponse.json({ message: 'Deleted' });
-  } catch (error: any) {
-    if (error?.code === 'P2025') {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    }
-    console.error('DELETE /api/responses/[id] error:', error);
+  } catch (error) {
+    console.error('DELETE /api/responses/[id] error (outer):', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

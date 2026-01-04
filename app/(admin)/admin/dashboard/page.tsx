@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
@@ -22,6 +22,11 @@ import {
   FaAngleRight,
   FaQuestionCircle,
   FaLightbulb,
+  FaFacebook,
+  FaYoutube,
+  FaUserCircle,
+  FaCog,
+  FaSignOutAlt,
 } from 'react-icons/fa';
 
 // Sections we keep + Charts/Home + Projects/Events/Reports/Institutions
@@ -36,6 +41,8 @@ import EventsSection from './components/sections/EventsSection';
 import ReportsSection from './components/sections/ReportsSection';
 import InstitutionsSection from './components/sections/InstitutionsSection';
 import FAQsSection from './components/sections/FAQsSection';
+import FacebookSection from './components/sections/FacebookSection';
+import YouTubeSection from './components/sections/YouTubeSection'; // <-- added
 
 // Create/edit forms we keep + new ones
 import CreateBeneficiaryForm from './createBeneficiaryForm';
@@ -127,7 +134,8 @@ function TableControls({
   );
 }
 
-// Sections (added 'home', 'projects', 'events', 'reports', 'institutions', 'faqs')
+// Sections (added facebook/youtube/account/site/logout)
+// Note: 'responses' is intentionally kept out of the sidebar rendering below.
 const sections = [
   'home',
   'projects',
@@ -137,7 +145,12 @@ const sections = [
   'faqs',
   'beneficiaries',
   'messages',
-  'responses', // kept in list so section can still be used programmatically
+  'responses', // kept in list so section can still be used programmatically (hidden in sidebar)
+  'facebook_posts',
+  'youtube_videos',
+  'account_settings',
+  'site_settings',
+  'logout',
   'users',
   'settings',
 ] as const;
@@ -153,6 +166,11 @@ const sectionFeatures: Record<Section, { apiRoute?: string }> = {
   beneficiaries: { apiRoute: '/api/beneficiaries' },
   messages: { apiRoute: '/api/messages' },
   responses: { apiRoute: '/api/responses' },
+  facebook_posts: {},
+  youtube_videos: {},
+  account_settings: {},
+  site_settings: {},
+  logout: {},
   users: { apiRoute: '/api/users' },
   settings: {},
 };
@@ -167,6 +185,11 @@ const sectionIcons: Record<Section, React.ReactNode> = {
   beneficiaries: <FaUsers className="text-indigo-600 dark:text-indigo-400" />,
   messages: <FaEnvelope className="text-orange-500 dark:text-orange-400" />,
   responses: <FaReply className="text-purple-600 dark:text-purple-400" />,
+  facebook_posts: <FaFacebook className="text-blue-700 dark:text-blue-400" />,
+  youtube_videos: <FaYoutube className="text-red-600 dark:text-red-400" />,
+  account_settings: <FaUserCircle className="text-gray-700 dark:text-gray-300" />,
+  site_settings: <FaCog className="text-gray-700 dark:text-gray-300" />,
+  logout: <FaSignOutAlt className="text-gray-700 dark:text-gray-300" />,
   users: <FaUserCog className="text-gray-700 dark:text-gray-300" />,
   settings: <FaCogs className="text-gray-700 dark:text-gray-300" />,
 };
@@ -181,6 +204,11 @@ const sectionLabels: Record<Section, string> = {
   beneficiaries: 'Beneficiaries',
   messages: 'Messages',
   responses: 'Responses',
+  facebook_posts: 'Facebook Posts',
+  youtube_videos: 'YouTube Videos',
+  account_settings: 'Account Settings',
+  site_settings: 'Site Settings',
+  logout: 'Logout',
   users: 'Users',
   settings: 'Settings',
 };
@@ -196,6 +224,11 @@ const singularLabels: Record<Section, string> = {
   beneficiaries: 'Beneficiary',
   messages: 'Message',
   responses: 'Response',
+  facebook_posts: 'Facebook Post',
+  youtube_videos: 'YouTube Video',
+  account_settings: 'Account Settings',
+  site_settings: 'Site Settings',
+  logout: 'Logout',
   users: 'User',
   settings: 'Settings',
 };
@@ -237,6 +270,17 @@ export default function AdminDashboardPage() {
   }, []);
 
   async function handleMenuClick(section: Section, replaceUrl = true) {
+    // If the user clicks Logout in the sidebar, we will handle that specially:
+    if (section === 'logout') {
+      // For now we prompt a confirmation and sign out — this is reasonable UX for a Logout item.
+      // If you prefer logout to be a no-op, change this to simply return.
+      // Using signOut() from next-auth will perform the sign-out flow.
+      if (confirm('Sign out from the admin dashboard?')) {
+        signOut();
+      }
+      return;
+    }
+
     const newUrl = `${pathname}?type=${section}`;
     // Only replace the URL when requested (avoid infinite updates on initial mount)
     if (replaceUrl) {
@@ -348,7 +392,6 @@ export default function AdminDashboardPage() {
   }
 
   // Unified view handler used by sections.
-  // NOTE: we intentionally do NOT set viewRecord for users here — UsersSection now handles inline viewing.
   async function handleView(record: any, source?: Section) {
     setHideControls(true);
 
@@ -409,6 +452,7 @@ export default function AdminDashboardPage() {
     setViewRecord(null);
   }
 
+  // Legacy parent-initiated delete (used by many other sections)
   async function handleDelete(id: string | number) {
     setDeleteId(id);
     setDeleteLoading(true);
@@ -432,10 +476,56 @@ export default function AdminDashboardPage() {
     }
   }
 
+  // ----------------------
+  // New: UI-only callbacks for child-initiated deletes
+  // ----------------------
+
+  function handleDeleteMessage(id: string | number) {
+    setData((prev) => {
+      if (!Array.isArray(prev)) return prev;
+      return prev.filter((item) => String(item.id) !== String(id));
+    });
+    if (viewRecord && String(viewRecord.id) === String(id)) {
+      setViewRecord(null);
+      setHideControls(false);
+    }
+  }
+
+  function handleDeleteResponse(id: string | number) {
+    setData((prev) => {
+      if (!Array.isArray(prev)) return prev;
+      const mapped = prev.map((item) => {
+        if (!item) return item;
+        if (Array.isArray(item.responses)) {
+          return {
+            ...item,
+            responses: item.responses.filter((r: any) => String(r.id) !== String(id)),
+          };
+        }
+        return item;
+      });
+      if (activeSection === 'responses') {
+        return mapped.filter((item) => String(item.id) !== String(id));
+      }
+      return mapped;
+    });
+
+    if (viewRecord && Array.isArray(viewRecord.responses)) {
+      setViewRecord({
+        ...viewRecord,
+        responses: viewRecord.responses.filter((r: any) => String(r.id) !== String(id)),
+      });
+    }
+
+    if (viewRecord && String(viewRecord.id) === String(id)) {
+      setViewRecord(null);
+      setHideControls(false);
+    }
+  }
+
   // NEW: open password-only edit flow (admin forced change)
   function handlePasswordEdit(record: any) {
     setHideControls(true);
-    // Mark editRecord as password-only by attaching a flag
     setEditRecord({ ...record, _passwordOnly: true });
   }
 
@@ -480,6 +570,14 @@ export default function AdminDashboardPage() {
     setViewRecord(null);
   }
 
+  // tiny placeholder component for future sections
+  const Placeholder = ({ title }: { title: string }) => (
+    <div className="p-8 text-center">
+      <h2 className="text-xl font-semibold mb-4">{title}</h2>
+      <p className="text-sm text-slate-600 dark:text-slate-300">This section is coming soon.</p>
+    </div>
+  );
+
   function renderSection() {
     if (viewRecord) {
       switch (activeSection) {
@@ -515,8 +613,6 @@ export default function AdminDashboardPage() {
           return <ChartSection />;
         case 'settings':
           return <SettingsSection currentUserId={(session?.user as any)?.id} />;
-        // Note: we intentionally do NOT render a dedicated UserView here.
-        // UsersSection handles inline viewing of a single user.
         default:
           return null;
       }
@@ -588,12 +684,8 @@ export default function AdminDashboardPage() {
             <CreateUserForm
               mode="edit"
               userId={String(editRecord?.id ?? editRecord?.userId ?? '')}
-              // pass the full record so the form doesn't need to re-fetch
               initialData={editRecord ?? undefined}
-              // If editRecord._passwordOnly is true, show only password fields (admin forced change)
               onlyPasswordFields={!!editRecord?._passwordOnly}
-              // When password-only, admin change shouldn't require the user's current password.
-              // When editing other details, we hide password fields instead.
               requireCurrentPassword={!editRecord?._passwordOnly}
               hidePasswordFields={!editRecord?._passwordOnly}
               onSuccess={handleSaveEdit}
@@ -681,8 +773,6 @@ export default function AdminDashboardPage() {
         return (
           <FAQsSection
             paginatedData={paginatedData}
-            // IMPORTANT: don't call handleEdit inside this prop (avoid name collision / recursion).
-            // Instead directly set local state so controls/pagination hide correctly.
             handleEdit={(rec) => {
               setHideControls(true);
               setEditRecord(rec);
@@ -721,12 +811,14 @@ export default function AdminDashboardPage() {
             rowsPerPage={rowsPerPage}
             handleEdit={handleEdit}
             handleView={(r: any) => handleView(r, 'messages')}
-            handleDelete={handleDelete}
+            handleDeleteMessage={handleDeleteMessage}
+            handleDeleteResponse={handleDeleteResponse}
             onRespond={handleRespondToMessage}
             currentUserRole={(session?.user as any)?.role ?? ''}
             TableActions={() => null}
             deleteId={deleteId}
             deleteLoading={deleteLoading}
+            onToggleControls={(hide: boolean) => setHideControls(hide)}
           />
         );
       case 'responses':
@@ -737,14 +829,41 @@ export default function AdminDashboardPage() {
             rowsPerPage={rowsPerPage}
             handleEdit={handleEdit}
             handleView={(r: any) => handleView(r, 'responses')}
-            handleDelete={handleDelete}
+            handleDelete={handleDeleteResponse}
             TableActions={() => null}
             deleteId={deleteId}
             deleteLoading={deleteLoading}
+            onToggleControls={(hide: boolean) => setHideControls(hide)}
           />
         );
+      case 'facebook_posts':
+        return <FacebookSection />;
+      case 'youtube_videos':
+        return <YouTubeSection />; // <- connected here
+      case 'account_settings':
+        return <Placeholder title="Account Settings" />;
+      case 'site_settings':
+        return <Placeholder title="Site Settings" />;
+      case 'logout':
+        return (
+          <div className="p-8">
+            <h2 className="text-xl font-semibold mb-4">Logout</h2>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
+              You can sign out from this dashboard.
+            </p>
+            <div>
+              <button
+                className="px-4 py-2 rounded bg-red-600 text-white"
+                onClick={() => {
+                  if (confirm('Sign out from the admin dashboard?')) signOut();
+                }}
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
+        );
       case 'users':
-        // Render UsersSection directly. It now handles inline "View" (expanded details)
         return (
           <UsersSection
             paginatedData={paginatedData}
@@ -765,8 +884,6 @@ export default function AdminDashboardPage() {
     singularLabels[activeSection] ?? sectionLabels[activeSection].replace(/s$/i, '');
   const isHome = activeSection === 'home';
 
-  // Effective hide: hide controls/pagination when hideControls is true OR
-  // when an edit or view form is open. This ensures controls are hidden reliably.
   const effectiveHideControls = hideControls || Boolean(editRecord) || Boolean(viewRecord);
 
   return (
@@ -791,8 +908,7 @@ export default function AdminDashboardPage() {
         </div>
         <nav className="mt-2 flex-1 overflow-y-auto">
           {sections.map((section) => {
-            // Comment out the Responses tab from the sidebar by skipping rendering for it.
-            // We keep 'responses' in the sections array so the section can still be used programmatically.
+            // Keep responses out of the sidebar UI
             if (section === 'responses') {
               return null;
             }
@@ -830,7 +946,7 @@ export default function AdminDashboardPage() {
 
       {/* Main Content */}
       <main className="flex-1 min-w-0 overflow-y-auto p-4 bg-white dark:bg-gray-900 transition-colors">
-        {/* Section header: title left-aligned and larger */}
+        {/* Section header */}
         <div className="mb-4">
           <div className="flex items-center gap-3">
             <span className="text-2xl">{sectionIcons[activeSection]}</span>
@@ -839,8 +955,6 @@ export default function AdminDashboardPage() {
             </h1>
           </div>
 
-          {/* Controls row (search / export / download / add), left-aligned below the title.
-              For Home, hide the search box and the Add button per request. */}
           {!effectiveHideControls && (
             <div className="mt-4">
               <TableControls
@@ -853,7 +967,6 @@ export default function AdminDashboardPage() {
                 sectionLabels={sectionLabels}
                 hideSearch={isHome}
                 addNewLabel={isSettingsSection || isHome ? undefined : `Add a new ${singularLabel}`}
-                // also pass hideControls so TableControls can hide export/add when editing
                 hideAllControls={effectiveHideControls}
               />
             </div>

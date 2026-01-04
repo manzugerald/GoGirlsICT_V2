@@ -2,8 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import DOMPurify from 'dompurify';
+import { useRouter } from 'next/navigation';
 import { Message } from '@/lib/generated/prisma';
 import CreateResponseForm from '@/app/(admin)/admin/dashboard/createResponseForm';
+import ConfirmModal from '@/app/(admin)/admin/dashboard/components/ui/ConfirmModal';
 
 type MessageWithRelations = Message & {
   beneficiary?: {
@@ -23,14 +25,16 @@ type MessageWithRelations = Message & {
 /**
  * MessagesSection
  *
- * - Inline composer: clicking "Respond" opens an inline CreateResponseForm inside the message view.
- * - After successful create, the created response is shown inline under its parent message.
- * - Message and Response authors/time are displayed using the requested format:
- *     <Name>, at <hh:mm:ss AM/PM> <MON> <D> <YYYY>
- *   e.g. "Eva Yayi, at 8:48:12 PM JAN 20 2025"
- * - If a responder is the same user who wrote the message, an "Author" tooltip/badge is shown next to the responder name.
- * - If Updated timestamp equals Created timestamp, the "Updated" info is omitted.
- * - Edit button for messages is hidden when category is "request" or "system".
+ * - Single place that performs HTTP DELETE calls for messages and responses.
+ * - Defensive guards to avoid duplicate deletes (localDeletingId + localDeletedIds).
+ * - Explicit callbacks:
+ *     handleDeleteMessage?: (id: string | number) => void    // UI-only: parent should NOT call API
+ *     handleDeleteResponse?: (id: string | number) => void   // UI-only: parent should NOT call API
+ *
+ * Parents must implement those two callbacks if they need to update parent state.
+ *
+ * Behavior change: after successfully deleting a message we now navigate to
+ * /admin/dashboard?type=messages to ensure the messages view is loaded/refreshed.
  */
 
 export default function MessagesSection({
@@ -39,7 +43,8 @@ export default function MessagesSection({
   rowsPerPage,
   handleEdit,
   handleView,
-  handleDelete,
+  handleDeleteMessage, // UI-only callback for message deletes
+  handleDeleteResponse, // UI-only callback for response deletes
   onRespond,
   currentUserRole,
   TableActions,
@@ -52,7 +57,8 @@ export default function MessagesSection({
   rowsPerPage: number;
   handleEdit: (record: any) => void;
   handleView?: (record: any, source?: 'messages' | 'responses' | string) => void;
-  handleDelete: (id: string | number) => void;
+  handleDeleteMessage?: (id: string | number) => void;
+  handleDeleteResponse?: (id: string | number) => void;
   onRespond?: (messageId: number | string) => void;
   currentUserRole?: string;
   TableActions?: React.FC<any>;
@@ -60,6 +66,8 @@ export default function MessagesSection({
   deleteLoading?: boolean;
   onToggleControls?: (hide: boolean) => void;
 }) {
+  const router = useRouter();
+
   const [activeTab, setActiveTab] = useState<'inbox' | 'sent'>('inbox');
   const [viewingItem, setViewingItem] = useState<any | null>(null); // { type: 'message'|'response', payload }
   const [loadingView, setLoadingView] = useState(false);
@@ -69,6 +77,16 @@ export default function MessagesSection({
 
   // Inline composer control
   const [replyingToMessageId, setReplyingToMessageId] = useState<string | number | null>(null);
+
+  // Local delete state (component-level)
+  const [localDeletingId, setLocalDeletingId] = useState<string | number | null>(null);
+  const [localDeletedIds, setLocalDeletedIds] = useState<Record<string, boolean>>({});
+
+  // Confirmation modal state for message deletes
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [pendingMessageDeleteId, setPendingMessageDeleteId] = useState<string | number | null>(
+    null
+  );
 
   // Helpers for message author
   const createdByLabel = (m: any) => {
@@ -102,7 +120,7 @@ export default function MessagesSection({
     return 'User';
   };
 
-  // Format date to "h:mm:ss AM/PM MON DD YYYY" then prefix with name
+  // Format date to "h:mm:ss AM/PM MON DD YYYY"
   const formatDateForDisplay = (d?: string | Date | null) => {
     if (!d) return '';
     const date = d instanceof Date ? d : new Date(d);
@@ -113,7 +131,7 @@ export default function MessagesSection({
       second: '2-digit',
       hour12: true,
     });
-    const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase(); // JAN
+    const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
     const day = date.getDate();
     const year = date.getFullYear();
     return `${time} ${month} ${day} ${year}`;
@@ -125,10 +143,31 @@ export default function MessagesSection({
     return createdAt ? `${name}, at ${createdAt}` : name;
   };
 
-  const formatResponderAt = (r: any) => {
+  // Render responder name + optional Author tooltip and timestamp as JSX
+  const renderResponderAt = (r: any, messageCreatorId?: string | number | null) => {
     const name = responderLabel(r);
+    const responderUserId = r?.responderUser?.id ?? r?.responderUserId ?? null;
     const createdAt = formatDateForDisplay(r?.createdAt);
-    return createdAt ? `${name}, at ${createdAt}` : name;
+    const isAuthor =
+      messageCreatorId && responderUserId && String(responderUserId) === String(messageCreatorId);
+
+    return (
+      <>
+        <span className="font-medium">{name}</span>
+        {isAuthor && (
+          <span
+            title="Author"
+            aria-label="Author"
+            className="ml-2 inline-flex items-center px-2 py-0.5 text-xs font-medium rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-white"
+          >
+            Author
+          </span>
+        )}
+        {createdAt && (
+          <span className="ml-2 text-xs text-slate-600 dark:text-slate-400">at {createdAt}</span>
+        )}
+      </>
+    );
   };
 
   const isHtmlString = (s: string) => /<\/?[a-z][\s\S]*>/i.test(s);
@@ -338,7 +377,7 @@ export default function MessagesSection({
     try {
       let msgData: any = null;
       try {
-        const res = await fetch(`/api/messages/${id}`);
+        const res = await fetch(`/api/messages/${encodeURIComponent(String(id))}`);
         msgData = res.ok ? await res.json() : null;
       } catch {
         msgData = null;
@@ -352,13 +391,13 @@ export default function MessagesSection({
         const parentId = base?.id
           ? typeof base.id === 'number'
             ? base.id
-            : Number(base.id)
-          : Number(id);
+            : String(base.id)
+          : String(id);
         if (Array.isArray(respData)) {
           respList = respData.filter(
             (r: any) =>
-              (r.message && (r.message.id === parentId || Number(r.message.id) === parentId)) ||
-              (r.messageId && Number(r.messageId) === parentId)
+              (r.message && String(r.message.id) === String(parentId)) ||
+              (r.messageId && String(r.messageId) === String(parentId))
           );
         }
       } catch {
@@ -380,7 +419,7 @@ export default function MessagesSection({
     try {
       let resData: any = null;
       try {
-        const res = await fetch(`/api/responses/${id}`);
+        const res = await fetch(`/api/responses/${encodeURIComponent(String(id))}`);
         resData = res.ok ? await res.json() : null;
       } catch {
         resData = null;
@@ -389,7 +428,7 @@ export default function MessagesSection({
       try {
         const mid = resData?.messageId ?? resData?.message?.id;
         if (mid) {
-          const p = await fetch(`/api/messages/${mid}`);
+          const p = await fetch(`/api/messages/${encodeURIComponent(String(mid))}`);
           parent = p.ok ? await p.json() : null;
         }
       } catch {
@@ -433,15 +472,15 @@ export default function MessagesSection({
     // If not viewing, open the parent message and ensure the created response shows up
     (async () => {
       try {
-        const res = await fetch(`/api/messages/${parentId}`);
+        const res = await fetch(`/api/messages/${encodeURIComponent(String(parentId))}`);
         const msg = res.ok ? await res.json() : null;
         const respRes = await fetch('/api/responses');
         const respData = respRes.ok ? await respRes.json() : [];
         const list = Array.isArray(respData)
           ? respData.filter(
               (r: any) =>
-                (r.message && (r.message.id === parentId || Number(r.message.id) === parentId)) ||
-                (r.messageId && Number(r.messageId) === parentId)
+                (r.message && String(r.message.id) === String(parentId)) ||
+                (r.messageId && String(r.messageId) === String(parentId))
             )
           : [];
         const exists = list.find((r) => String(r.id) === String(created.id));
@@ -467,6 +506,131 @@ export default function MessagesSection({
     await openMessage({ id: messageId });
     setReplyingToMessageId(messageId);
   };
+
+  // --- Deletion helpers that call the proper API endpoint ---
+  // Defensive: prevent duplicate deletes using localDeletingId + localDeletedIds
+
+  // Prompt modal instead of native confirm
+  function promptDeleteMessage(id: string | number) {
+    setPendingMessageDeleteId(id);
+    setConfirmDeleteOpen(true);
+  }
+
+  async function deleteMessageConfirmed(id: string | number) {
+    if (localDeletedIds[String(id)]) return; // already deleted
+    if (localDeletingId) return; // another delete in progress
+    try {
+      setLocalDeletingId(id);
+      const res = await fetch(`/api/messages/${encodeURIComponent(String(id))}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error || `Request failed (${res.status})`);
+      }
+      // mark deleted locally so duplicate attempts are ignored
+      setLocalDeletedIds((s) => ({ ...s, [String(id)]: true }));
+
+      // notify parent to update list if handler provided (UI-only)
+      if (typeof handleDeleteMessage === 'function') {
+        try {
+          console.debug('MessagesSection: calling handleDeleteMessage', { id });
+          handleDeleteMessage(id);
+        } catch (e) {
+          console.debug('handleDeleteMessage callback threw', e);
+        }
+      }
+      // if currently viewing this message, close it
+      if (
+        viewingItem &&
+        viewingItem.type === 'message' &&
+        String(viewingItem.payload?.id) === String(id)
+      ) {
+        setViewingItem(null);
+      }
+
+      // Navigate to messages list view to ensure the dashboard shows messages
+      try {
+        router.replace('/admin/dashboard?type=messages');
+      } catch (e) {
+        // fallback: use location
+        try {
+          window.location.href = '/admin/dashboard?type=messages';
+        } catch {
+          // ignore
+        }
+      }
+    } catch (err: any) {
+      console.error('Failed to delete message:', err);
+    } finally {
+      setLocalDeletingId(null);
+      setConfirmDeleteOpen(false);
+      setPendingMessageDeleteId(null);
+    }
+  }
+
+  // No confirmation prompt for response deletes
+  async function deleteResponse(id: string | number) {
+    if (localDeletedIds[String(id)]) return; // already deleted
+    if (localDeletingId) return; // another delete in progress
+    try {
+      setLocalDeletingId(id);
+      const res = await fetch(`/api/responses/${encodeURIComponent(String(id))}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error || `Request failed (${res.status})`);
+      }
+      // mark deleted locally
+      setLocalDeletedIds((s) => ({ ...s, [String(id)]: true }));
+
+      // Update local UI:
+      if (viewingItem && viewingItem.type === 'message') {
+        const msgPayload = viewingItem.payload;
+        if (Array.isArray(msgPayload.responses)) {
+          const idx = msgPayload.responses.findIndex((r: any) => String(r.id) === String(id));
+          if (idx !== -1) {
+            msgPayload.responses.splice(idx, 1);
+            setViewingItem({ ...viewingItem });
+          }
+        }
+      }
+      if (
+        viewingItem &&
+        viewingItem.type === 'response' &&
+        String(viewingItem.payload?.id) === String(id)
+      ) {
+        setViewingItem(null);
+      }
+      if (activeTab === 'sent' && Array.isArray(responses)) {
+        setResponses((prev) => (prev ? prev.filter((r) => String(r.id) !== String(id)) : prev));
+      }
+
+      // notify parent to update list if handler provided (UI-only)
+      if (typeof handleDeleteResponse === 'function') {
+        try {
+          console.debug('MessagesSection: calling handleDeleteResponse', { id });
+          handleDeleteResponse(id);
+        } catch (e) {
+          console.debug('handleDeleteResponse callback threw', e);
+        }
+      }
+    } catch (err: any) {
+      console.error('Failed to delete response:', err);
+    } finally {
+      setLocalDeletingId(null);
+    }
+  }
+
+  // helper to pick the appropriate delete function based on item type
+  const handleDeleteClick = (item: any, type: 'message' | 'response') => {
+    const id = item?.id ?? item;
+    if (type === 'message') return promptDeleteMessage(id);
+    return deleteResponse(id);
+  };
+
+  // --- renderers (message/response) ---
 
   const renderFullMessage = (m: any) => {
     const category = m.messageCategory ?? m.category ?? 'System';
@@ -524,10 +688,20 @@ export default function MessagesSection({
 
               <button
                 className="px-3 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-700 dark:hover:bg-red-600 text-red-800 dark:text-white rounded"
-                onClick={() => handleDelete(m.id)}
-                disabled={Boolean(deleteLoading && deleteId === m.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteClick(m, 'message');
+                }}
+                disabled={
+                  Boolean(localDeletingId && String(localDeletingId) === String(m.id)) ||
+                  Boolean(localDeletedIds[String(m.id)])
+                }
               >
-                {deleteLoading && deleteId === m.id ? 'Deleting...' : 'Delete'}
+                {localDeletingId && String(localDeletingId) === String(m.id)
+                  ? 'Deleting...'
+                  : localDeletedIds[String(m.id)]
+                  ? 'Deleted'
+                  : 'Delete'}
               </button>
             </div>
 
@@ -557,14 +731,36 @@ export default function MessagesSection({
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <div className="text-sm font-medium">{formatResponderAt(r)}</div>
+                          <div className="text-sm">{renderResponderAt(r, m?.createdById)}</div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right flex items-center gap-2">
                           <button
                             className="px-2 py-1 text-xs bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-700 dark:hover:bg-yellow-600 text-yellow-800 dark:text-white rounded"
-                            onClick={() => handleEdit(r)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(r);
+                            }}
                           >
                             Edit
+                          </button>
+
+                          <button
+                            className="px-2 py-1 text-xs bg-red-50 hover:bg-red-100 dark:bg-red-700 dark:hover:bg-red-600 text-red-800 dark:text-white rounded"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteClick(r, 'response');
+                            }}
+                            disabled={
+                              Boolean(
+                                localDeletingId && String(localDeletingId) === String(r.id)
+                              ) || Boolean(localDeletedIds[String(r.id)])
+                            }
+                          >
+                            {localDeletingId && String(localDeletingId) === String(r.id)
+                              ? 'Deleting...'
+                              : localDeletedIds[String(r.id)]
+                              ? 'Deleted'
+                              : 'Delete'}
                           </button>
                         </div>
                       </div>
@@ -586,12 +782,14 @@ export default function MessagesSection({
 
   const renderFullResponse = (r: any) => {
     const title = r.subject ?? r.title ?? `Response to ${r.messageId ?? ''}`;
-    const responderAt = formatResponderAt(r);
+    const parentCreatorId = r?.parent?.createdById ?? r?.message?.createdById ?? null;
     return (
       <div className="w-full">
         <div className="px-2">
           <h2 className="text-xl font-semibold">{title}</h2>
-          <div className="text-sm text-slate-700 dark:text-slate-300 mt-1">{responderAt}</div>
+          <div className="text-sm text-slate-700 dark:text-slate-300 mt-1">
+            {renderResponderAt(r, parentCreatorId)}
+          </div>
         </div>
 
         <div className="mt-4 px-2">
@@ -608,17 +806,30 @@ export default function MessagesSection({
 
               <button
                 className="px-3 py-2 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-700 dark:hover:bg-yellow-600 text-yellow-800 dark:text-white rounded"
-                onClick={() => handleEdit(r)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(r);
+                }}
               >
                 Edit
               </button>
 
               <button
                 className="px-3 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-700 dark:hover:bg-red-600 text-red-800 dark:text-white rounded"
-                onClick={() => handleDelete(r.id)}
-                disabled={Boolean(deleteLoading && deleteId === r.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteClick(r, 'response');
+                }}
+                disabled={
+                  Boolean(localDeletingId && String(localDeletingId) === String(r.id)) ||
+                  Boolean(localDeletedIds[String(r.id)])
+                }
               >
-                {deleteLoading && deleteId === r.id ? 'Deleting...' : 'Delete'}
+                {localDeletingId && String(localDeletingId) === String(r.id)
+                  ? 'Deleting...'
+                  : localDeletedIds[String(r.id)]
+                  ? 'Deleted'
+                  : 'Delete'}
               </button>
             </div>
           </div>
@@ -655,6 +866,22 @@ export default function MessagesSection({
   return (
     <div className={outerClass}>
       <style>{injectedCss}</style>
+
+      {/* Confirm modal for message delete */}
+      <ConfirmModal
+        open={confirmDeleteOpen}
+        title="Delete message?"
+        description="Are you sure you want to delete this message? This will also remove all responses to it. This action cannot be undone."
+        confirmLabel="Delete message"
+        cancelLabel="Cancel"
+        onConfirm={() => {
+          if (pendingMessageDeleteId != null) deleteMessageConfirmed(pendingMessageDeleteId);
+        }}
+        onCancel={() => {
+          setConfirmDeleteOpen(false);
+          setPendingMessageDeleteId(null);
+        }}
+      />
 
       <div className="tabs-top" role="tablist" aria-label="Messages tabs">
         <div
@@ -779,10 +1006,21 @@ export default function MessagesSection({
                               <button
                                 type="button"
                                 className="px-3 py-1 rounded text-sm bg-red-50 hover:bg-red-100 dark:bg-red-700 dark:hover:bg-red-600 text-red-800 dark:text-white"
-                                onClick={() => handleDelete(m.id)}
-                                disabled={Boolean(deleteLoading && deleteId === m.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteClick(m, 'message');
+                                }}
+                                disabled={
+                                  Boolean(
+                                    localDeletingId && String(localDeletingId) === String(m.id)
+                                  ) || Boolean(localDeletedIds[String(m.id)])
+                                }
                               >
-                                {deleteLoading && deleteId === m.id ? 'Deleting...' : 'Delete'}
+                                {localDeletingId && String(localDeletingId) === String(m.id)
+                                  ? 'Deleting...'
+                                  : localDeletedIds[String(m.id)]
+                                  ? 'Deleted'
+                                  : 'Delete'}
                               </button>
                             </div>
                           </div>
@@ -811,7 +1049,11 @@ export default function MessagesSection({
                   {!loadingResponses &&
                     Array.isArray(responses) &&
                     responses.map((r: any) => {
-                      const responderAt = formatResponderAt(r);
+                      const responderAt = (() => {
+                        const name = responderLabel(r);
+                        const createdAt = formatDateForDisplay(r?.createdAt);
+                        return createdAt ? `${name}, at ${createdAt}` : name;
+                      })();
                       const title = r.subject ?? r.title ?? `Response to ${r.messageId ?? ''}`;
                       return (
                         <div key={r.id} className="message-card p-4 border rounded-md">
@@ -863,10 +1105,21 @@ export default function MessagesSection({
                               <button
                                 type="button"
                                 className="px-3 py-1 rounded text-sm bg-red-50 hover:bg-red-100 dark:bg-red-700 dark:hover:bg-red-600 text-red-800 dark:text-white"
-                                onClick={() => handleDelete(r.id)}
-                                disabled={Boolean(deleteLoading && deleteId === r.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteClick(r, 'response');
+                                }}
+                                disabled={
+                                  Boolean(
+                                    localDeletingId && String(localDeletingId) === String(r.id)
+                                  ) || Boolean(localDeletedIds[String(r.id)])
+                                }
                               >
-                                {deleteLoading && deleteId === r.id ? 'Deleting...' : 'Delete'}
+                                {localDeletingId && String(localDeletingId) === String(r.id)
+                                  ? 'Deleting...'
+                                  : localDeletedIds[String(r.id)]
+                                  ? 'Deleted'
+                                  : 'Delete'}
                               </button>
                             </div>
                           </div>

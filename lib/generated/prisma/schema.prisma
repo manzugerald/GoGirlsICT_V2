@@ -316,7 +316,7 @@ enum AttendanceType {
 }
 
 // YouTube Videos
-model Video {
+model Youtube {
   id          String   @id // YouTube video ID
   title       String
   description String

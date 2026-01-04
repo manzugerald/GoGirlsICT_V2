@@ -64,10 +64,10 @@ export type Session = $Result.DefaultSelection<Prisma.$SessionPayload>
  */
 export type Event = $Result.DefaultSelection<Prisma.$EventPayload>
 /**
- * Model Video
+ * Model Youtube
  * 
  */
-export type Video = $Result.DefaultSelection<Prisma.$VideoPayload>
+export type Youtube = $Result.DefaultSelection<Prisma.$YoutubePayload>
 /**
  * Model YouTubeCacheMeta
  * 
@@ -485,14 +485,14 @@ export class PrismaClient<
   get event(): Prisma.EventDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.video`: Exposes CRUD operations for the **Video** model.
+   * `prisma.youtube`: Exposes CRUD operations for the **Youtube** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more Videos
-    * const videos = await prisma.video.findMany()
+    * // Fetch zero or more Youtubes
+    * const youtubes = await prisma.youtube.findMany()
     * ```
     */
-  get video(): Prisma.VideoDelegate<ExtArgs, ClientOptions>;
+  get youtube(): Prisma.YoutubeDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.youTubeCacheMeta`: Exposes CRUD operations for the **YouTubeCacheMeta** model.
@@ -1017,7 +1017,7 @@ export namespace Prisma {
     FailedLoginAttempt: 'FailedLoginAttempt',
     Session: 'Session',
     Event: 'Event',
-    Video: 'Video',
+    Youtube: 'Youtube',
     YouTubeCacheMeta: 'YouTubeCacheMeta',
     Institution: 'Institution',
     Location: 'Location',
@@ -1041,7 +1041,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "project" | "homePage" | "message" | "report" | "user" | "passwordHistory" | "passwordChangeLog" | "failedLoginAttempt" | "session" | "event" | "video" | "youTubeCacheMeta" | "institution" | "location" | "beneficiary" | "response" | "fAQ" | "facebookPost" | "facebookCacheMeta"
+      modelProps: "project" | "homePage" | "message" | "report" | "user" | "passwordHistory" | "passwordChangeLog" | "failedLoginAttempt" | "session" | "event" | "youtube" | "youTubeCacheMeta" | "institution" | "location" | "beneficiary" | "response" | "fAQ" | "facebookPost" | "facebookCacheMeta"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1785,77 +1785,77 @@ export namespace Prisma {
           }
         }
       }
-      Video: {
-        payload: Prisma.$VideoPayload<ExtArgs>
-        fields: Prisma.VideoFieldRefs
+      Youtube: {
+        payload: Prisma.$YoutubePayload<ExtArgs>
+        fields: Prisma.YoutubeFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.VideoFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$VideoPayload> | null
+            args: Prisma.YoutubeFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$YoutubePayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.VideoFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$VideoPayload>
+            args: Prisma.YoutubeFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$YoutubePayload>
           }
           findFirst: {
-            args: Prisma.VideoFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$VideoPayload> | null
+            args: Prisma.YoutubeFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$YoutubePayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.VideoFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$VideoPayload>
+            args: Prisma.YoutubeFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$YoutubePayload>
           }
           findMany: {
-            args: Prisma.VideoFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$VideoPayload>[]
+            args: Prisma.YoutubeFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$YoutubePayload>[]
           }
           create: {
-            args: Prisma.VideoCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$VideoPayload>
+            args: Prisma.YoutubeCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$YoutubePayload>
           }
           createMany: {
-            args: Prisma.VideoCreateManyArgs<ExtArgs>
+            args: Prisma.YoutubeCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           createManyAndReturn: {
-            args: Prisma.VideoCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$VideoPayload>[]
+            args: Prisma.YoutubeCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$YoutubePayload>[]
           }
           delete: {
-            args: Prisma.VideoDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$VideoPayload>
+            args: Prisma.YoutubeDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$YoutubePayload>
           }
           update: {
-            args: Prisma.VideoUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$VideoPayload>
+            args: Prisma.YoutubeUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$YoutubePayload>
           }
           deleteMany: {
-            args: Prisma.VideoDeleteManyArgs<ExtArgs>
+            args: Prisma.YoutubeDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.VideoUpdateManyArgs<ExtArgs>
+            args: Prisma.YoutubeUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateManyAndReturn: {
-            args: Prisma.VideoUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$VideoPayload>[]
+            args: Prisma.YoutubeUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$YoutubePayload>[]
           }
           upsert: {
-            args: Prisma.VideoUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$VideoPayload>
+            args: Prisma.YoutubeUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$YoutubePayload>
           }
           aggregate: {
-            args: Prisma.VideoAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateVideo>
+            args: Prisma.YoutubeAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateYoutube>
           }
           groupBy: {
-            args: Prisma.VideoGroupByArgs<ExtArgs>
-            result: $Utils.Optional<VideoGroupByOutputType>[]
+            args: Prisma.YoutubeGroupByArgs<ExtArgs>
+            result: $Utils.Optional<YoutubeGroupByOutputType>[]
           }
           count: {
-            args: Prisma.VideoCountArgs<ExtArgs>
-            result: $Utils.Optional<VideoCountAggregateOutputType> | number
+            args: Prisma.YoutubeCountArgs<ExtArgs>
+            result: $Utils.Optional<YoutubeCountAggregateOutputType> | number
           }
         }
       }
@@ -2569,7 +2569,7 @@ export namespace Prisma {
     failedLoginAttempt?: FailedLoginAttemptOmit
     session?: SessionOmit
     event?: EventOmit
-    video?: VideoOmit
+    youtube?: YoutubeOmit
     youTubeCacheMeta?: YouTubeCacheMetaOmit
     institution?: InstitutionOmit
     location?: LocationOmit
@@ -15754,28 +15754,28 @@ export namespace Prisma {
 
 
   /**
-   * Model Video
+   * Model Youtube
    */
 
-  export type AggregateVideo = {
-    _count: VideoCountAggregateOutputType | null
-    _avg: VideoAvgAggregateOutputType | null
-    _sum: VideoSumAggregateOutputType | null
-    _min: VideoMinAggregateOutputType | null
-    _max: VideoMaxAggregateOutputType | null
+  export type AggregateYoutube = {
+    _count: YoutubeCountAggregateOutputType | null
+    _avg: YoutubeAvgAggregateOutputType | null
+    _sum: YoutubeSumAggregateOutputType | null
+    _min: YoutubeMinAggregateOutputType | null
+    _max: YoutubeMaxAggregateOutputType | null
   }
 
-  export type VideoAvgAggregateOutputType = {
+  export type YoutubeAvgAggregateOutputType = {
     viewCount: number | null
     likeCount: number | null
   }
 
-  export type VideoSumAggregateOutputType = {
+  export type YoutubeSumAggregateOutputType = {
     viewCount: number | null
     likeCount: number | null
   }
 
-  export type VideoMinAggregateOutputType = {
+  export type YoutubeMinAggregateOutputType = {
     id: string | null
     title: string | null
     description: string | null
@@ -15787,7 +15787,7 @@ export namespace Prisma {
     fetchedAt: Date | null
   }
 
-  export type VideoMaxAggregateOutputType = {
+  export type YoutubeMaxAggregateOutputType = {
     id: string | null
     title: string | null
     description: string | null
@@ -15799,7 +15799,7 @@ export namespace Prisma {
     fetchedAt: Date | null
   }
 
-  export type VideoCountAggregateOutputType = {
+  export type YoutubeCountAggregateOutputType = {
     id: number
     title: number
     description: number
@@ -15813,17 +15813,17 @@ export namespace Prisma {
   }
 
 
-  export type VideoAvgAggregateInputType = {
+  export type YoutubeAvgAggregateInputType = {
     viewCount?: true
     likeCount?: true
   }
 
-  export type VideoSumAggregateInputType = {
+  export type YoutubeSumAggregateInputType = {
     viewCount?: true
     likeCount?: true
   }
 
-  export type VideoMinAggregateInputType = {
+  export type YoutubeMinAggregateInputType = {
     id?: true
     title?: true
     description?: true
@@ -15835,7 +15835,7 @@ export namespace Prisma {
     fetchedAt?: true
   }
 
-  export type VideoMaxAggregateInputType = {
+  export type YoutubeMaxAggregateInputType = {
     id?: true
     title?: true
     description?: true
@@ -15847,7 +15847,7 @@ export namespace Prisma {
     fetchedAt?: true
   }
 
-  export type VideoCountAggregateInputType = {
+  export type YoutubeCountAggregateInputType = {
     id?: true
     title?: true
     description?: true
@@ -15860,93 +15860,93 @@ export namespace Prisma {
     _all?: true
   }
 
-  export type VideoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which Video to aggregate.
+     * Filter which Youtube to aggregate.
      */
-    where?: VideoWhereInput
+    where?: YoutubeWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Videos to fetch.
+     * Determine the order of Youtubes to fetch.
      */
-    orderBy?: VideoOrderByWithRelationInput | VideoOrderByWithRelationInput[]
+    orderBy?: YoutubeOrderByWithRelationInput | YoutubeOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: VideoWhereUniqueInput
+    cursor?: YoutubeWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Videos from the position of the cursor.
+     * Take `±n` Youtubes from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Videos.
+     * Skip the first `n` Youtubes.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned Videos
+     * Count returned Youtubes
     **/
-    _count?: true | VideoCountAggregateInputType
+    _count?: true | YoutubeCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to average
     **/
-    _avg?: VideoAvgAggregateInputType
+    _avg?: YoutubeAvgAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to sum
     **/
-    _sum?: VideoSumAggregateInputType
+    _sum?: YoutubeSumAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: VideoMinAggregateInputType
+    _min?: YoutubeMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: VideoMaxAggregateInputType
+    _max?: YoutubeMaxAggregateInputType
   }
 
-  export type GetVideoAggregateType<T extends VideoAggregateArgs> = {
-        [P in keyof T & keyof AggregateVideo]: P extends '_count' | 'count'
+  export type GetYoutubeAggregateType<T extends YoutubeAggregateArgs> = {
+        [P in keyof T & keyof AggregateYoutube]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateVideo[P]>
-      : GetScalarType<T[P], AggregateVideo[P]>
+        : GetScalarType<T[P], AggregateYoutube[P]>
+      : GetScalarType<T[P], AggregateYoutube[P]>
   }
 
 
 
 
-  export type VideoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: VideoWhereInput
-    orderBy?: VideoOrderByWithAggregationInput | VideoOrderByWithAggregationInput[]
-    by: VideoScalarFieldEnum[] | VideoScalarFieldEnum
-    having?: VideoScalarWhereWithAggregatesInput
+  export type YoutubeGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: YoutubeWhereInput
+    orderBy?: YoutubeOrderByWithAggregationInput | YoutubeOrderByWithAggregationInput[]
+    by: YoutubeScalarFieldEnum[] | YoutubeScalarFieldEnum
+    having?: YoutubeScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: VideoCountAggregateInputType | true
-    _avg?: VideoAvgAggregateInputType
-    _sum?: VideoSumAggregateInputType
-    _min?: VideoMinAggregateInputType
-    _max?: VideoMaxAggregateInputType
+    _count?: YoutubeCountAggregateInputType | true
+    _avg?: YoutubeAvgAggregateInputType
+    _sum?: YoutubeSumAggregateInputType
+    _min?: YoutubeMinAggregateInputType
+    _max?: YoutubeMaxAggregateInputType
   }
 
-  export type VideoGroupByOutputType = {
+  export type YoutubeGroupByOutputType = {
     id: string
     title: string
     description: string
@@ -15956,28 +15956,28 @@ export namespace Prisma {
     likeCount: number | null
     duration: string
     fetchedAt: Date
-    _count: VideoCountAggregateOutputType | null
-    _avg: VideoAvgAggregateOutputType | null
-    _sum: VideoSumAggregateOutputType | null
-    _min: VideoMinAggregateOutputType | null
-    _max: VideoMaxAggregateOutputType | null
+    _count: YoutubeCountAggregateOutputType | null
+    _avg: YoutubeAvgAggregateOutputType | null
+    _sum: YoutubeSumAggregateOutputType | null
+    _min: YoutubeMinAggregateOutputType | null
+    _max: YoutubeMaxAggregateOutputType | null
   }
 
-  type GetVideoGroupByPayload<T extends VideoGroupByArgs> = Prisma.PrismaPromise<
+  type GetYoutubeGroupByPayload<T extends YoutubeGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<VideoGroupByOutputType, T['by']> &
+      PickEnumerable<YoutubeGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof VideoGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof YoutubeGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], VideoGroupByOutputType[P]>
-            : GetScalarType<T[P], VideoGroupByOutputType[P]>
+              : GetScalarType<T[P], YoutubeGroupByOutputType[P]>
+            : GetScalarType<T[P], YoutubeGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type VideoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type YoutubeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     title?: boolean
     description?: boolean
@@ -15987,9 +15987,9 @@ export namespace Prisma {
     likeCount?: boolean
     duration?: boolean
     fetchedAt?: boolean
-  }, ExtArgs["result"]["video"]>
+  }, ExtArgs["result"]["youtube"]>
 
-  export type VideoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type YoutubeSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     title?: boolean
     description?: boolean
@@ -15999,9 +15999,9 @@ export namespace Prisma {
     likeCount?: boolean
     duration?: boolean
     fetchedAt?: boolean
-  }, ExtArgs["result"]["video"]>
+  }, ExtArgs["result"]["youtube"]>
 
-  export type VideoSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type YoutubeSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     title?: boolean
     description?: boolean
@@ -16011,9 +16011,9 @@ export namespace Prisma {
     likeCount?: boolean
     duration?: boolean
     fetchedAt?: boolean
-  }, ExtArgs["result"]["video"]>
+  }, ExtArgs["result"]["youtube"]>
 
-  export type VideoSelectScalar = {
+  export type YoutubeSelectScalar = {
     id?: boolean
     title?: boolean
     description?: boolean
@@ -16025,10 +16025,10 @@ export namespace Prisma {
     fetchedAt?: boolean
   }
 
-  export type VideoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "thumbnail" | "publishedAt" | "viewCount" | "likeCount" | "duration" | "fetchedAt", ExtArgs["result"]["video"]>
+  export type YoutubeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "thumbnail" | "publishedAt" | "viewCount" | "likeCount" | "duration" | "fetchedAt", ExtArgs["result"]["youtube"]>
 
-  export type $VideoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "Video"
+  export type $YoutubePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Youtube"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -16040,136 +16040,136 @@ export namespace Prisma {
       likeCount: number | null
       duration: string
       fetchedAt: Date
-    }, ExtArgs["result"]["video"]>
+    }, ExtArgs["result"]["youtube"]>
     composites: {}
   }
 
-  type VideoGetPayload<S extends boolean | null | undefined | VideoDefaultArgs> = $Result.GetResult<Prisma.$VideoPayload, S>
+  type YoutubeGetPayload<S extends boolean | null | undefined | YoutubeDefaultArgs> = $Result.GetResult<Prisma.$YoutubePayload, S>
 
-  type VideoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<VideoFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: VideoCountAggregateInputType | true
+  type YoutubeCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<YoutubeFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: YoutubeCountAggregateInputType | true
     }
 
-  export interface VideoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Video'], meta: { name: 'Video' } }
+  export interface YoutubeDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Youtube'], meta: { name: 'Youtube' } }
     /**
-     * Find zero or one Video that matches the filter.
-     * @param {VideoFindUniqueArgs} args - Arguments to find a Video
+     * Find zero or one Youtube that matches the filter.
+     * @param {YoutubeFindUniqueArgs} args - Arguments to find a Youtube
      * @example
-     * // Get one Video
-     * const video = await prisma.video.findUnique({
+     * // Get one Youtube
+     * const youtube = await prisma.youtube.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends VideoFindUniqueArgs>(args: SelectSubset<T, VideoFindUniqueArgs<ExtArgs>>): Prisma__VideoClient<$Result.GetResult<Prisma.$VideoPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends YoutubeFindUniqueArgs>(args: SelectSubset<T, YoutubeFindUniqueArgs<ExtArgs>>): Prisma__YoutubeClient<$Result.GetResult<Prisma.$YoutubePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one Video that matches the filter or throw an error with `error.code='P2025'`
+     * Find one Youtube that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {VideoFindUniqueOrThrowArgs} args - Arguments to find a Video
+     * @param {YoutubeFindUniqueOrThrowArgs} args - Arguments to find a Youtube
      * @example
-     * // Get one Video
-     * const video = await prisma.video.findUniqueOrThrow({
+     * // Get one Youtube
+     * const youtube = await prisma.youtube.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends VideoFindUniqueOrThrowArgs>(args: SelectSubset<T, VideoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__VideoClient<$Result.GetResult<Prisma.$VideoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends YoutubeFindUniqueOrThrowArgs>(args: SelectSubset<T, YoutubeFindUniqueOrThrowArgs<ExtArgs>>): Prisma__YoutubeClient<$Result.GetResult<Prisma.$YoutubePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Video that matches the filter.
+     * Find the first Youtube that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {VideoFindFirstArgs} args - Arguments to find a Video
+     * @param {YoutubeFindFirstArgs} args - Arguments to find a Youtube
      * @example
-     * // Get one Video
-     * const video = await prisma.video.findFirst({
+     * // Get one Youtube
+     * const youtube = await prisma.youtube.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends VideoFindFirstArgs>(args?: SelectSubset<T, VideoFindFirstArgs<ExtArgs>>): Prisma__VideoClient<$Result.GetResult<Prisma.$VideoPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends YoutubeFindFirstArgs>(args?: SelectSubset<T, YoutubeFindFirstArgs<ExtArgs>>): Prisma__YoutubeClient<$Result.GetResult<Prisma.$YoutubePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first Video that matches the filter or
+     * Find the first Youtube that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {VideoFindFirstOrThrowArgs} args - Arguments to find a Video
+     * @param {YoutubeFindFirstOrThrowArgs} args - Arguments to find a Youtube
      * @example
-     * // Get one Video
-     * const video = await prisma.video.findFirstOrThrow({
+     * // Get one Youtube
+     * const youtube = await prisma.youtube.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends VideoFindFirstOrThrowArgs>(args?: SelectSubset<T, VideoFindFirstOrThrowArgs<ExtArgs>>): Prisma__VideoClient<$Result.GetResult<Prisma.$VideoPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends YoutubeFindFirstOrThrowArgs>(args?: SelectSubset<T, YoutubeFindFirstOrThrowArgs<ExtArgs>>): Prisma__YoutubeClient<$Result.GetResult<Prisma.$YoutubePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more Videos that matches the filter.
+     * Find zero or more Youtubes that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {VideoFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {YoutubeFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all Videos
-     * const videos = await prisma.video.findMany()
+     * // Get all Youtubes
+     * const youtubes = await prisma.youtube.findMany()
      * 
-     * // Get first 10 Videos
-     * const videos = await prisma.video.findMany({ take: 10 })
+     * // Get first 10 Youtubes
+     * const youtubes = await prisma.youtube.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const videoWithIdOnly = await prisma.video.findMany({ select: { id: true } })
+     * const youtubeWithIdOnly = await prisma.youtube.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends VideoFindManyArgs>(args?: SelectSubset<T, VideoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VideoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends YoutubeFindManyArgs>(args?: SelectSubset<T, YoutubeFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$YoutubePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a Video.
-     * @param {VideoCreateArgs} args - Arguments to create a Video.
+     * Create a Youtube.
+     * @param {YoutubeCreateArgs} args - Arguments to create a Youtube.
      * @example
-     * // Create one Video
-     * const Video = await prisma.video.create({
+     * // Create one Youtube
+     * const Youtube = await prisma.youtube.create({
      *   data: {
-     *     // ... data to create a Video
+     *     // ... data to create a Youtube
      *   }
      * })
      * 
      */
-    create<T extends VideoCreateArgs>(args: SelectSubset<T, VideoCreateArgs<ExtArgs>>): Prisma__VideoClient<$Result.GetResult<Prisma.$VideoPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends YoutubeCreateArgs>(args: SelectSubset<T, YoutubeCreateArgs<ExtArgs>>): Prisma__YoutubeClient<$Result.GetResult<Prisma.$YoutubePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many Videos.
-     * @param {VideoCreateManyArgs} args - Arguments to create many Videos.
+     * Create many Youtubes.
+     * @param {YoutubeCreateManyArgs} args - Arguments to create many Youtubes.
      * @example
-     * // Create many Videos
-     * const video = await prisma.video.createMany({
+     * // Create many Youtubes
+     * const youtube = await prisma.youtube.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends VideoCreateManyArgs>(args?: SelectSubset<T, VideoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends YoutubeCreateManyArgs>(args?: SelectSubset<T, YoutubeCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many Videos and returns the data saved in the database.
-     * @param {VideoCreateManyAndReturnArgs} args - Arguments to create many Videos.
+     * Create many Youtubes and returns the data saved in the database.
+     * @param {YoutubeCreateManyAndReturnArgs} args - Arguments to create many Youtubes.
      * @example
-     * // Create many Videos
-     * const video = await prisma.video.createManyAndReturn({
+     * // Create many Youtubes
+     * const youtube = await prisma.youtube.createManyAndReturn({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      * 
-     * // Create many Videos and only return the `id`
-     * const videoWithIdOnly = await prisma.video.createManyAndReturn({
+     * // Create many Youtubes and only return the `id`
+     * const youtubeWithIdOnly = await prisma.youtube.createManyAndReturn({
      *   select: { id: true },
      *   data: [
      *     // ... provide data here
@@ -16179,28 +16179,28 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    createManyAndReturn<T extends VideoCreateManyAndReturnArgs>(args?: SelectSubset<T, VideoCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VideoPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+    createManyAndReturn<T extends YoutubeCreateManyAndReturnArgs>(args?: SelectSubset<T, YoutubeCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$YoutubePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Delete a Video.
-     * @param {VideoDeleteArgs} args - Arguments to delete one Video.
+     * Delete a Youtube.
+     * @param {YoutubeDeleteArgs} args - Arguments to delete one Youtube.
      * @example
-     * // Delete one Video
-     * const Video = await prisma.video.delete({
+     * // Delete one Youtube
+     * const Youtube = await prisma.youtube.delete({
      *   where: {
-     *     // ... filter to delete one Video
+     *     // ... filter to delete one Youtube
      *   }
      * })
      * 
      */
-    delete<T extends VideoDeleteArgs>(args: SelectSubset<T, VideoDeleteArgs<ExtArgs>>): Prisma__VideoClient<$Result.GetResult<Prisma.$VideoPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends YoutubeDeleteArgs>(args: SelectSubset<T, YoutubeDeleteArgs<ExtArgs>>): Prisma__YoutubeClient<$Result.GetResult<Prisma.$YoutubePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one Video.
-     * @param {VideoUpdateArgs} args - Arguments to update one Video.
+     * Update one Youtube.
+     * @param {YoutubeUpdateArgs} args - Arguments to update one Youtube.
      * @example
-     * // Update one Video
-     * const video = await prisma.video.update({
+     * // Update one Youtube
+     * const youtube = await prisma.youtube.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -16210,30 +16210,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends VideoUpdateArgs>(args: SelectSubset<T, VideoUpdateArgs<ExtArgs>>): Prisma__VideoClient<$Result.GetResult<Prisma.$VideoPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends YoutubeUpdateArgs>(args: SelectSubset<T, YoutubeUpdateArgs<ExtArgs>>): Prisma__YoutubeClient<$Result.GetResult<Prisma.$YoutubePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more Videos.
-     * @param {VideoDeleteManyArgs} args - Arguments to filter Videos to delete.
+     * Delete zero or more Youtubes.
+     * @param {YoutubeDeleteManyArgs} args - Arguments to filter Youtubes to delete.
      * @example
-     * // Delete a few Videos
-     * const { count } = await prisma.video.deleteMany({
+     * // Delete a few Youtubes
+     * const { count } = await prisma.youtube.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends VideoDeleteManyArgs>(args?: SelectSubset<T, VideoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends YoutubeDeleteManyArgs>(args?: SelectSubset<T, YoutubeDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Videos.
+     * Update zero or more Youtubes.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {VideoUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {YoutubeUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many Videos
-     * const video = await prisma.video.updateMany({
+     * // Update many Youtubes
+     * const youtube = await prisma.youtube.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -16243,14 +16243,14 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends VideoUpdateManyArgs>(args: SelectSubset<T, VideoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends YoutubeUpdateManyArgs>(args: SelectSubset<T, YoutubeUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Videos and returns the data updated in the database.
-     * @param {VideoUpdateManyAndReturnArgs} args - Arguments to update many Videos.
+     * Update zero or more Youtubes and returns the data updated in the database.
+     * @param {YoutubeUpdateManyAndReturnArgs} args - Arguments to update many Youtubes.
      * @example
-     * // Update many Videos
-     * const video = await prisma.video.updateManyAndReturn({
+     * // Update many Youtubes
+     * const youtube = await prisma.youtube.updateManyAndReturn({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -16259,8 +16259,8 @@ export namespace Prisma {
      *   ]
      * })
      * 
-     * // Update zero or more Videos and only return the `id`
-     * const videoWithIdOnly = await prisma.video.updateManyAndReturn({
+     * // Update zero or more Youtubes and only return the `id`
+     * const youtubeWithIdOnly = await prisma.youtube.updateManyAndReturn({
      *   select: { id: true },
      *   where: {
      *     // ... provide filter here
@@ -16273,56 +16273,56 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    updateManyAndReturn<T extends VideoUpdateManyAndReturnArgs>(args: SelectSubset<T, VideoUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VideoPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+    updateManyAndReturn<T extends YoutubeUpdateManyAndReturnArgs>(args: SelectSubset<T, YoutubeUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$YoutubePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Create or update one Video.
-     * @param {VideoUpsertArgs} args - Arguments to update or create a Video.
+     * Create or update one Youtube.
+     * @param {YoutubeUpsertArgs} args - Arguments to update or create a Youtube.
      * @example
-     * // Update or create a Video
-     * const video = await prisma.video.upsert({
+     * // Update or create a Youtube
+     * const youtube = await prisma.youtube.upsert({
      *   create: {
-     *     // ... data to create a Video
+     *     // ... data to create a Youtube
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the Video we want to update
+     *     // ... the filter for the Youtube we want to update
      *   }
      * })
      */
-    upsert<T extends VideoUpsertArgs>(args: SelectSubset<T, VideoUpsertArgs<ExtArgs>>): Prisma__VideoClient<$Result.GetResult<Prisma.$VideoPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends YoutubeUpsertArgs>(args: SelectSubset<T, YoutubeUpsertArgs<ExtArgs>>): Prisma__YoutubeClient<$Result.GetResult<Prisma.$YoutubePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
 
     /**
-     * Count the number of Videos.
+     * Count the number of Youtubes.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {VideoCountArgs} args - Arguments to filter Videos to count.
+     * @param {YoutubeCountArgs} args - Arguments to filter Youtubes to count.
      * @example
-     * // Count the number of Videos
-     * const count = await prisma.video.count({
+     * // Count the number of Youtubes
+     * const count = await prisma.youtube.count({
      *   where: {
-     *     // ... the filter for the Videos we want to count
+     *     // ... the filter for the Youtubes we want to count
      *   }
      * })
     **/
-    count<T extends VideoCountArgs>(
-      args?: Subset<T, VideoCountArgs>,
+    count<T extends YoutubeCountArgs>(
+      args?: Subset<T, YoutubeCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], VideoCountAggregateOutputType>
+          : GetScalarType<T['select'], YoutubeCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a Video.
+     * Allows you to perform aggregations operations on a Youtube.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {VideoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {YoutubeAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -16342,13 +16342,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends VideoAggregateArgs>(args: Subset<T, VideoAggregateArgs>): Prisma.PrismaPromise<GetVideoAggregateType<T>>
+    aggregate<T extends YoutubeAggregateArgs>(args: Subset<T, YoutubeAggregateArgs>): Prisma.PrismaPromise<GetYoutubeAggregateType<T>>
 
     /**
-     * Group by Video.
+     * Group by Youtube.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {VideoGroupByArgs} args - Group by arguments.
+     * @param {YoutubeGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -16363,14 +16363,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends VideoGroupByArgs,
+      T extends YoutubeGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: VideoGroupByArgs['orderBy'] }
-        : { orderBy?: VideoGroupByArgs['orderBy'] },
+        ? { orderBy: YoutubeGroupByArgs['orderBy'] }
+        : { orderBy?: YoutubeGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -16419,20 +16419,20 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, VideoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetVideoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, YoutubeGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetYoutubeGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the Video model
+   * Fields of the Youtube model
    */
-  readonly fields: VideoFieldRefs;
+  readonly fields: YoutubeFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for Video.
+   * The delegate class that acts as a "Promise-like" for Youtube.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__VideoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__YoutubeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -16460,381 +16460,381 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the Video model
+   * Fields of the Youtube model
    */
-  interface VideoFieldRefs {
-    readonly id: FieldRef<"Video", 'String'>
-    readonly title: FieldRef<"Video", 'String'>
-    readonly description: FieldRef<"Video", 'String'>
-    readonly thumbnail: FieldRef<"Video", 'String'>
-    readonly publishedAt: FieldRef<"Video", 'DateTime'>
-    readonly viewCount: FieldRef<"Video", 'Int'>
-    readonly likeCount: FieldRef<"Video", 'Int'>
-    readonly duration: FieldRef<"Video", 'String'>
-    readonly fetchedAt: FieldRef<"Video", 'DateTime'>
+  interface YoutubeFieldRefs {
+    readonly id: FieldRef<"Youtube", 'String'>
+    readonly title: FieldRef<"Youtube", 'String'>
+    readonly description: FieldRef<"Youtube", 'String'>
+    readonly thumbnail: FieldRef<"Youtube", 'String'>
+    readonly publishedAt: FieldRef<"Youtube", 'DateTime'>
+    readonly viewCount: FieldRef<"Youtube", 'Int'>
+    readonly likeCount: FieldRef<"Youtube", 'Int'>
+    readonly duration: FieldRef<"Youtube", 'String'>
+    readonly fetchedAt: FieldRef<"Youtube", 'DateTime'>
   }
     
 
   // Custom InputTypes
   /**
-   * Video findUnique
+   * Youtube findUnique
    */
-  export type VideoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Video
+     * Select specific fields to fetch from the Youtube
      */
-    select?: VideoSelect<ExtArgs> | null
+    select?: YoutubeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Video
+     * Omit specific fields from the Youtube
      */
-    omit?: VideoOmit<ExtArgs> | null
+    omit?: YoutubeOmit<ExtArgs> | null
     /**
-     * Filter, which Video to fetch.
+     * Filter, which Youtube to fetch.
      */
-    where: VideoWhereUniqueInput
+    where: YoutubeWhereUniqueInput
   }
 
   /**
-   * Video findUniqueOrThrow
+   * Youtube findUniqueOrThrow
    */
-  export type VideoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Video
+     * Select specific fields to fetch from the Youtube
      */
-    select?: VideoSelect<ExtArgs> | null
+    select?: YoutubeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Video
+     * Omit specific fields from the Youtube
      */
-    omit?: VideoOmit<ExtArgs> | null
+    omit?: YoutubeOmit<ExtArgs> | null
     /**
-     * Filter, which Video to fetch.
+     * Filter, which Youtube to fetch.
      */
-    where: VideoWhereUniqueInput
+    where: YoutubeWhereUniqueInput
   }
 
   /**
-   * Video findFirst
+   * Youtube findFirst
    */
-  export type VideoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Video
+     * Select specific fields to fetch from the Youtube
      */
-    select?: VideoSelect<ExtArgs> | null
+    select?: YoutubeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Video
+     * Omit specific fields from the Youtube
      */
-    omit?: VideoOmit<ExtArgs> | null
+    omit?: YoutubeOmit<ExtArgs> | null
     /**
-     * Filter, which Video to fetch.
+     * Filter, which Youtube to fetch.
      */
-    where?: VideoWhereInput
+    where?: YoutubeWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Videos to fetch.
+     * Determine the order of Youtubes to fetch.
      */
-    orderBy?: VideoOrderByWithRelationInput | VideoOrderByWithRelationInput[]
+    orderBy?: YoutubeOrderByWithRelationInput | YoutubeOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for Videos.
+     * Sets the position for searching for Youtubes.
      */
-    cursor?: VideoWhereUniqueInput
+    cursor?: YoutubeWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Videos from the position of the cursor.
+     * Take `±n` Youtubes from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Videos.
+     * Skip the first `n` Youtubes.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of Videos.
+     * Filter by unique combinations of Youtubes.
      */
-    distinct?: VideoScalarFieldEnum | VideoScalarFieldEnum[]
+    distinct?: YoutubeScalarFieldEnum | YoutubeScalarFieldEnum[]
   }
 
   /**
-   * Video findFirstOrThrow
+   * Youtube findFirstOrThrow
    */
-  export type VideoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Video
+     * Select specific fields to fetch from the Youtube
      */
-    select?: VideoSelect<ExtArgs> | null
+    select?: YoutubeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Video
+     * Omit specific fields from the Youtube
      */
-    omit?: VideoOmit<ExtArgs> | null
+    omit?: YoutubeOmit<ExtArgs> | null
     /**
-     * Filter, which Video to fetch.
+     * Filter, which Youtube to fetch.
      */
-    where?: VideoWhereInput
+    where?: YoutubeWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Videos to fetch.
+     * Determine the order of Youtubes to fetch.
      */
-    orderBy?: VideoOrderByWithRelationInput | VideoOrderByWithRelationInput[]
+    orderBy?: YoutubeOrderByWithRelationInput | YoutubeOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for Videos.
+     * Sets the position for searching for Youtubes.
      */
-    cursor?: VideoWhereUniqueInput
+    cursor?: YoutubeWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Videos from the position of the cursor.
+     * Take `±n` Youtubes from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Videos.
+     * Skip the first `n` Youtubes.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of Videos.
+     * Filter by unique combinations of Youtubes.
      */
-    distinct?: VideoScalarFieldEnum | VideoScalarFieldEnum[]
+    distinct?: YoutubeScalarFieldEnum | YoutubeScalarFieldEnum[]
   }
 
   /**
-   * Video findMany
+   * Youtube findMany
    */
-  export type VideoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Video
+     * Select specific fields to fetch from the Youtube
      */
-    select?: VideoSelect<ExtArgs> | null
+    select?: YoutubeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Video
+     * Omit specific fields from the Youtube
      */
-    omit?: VideoOmit<ExtArgs> | null
+    omit?: YoutubeOmit<ExtArgs> | null
     /**
-     * Filter, which Videos to fetch.
+     * Filter, which Youtubes to fetch.
      */
-    where?: VideoWhereInput
+    where?: YoutubeWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of Videos to fetch.
+     * Determine the order of Youtubes to fetch.
      */
-    orderBy?: VideoOrderByWithRelationInput | VideoOrderByWithRelationInput[]
+    orderBy?: YoutubeOrderByWithRelationInput | YoutubeOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing Videos.
+     * Sets the position for listing Youtubes.
      */
-    cursor?: VideoWhereUniqueInput
+    cursor?: YoutubeWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` Videos from the position of the cursor.
+     * Take `±n` Youtubes from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` Videos.
+     * Skip the first `n` Youtubes.
      */
     skip?: number
-    distinct?: VideoScalarFieldEnum | VideoScalarFieldEnum[]
+    distinct?: YoutubeScalarFieldEnum | YoutubeScalarFieldEnum[]
   }
 
   /**
-   * Video create
+   * Youtube create
    */
-  export type VideoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Video
+     * Select specific fields to fetch from the Youtube
      */
-    select?: VideoSelect<ExtArgs> | null
+    select?: YoutubeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Video
+     * Omit specific fields from the Youtube
      */
-    omit?: VideoOmit<ExtArgs> | null
+    omit?: YoutubeOmit<ExtArgs> | null
     /**
-     * The data needed to create a Video.
+     * The data needed to create a Youtube.
      */
-    data: XOR<VideoCreateInput, VideoUncheckedCreateInput>
+    data: XOR<YoutubeCreateInput, YoutubeUncheckedCreateInput>
   }
 
   /**
-   * Video createMany
+   * Youtube createMany
    */
-  export type VideoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many Videos.
+     * The data used to create many Youtubes.
      */
-    data: VideoCreateManyInput | VideoCreateManyInput[]
+    data: YoutubeCreateManyInput | YoutubeCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * Video createManyAndReturn
+   * Youtube createManyAndReturn
    */
-  export type VideoCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Video
+     * Select specific fields to fetch from the Youtube
      */
-    select?: VideoSelectCreateManyAndReturn<ExtArgs> | null
+    select?: YoutubeSelectCreateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the Video
+     * Omit specific fields from the Youtube
      */
-    omit?: VideoOmit<ExtArgs> | null
+    omit?: YoutubeOmit<ExtArgs> | null
     /**
-     * The data used to create many Videos.
+     * The data used to create many Youtubes.
      */
-    data: VideoCreateManyInput | VideoCreateManyInput[]
+    data: YoutubeCreateManyInput | YoutubeCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * Video update
+   * Youtube update
    */
-  export type VideoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Video
+     * Select specific fields to fetch from the Youtube
      */
-    select?: VideoSelect<ExtArgs> | null
+    select?: YoutubeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Video
+     * Omit specific fields from the Youtube
      */
-    omit?: VideoOmit<ExtArgs> | null
+    omit?: YoutubeOmit<ExtArgs> | null
     /**
-     * The data needed to update a Video.
+     * The data needed to update a Youtube.
      */
-    data: XOR<VideoUpdateInput, VideoUncheckedUpdateInput>
+    data: XOR<YoutubeUpdateInput, YoutubeUncheckedUpdateInput>
     /**
-     * Choose, which Video to update.
+     * Choose, which Youtube to update.
      */
-    where: VideoWhereUniqueInput
+    where: YoutubeWhereUniqueInput
   }
 
   /**
-   * Video updateMany
+   * Youtube updateMany
    */
-  export type VideoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update Videos.
+     * The data used to update Youtubes.
      */
-    data: XOR<VideoUpdateManyMutationInput, VideoUncheckedUpdateManyInput>
+    data: XOR<YoutubeUpdateManyMutationInput, YoutubeUncheckedUpdateManyInput>
     /**
-     * Filter which Videos to update
+     * Filter which Youtubes to update
      */
-    where?: VideoWhereInput
+    where?: YoutubeWhereInput
     /**
-     * Limit how many Videos to update.
+     * Limit how many Youtubes to update.
      */
     limit?: number
   }
 
   /**
-   * Video updateManyAndReturn
+   * Youtube updateManyAndReturn
    */
-  export type VideoUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Video
+     * Select specific fields to fetch from the Youtube
      */
-    select?: VideoSelectUpdateManyAndReturn<ExtArgs> | null
+    select?: YoutubeSelectUpdateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the Video
+     * Omit specific fields from the Youtube
      */
-    omit?: VideoOmit<ExtArgs> | null
+    omit?: YoutubeOmit<ExtArgs> | null
     /**
-     * The data used to update Videos.
+     * The data used to update Youtubes.
      */
-    data: XOR<VideoUpdateManyMutationInput, VideoUncheckedUpdateManyInput>
+    data: XOR<YoutubeUpdateManyMutationInput, YoutubeUncheckedUpdateManyInput>
     /**
-     * Filter which Videos to update
+     * Filter which Youtubes to update
      */
-    where?: VideoWhereInput
+    where?: YoutubeWhereInput
     /**
-     * Limit how many Videos to update.
+     * Limit how many Youtubes to update.
      */
     limit?: number
   }
 
   /**
-   * Video upsert
+   * Youtube upsert
    */
-  export type VideoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Video
+     * Select specific fields to fetch from the Youtube
      */
-    select?: VideoSelect<ExtArgs> | null
+    select?: YoutubeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Video
+     * Omit specific fields from the Youtube
      */
-    omit?: VideoOmit<ExtArgs> | null
+    omit?: YoutubeOmit<ExtArgs> | null
     /**
-     * The filter to search for the Video to update in case it exists.
+     * The filter to search for the Youtube to update in case it exists.
      */
-    where: VideoWhereUniqueInput
+    where: YoutubeWhereUniqueInput
     /**
-     * In case the Video found by the `where` argument doesn't exist, create a new Video with this data.
+     * In case the Youtube found by the `where` argument doesn't exist, create a new Youtube with this data.
      */
-    create: XOR<VideoCreateInput, VideoUncheckedCreateInput>
+    create: XOR<YoutubeCreateInput, YoutubeUncheckedCreateInput>
     /**
-     * In case the Video was found with the provided `where` argument, update it with this data.
+     * In case the Youtube was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<VideoUpdateInput, VideoUncheckedUpdateInput>
+    update: XOR<YoutubeUpdateInput, YoutubeUncheckedUpdateInput>
   }
 
   /**
-   * Video delete
+   * Youtube delete
    */
-  export type VideoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Video
+     * Select specific fields to fetch from the Youtube
      */
-    select?: VideoSelect<ExtArgs> | null
+    select?: YoutubeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Video
+     * Omit specific fields from the Youtube
      */
-    omit?: VideoOmit<ExtArgs> | null
+    omit?: YoutubeOmit<ExtArgs> | null
     /**
-     * Filter which Video to delete.
+     * Filter which Youtube to delete.
      */
-    where: VideoWhereUniqueInput
+    where: YoutubeWhereUniqueInput
   }
 
   /**
-   * Video deleteMany
+   * Youtube deleteMany
    */
-  export type VideoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which Videos to delete
+     * Filter which Youtubes to delete
      */
-    where?: VideoWhereInput
+    where?: YoutubeWhereInput
     /**
-     * Limit how many Videos to delete.
+     * Limit how many Youtubes to delete.
      */
     limit?: number
   }
 
   /**
-   * Video without action
+   * Youtube without action
    */
-  export type VideoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type YoutubeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Video
+     * Select specific fields to fetch from the Youtube
      */
-    select?: VideoSelect<ExtArgs> | null
+    select?: YoutubeSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Video
+     * Omit specific fields from the Youtube
      */
-    omit?: VideoOmit<ExtArgs> | null
+    omit?: YoutubeOmit<ExtArgs> | null
   }
 
 
@@ -26062,7 +26062,7 @@ export namespace Prisma {
   export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
 
 
-  export const VideoScalarFieldEnum: {
+  export const YoutubeScalarFieldEnum: {
     id: 'id',
     title: 'title',
     description: 'description',
@@ -26074,7 +26074,7 @@ export namespace Prisma {
     fetchedAt: 'fetchedAt'
   };
 
-  export type VideoScalarFieldEnum = (typeof VideoScalarFieldEnum)[keyof typeof VideoScalarFieldEnum]
+  export type YoutubeScalarFieldEnum = (typeof YoutubeScalarFieldEnum)[keyof typeof YoutubeScalarFieldEnum]
 
 
   export const YouTubeCacheMetaScalarFieldEnum: {
@@ -27470,22 +27470,22 @@ export namespace Prisma {
     reportId?: IntNullableWithAggregatesFilter<"Event"> | number | null
   }
 
-  export type VideoWhereInput = {
-    AND?: VideoWhereInput | VideoWhereInput[]
-    OR?: VideoWhereInput[]
-    NOT?: VideoWhereInput | VideoWhereInput[]
-    id?: StringFilter<"Video"> | string
-    title?: StringFilter<"Video"> | string
-    description?: StringFilter<"Video"> | string
-    thumbnail?: StringFilter<"Video"> | string
-    publishedAt?: DateTimeFilter<"Video"> | Date | string
-    viewCount?: IntNullableFilter<"Video"> | number | null
-    likeCount?: IntNullableFilter<"Video"> | number | null
-    duration?: StringFilter<"Video"> | string
-    fetchedAt?: DateTimeFilter<"Video"> | Date | string
+  export type YoutubeWhereInput = {
+    AND?: YoutubeWhereInput | YoutubeWhereInput[]
+    OR?: YoutubeWhereInput[]
+    NOT?: YoutubeWhereInput | YoutubeWhereInput[]
+    id?: StringFilter<"Youtube"> | string
+    title?: StringFilter<"Youtube"> | string
+    description?: StringFilter<"Youtube"> | string
+    thumbnail?: StringFilter<"Youtube"> | string
+    publishedAt?: DateTimeFilter<"Youtube"> | Date | string
+    viewCount?: IntNullableFilter<"Youtube"> | number | null
+    likeCount?: IntNullableFilter<"Youtube"> | number | null
+    duration?: StringFilter<"Youtube"> | string
+    fetchedAt?: DateTimeFilter<"Youtube"> | Date | string
   }
 
-  export type VideoOrderByWithRelationInput = {
+  export type YoutubeOrderByWithRelationInput = {
     id?: SortOrder
     title?: SortOrder
     description?: SortOrder
@@ -27497,22 +27497,22 @@ export namespace Prisma {
     fetchedAt?: SortOrder
   }
 
-  export type VideoWhereUniqueInput = Prisma.AtLeast<{
+  export type YoutubeWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    AND?: VideoWhereInput | VideoWhereInput[]
-    OR?: VideoWhereInput[]
-    NOT?: VideoWhereInput | VideoWhereInput[]
-    title?: StringFilter<"Video"> | string
-    description?: StringFilter<"Video"> | string
-    thumbnail?: StringFilter<"Video"> | string
-    publishedAt?: DateTimeFilter<"Video"> | Date | string
-    viewCount?: IntNullableFilter<"Video"> | number | null
-    likeCount?: IntNullableFilter<"Video"> | number | null
-    duration?: StringFilter<"Video"> | string
-    fetchedAt?: DateTimeFilter<"Video"> | Date | string
+    AND?: YoutubeWhereInput | YoutubeWhereInput[]
+    OR?: YoutubeWhereInput[]
+    NOT?: YoutubeWhereInput | YoutubeWhereInput[]
+    title?: StringFilter<"Youtube"> | string
+    description?: StringFilter<"Youtube"> | string
+    thumbnail?: StringFilter<"Youtube"> | string
+    publishedAt?: DateTimeFilter<"Youtube"> | Date | string
+    viewCount?: IntNullableFilter<"Youtube"> | number | null
+    likeCount?: IntNullableFilter<"Youtube"> | number | null
+    duration?: StringFilter<"Youtube"> | string
+    fetchedAt?: DateTimeFilter<"Youtube"> | Date | string
   }, "id">
 
-  export type VideoOrderByWithAggregationInput = {
+  export type YoutubeOrderByWithAggregationInput = {
     id?: SortOrder
     title?: SortOrder
     description?: SortOrder
@@ -27522,26 +27522,26 @@ export namespace Prisma {
     likeCount?: SortOrderInput | SortOrder
     duration?: SortOrder
     fetchedAt?: SortOrder
-    _count?: VideoCountOrderByAggregateInput
-    _avg?: VideoAvgOrderByAggregateInput
-    _max?: VideoMaxOrderByAggregateInput
-    _min?: VideoMinOrderByAggregateInput
-    _sum?: VideoSumOrderByAggregateInput
+    _count?: YoutubeCountOrderByAggregateInput
+    _avg?: YoutubeAvgOrderByAggregateInput
+    _max?: YoutubeMaxOrderByAggregateInput
+    _min?: YoutubeMinOrderByAggregateInput
+    _sum?: YoutubeSumOrderByAggregateInput
   }
 
-  export type VideoScalarWhereWithAggregatesInput = {
-    AND?: VideoScalarWhereWithAggregatesInput | VideoScalarWhereWithAggregatesInput[]
-    OR?: VideoScalarWhereWithAggregatesInput[]
-    NOT?: VideoScalarWhereWithAggregatesInput | VideoScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"Video"> | string
-    title?: StringWithAggregatesFilter<"Video"> | string
-    description?: StringWithAggregatesFilter<"Video"> | string
-    thumbnail?: StringWithAggregatesFilter<"Video"> | string
-    publishedAt?: DateTimeWithAggregatesFilter<"Video"> | Date | string
-    viewCount?: IntNullableWithAggregatesFilter<"Video"> | number | null
-    likeCount?: IntNullableWithAggregatesFilter<"Video"> | number | null
-    duration?: StringWithAggregatesFilter<"Video"> | string
-    fetchedAt?: DateTimeWithAggregatesFilter<"Video"> | Date | string
+  export type YoutubeScalarWhereWithAggregatesInput = {
+    AND?: YoutubeScalarWhereWithAggregatesInput | YoutubeScalarWhereWithAggregatesInput[]
+    OR?: YoutubeScalarWhereWithAggregatesInput[]
+    NOT?: YoutubeScalarWhereWithAggregatesInput | YoutubeScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Youtube"> | string
+    title?: StringWithAggregatesFilter<"Youtube"> | string
+    description?: StringWithAggregatesFilter<"Youtube"> | string
+    thumbnail?: StringWithAggregatesFilter<"Youtube"> | string
+    publishedAt?: DateTimeWithAggregatesFilter<"Youtube"> | Date | string
+    viewCount?: IntNullableWithAggregatesFilter<"Youtube"> | number | null
+    likeCount?: IntNullableWithAggregatesFilter<"Youtube"> | number | null
+    duration?: StringWithAggregatesFilter<"Youtube"> | string
+    fetchedAt?: DateTimeWithAggregatesFilter<"Youtube"> | Date | string
   }
 
   export type YouTubeCacheMetaWhereInput = {
@@ -29224,7 +29224,7 @@ export namespace Prisma {
     reportId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
-  export type VideoCreateInput = {
+  export type YoutubeCreateInput = {
     id: string
     title: string
     description: string
@@ -29236,7 +29236,7 @@ export namespace Prisma {
     fetchedAt?: Date | string
   }
 
-  export type VideoUncheckedCreateInput = {
+  export type YoutubeUncheckedCreateInput = {
     id: string
     title: string
     description: string
@@ -29248,7 +29248,7 @@ export namespace Prisma {
     fetchedAt?: Date | string
   }
 
-  export type VideoUpdateInput = {
+  export type YoutubeUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
@@ -29260,7 +29260,7 @@ export namespace Prisma {
     fetchedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type VideoUncheckedUpdateInput = {
+  export type YoutubeUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
@@ -29272,7 +29272,7 @@ export namespace Prisma {
     fetchedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type VideoCreateManyInput = {
+  export type YoutubeCreateManyInput = {
     id: string
     title: string
     description: string
@@ -29284,7 +29284,7 @@ export namespace Prisma {
     fetchedAt?: Date | string
   }
 
-  export type VideoUpdateManyMutationInput = {
+  export type YoutubeUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
@@ -29296,7 +29296,7 @@ export namespace Prisma {
     fetchedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type VideoUncheckedUpdateManyInput = {
+  export type YoutubeUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
@@ -30945,7 +30945,7 @@ export namespace Prisma {
     _max?: NestedEnumAttendanceTypeFilter<$PrismaModel>
   }
 
-  export type VideoCountOrderByAggregateInput = {
+  export type YoutubeCountOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
     description?: SortOrder
@@ -30957,12 +30957,12 @@ export namespace Prisma {
     fetchedAt?: SortOrder
   }
 
-  export type VideoAvgOrderByAggregateInput = {
+  export type YoutubeAvgOrderByAggregateInput = {
     viewCount?: SortOrder
     likeCount?: SortOrder
   }
 
-  export type VideoMaxOrderByAggregateInput = {
+  export type YoutubeMaxOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
     description?: SortOrder
@@ -30974,7 +30974,7 @@ export namespace Prisma {
     fetchedAt?: SortOrder
   }
 
-  export type VideoMinOrderByAggregateInput = {
+  export type YoutubeMinOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
     description?: SortOrder
@@ -30986,7 +30986,7 @@ export namespace Prisma {
     fetchedAt?: SortOrder
   }
 
-  export type VideoSumOrderByAggregateInput = {
+  export type YoutubeSumOrderByAggregateInput = {
     viewCount?: SortOrder
     likeCount?: SortOrder
   }
