@@ -7,19 +7,22 @@ import AdminMenu from './adminMenu';
 import { useSession } from 'next-auth/react';
 
 /**
- * AdminHeader
+ * AdminHeader (fixed)
  *
- * - Logo on the left (explicit size so Next/Image renders reliably)
- * - Center-right: "Welcome to the Admin Dashboard" (hidden on very small screens)
- * - Far right: AdminMenu (avatar, name, welcome/back message, active time, logout)
- * - Preserves brand color bg-[#9f004d]
+ * - Fixed to the top of the viewport, height h-14 (56px)
+ * - Adds z-index so it sits above page content
+ * - Keep same visual structure as before
  */
 
 const AdminHeader = () => {
   const { data: session, status } = useSession();
 
   return (
-    <header className="w-full bg-[#9f004d] text-white h-14 flex items-center">
+    <header
+      className="fixed top-0 left-0 right-0 z-50 bg-[#9f004d] text-white h-14 flex items-center"
+      role="banner"
+      aria-label="Admin header"
+    >
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-3">

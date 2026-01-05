@@ -19,7 +19,11 @@ export default function SiteSettings() {
     mission?: string;
     focus?: string;
     coreValues?: string;
+    about?: string | null;
+    logo?: string | null;
+    banner?: string | null;
   } | null>(null);
+
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -55,6 +59,9 @@ export default function SiteSettings() {
           mission: json?.mission ?? '',
           focus: json?.focus ?? '',
           coreValues: json?.coreValues ?? '',
+          about: json?.about ?? '',
+          logo: json?.logo ?? null,
+          banner: json?.banner ?? null,
         });
       }
     } catch (err: any) {
@@ -80,21 +87,31 @@ export default function SiteSettings() {
     setUploadProgress(null);
   }
 
-  async function uploadHeroVideoFile(file: File) {
+  // upload generic file (video/image) to server endpoint.
+  // Accepts any file and expects the server to return JSON with a url property OR a path string starting with '/'
+  async function uploadFile(file: File, acceptTypes: string[], maxSizeBytes: number) {
     setUploadError(null);
-    const maxSizeBytes = 50 * 1024 * 1024;
-    if (file.size > maxSizeBytes) throw new Error('File is too large. Max 50MB allowed.');
+    if (!file) throw new Error('No file provided');
+    if (file.size > maxSizeBytes)
+      throw new Error(
+        `File is too large. Max ${Math.round(maxSizeBytes / 1024 / 1024)}MB allowed.`
+      );
     const ext = file.name?.split('.').pop()?.toLowerCase() ?? '';
-    if (!['mov', 'mp4', 'gif'].includes(ext))
-      throw new Error('Unsupported file extension. Allowed: .mov, .mp4, .gif');
-    if (!file.type.startsWith('video/') && ext !== 'gif')
-      throw new Error('Unsupported file type. Please select a video or gif file.');
+    const mime = file.type || '';
+    // if acceptTypes provided as extensions or mime prefixes, validate
+    const ok = acceptTypes.some((t) =>
+      t.startsWith('.') ? t.slice(1) === ext : mime.startsWith(t)
+    );
+    if (!ok) {
+      throw new Error(`Unsupported file type. Allowed types: ${acceptTypes.join(', ')}`);
+    }
+
     setUploading(true);
     setUploadProgress(0);
 
     return await new Promise<string>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', ENDPOINT_BASE, true);
+      xhr.open('POST', ENDPOINT_BASE + '/upload', true); // server should accept uploads at /api/homepage/upload
       xhr.withCredentials = true;
       xhr.timeout = 120000;
       xhr.upload.onprogress = (ev) => {
@@ -113,7 +130,6 @@ export default function SiteSettings() {
         }
         if (status >= 200 && status < 300) {
           if (json?.url) return resolve(json.url);
-          if (json?.heroVideo) return resolve(json.heroVideo);
           if (typeof respText === 'string' && respText.startsWith('/')) return resolve(respText);
           return reject(new Error('Upload succeeded but server did not return a usable url.'));
         } else {
@@ -134,9 +150,20 @@ export default function SiteSettings() {
       };
       const form = new FormData();
       form.append('file', file, file.name);
-      form.append('ownerId', String('')); // ownerId not required for site settings upload
+      // optionally indicate target folder on server: for logos store under /assets/images/logo
+      // server can respect `targetPath` form field (implement server-side)
       xhr.send(form);
     });
+  }
+
+  async function uploadHeroVideoFile(file: File) {
+    // video allowed
+    return await uploadFile(file, ['video/', '.gif'], 50 * 1024 * 1024);
+  }
+
+  async function uploadImageFile(file: File) {
+    // images only
+    return await uploadFile(file, ['image/'], 5 * 1024 * 1024);
   }
 
   async function handleHeroFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -144,8 +171,42 @@ export default function SiteSettings() {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const videoUrl = await uploadHeroVideoFile(file);
-      setHomeData((d) => ({ ...(d ?? {}), heroVideo: videoUrl }));
+      const url = await uploadHeroVideoFile(file);
+      setHomeData((d) => ({ ...(d ?? {}), heroVideo: url }));
+      setUploadError(null);
+    } catch (err: any) {
+      setUploadError(err?.message || 'Upload failed');
+    } finally {
+      try {
+        (e.target as HTMLInputElement).value = '';
+      } catch {}
+    }
+  }
+
+  async function handleBannerFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setUploadError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const url = await uploadImageFile(file);
+      setHomeData((d) => ({ ...(d ?? {}), banner: url }));
+      setUploadError(null);
+    } catch (err: any) {
+      setUploadError(err?.message || 'Upload failed');
+    } finally {
+      try {
+        (e.target as HTMLInputElement).value = '';
+      } catch {}
+    }
+  }
+
+  async function handleLogoFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setUploadError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const url = await uploadImageFile(file);
+      setHomeData((d) => ({ ...(d ?? {}), logo: url }));
       setUploadError(null);
     } catch (err: any) {
       setUploadError(err?.message || 'Upload failed');
@@ -166,15 +227,14 @@ export default function SiteSettings() {
       mission: homeData?.mission ?? '',
       focus: homeData?.focus ?? '',
       coreValues: homeData?.coreValues ?? '',
+      about: homeData?.about ?? '',
+      logo: homeData?.logo ?? null,
+      banner: homeData?.banner ?? null,
     };
-    if (
-      !dataToSend.heroVideo.trim() ||
-      !dataToSend.vision.trim() ||
-      !dataToSend.mission.trim() ||
-      !dataToSend.focus.trim() ||
-      !dataToSend.coreValues.trim()
-    ) {
-      setHomeError('All fields are required');
+
+    // basic validation (you can relax as needed)
+    if (!dataToSend.heroVideo?.trim()) {
+      setHomeError('Hero video is required');
       return;
     }
 
@@ -211,6 +271,9 @@ export default function SiteSettings() {
         mission: body?.mission ?? dataToSend.mission,
         focus: body?.focus ?? dataToSend.focus,
         coreValues: body?.coreValues ?? dataToSend.coreValues,
+        about: body?.about ?? dataToSend.about,
+        logo: body?.logo ?? dataToSend.logo,
+        banner: body?.banner ?? dataToSend.banner,
       });
       setHomeSuccess('Homepage content saved');
       setTimeout(() => {
@@ -313,63 +376,121 @@ export default function SiteSettings() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6">
-      <section className="p-6 bg-background rounded-xl shadow transition-shadow duration-200 hover:shadow-lg">
-        <div className="flex items-center gap-3 mb-3">
-          <h2 className="font-semibold text-xl m-0">Home Page Content</h2>
+    <div className="w-full space-y-6">
+      {/* Top action buttons */}
+      <div className="flex gap-2 justify-end">
+        <Button onClick={openHomeModal} disabled={homeLoading || homeSaving}>
+          Edit Home Page Content
+        </Button>
+        <Button onClick={fetchHomeContent} variant="outline" disabled={homeLoading || homeSaving}>
+          Refresh
+        </Button>
+      </div>
+
+      <section className="space-y-4">
+        {/* Hero video - full width card */}
+        <div className="bg-background rounded-xl shadow p-0 overflow-hidden">
+          <div className="p-4 border-b">
+            <h3 className="font-semibold">Hero video</h3>
+          </div>
+          <div className="w-full">
+            {homeLoading ? (
+              <div className="p-6 text-muted-foreground">Loading hero…</div>
+            ) : homeData?.heroVideo ? (
+              <div className="w-full">
+                <video controls className="w-full max-h-[56vh] bg-black">
+                  <source src={homeData.heroVideo} />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            ) : (
+              <div className="p-6 text-muted-foreground">No hero video set.</div>
+            )}
+            {homeData?.heroVideo && (
+              <div className="px-4 py-3 text-xs text-muted-foreground break-all">
+                {homeData.heroVideo}
+              </div>
+            )}
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground mb-3">
-          Preview homepage content. Click "Edit homepage content" to upload a hero video or modify
-          fields.
-        </p>
-        {homeLoading ? (
-          <div className="text-sm text-muted-foreground">Loading homepage content…</div>
-        ) : homeError ? (
-          <div className="text-sm text-red-500">{homeError}</div>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <div className="text-xs text-muted-foreground mb-1">Hero video URL / preview</div>
-              {homeData?.heroVideo ? (
-                <div className="mb-3">
-                  <video controls className="w-full max-h-64 rounded">
-                    <source src={homeData.heroVideo} />
-                    Your browser does not support the video tag.
-                  </video>
-                  <div className="text-sm mt-2 text-muted-foreground break-all">
-                    {homeData.heroVideo}
-                  </div>
-                  {getVideoNameFromUrl(homeData.heroVideo) ? (
-                    <div className="text-sm font-medium mt-1">
-                      {getVideoNameFromUrl(homeData.heroVideo)}
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
-                <div className="mb-3 text-sm text-muted-foreground">No hero video set.</div>
-              )}
+
+        {/* Banner - full width card */}
+        <div className="bg-background rounded-xl shadow p-0 overflow-hidden">
+          <div className="p-4 border-b">
+            <h3 className="font-semibold">Site banner</h3>
+          </div>
+          <div className="w-full p-4">
+            {homeLoading ? (
+              <div className="text-muted-foreground">Loading banner…</div>
+            ) : homeData?.banner ? (
+              <img
+                src={homeData.banner}
+                alt="Site banner"
+                className="w-full object-cover rounded"
+              />
+            ) : (
+              <div className="text-muted-foreground">No banner set.</div>
+            )}
+          </div>
+        </div>
+
+        {/* Logo - full width card */}
+        <div className="bg-background rounded-xl shadow p-0 overflow-hidden">
+          <div className="p-4 border-b">
+            <h3 className="font-semibold">Logo</h3>
+          </div>
+          <div className="w-full p-4 flex items-center gap-4">
+            {homeLoading ? (
+              <div className="text-muted-foreground">Loading logo…</div>
+            ) : homeData?.logo ? (
+              <img src={homeData.logo} alt="Site logo" className="h-24 object-contain" />
+            ) : (
+              <div className="text-muted-foreground">No logo set.</div>
+            )}
+            <div className="text-sm text-muted-foreground">
+              Recommended: place logo files under <code>/public/assets/images/logo</code> on the
+              server.
             </div>
-            <div>
+          </div>
+        </div>
+
+        {/* About - full width card */}
+        <div className="bg-background rounded-xl shadow p-4">
+          <h3 className="font-semibold mb-2">About GoGirls ICT Initiative</h3>
+          <div className="text-sm text-muted-foreground">{renderRich(homeData?.about ?? null)}</div>
+        </div>
+
+        {/* Values block (Vision/Mission/Focus/Core values) - full width card */}
+        <div className="bg-background rounded-xl shadow p-4">
+          <h3 className="font-semibold mb-3">Strategic statements</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-transparent p-3 rounded">
               {renderValue('Vision', homeData?.vision ?? null)}
+            </div>
+            <div className="bg-transparent p-3 rounded">
               {renderValue('Mission', homeData?.mission ?? null)}
+            </div>
+            <div className="bg-transparent p-3 rounded">
               {renderValue('Focus', homeData?.focus ?? null)}
+            </div>
+            <div className="bg-transparent p-3 rounded">
               {renderValue('Core values', homeData?.coreValues ?? null)}
             </div>
           </div>
-        )}
-        <div className="flex gap-2 mt-3">
-          <Button onClick={openHomeModal} disabled={homeLoading || homeSaving}>
-            Edit homepage content
-          </Button>
-          <Button onClick={fetchHomeContent} variant="outline" disabled={homeLoading || homeSaving}>
-            Refresh
-          </Button>
-          <Button onClick={saveHomeContent} disabled={homeSaving || uploading} variant="secondary">
-            {homeSaving ? 'Saving…' : 'Save homepage'}
-          </Button>
         </div>
       </section>
 
+      {/* Bottom action buttons (replicated) */}
+      <div className="flex gap-2 justify-end">
+        <Button onClick={openHomeModal} disabled={homeLoading || homeSaving}>
+          Edit Home Page Content
+        </Button>
+        <Button onClick={fetchHomeContent} variant="outline" disabled={homeLoading || homeSaving}>
+          Refresh
+        </Button>
+      </div>
+
+      {/* Modal/dialog for edit */}
       <Dialog open={homeModalOpen} onOpenChange={(val) => !val && closeHomeModal()}>
         <DialogContent className="max-w-3xl w-full max-h-[85vh] p-0 sm:rounded-lg overflow-hidden">
           <DialogHeader>
@@ -384,6 +505,7 @@ export default function SiteSettings() {
               <form onSubmit={saveHomeContent} className="space-y-4">
                 {homeError && <div className="text-sm text-red-500">{homeError}</div>}
                 {homeSuccess && <div className="text-sm text-green-600">{homeSuccess}</div>}
+
                 <div>
                   <label className="text-sm block mb-1">Hero video URL</label>
                   <input
@@ -396,6 +518,7 @@ export default function SiteSettings() {
                     placeholder="https://... (or upload a file below)"
                   />
                 </div>
+
                 <div>
                   <label className="text-sm block mb-1">Upload hero video (.mov, .mp4, .gif)</label>
                   <div className="flex items-center gap-2">
@@ -413,8 +536,60 @@ export default function SiteSettings() {
                     )}
                   </div>
                   {uploadError && <div className="text-sm text-red-500 mt-1">{uploadError}</div>}
-                  <div className="text-xs text-muted-foreground mt-1">Max file size: 50MB.</div>
                 </div>
+
+                <div>
+                  <label className="text-sm block mb-1">Banner image</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleBannerFileChange}
+                      disabled={uploading || homeSaving}
+                      className="text-sm"
+                    />
+                    {uploading && uploadProgress !== null && (
+                      <div className="text-sm text-muted-foreground">
+                        Uploading: {uploadProgress}%
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Recommended banner width: full-width
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm block mb-1">Logo image</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoFileChange}
+                      disabled={uploading || homeSaving}
+                      className="text-sm"
+                    />
+                    {uploading && uploadProgress !== null && (
+                      <div className="text-sm text-muted-foreground">
+                        Uploading: {uploadProgress}%
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Recommended: save logo under <code>/public/assets/images/logo</code>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm block mb-1">About</label>
+                  <textarea
+                    value={homeData?.about ?? ''}
+                    onChange={(e) => setHomeData((d) => ({ ...(d ?? {}), about: e.target.value }))}
+                    className="w-full border p-2 rounded h-28"
+                    placeholder="About the GoGirls ICT Initiative"
+                  />
+                </div>
+
                 <div>
                   <label className="text-sm block mb-1">Vision</label>
                   <textarea
@@ -423,6 +598,7 @@ export default function SiteSettings() {
                     className="w-full border p-2 rounded h-24"
                   />
                 </div>
+
                 <div>
                   <label className="text-sm block mb-1">Mission</label>
                   <textarea
@@ -433,6 +609,7 @@ export default function SiteSettings() {
                     className="w-full border p-2 rounded h-24"
                   />
                 </div>
+
                 <div>
                   <label className="text-sm block mb-1">Focus</label>
                   <textarea
@@ -441,6 +618,7 @@ export default function SiteSettings() {
                     className="w-full border p-2 rounded h-20"
                   />
                 </div>
+
                 <div>
                   <label className="text-sm block mb-1">Core values (comma separated)</label>
                   <input
@@ -450,9 +628,10 @@ export default function SiteSettings() {
                       setHomeData((d) => ({ ...(d ?? {}), coreValues: e.target.value }))
                     }
                     className="w-full border p-2 rounded"
-                    placeholder="Integrity, Inclusion, ... "
+                    placeholder="Integrity, Inclusion, ..."
                   />
                 </div>
+
                 <div className="flex gap-2">
                   <Button type="submit" disabled={homeSaving}>
                     {homeSaving ? 'Saving…' : homeData?.id ? 'Save changes' : 'Create content'}

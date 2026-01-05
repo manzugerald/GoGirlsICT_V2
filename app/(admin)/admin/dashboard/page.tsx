@@ -877,13 +877,21 @@ export default function AdminDashboardPage() {
 
   const effectiveHideControls = hideControls || Boolean(editRecord) || Boolean(viewRecord);
 
+  // sidebar widths (must match the CSS widths used for the fixed sidebar)
+  const expandedWidth = 240; // ~w-60 is 15rem = 240px
+  const collapsedWidth = 64; // ~w-16 is 4rem = 64px
+
+  const sidebarWidth = sidebarCollapsed ? collapsedWidth : expandedWidth;
+
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-      {/* Sidebar */}
+    // This container sits inside the layout <main> which already accounts for header/footer.
+    // Use min-h-0 so children with overflow can shrink.
+    <div className="flex flex-1 min-h-0 bg-gray-50 dark:bg-gray-900 transition-colors">
+      {/* Sidebar: fixed to the left between header and footer.
+          It will not scroll with main; it will internally scroll only if its content exceeds available height. */}
       <aside
-        className={`transition-all duration-300 bg-white dark:bg-gray-950 border-r dark:border-gray-800 shadow-sm h-full ${
-          sidebarCollapsed ? 'w-16' : 'w-60'
-        } flex flex-col`}
+        style={{ width: sidebarWidth }}
+        className={`fixed left-0 top-14 bottom-14 bg-white dark:bg-gray-950 border-r dark:border-gray-800 shadow-sm flex flex-col z-30 transition-width duration-300`}
       >
         <div className="flex items-center justify-between px-2 py-4 border-b dark:border-gray-800">
           <span className="text-xl font-bold text-pink-600 dark:text-pink-400 hidden sm:block">
@@ -898,7 +906,8 @@ export default function AdminDashboardPage() {
           </button>
         </div>
 
-        <nav className="mt-2 flex-1 overflow-y-auto">
+        {/* Scrollable content area inside the fixed sidebar */}
+        <nav className="mt-2 flex-1 overflow-y-auto px-0">
           {/* Render Home first */}
           <div>
             <button
@@ -1055,8 +1064,8 @@ export default function AdminDashboardPage() {
           />
         </nav>
 
-        {/* Logout moved to bottom */}
-        <div className="border-t dark:border-gray-800 p-3">
+        {/* Logout moved to bottom (mt-auto ensures it is at the bottom of the sidebar's column) */}
+        <div className="border-t dark:border-gray-800 p-3 mt-auto">
           <button
             onClick={() => {
               if (confirm('Sign out from the admin dashboard?')) signOut();
@@ -1069,8 +1078,12 @@ export default function AdminDashboardPage() {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 min-w-0 overflow-y-auto p-4 bg-white dark:bg-gray-900 transition-colors">
+      {/* Main Content: margin-left equals sidebar width so it doesn't overlap the fixed sidebar.
+          main remains the scroll container (the layout <main> already provides top/bottom padding). */}
+      <main
+        className="flex-1 min-w-0 overflow-y-auto p-4 bg-white dark:bg-gray-900 transition-colors"
+        style={{ marginLeft: sidebarWidth }}
+      >
         {/* Section header */}
         <div className="mb-4">
           <div className="flex items-center gap-3">
