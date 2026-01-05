@@ -47,9 +47,14 @@ model HomePage {
   mission    String
   focus      String
   coreValues String
+  about      String?  // new
+  logo       String?   // new
+  banner     String?   // new
+  siteName   String?   // new
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
+
 
 enum MessageCategory {
   beneficiary

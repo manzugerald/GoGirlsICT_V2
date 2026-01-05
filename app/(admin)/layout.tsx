@@ -1,4 +1,3 @@
-// app/(admin)/admin/layout.tsx
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
@@ -8,11 +7,12 @@ import Footer from '@/components/footer';
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      {/* use min-h-screen so footer is pushed below when content is taller than viewport */}
+      {/* min-h-screen keeps layout at least full viewport; main gets top/bottom padding to account for fixed header/footer */}
       <div className="min-h-screen flex flex-col">
         <AdminHeader />
-        {/* main grows to fill remaining space; remove overflow-auto if you prefer page scrolling instead of inner scrolling */}
-        <main className="flex-1">{children}</main>
+        {/* Reserve space for fixed header (h-14) and fixed footer (h-14) so content isn't covered */}
+        <main className="flex-1 pt-14 pb-14">{children}</main>
+
         <Footer />
       </div>
     </SessionProvider>

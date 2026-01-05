@@ -4400,6 +4400,9 @@ export namespace Prisma {
     mission: string | null
     focus: string | null
     coreValues: string | null
+    about: string | null
+    logo: string | null
+    banner: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -4411,6 +4414,9 @@ export namespace Prisma {
     mission: string | null
     focus: string | null
     coreValues: string | null
+    about: string | null
+    logo: string | null
+    banner: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -4422,6 +4428,9 @@ export namespace Prisma {
     mission: number
     focus: number
     coreValues: number
+    about: number
+    logo: number
+    banner: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -4443,6 +4452,9 @@ export namespace Prisma {
     mission?: true
     focus?: true
     coreValues?: true
+    about?: true
+    logo?: true
+    banner?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -4454,6 +4466,9 @@ export namespace Prisma {
     mission?: true
     focus?: true
     coreValues?: true
+    about?: true
+    logo?: true
+    banner?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -4465,6 +4480,9 @@ export namespace Prisma {
     mission?: true
     focus?: true
     coreValues?: true
+    about?: true
+    logo?: true
+    banner?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -4563,6 +4581,9 @@ export namespace Prisma {
     mission: string
     focus: string
     coreValues: string
+    about: string | null
+    logo: string | null
+    banner: string | null
     createdAt: Date
     updatedAt: Date
     _count: HomePageCountAggregateOutputType | null
@@ -4593,6 +4614,9 @@ export namespace Prisma {
     mission?: boolean
     focus?: boolean
     coreValues?: boolean
+    about?: boolean
+    logo?: boolean
+    banner?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["homePage"]>
@@ -4604,6 +4628,9 @@ export namespace Prisma {
     mission?: boolean
     focus?: boolean
     coreValues?: boolean
+    about?: boolean
+    logo?: boolean
+    banner?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["homePage"]>
@@ -4615,6 +4642,9 @@ export namespace Prisma {
     mission?: boolean
     focus?: boolean
     coreValues?: boolean
+    about?: boolean
+    logo?: boolean
+    banner?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["homePage"]>
@@ -4626,11 +4656,14 @@ export namespace Prisma {
     mission?: boolean
     focus?: boolean
     coreValues?: boolean
+    about?: boolean
+    logo?: boolean
+    banner?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type HomePageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "heroVideo" | "vision" | "mission" | "focus" | "coreValues" | "createdAt" | "updatedAt", ExtArgs["result"]["homePage"]>
+  export type HomePageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "heroVideo" | "vision" | "mission" | "focus" | "coreValues" | "about" | "logo" | "banner" | "createdAt" | "updatedAt", ExtArgs["result"]["homePage"]>
 
   export type $HomePagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "HomePage"
@@ -4642,6 +4675,9 @@ export namespace Prisma {
       mission: string
       focus: string
       coreValues: string
+      about: string | null
+      logo: string | null
+      banner: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["homePage"]>
@@ -5073,6 +5109,9 @@ export namespace Prisma {
     readonly mission: FieldRef<"HomePage", 'String'>
     readonly focus: FieldRef<"HomePage", 'String'>
     readonly coreValues: FieldRef<"HomePage", 'String'>
+    readonly about: FieldRef<"HomePage", 'String'>
+    readonly logo: FieldRef<"HomePage", 'String'>
+    readonly banner: FieldRef<"HomePage", 'String'>
     readonly createdAt: FieldRef<"HomePage", 'DateTime'>
     readonly updatedAt: FieldRef<"HomePage", 'DateTime'>
   }
@@ -25913,6 +25952,9 @@ export namespace Prisma {
     mission: 'mission',
     focus: 'focus',
     coreValues: 'coreValues',
+    about: 'about',
+    logo: 'logo',
+    banner: 'banner',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -26588,6 +26630,9 @@ export namespace Prisma {
     mission?: StringFilter<"HomePage"> | string
     focus?: StringFilter<"HomePage"> | string
     coreValues?: StringFilter<"HomePage"> | string
+    about?: StringNullableFilter<"HomePage"> | string | null
+    logo?: StringNullableFilter<"HomePage"> | string | null
+    banner?: StringNullableFilter<"HomePage"> | string | null
     createdAt?: DateTimeFilter<"HomePage"> | Date | string
     updatedAt?: DateTimeFilter<"HomePage"> | Date | string
   }
@@ -26599,6 +26644,9 @@ export namespace Prisma {
     mission?: SortOrder
     focus?: SortOrder
     coreValues?: SortOrder
+    about?: SortOrderInput | SortOrder
+    logo?: SortOrderInput | SortOrder
+    banner?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -26613,6 +26661,9 @@ export namespace Prisma {
     mission?: StringFilter<"HomePage"> | string
     focus?: StringFilter<"HomePage"> | string
     coreValues?: StringFilter<"HomePage"> | string
+    about?: StringNullableFilter<"HomePage"> | string | null
+    logo?: StringNullableFilter<"HomePage"> | string | null
+    banner?: StringNullableFilter<"HomePage"> | string | null
     createdAt?: DateTimeFilter<"HomePage"> | Date | string
     updatedAt?: DateTimeFilter<"HomePage"> | Date | string
   }, "id">
@@ -26624,6 +26675,9 @@ export namespace Prisma {
     mission?: SortOrder
     focus?: SortOrder
     coreValues?: SortOrder
+    about?: SortOrderInput | SortOrder
+    logo?: SortOrderInput | SortOrder
+    banner?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: HomePageCountOrderByAggregateInput
@@ -26643,6 +26697,9 @@ export namespace Prisma {
     mission?: StringWithAggregatesFilter<"HomePage"> | string
     focus?: StringWithAggregatesFilter<"HomePage"> | string
     coreValues?: StringWithAggregatesFilter<"HomePage"> | string
+    about?: StringNullableWithAggregatesFilter<"HomePage"> | string | null
+    logo?: StringNullableWithAggregatesFilter<"HomePage"> | string | null
+    banner?: StringNullableWithAggregatesFilter<"HomePage"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"HomePage"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"HomePage"> | Date | string
   }
@@ -28247,6 +28304,9 @@ export namespace Prisma {
     mission: string
     focus: string
     coreValues: string
+    about?: string | null
+    logo?: string | null
+    banner?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28258,6 +28318,9 @@ export namespace Prisma {
     mission: string
     focus: string
     coreValues: string
+    about?: string | null
+    logo?: string | null
+    banner?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28268,6 +28331,9 @@ export namespace Prisma {
     mission?: StringFieldUpdateOperationsInput | string
     focus?: StringFieldUpdateOperationsInput | string
     coreValues?: StringFieldUpdateOperationsInput | string
+    about?: NullableStringFieldUpdateOperationsInput | string | null
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    banner?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28279,6 +28345,9 @@ export namespace Prisma {
     mission?: StringFieldUpdateOperationsInput | string
     focus?: StringFieldUpdateOperationsInput | string
     coreValues?: StringFieldUpdateOperationsInput | string
+    about?: NullableStringFieldUpdateOperationsInput | string | null
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    banner?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28290,6 +28359,9 @@ export namespace Prisma {
     mission: string
     focus: string
     coreValues: string
+    about?: string | null
+    logo?: string | null
+    banner?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28300,6 +28372,9 @@ export namespace Prisma {
     mission?: StringFieldUpdateOperationsInput | string
     focus?: StringFieldUpdateOperationsInput | string
     coreValues?: StringFieldUpdateOperationsInput | string
+    about?: NullableStringFieldUpdateOperationsInput | string | null
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    banner?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28311,6 +28386,9 @@ export namespace Prisma {
     mission?: StringFieldUpdateOperationsInput | string
     focus?: StringFieldUpdateOperationsInput | string
     coreValues?: StringFieldUpdateOperationsInput | string
+    about?: NullableStringFieldUpdateOperationsInput | string | null
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    banner?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -30209,6 +30287,9 @@ export namespace Prisma {
     mission?: SortOrder
     focus?: SortOrder
     coreValues?: SortOrder
+    about?: SortOrder
+    logo?: SortOrder
+    banner?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -30224,6 +30305,9 @@ export namespace Prisma {
     mission?: SortOrder
     focus?: SortOrder
     coreValues?: SortOrder
+    about?: SortOrder
+    logo?: SortOrder
+    banner?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -30235,6 +30319,9 @@ export namespace Prisma {
     mission?: SortOrder
     focus?: SortOrder
     coreValues?: SortOrder
+    about?: SortOrder
+    logo?: SortOrder
+    banner?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
