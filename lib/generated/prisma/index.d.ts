@@ -4403,6 +4403,7 @@ export namespace Prisma {
     about: string | null
     logo: string | null
     banner: string | null
+    siteName: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -4417,6 +4418,7 @@ export namespace Prisma {
     about: string | null
     logo: string | null
     banner: string | null
+    siteName: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -4431,6 +4433,7 @@ export namespace Prisma {
     about: number
     logo: number
     banner: number
+    siteName: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -4455,6 +4458,7 @@ export namespace Prisma {
     about?: true
     logo?: true
     banner?: true
+    siteName?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -4469,6 +4473,7 @@ export namespace Prisma {
     about?: true
     logo?: true
     banner?: true
+    siteName?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -4483,6 +4488,7 @@ export namespace Prisma {
     about?: true
     logo?: true
     banner?: true
+    siteName?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -4584,6 +4590,7 @@ export namespace Prisma {
     about: string | null
     logo: string | null
     banner: string | null
+    siteName: string | null
     createdAt: Date
     updatedAt: Date
     _count: HomePageCountAggregateOutputType | null
@@ -4617,6 +4624,7 @@ export namespace Prisma {
     about?: boolean
     logo?: boolean
     banner?: boolean
+    siteName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["homePage"]>
@@ -4631,6 +4639,7 @@ export namespace Prisma {
     about?: boolean
     logo?: boolean
     banner?: boolean
+    siteName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["homePage"]>
@@ -4645,6 +4654,7 @@ export namespace Prisma {
     about?: boolean
     logo?: boolean
     banner?: boolean
+    siteName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["homePage"]>
@@ -4659,11 +4669,12 @@ export namespace Prisma {
     about?: boolean
     logo?: boolean
     banner?: boolean
+    siteName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type HomePageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "heroVideo" | "vision" | "mission" | "focus" | "coreValues" | "about" | "logo" | "banner" | "createdAt" | "updatedAt", ExtArgs["result"]["homePage"]>
+  export type HomePageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "heroVideo" | "vision" | "mission" | "focus" | "coreValues" | "about" | "logo" | "banner" | "siteName" | "createdAt" | "updatedAt", ExtArgs["result"]["homePage"]>
 
   export type $HomePagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "HomePage"
@@ -4678,6 +4689,7 @@ export namespace Prisma {
       about: string | null
       logo: string | null
       banner: string | null
+      siteName: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["homePage"]>
@@ -5112,6 +5124,7 @@ export namespace Prisma {
     readonly about: FieldRef<"HomePage", 'String'>
     readonly logo: FieldRef<"HomePage", 'String'>
     readonly banner: FieldRef<"HomePage", 'String'>
+    readonly siteName: FieldRef<"HomePage", 'String'>
     readonly createdAt: FieldRef<"HomePage", 'DateTime'>
     readonly updatedAt: FieldRef<"HomePage", 'DateTime'>
   }
@@ -25955,6 +25968,7 @@ export namespace Prisma {
     about: 'about',
     logo: 'logo',
     banner: 'banner',
+    siteName: 'siteName',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -26633,6 +26647,7 @@ export namespace Prisma {
     about?: StringNullableFilter<"HomePage"> | string | null
     logo?: StringNullableFilter<"HomePage"> | string | null
     banner?: StringNullableFilter<"HomePage"> | string | null
+    siteName?: StringNullableFilter<"HomePage"> | string | null
     createdAt?: DateTimeFilter<"HomePage"> | Date | string
     updatedAt?: DateTimeFilter<"HomePage"> | Date | string
   }
@@ -26647,6 +26662,7 @@ export namespace Prisma {
     about?: SortOrderInput | SortOrder
     logo?: SortOrderInput | SortOrder
     banner?: SortOrderInput | SortOrder
+    siteName?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -26664,6 +26680,7 @@ export namespace Prisma {
     about?: StringNullableFilter<"HomePage"> | string | null
     logo?: StringNullableFilter<"HomePage"> | string | null
     banner?: StringNullableFilter<"HomePage"> | string | null
+    siteName?: StringNullableFilter<"HomePage"> | string | null
     createdAt?: DateTimeFilter<"HomePage"> | Date | string
     updatedAt?: DateTimeFilter<"HomePage"> | Date | string
   }, "id">
@@ -26678,6 +26695,7 @@ export namespace Prisma {
     about?: SortOrderInput | SortOrder
     logo?: SortOrderInput | SortOrder
     banner?: SortOrderInput | SortOrder
+    siteName?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: HomePageCountOrderByAggregateInput
@@ -26700,6 +26718,7 @@ export namespace Prisma {
     about?: StringNullableWithAggregatesFilter<"HomePage"> | string | null
     logo?: StringNullableWithAggregatesFilter<"HomePage"> | string | null
     banner?: StringNullableWithAggregatesFilter<"HomePage"> | string | null
+    siteName?: StringNullableWithAggregatesFilter<"HomePage"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"HomePage"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"HomePage"> | Date | string
   }
@@ -28307,6 +28326,7 @@ export namespace Prisma {
     about?: string | null
     logo?: string | null
     banner?: string | null
+    siteName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28321,6 +28341,7 @@ export namespace Prisma {
     about?: string | null
     logo?: string | null
     banner?: string | null
+    siteName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28334,6 +28355,7 @@ export namespace Prisma {
     about?: NullableStringFieldUpdateOperationsInput | string | null
     logo?: NullableStringFieldUpdateOperationsInput | string | null
     banner?: NullableStringFieldUpdateOperationsInput | string | null
+    siteName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28348,6 +28370,7 @@ export namespace Prisma {
     about?: NullableStringFieldUpdateOperationsInput | string | null
     logo?: NullableStringFieldUpdateOperationsInput | string | null
     banner?: NullableStringFieldUpdateOperationsInput | string | null
+    siteName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28362,6 +28385,7 @@ export namespace Prisma {
     about?: string | null
     logo?: string | null
     banner?: string | null
+    siteName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28375,6 +28399,7 @@ export namespace Prisma {
     about?: NullableStringFieldUpdateOperationsInput | string | null
     logo?: NullableStringFieldUpdateOperationsInput | string | null
     banner?: NullableStringFieldUpdateOperationsInput | string | null
+    siteName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28389,6 +28414,7 @@ export namespace Prisma {
     about?: NullableStringFieldUpdateOperationsInput | string | null
     logo?: NullableStringFieldUpdateOperationsInput | string | null
     banner?: NullableStringFieldUpdateOperationsInput | string | null
+    siteName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -30290,6 +30316,7 @@ export namespace Prisma {
     about?: SortOrder
     logo?: SortOrder
     banner?: SortOrder
+    siteName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -30308,6 +30335,7 @@ export namespace Prisma {
     about?: SortOrder
     logo?: SortOrder
     banner?: SortOrder
+    siteName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -30322,6 +30350,7 @@ export namespace Prisma {
     about?: SortOrder
     logo?: SortOrder
     banner?: SortOrder
+    siteName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
