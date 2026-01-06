@@ -1,20 +1,314 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 
-type HomePageFormProps = {
+const ENDPOINT_BASE = '/api/homepage';
+
+/**
+ * NOTE
+ * - This file fragments the original single form into independent section forms.
+ * - Each exported component updates only its own field(s) via PATCH /api/homepage/:id
+ *   if an id is provided, or POST /api/homepage to create a record when no id exists.
+ * - Each component accepts initial values and optional callbacks.
+ *
+ * Exported components:
+ * - HeroSectionForm
+ * - VisionSectionForm
+ * - MissionSectionForm
+ * - FocusSectionForm
+ * - CoreValuesSectionForm
+ *
+ * For backward compatibility there's also a default export CreateHomepageForm that
+ * renders all sections together (similar to the original combined form).
+ */
+
+/* Shared types */
+type BaseProps = {
+  id?: string | number | null; // existing record id (if editing)
+  initial?: string;
+  onSuccess?: (payload?: any) => void;
+  onCancel?: () => void;
+};
+
+async function submitPartial(id: string | number | null | undefined, payload: Record<string, any>) {
+  if (id) {
+    const res = await fetch(`${ENDPOINT_BASE}/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.text().catch(() => res.statusText);
+      throw new Error(err || 'Failed to update');
+    }
+    return await res.json().catch(() => null);
+  } else {
+    // create new record with the provided partial payload
+    const res = await fetch(ENDPOINT_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.text().catch(() => res.statusText);
+      throw new Error(err || 'Failed to create');
+    }
+    return await res.json().catch(() => null);
+  }
+}
+
+/* 1) Hero section form */
+export function HeroSectionForm({ id, initial, onSuccess, onCancel }: BaseProps) {
+  const [heroVideo, setHeroVideo] = useState(initial ?? '');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => setHeroVideo(initial ?? ''), [initial]);
+
+  async function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault();
+    setLoading(true);
+    try {
+      const payload = await submitPartial(id, { heroVideo });
+      onSuccess?.(payload);
+      // do not redirect here — caller decides
+    } catch (err: any) {
+      alert(err?.message || 'Failed to update hero video');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full space-y-3">
+      <div className="space-y-2">
+        <Label htmlFor="heroVideo">Hero video (URL)</Label>
+        <Input
+          id="heroVideo"
+          name="heroVideo"
+          value={heroVideo}
+          onChange={(e) => setHeroVideo(e.target.value)}
+          placeholder="https://..."
+        />
+      </div>
+
+      <div className="flex gap-2">
+        <Button type="submit" disabled={loading}>
+          {loading ? 'Saving…' : 'Save Hero'}
+        </Button>
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+            Cancel
+          </Button>
+        )}
+      </div>
+    </form>
+  );
+}
+
+/* 2) Vision */
+export function VisionSectionForm({ id, initial, onSuccess, onCancel }: BaseProps) {
+  const [vision, setVision] = useState(initial ?? '');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => setVision(initial ?? ''), [initial]);
+
+  async function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault();
+    setLoading(true);
+    try {
+      const payload = await submitPartial(id, { vision });
+      onSuccess?.(payload);
+    } catch (err: any) {
+      alert(err?.message || 'Failed to update vision');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full space-y-3">
+      <div className="space-y-2">
+        <Label htmlFor="vision">Vision</Label>
+        <textarea
+          id="vision"
+          name="vision"
+          value={vision}
+          onChange={(e) => setVision(e.target.value)}
+          className="w-full border rounded-md p-2 min-h-[80px]"
+        />
+      </div>
+
+      <div className="flex gap-2">
+        <Button type="submit" disabled={loading}>
+          {loading ? 'Saving…' : 'Save Vision'}
+        </Button>
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+            Cancel
+          </Button>
+        )}
+      </div>
+    </form>
+  );
+}
+
+/* 3) Mission */
+export function MissionSectionForm({ id, initial, onSuccess, onCancel }: BaseProps) {
+  const [mission, setMission] = useState(initial ?? '');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => setMission(initial ?? ''), [initial]);
+
+  async function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault();
+    setLoading(true);
+    try {
+      const payload = await submitPartial(id, { mission });
+      onSuccess?.(payload);
+    } catch (err: any) {
+      alert(err?.message || 'Failed to update mission');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full space-y-3">
+      <div className="space-y-2">
+        <Label htmlFor="mission">Mission</Label>
+        <textarea
+          id="mission"
+          name="mission"
+          value={mission}
+          onChange={(e) => setMission(e.target.value)}
+          className="w-full border rounded-md p-2 min-h-[80px]"
+        />
+      </div>
+
+      <div className="flex gap-2">
+        <Button type="submit" disabled={loading}>
+          {loading ? 'Saving…' : 'Save Mission'}
+        </Button>
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+            Cancel
+          </Button>
+        )}
+      </div>
+    </form>
+  );
+}
+
+/* 4) Focus */
+export function FocusSectionForm({ id, initial, onSuccess, onCancel }: BaseProps) {
+  const [focus, setFocus] = useState(initial ?? '');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => setFocus(initial ?? ''), [initial]);
+
+  async function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault();
+    setLoading(true);
+    try {
+      const payload = await submitPartial(id, { focus });
+      onSuccess?.(payload);
+    } catch (err: any) {
+      alert(err?.message || 'Failed to update focus');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full space-y-3">
+      <div className="space-y-2">
+        <Label htmlFor="focus">Focus</Label>
+        <textarea
+          id="focus"
+          name="focus"
+          value={focus}
+          onChange={(e) => setFocus(e.target.value)}
+          className="w-full border rounded-md p-2 min-h-[80px]"
+        />
+      </div>
+
+      <div className="flex gap-2">
+        <Button type="submit" disabled={loading}>
+          {loading ? 'Saving…' : 'Save Focus'}
+        </Button>
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+            Cancel
+          </Button>
+        )}
+      </div>
+    </form>
+  );
+}
+
+/* 5) Core values */
+export function CoreValuesSectionForm({ id, initial, onSuccess, onCancel }: BaseProps) {
+  const [coreValues, setCoreValues] = useState(initial ?? '');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => setCoreValues(initial ?? ''), [initial]);
+
+  async function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault();
+    setLoading(true);
+    try {
+      const payload = await submitPartial(id, { coreValues });
+      onSuccess?.(payload);
+    } catch (err: any) {
+      alert(err?.message || 'Failed to update core values');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full space-y-3">
+      <div className="space-y-2">
+        <Label htmlFor="coreValues">Core Values (comma separated)</Label>
+        <textarea
+          id="coreValues"
+          name="coreValues"
+          value={coreValues}
+          onChange={(e) => setCoreValues(e.target.value)}
+          className="w-full border rounded-md p-2 min-h-[80px]"
+        />
+      </div>
+
+      <div className="flex gap-2">
+        <Button type="submit" disabled={loading}>
+          {loading ? 'Saving…' : 'Save Core Values'}
+        </Button>
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+            Cancel
+          </Button>
+        )}
+      </div>
+    </form>
+  );
+}
+
+/* Default combined form for backward compatibility — renders all sub-forms and performs a full submit */
+type CombinedProps = {
   mode?: 'create' | 'edit';
   initialData?: {
     id?: string | number;
-    heroVideo: string;
-    vision: string;
-    mission: string;
-    focus: string;
-    coreValues: string;
+    heroVideo?: string;
+    vision?: string;
+    mission?: string;
+    focus?: string;
+    coreValues?: string;
   };
   onSuccess?: () => void;
   onCancel?: () => void;
@@ -25,28 +319,26 @@ export default function CreateHomepageForm({
   initialData,
   onSuccess,
   onCancel,
-}: HomePageFormProps) {
+}: CombinedProps) {
   const router = useRouter();
   const [form, setForm] = useState({
-    heroVideo: '',
-    vision: '',
-    mission: '',
-    focus: '',
-    coreValues: '',
+    heroVideo: initialData?.heroVideo ?? '',
+    vision: initialData?.vision ?? '',
+    mission: initialData?.mission ?? '',
+    focus: initialData?.focus ?? '',
+    coreValues: initialData?.coreValues ?? '',
   });
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (initialData) {
-      setForm({
-        heroVideo: initialData.heroVideo || '',
-        vision: initialData.vision || '',
-        mission: initialData.mission || '',
-        focus: initialData.focus || '',
-        coreValues: initialData.coreValues || '',
-      });
-    }
+    setForm({
+      heroVideo: initialData?.heroVideo ?? '',
+      vision: initialData?.vision ?? '',
+      mission: initialData?.mission ?? '',
+      focus: initialData?.focus ?? '',
+      coreValues: initialData?.coreValues ?? '',
+    });
   }, [initialData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -67,15 +359,17 @@ export default function CreateHomepageForm({
     try {
       let res;
       if (mode === 'edit' && initialData?.id) {
-        res = await fetch(`/api/homepage-content/${initialData.id}`, {
+        res = await fetch(`${ENDPOINT_BASE}/${initialData.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
           body: JSON.stringify(form),
         });
       } else {
-        res = await fetch('/api/homepage-content', {
+        res = await fetch(ENDPOINT_BASE, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
           body: JSON.stringify(form),
         });
       }
@@ -86,7 +380,7 @@ export default function CreateHomepageForm({
         throw new Error(errorMessage);
       }
 
-      if (onSuccess) onSuccess();
+      onSuccess?.();
       router.refresh();
       router.push('/admin/dashboard');
     } catch (err) {
@@ -107,8 +401,9 @@ export default function CreateHomepageForm({
 
     setDeleting(true);
     try {
-      const res = await fetch(`/api/homepage-content/${initialData.id}`, {
+      const res = await fetch(`${ENDPOINT_BASE}/${initialData.id}`, {
         method: 'DELETE',
+        credentials: 'same-origin',
       });
 
       if (!res.ok) {
@@ -117,7 +412,7 @@ export default function CreateHomepageForm({
         throw new Error(errorMessage);
       }
 
-      if (onSuccess) onSuccess();
+      onSuccess?.();
       router.refresh();
       router.push('/admin/dashboard');
     } catch (err) {
@@ -135,16 +430,14 @@ export default function CreateHomepageForm({
       <div className="text-2xl font-bold mb-4 text-center">
         {mode === 'edit' ? 'Edit Home Page Content' : 'Create Home Page Content'}
       </div>
+
+      {/* Hero */}
       <div className="space-y-2">
         <Label htmlFor="heroVideo">Hero Video (URL)</Label>
-        <Input
-          id="heroVideo"
-          name="heroVideo"
-          value={form.heroVideo}
-          onChange={handleChange}
-          required
-        />
+        <Input id="heroVideo" name="heroVideo" value={form.heroVideo} onChange={handleChange} />
       </div>
+
+      {/* Vision */}
       <div className="space-y-2">
         <Label htmlFor="vision">Vision</Label>
         <textarea
@@ -152,10 +445,11 @@ export default function CreateHomepageForm({
           name="vision"
           value={form.vision}
           onChange={handleChange}
-          required
           className="w-full border rounded-md p-2 min-h-[60px]"
         />
       </div>
+
+      {/* Mission */}
       <div className="space-y-2">
         <Label htmlFor="mission">Mission</Label>
         <textarea
@@ -163,10 +457,11 @@ export default function CreateHomepageForm({
           name="mission"
           value={form.mission}
           onChange={handleChange}
-          required
           className="w-full border rounded-md p-2 min-h-[60px]"
         />
       </div>
+
+      {/* Focus */}
       <div className="space-y-2">
         <Label htmlFor="focus">Focus</Label>
         <textarea
@@ -174,10 +469,11 @@ export default function CreateHomepageForm({
           name="focus"
           value={form.focus}
           onChange={handleChange}
-          required
           className="w-full border rounded-md p-2 min-h-[60px]"
         />
       </div>
+
+      {/* Core values */}
       <div className="space-y-2">
         <Label htmlFor="coreValues">Core Values</Label>
         <textarea
@@ -185,12 +481,12 @@ export default function CreateHomepageForm({
           name="coreValues"
           value={form.coreValues}
           onChange={handleChange}
-          required
           className="w-full border rounded-md p-2 min-h-[60px]"
         />
       </div>
-      <div className="flex flex-center gap-2 w-full">
-        <Button type="submit" disabled={loading} className="w-1/2 bg-[#9f004d]">
+
+      <div className="flex gap-2">
+        <Button type="submit" disabled={loading} className="w-1/2">
           {loading
             ? mode === 'edit'
               ? 'Updating...'
@@ -199,7 +495,13 @@ export default function CreateHomepageForm({
             ? 'Update'
             : 'Create'}
         </Button>
-        <Button type="button" onClick={onCancel} disabled={loading} className="w-1/2 bg-black">
+        <Button
+          type="button"
+          onClick={onCancel}
+          disabled={loading}
+          className="w-1/2"
+          variant="outline"
+        >
           Cancel
         </Button>
         {mode === 'edit' && (
@@ -207,7 +509,8 @@ export default function CreateHomepageForm({
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="w-1/2 bg-red-700"
+            className="w-1/2"
+            variant="destructive"
           >
             {deleting ? 'Deleting...' : 'Delete'}
           </Button>
@@ -216,6 +519,3 @@ export default function CreateHomepageForm({
     </form>
   );
 }
-// This code defines a form for creating or editing the homepage content of a website.
-// It includes fields for a hero video URL, vision, mission, focus, and core values.
-// The form handles both creation and editing modes, with appropriate API calls for each.

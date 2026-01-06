@@ -50,6 +50,7 @@ model HomePage {
   about      String? // new
   logo       String? // new
   banner     String? // new
+  siteName   String? // new
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
