@@ -9,6 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 
+
 const HOMEPAGE_CACHE_KEY = 'homepage:latest';
 const SINGLE_HOMEPAGE_CACHE_PREFIX = 'homepage:'; // homepage:[id]
 const CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
@@ -68,19 +69,18 @@ async function saveUploadedFileLocal(
 /**
  * GET: Fetch single homepage by id (with cache)
  */
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, context: { params: any }) {
   try {
-    const idNum = Number(params.id);
-    if (Number.isNaN(idNum)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
-
-    const singleCacheKey = SINGLE_HOMEPAGE_CACHE_PREFIX + params.id;
+    // await params before using
+    const { id } = await context.params;
+    const singleCacheKey = SINGLE_HOMEPAGE_CACHE_PREFIX + id;
     const cached = await redis.get(singleCacheKey);
     if (cached) {
       return NextResponse.json(JSON.parse(cached));
     }
 
     const homepage = await prisma.homePage.findUnique({
-      where: { id: idNum },
+      where: { id: Number(id) },
     });
 
     if (!homepage) {
@@ -102,27 +102,30 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
  * - If multipart and includes a file, the file is saved and mapped using optional 'target' form field:
  *   target = 'hero'|'banner'|'logo' — otherwise video -> heroVideo, image -> banner.
  *
- * IMPORTANT: This handler will update only the fields provided in the request.
- * Fields omitted from the request will remain unchanged in the DB.
+ * Important: This handler updates only fields provided in the request.
  */
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, context: { params: any }) {
   try {
+    const { id } = await context.params;
+    const idNum = Number(id);
+    if (Number.isNaN(idNum)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const idNum = Number(params.id);
-    if (Number.isNaN(idNum)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
-
     const contentType = String(req.headers.get('content-type') ?? '').toLowerCase();
+
     const updates: Record<string, any> = {};
 
     if (contentType.includes('multipart/form-data')) {
       const form = await req.formData();
+
+      // optional 'target' to indicate mapping of uploaded file
       const target = (form.get('target') as string) || undefined;
 
-      // handle file if present
+      // If a file is included, save it and map to appropriate field
       const file = form.get('file') as File | null;
       if (file && file instanceof File && (file.size ?? 0) > 0) {
         const mime = file.type || '';
@@ -144,7 +147,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         }
       }
 
-      // other fields from form (only set if provided)
+      // read other fields (only set when provided)
       const fSiteName = form.get('siteName');
       const fHero = form.get('heroVideo');
       const fVision = form.get('vision');
@@ -204,8 +207,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       return NextResponse.json({ error: 'HomePage not found' }, { status: 404 });
     }
 
-    // Directly update only the provided fields.
-    // This preserves any omitted fields unchanged in the DB.
+    // Update only provided fields (Prisma accepts partial update with only the keys present)
     const updated = await prisma.homePage.update({
       where: { id: idNum },
       data: updates,
@@ -214,7 +216,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     // Invalidate caches
     try {
       await Promise.all([
-        redis.del(SINGLE_HOMEPAGE_CACHE_PREFIX + params.id),
+        redis.del(SINGLE_HOMEPAGE_CACHE_PREFIX + id),
         redis.del(HOMEPAGE_CACHE_KEY),
       ]);
     } catch (err) {
@@ -249,15 +251,16 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 /**
  * DELETE: Delete homepage content (auth required)
  */
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, context: { params: any }) {
   try {
+    const { id } = await context.params;
+    const idNum = Number(id);
+    if (Number.isNaN(idNum)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const idNum = Number(params.id);
-    if (Number.isNaN(idNum)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
 
     const deleted = await prisma.homePage.delete({
       where: { id: idNum },
@@ -265,7 +268,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
 
     try {
       await Promise.all([
-        redis.del(SINGLE_HOMEPAGE_CACHE_PREFIX + params.id),
+        redis.del(SINGLE_HOMEPAGE_CACHE_PREFIX + id),
         redis.del(HOMEPAGE_CACHE_KEY),
       ]);
     } catch (err) {

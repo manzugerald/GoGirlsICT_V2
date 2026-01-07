@@ -12,15 +12,14 @@ function ordinal(n: number) {
     v = n % 100;
   return s[(v - 20) % 10] || s[v] || s[0];
 }
-
 function formatDateTime(iso?: string | null) {
   if (!iso) return 'Never';
   try {
     const d = new Date(iso);
-    const month = d.toLocaleString('default', { month: 'short' }); // "Jan"
+    const month = d.toLocaleString('default', { month: 'short' });
     const day = d.getDate();
     const year = d.getFullYear();
-    const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // locale-aware hh:mm
+    const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     return `${month} ${day}${ordinal(day)} ${year}, at ${time}`;
   } catch {
     return iso;
@@ -28,9 +27,12 @@ function formatDateTime(iso?: string | null) {
 }
 
 type EditSectionKey =
+  | 'create' // full-create form when no record exists
   | 'hero'
   | 'banner'
-  | 'identity' // siteName + logo + about
+  | 'logo' // Site Identity: Logo
+  | 'siteName' // Site Identity: Site Name (separate card)
+  | 'about' // Site Identity: About
   | 'vision'
   | 'mission'
   | 'focus'
@@ -65,7 +67,7 @@ export default function SiteSettings() {
   const [homeModalOpen, setHomeModalOpen] = useState(false);
   const [editSection, setEditSection] = useState<EditSectionKey>(null);
 
-  // refs
+  // refs for focusing inputs inside modal
   const heroUrlRef = useRef<HTMLInputElement | null>(null);
   const siteNameRef = useRef<HTMLInputElement | null>(null);
   const aboutRef = useRef<HTMLTextAreaElement | null>(null);
@@ -118,12 +120,19 @@ export default function SiteSettings() {
     }
   }
 
-  function openHomeModalFor(section: EditSectionKey) {
-    setEditSection(section);
-    setHomeModalOpen(true);
+  // open modal for exactly one section
+  // if no homepage exists, open full create form (editSection = 'create')
+  async function openHomeModalFor(section: EditSectionKey) {
     setHomeError(null);
     setHomeSuccess(null);
-    fetchHomeContent();
+    await fetchHomeContent();
+    // if no record, show create form so user can create required fields
+    if (!homeData?.id) {
+      setEditSection('create');
+    } else {
+      setEditSection(section);
+    }
+    setHomeModalOpen(true);
   }
   function closeHomeModal() {
     setHomeModalOpen(false);
@@ -134,85 +143,119 @@ export default function SiteSettings() {
     setUploadProgress(null);
   }
 
-  async function uploadFile(file: File, acceptTypes: string[], maxSizeBytes: number) {
-    setUploadError(null);
-    if (!file) throw new Error('No file provided');
-    if (file.size > maxSizeBytes)
-      throw new Error(
-        `File is too large. Max ${Math.round(maxSizeBytes / 1024 / 1024)}MB allowed.`
+  // Persist an uploaded file URL into the DB for the given field (if a homepage record exists).
+  async function persistUploadedFieldToDB(
+    targetField: 'heroVideo' | 'banner' | 'logo',
+    url: string
+  ) {
+    if (!homeData) return;
+    if (!homeData.id) {
+      // No DB record yet — keep preview and inform user to create the homepage.
+      setHomeError(
+        'File uploaded and previewed locally. Create the homepage to persist this asset.'
       );
-    const ext = file.name?.split('.').pop()?.toLowerCase() ?? '';
-    const mime = file.type || '';
-    const ok = acceptTypes.some((t) =>
-      t.startsWith('.') ? t.slice(1) === ext : mime.startsWith(t)
-    );
-    if (!ok) {
-      throw new Error(`Unsupported file type. Allowed types: ${acceptTypes.join(', ')}`);
+      setTimeout(() => setHomeError(null), 4000);
+      return;
     }
 
+    try {
+      const payload: Record<string, any> = {};
+      payload[targetField] = url;
+
+      const res = await fetch(`${ENDPOINT_BASE}/${homeData.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(text || 'Failed to persist uploaded file to database');
+      }
+
+      const updated = await res.json();
+      setHomeData((prev) => ({ ...(prev ?? {}), ...(updated ?? {}) }));
+      setHomeSuccess('Upload saved to database');
+      setTimeout(() => setHomeSuccess(null), 2000);
+    } catch (err: any) {
+      setUploadError(err?.message || 'Failed to persist uploaded file');
+      // keep preview locally so user can still see upload
+      setHomeData((d) => ({ ...(d ?? {}), [targetField]: url }));
+    }
+  }
+
+  // Upload file to server endpoint (POST if no record, PATCH if record exists).
+  // Server may return { url } (upload-only) or the updated homepage record.
+  async function uploadFileToServer(file: File, target: 'hero' | 'banner' | 'logo') {
+    if (!file) throw new Error('No file');
+    setUploadError(null);
     setUploading(true);
     setUploadProgress(0);
-
-    return await new Promise<string>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', ENDPOINT_BASE + '/upload', true);
-      xhr.withCredentials = true;
-      xhr.timeout = 120000;
-      xhr.upload.onprogress = (ev) => {
-        if (ev.lengthComputable) setUploadProgress(Math.round((ev.loaded / ev.total) * 100));
-      };
-      xhr.onload = () => {
-        setUploading(false);
-        setUploadProgress(null);
-        const status = xhr.status;
-        const respText = xhr.responseText ?? '';
-        let json: any = null;
-        try {
-          json = respText ? JSON.parse(respText) : null;
-        } catch {
-          json = null;
-        }
-        if (status >= 200 && status < 300) {
-          if (json?.url) return resolve(json.url);
-          if (typeof respText === 'string' && respText.startsWith('/')) return resolve(respText);
-          return reject(new Error('Upload succeeded but server did not return a usable url.'));
-        } else {
-          return reject(
-            new Error(json?.error || json?.message || respText || `Upload failed (${status})`)
-          );
-        }
-      };
-      xhr.onerror = () => {
-        setUploading(false);
-        setUploadProgress(null);
-        return reject(new Error('Network error during upload.'));
-      };
-      xhr.ontimeout = () => {
-        setUploading(false);
-        setUploadProgress(null);
-        reject(new Error('Upload timed out.'));
-      };
+    try {
       const form = new FormData();
-      form.append('file', file, file.name);
-      xhr.send(form);
-    });
+      form.append('file', file);
+      form.append('target', target);
+
+      const url = homeData?.id ? `${ENDPOINT_BASE}/${homeData.id}` : ENDPOINT_BASE;
+      const method = homeData?.id ? 'PATCH' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        body: form,
+        credentials: 'same-origin',
+      });
+
+      setUploadProgress(100);
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(text || 'Upload failed');
+      }
+
+      const json = await res.json();
+
+      // If server returned an upload-only { url } (no DB record created), use that url as preview.
+      if (json?.url && !json?.id) {
+        const returnedUrl: string = json.url;
+        const field = target === 'logo' ? 'logo' : target === 'banner' ? 'banner' : 'heroVideo';
+        setHomeData((prev) => ({ ...(prev ?? {}), [field]: returnedUrl }));
+
+        // If we already have a DB record, persist the field to DB (PATCH)
+        if (homeData?.id) {
+          await persistUploadedFieldToDB(field as any, returnedUrl);
+        } else {
+          setHomeError(
+            'Uploaded file is previewed locally. Create the homepage to persist the file.'
+          );
+          setTimeout(() => setHomeError(null), 3500);
+        }
+        return returnedUrl;
+      }
+
+      // If server returns the updated record (common for PATCH), merge it in and extract the relevant field
+      if (json && typeof json === 'object') {
+        setHomeData((prev) => ({ ...(prev ?? {}), ...(json ?? {}) }));
+        if (json.logo) return json.logo;
+        if (json.banner) return json.banner;
+        if (json.heroVideo) return json.heroVideo;
+      }
+
+      return '';
+    } finally {
+      setUploading(false);
+      setUploadProgress(null);
+    }
   }
 
-  async function uploadHeroVideoFile(file: File) {
-    return await uploadFile(file, ['video/', '.gif'], 50 * 1024 * 1024);
-  }
-  async function uploadImageFile(file: File) {
-    return await uploadFile(file, ['image/'], 5 * 1024 * 1024);
-  }
-
+  // Updated file change handlers: after upload, ensure DB persist if possible and update preview
   async function handleHeroFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setUploadError(null);
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const url = await uploadHeroVideoFile(file);
+      const url = await uploadFileToServer(file, 'hero');
+      if (url && homeData?.id) await persistUploadedFieldToDB('heroVideo', url);
       setHomeData((d) => ({ ...(d ?? {}), heroVideo: url }));
-      setUploadError(null);
     } catch (err: any) {
       setUploadError(err?.message || 'Upload failed');
     } finally {
@@ -223,13 +266,12 @@ export default function SiteSettings() {
   }
 
   async function handleBannerFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setUploadError(null);
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const url = await uploadImageFile(file);
+      const url = await uploadFileToServer(file, 'banner');
+      if (url && homeData?.id) await persistUploadedFieldToDB('banner', url);
       setHomeData((d) => ({ ...(d ?? {}), banner: url }));
-      setUploadError(null);
     } catch (err: any) {
       setUploadError(err?.message || 'Upload failed');
     } finally {
@@ -240,13 +282,12 @@ export default function SiteSettings() {
   }
 
   async function handleLogoFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setUploadError(null);
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const url = await uploadImageFile(file);
+      const url = await uploadFileToServer(file, 'logo');
+      if (url && homeData?.id) await persistUploadedFieldToDB('logo', url);
       setHomeData((d) => ({ ...(d ?? {}), logo: url }));
-      setUploadError(null);
     } catch (err: any) {
       setUploadError(err?.message || 'Upload failed');
     } finally {
@@ -256,72 +297,134 @@ export default function SiteSettings() {
     }
   }
 
-  // submit only the fields for the currently edited section
+  // submit only the field(s) intended for the opened modal, or create full record if editSection === 'create'
   async function submitSection() {
     if (!editSection) return;
     setHomeError(null);
     setHomeSuccess(null);
     setHomeSaving(true);
-    try {
-      const payload: Record<string, any> = {};
-      switch (editSection) {
-        case 'hero':
-          payload.heroVideo = homeData?.heroVideo ?? '';
-          break;
-        case 'banner':
-          payload.banner = homeData?.banner ?? null;
-          break;
-        case 'identity':
-          payload.siteName = homeData?.siteName ?? null;
-          payload.logo = homeData?.logo ?? null;
-          payload.about = homeData?.about ?? null;
-          break;
-        case 'vision':
-          payload.vision = homeData?.vision ?? '';
-          break;
-        case 'mission':
-          payload.mission = homeData?.mission ?? '';
-          break;
-        case 'focus':
-          payload.focus = homeData?.focus ?? '';
-          break;
-        case 'coreValues':
-          payload.coreValues = homeData?.coreValues ?? '';
-          break;
-        default:
-          break;
-      }
 
-      let res: Response;
-      if (homeData?.id)
-        res = await fetch(`${ENDPOINT_BASE}/${homeData.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'same-origin',
-          body: JSON.stringify(payload),
-        });
-      else
-        res = await fetch(ENDPOINT_BASE, {
+    try {
+      // CREATE PATH (when no homepage exists and admin is creating)
+      if (editSection === 'create') {
+        // Build full payload - server requires heroVideo, vision, mission, focus, coreValues
+        const payload = {
+          heroVideo: homeData?.heroVideo ?? '',
+          vision: homeData?.vision ?? '',
+          mission: homeData?.mission ?? '',
+          focus: homeData?.focus ?? '',
+          coreValues: homeData?.coreValues ?? '',
+          about: homeData?.about ?? null,
+          logo: homeData?.logo ?? null,
+          banner: homeData?.banner ?? null,
+          siteName: homeData?.siteName ?? null,
+        };
+
+        // basic validation: required core fields must be non-empty
+        if (
+          !payload.heroVideo ||
+          !payload.vision ||
+          !payload.mission ||
+          !payload.focus ||
+          !payload.coreValues
+        ) {
+          setHomeError(
+            'Please provide hero video, vision, mission, focus and core values to create the homepage.'
+          );
+          setHomeSaving(false);
+          return;
+        }
+
+        const res = await fetch(ENDPOINT_BASE, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'same-origin',
           body: JSON.stringify(payload),
         });
 
-      const text = await res.text().catch(() => '');
-      let payloadResp: any = null;
-      try {
-        payloadResp = text ? JSON.parse(text) : null;
-      } catch {
-        payloadResp = null;
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new Error(text || 'Create failed');
+        }
+        const created = await res.json();
+        setHomeData(created);
+        setHomeSuccess('Homepage created');
+        setTimeout(() => {
+          setHomeSuccess(null);
+          setHomeModalOpen(false);
+          setEditSection(null);
+        }, 700);
+        setHomeSaving(false);
+        return;
       }
-      if (!res.ok)
-        throw new Error(payloadResp?.error || payloadResp?.message || text || 'Save failed');
 
-      // merge updated values into local state
-      const body = payloadResp ?? payload;
-      setHomeData((prev) => ({ ...(prev ?? {}), ...(body ?? {}) }));
-      setHomeSuccess('Content saved');
+      // UPDATE PATH
+      if (!homeData?.id) {
+        setHomeError('No homepage record exists. Please create one first.');
+        setHomeSaving(false);
+        return;
+      }
+
+      const payload: Record<string, any> = {};
+
+      switch (editSection) {
+        case 'hero':
+          payload.heroVideo = homeData.heroVideo ?? '';
+          break;
+        case 'banner':
+          payload.banner = homeData.banner ?? null;
+          break;
+        case 'logo':
+          payload.logo = homeData.logo ?? null;
+          break;
+        case 'siteName':
+          payload.siteName = homeData.siteName ?? null;
+          break;
+        case 'about':
+          payload.about = homeData.about ?? null;
+          break;
+        case 'vision':
+          payload.vision = homeData.vision ?? '';
+          break;
+        case 'mission':
+          payload.mission = homeData.mission ?? '';
+          break;
+        case 'focus':
+          payload.focus = homeData.focus ?? '';
+          break;
+        case 'coreValues':
+          payload.coreValues = homeData.coreValues ?? '';
+          break;
+        default:
+          break;
+      }
+
+      // Remove undefined keys so Prisma receives only explicit changes
+      for (const k of Object.keys(payload)) {
+        if (payload[k] === undefined) delete payload[k];
+      }
+
+      if (Object.keys(payload).length === 0) {
+        setHomeError('Nothing to save');
+        setHomeSaving(false);
+        return;
+      }
+
+      const res = await fetch(`${ENDPOINT_BASE}/${homeData.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(text || 'Failed to save');
+      }
+
+      const updated = await res.json();
+      setHomeData((prev) => ({ ...(prev ?? {}), ...(updated ?? {}) }));
+      setHomeSuccess('Saved');
       setTimeout(() => {
         setHomeSuccess(null);
         setHomeModalOpen(false);
@@ -334,50 +437,6 @@ export default function SiteSettings() {
     }
   }
 
-  async function deleteHomeContent() {
-    if (!homeData?.id) return;
-    if (!confirm('Are you sure you want to delete the homepage content?')) return;
-    setHomeSaving(true);
-    setHomeError(null);
-    setHomeData(null);
-    try {
-      const res = await fetch(`${ENDPOINT_BASE}/${homeData.id}`, {
-        method: 'DELETE',
-        credentials: 'same-origin',
-      });
-      const payload = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(payload?.error || `Delete failed`);
-      setHomeSuccess('Homepage content deleted');
-      setTimeout(() => {
-        setHomeSuccess(null);
-        setHomeModalOpen(false);
-        setEditSection(null);
-      }, 900);
-    } catch (err: any) {
-      setHomeError(err?.message || 'Failed to delete homepage content');
-      try {
-        fetchHomeContent();
-      } catch {}
-    } finally {
-      setHomeSaving(false);
-    }
-  }
-
-  const getFieldIcon = (label: 'Vision' | 'Mission' | 'Focus' | 'Core values') => {
-    const base = 'h-6 w-6';
-    switch (label) {
-      case 'Vision':
-        return <Star className={`${base} text-primary-400`} aria-hidden />;
-      case 'Mission':
-        return <Target className={`${base} text-primary-500`} aria-hidden />;
-      case 'Focus':
-        return <Search className={`${base} text-primary-600`} aria-hidden />;
-      case 'Core values':
-        return <Gem className={`${base} text-primary-700`} aria-hidden />;
-      default:
-        return <Star className={`${base} text-primary-500`} aria-hidden />;
-    }
-  };
   const renderRich = (text?: string | null) => {
     if (!text) return <span className="text-muted-foreground">— not set —</span>;
     const paragraphs = String(text).split(/\n\s*\n/);
@@ -397,10 +456,19 @@ export default function SiteSettings() {
     );
   };
 
-  const renderStatCard = (label: string, content: React.ReactNode, onEdit?: () => void) => (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 w-full">
-      <div className="flex items-start justify-between">
-        <div className="text-lg font-semibold mb-2">{label}</div>
+  // renderCard now uses a header background that adapts to light/dark themes.
+  // Light theme: bg-gray-50 with dark text; Dark theme: bg-gray-800 with light text.
+  const renderCard = (title: string, content: React.ReactNode, onEdit?: () => void) => (
+    <section className="bg-background rounded-xl shadow overflow-hidden">
+      <div
+        className={
+          // header: padded row with themed background + border
+          'p-4 border-b flex items-center justify-between ' +
+          // light / dark background and text
+          'bg-gray-50 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
+        }
+      >
+        <h3 className="font-semibold m-0">{title}</h3>
         {onEdit && (
           <div>
             <Button onClick={onEdit} variant="outline">
@@ -409,33 +477,8 @@ export default function SiteSettings() {
           </div>
         )}
       </div>
-      <div>{content}</div>
-    </div>
-  );
-
-  const renderSmallCard = (
-    label: 'Vision' | 'Mission' | 'Focus' | 'Core values',
-    value?: string | null,
-    onEdit?: () => void
-  ) => (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm w-full">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0">{getFieldIcon(label)}</div>
-          <div>
-            <div className="text-base font-semibold">{label}</div>
-            <div className="text-sm mt-2">{renderRich(value)}</div>
-          </div>
-        </div>
-        {onEdit && (
-          <div>
-            <Button onClick={onEdit} variant="outline" size="sm">
-              Edit Content
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
+      <div className="px-4 py-4">{content}</div>
+    </section>
   );
 
   const getVideoNameFromUrl = (url?: string | null) => {
@@ -453,224 +496,203 @@ export default function SiteSettings() {
     ? `About ${homeData.siteName}`
     : 'About (Site name not set)';
 
-  // focus modal field when editing a specific section
+  // focus the appropriate control when modal opens
   useEffect(() => {
     if (!homeModalOpen || !editSection) return;
-    const id = setTimeout(() => {
+    const t = setTimeout(() => {
       const map: Record<string, any> = {
         hero: heroUrlRef.current,
-        identity: siteNameRef.current ?? aboutRef.current,
         banner: bannerFileRef.current,
+        logo: logoFileRef.current,
+        siteName: siteNameRef.current,
+        about: aboutRef.current,
         vision: visionRef.current,
         mission: missionRef.current,
         focus: focusRef.current,
         coreValues: coreValuesRef.current,
       };
       const el = map[editSection];
-      if (el) {
-        try {
-          if (typeof el.focus === 'function') el.focus();
-          if (typeof el.scrollIntoView === 'function')
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } catch {}
-      }
-    }, 160);
-    return () => clearTimeout(id);
+      if (el?.focus) el.focus();
+    }, 120);
+    return () => clearTimeout(t);
   }, [homeModalOpen, editSection]);
+
+  // Build image URL with cache-buster so that newly uploaded files appear immediately
+  function imageUrlWithCacheBuster(url?: string | null) {
+    if (!url) return undefined;
+    // ensure url starts with '/'
+    const path = url.startsWith('/') ? url : `/${url}`;
+    // use updatedAt if available to avoid stale cache; fallback to timestamp
+    const stamp = homeData?.updatedAt ? new Date(homeData.updatedAt).getTime() : Date.now();
+    return `${path}?t=${stamp}`;
+  }
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
-      {/* Top action row: only Refresh + Updated on */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="flex items-center gap-2">
+      {/* Actions */}
+      <div className="flex items-center justify-between gap-3">
+        <div>
           <Button onClick={fetchHomeContent} variant="outline" disabled={homeLoading || homeSaving}>
             Refresh
           </Button>
         </div>
-
         <div className="text-sm text-muted-foreground">
           Updated on: {formatDateTime(homeData?.updatedAt ?? null)}
         </div>
       </div>
 
-      {/* Hero - wrapped in its own container */}
-      <section
-        className="bg-background rounded-xl shadow overflow-hidden"
-        aria-labelledby="hero-heading"
-      >
-        <div className="p-4 border-b flex items-center justify-between">
-          <h3 id="hero-heading" className="font-semibold m-0">
-            Hero video
-          </h3>
-          <Button onClick={() => openHomeModalFor('hero')} variant="outline">
-            Edit Content
-          </Button>
-        </div>
-
-        <div
-          className="container mx-auto px-4 py-4"
-          role="region"
-          aria-label="Hero video container"
-        >
-          {homeLoading ? (
-            <div className="p-6 text-muted-foreground">Loading hero…</div>
-          ) : homeData?.heroVideo ? (
-            <div className="w-full">
-              <video controls className="w-full h-auto max-h-[64vh] bg-black">
-                <source src={homeData.heroVideo} />
-              </video>
-              <div className="mt-3 text-xs text-muted-foreground break-all">
-                {homeData.heroVideo}
+      {/* Individual parent cards */}
+      {renderCard(
+        'Hero',
+        homeLoading ? (
+          <div className="p-6 text-muted-foreground">Loading…</div>
+        ) : homeData?.heroVideo ? (
+          <>
+            <video controls className="w-full h-auto max-h-[56vh] bg-black">
+              <source src={homeData.heroVideo} />
+            </video>
+            <div className="mt-3 text-xs text-muted-foreground break-all">{homeData.heroVideo}</div>
+            {getVideoNameFromUrl(homeData.heroVideo) && (
+              <div className="mt-1 text-sm font-medium">
+                {getVideoNameFromUrl(homeData.heroVideo)}
               </div>
-              {getVideoNameFromUrl(homeData.heroVideo) && (
-                <div className="mt-1 text-sm font-medium">
-                  {getVideoNameFromUrl(homeData.heroVideo)}
+            )}
+          </>
+        ) : (
+          <div className="p-6 text-muted-foreground">No hero video set.</div>
+        ),
+        () => openHomeModalFor('hero')
+      )}
+
+      {renderCard(
+        'Site banner',
+        homeLoading ? (
+          <div className="p-6 text-muted-foreground">Loading…</div>
+        ) : homeData?.banner ? (
+          <div className="w-full h-[240px] md:h-[360px] overflow-hidden rounded">
+            <img
+              src={imageUrlWithCacheBuster(homeData?.banner)}
+              alt="Site banner"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="p-6 text-muted-foreground">No banner set.</div>
+        ),
+        () => openHomeModalFor('banner')
+      )}
+
+      {renderCard(
+        'Site Identity: Site Name',
+        homeLoading ? (
+          <div className="p-6 text-muted-foreground">Loading…</div>
+        ) : (
+          <div className="text-lg font-semibold">
+            {homeData?.siteName ?? <span className="text-muted-foreground">Site name not set</span>}
+          </div>
+        ),
+        () => openHomeModalFor('siteName')
+      )}
+
+      {renderCard(
+        // About card title now includes the site name (reads from siteName)
+        homeLoading
+          ? 'Site Identity: About'
+          : `Site Identity: About — ${homeData?.siteName ?? 'Site name not set'}`,
+        homeLoading ? (
+          <div className="p-6 text-muted-foreground">Loading…</div>
+        ) : (
+          <div className="text-sm">{renderRich(homeData?.about ?? null)}</div>
+        ),
+        () => openHomeModalFor('about')
+      )}
+
+      {renderCard(
+        'Site Identity: Logo',
+        homeLoading ? (
+          <div className="p-6 text-muted-foreground">Loading…</div>
+        ) : (
+          <div className="flex items-center gap-6">
+            <div>
+              {homeData?.logo ? (
+                <img
+                  src={imageUrlWithCacheBuster(homeData?.logo)}
+                  alt="logo"
+                  className="h-24 object-contain rounded"
+                />
+              ) : (
+                <div className="h-24 w-24 flex items-center justify-center border rounded text-muted-foreground">
+                  No logo
                 </div>
               )}
             </div>
-          ) : (
-            <div className="p-6 text-muted-foreground">No hero video set.</div>
-          )}
-        </div>
-      </section>
+            <div className="flex-1">
+              <div className="text-sm text-muted-foreground mb-2">
+                Recommended: /public/assets/images/logo
+              </div>
+            </div>
+          </div>
+        ),
+        () => openHomeModalFor('logo')
+      )}
 
-      {/* Banner - wrapped in its own container */}
-      <section
-        className="bg-background rounded-xl shadow overflow-hidden"
-        aria-labelledby="banner-heading"
+      {renderCard(
+        'Strategic Statement: Vision',
+        homeLoading ? (
+          <div className="p-6 text-muted-foreground">Loading…</div>
+        ) : (
+          <div className="text-sm">{renderRich(homeData?.vision ?? null)}</div>
+        ),
+        () => openHomeModalFor('vision')
+      )}
+
+      {renderCard(
+        'Strategic Statement: Mission',
+        homeLoading ? (
+          <div className="p-6 text-muted-foreground">Loading…</div>
+        ) : (
+          <div className="text-sm">{renderRich(homeData?.mission ?? null)}</div>
+        ),
+        () => openHomeModalFor('mission')
+      )}
+
+      {renderCard(
+        'Strategic Statement: Focus',
+        homeLoading ? (
+          <div className="p-6 text-muted-foreground">Loading…</div>
+        ) : (
+          <div className="text-sm">{renderRich(homeData?.focus ?? null)}</div>
+        ),
+        () => openHomeModalFor('focus')
+      )}
+
+      {renderCard(
+        'Strategic Statement: Core values',
+        homeLoading ? (
+          <div className="p-6 text-muted-foreground">Loading…</div>
+        ) : (
+          <div className="text-sm">{renderRich(homeData?.coreValues ?? null)}</div>
+        ),
+        () => openHomeModalFor('coreValues')
+      )}
+
+      {/* Modal */}
+      <Dialog
+        open={homeModalOpen}
+        onOpenChange={(val) => (val ? setHomeModalOpen(true) : closeHomeModal())}
       >
-        <div className="p-4 border-b flex items-center justify-between">
-          <h3 id="banner-heading" className="font-semibold m-0">
-            Site banner
-          </h3>
-          <Button onClick={() => openHomeModalFor('banner')} variant="outline">
-            Edit Content
-          </Button>
-        </div>
-
-        <div
-          className="container mx-auto px-4 py-4"
-          role="region"
-          aria-label="Site banner container"
-        >
-          {homeLoading ? (
-            <div className="p-6 text-muted-foreground">Loading banner…</div>
-          ) : homeData?.banner ? (
-            <div className="w-full overflow-hidden rounded">
-              <div className="w-full h-[240px] md:h-[360px] overflow-hidden rounded">
-                <img
-                  src={homeData.banner}
-                  alt="Site banner"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="p-6 text-muted-foreground">No banner set.</div>
-          )}
-        </div>
-      </section>
-
-      {/* Site Identity */}
-      <div className="bg-background rounded-xl shadow p-4">
-        <div className="text-lg font-semibold mb-4">Site Identity</div>
-        <div className="space-y-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm w-full">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-6">
-                <div>
-                  {homeLoading ? (
-                    <div className="text-muted-foreground">Loading logo…</div>
-                  ) : homeData?.logo ? (
-                    <img
-                      src={homeData.logo}
-                      alt="Site logo"
-                      className="h-24 object-contain rounded"
-                    />
-                  ) : (
-                    <div className="text-muted-foreground h-24 w-24 flex items-center justify-center border rounded">
-                      No logo
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-1">
-                  <div className="text-sm text-muted-foreground mb-2">
-                    Recommended: store logo files under <code>/public/assets/images/logo</code>.
-                  </div>
-                  <div className="text-lg font-semibold">
-                    {homeData?.siteName ?? (
-                      <span className="text-muted-foreground">Site name not set</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Button onClick={() => openHomeModalFor('identity')} variant="outline">
-                  Edit Content
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm w-full">
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="text-base font-semibold mb-2">{aboutTitle}</div>
-                <div className="text-sm">{renderRich(homeData?.about ?? null)}</div>
-              </div>
-              <div>
-                <Button onClick={() => openHomeModalFor('identity')} variant="outline">
-                  Edit Content
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Strategic statements */}
-      <div className="bg-background rounded-xl shadow p-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-lg font-semibold">Strategic statements</div>
-        </div>
-        <div className="space-y-4">
-          {renderSmallCard('Vision', homeData?.vision ?? null, () => openHomeModalFor('vision'))}
-          {renderSmallCard('Mission', homeData?.mission ?? null, () => openHomeModalFor('mission'))}
-          {renderSmallCard('Focus', homeData?.focus ?? null, () => openHomeModalFor('focus'))}
-          {renderSmallCard('Core values', homeData?.coreValues ?? null, () =>
-            openHomeModalFor('coreValues')
-          )}
-        </div>
-      </div>
-
-      {/* Bottom actions */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Button onClick={fetchHomeContent} variant="outline" disabled={homeLoading || homeSaving}>
-            Refresh
-          </Button>
-        </div>
-
-        <div className="text-sm text-muted-foreground">
-          Updated on: {formatDateTime(homeData?.updatedAt ?? null)}
-        </div>
-      </div>
-
-      {/* Modal: conditional content based on editSection */}
-      <Dialog open={homeModalOpen} onOpenChange={(val) => !val && closeHomeModal()}>
         <DialogContent className="max-w-3xl w-full max-h-[85vh] p-0 sm:rounded-lg overflow-hidden">
           <DialogHeader>
             <DialogTitle className="px-4 py-3 border-b">
-              {homeData?.id ? 'Edit content' : 'Create content'}
+              {editSection === 'create' ? 'Create homepage' : 'Edit content'}
             </DialogTitle>
           </DialogHeader>
 
           <div className="p-4 overflow-y-auto max-h-[72vh] space-y-4">
-            {homeLoading ? (
-              <div className="p-6 text-center">Loading…</div>
-            ) : editSection === 'hero' ? (
+            {homeLoading && <div className="p-6 text-center">Loading…</div>}
+
+            {/* CREATE: show full form so admin can create a homepage record */}
+            {editSection === 'create' && !homeLoading && (
               <>
                 <div>
                   <label className="text-sm block mb-1">Hero video URL</label>
@@ -690,55 +712,57 @@ export default function SiteSettings() {
                   <label className="text-sm block mb-1">Upload hero video (.mov, .mp4, .gif)</label>
                   <input
                     type="file"
-                    accept=".mov,.mp4,.gif,video/*,image/gif"
+                    accept=".mov,.mp4,.gif,video/*"
                     onChange={handleHeroFileChange}
                     disabled={uploading || homeSaving}
                   />
-                  {uploading && uploadProgress !== null && (
-                    <div className="text-sm text-muted-foreground">
-                      Uploading: {uploadProgress}%
-                    </div>
-                  )}
                 </div>
 
-                <div className="flex gap-2">
-                  <Button onClick={submitSection} disabled={homeSaving}>
-                    {homeSaving ? 'Saving…' : 'Save'}
-                  </Button>
-                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
-                    Cancel
-                  </Button>
-                </div>
-              </>
-            ) : editSection === 'banner' ? (
-              <>
                 <div>
-                  <label className="text-sm block mb-1">Banner image</label>
-                  <input
-                    ref={bannerFileRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleBannerFileChange}
-                    disabled={uploading || homeSaving}
+                  <label className="text-sm block mb-1">Vision</label>
+                  <textarea
+                    ref={visionRef}
+                    className="w-full border p-2 rounded h-24"
+                    value={homeData?.vision ?? ''}
+                    onChange={(e) => setHomeData((d) => ({ ...(d ?? {}), vision: e.target.value }))}
                   />
-                  {uploading && uploadProgress !== null && (
-                    <div className="text-sm text-muted-foreground">
-                      Uploading: {uploadProgress}%
-                    </div>
-                  )}
                 </div>
 
-                <div className="flex gap-2">
-                  <Button onClick={submitSection} disabled={homeSaving}>
-                    {homeSaving ? 'Saving…' : 'Save'}
-                  </Button>
-                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
-                    Cancel
-                  </Button>
+                <div>
+                  <label className="text-sm block mb-1">Mission</label>
+                  <textarea
+                    ref={missionRef}
+                    className="w-full border p-2 rounded h-24"
+                    value={homeData?.mission ?? ''}
+                    onChange={(e) =>
+                      setHomeData((d) => ({ ...(d ?? {}), mission: e.target.value }))
+                    }
+                  />
                 </div>
-              </>
-            ) : editSection === 'identity' ? (
-              <>
+
+                <div>
+                  <label className="text-sm block mb-1">Focus</label>
+                  <textarea
+                    ref={focusRef}
+                    className="w-full border p-2 rounded h-20"
+                    value={homeData?.focus ?? ''}
+                    onChange={(e) => setHomeData((d) => ({ ...(d ?? {}), focus: e.target.value }))}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm block mb-1">Core values (comma separated)</label>
+                  <input
+                    ref={coreValuesRef}
+                    type="text"
+                    className="w-full border p-2 rounded"
+                    value={homeData?.coreValues ?? ''}
+                    onChange={(e) =>
+                      setHomeData((d) => ({ ...(d ?? {}), coreValues: e.target.value }))
+                    }
+                  />
+                </div>
+
                 <div>
                   <label className="text-sm block mb-1">Site name</label>
                   <input
@@ -753,6 +777,16 @@ export default function SiteSettings() {
                 </div>
 
                 <div>
+                  <label className="text-sm block mb-1">About</label>
+                  <textarea
+                    ref={aboutRef}
+                    className="w-full border p-2 rounded h-28"
+                    value={homeData?.about ?? ''}
+                    onChange={(e) => setHomeData((d) => ({ ...(d ?? {}), about: e.target.value }))}
+                  />
+                </div>
+
+                <div>
                   <label className="text-sm block mb-1">Logo image</label>
                   <input
                     ref={logoFileRef}
@@ -761,20 +795,43 @@ export default function SiteSettings() {
                     onChange={handleLogoFileChange}
                     disabled={uploading || homeSaving}
                   />
-                  {uploading && uploadProgress !== null && (
-                    <div className="text-sm text-muted-foreground">
-                      Uploading: {uploadProgress}%
-                    </div>
-                  )}
                 </div>
 
                 <div>
-                  <label className="text-sm block mb-1">About</label>
-                  <textarea
-                    ref={aboutRef}
-                    className="w-full border p-2 rounded h-28"
-                    value={homeData?.about ?? ''}
-                    onChange={(e) => setHomeData((d) => ({ ...(d ?? {}), about: e.target.value }))}
+                  <label className="text-sm block mb-1">Banner image</label>
+                  <input
+                    ref={bannerFileRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleBannerFileChange}
+                    disabled={uploading || homeSaving}
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button onClick={submitSection} disabled={homeSaving}>
+                    {homeSaving ? 'Creating…' : 'Create homepage'}
+                  </Button>
+                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* SITE NAME */}
+            {editSection === 'siteName' && !homeLoading && (
+              <>
+                <div>
+                  <label className="text-sm block mb-1">Site name</label>
+                  <input
+                    ref={siteNameRef}
+                    type="text"
+                    value={homeData?.siteName ?? ''}
+                    onChange={(e) =>
+                      setHomeData((d) => ({ ...(d ?? {}), siteName: e.target.value }))
+                    }
+                    className="w-full border p-2 rounded"
                   />
                 </div>
 
@@ -787,32 +844,164 @@ export default function SiteSettings() {
                   </Button>
                 </div>
               </>
-            ) : editSection === 'vision' ||
-              editSection === 'mission' ||
-              editSection === 'focus' ||
-              editSection === 'coreValues' ? (
+            )}
+
+            {/* LOGO */}
+            {editSection === 'logo' && !homeLoading && (
               <>
-                {/* Strategic statements grouped */}
+                <div>
+                  <label className="text-sm block mb-1">Logo image</label>
+                  <input
+                    ref={logoFileRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoFileChange}
+                    disabled={uploading || homeSaving}
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button onClick={submitSection} disabled={homeSaving}>
+                    {homeSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* ABOUT */}
+            {editSection === 'about' && !homeLoading && (
+              <>
+                <div>
+                  <label className="text-sm block mb-1">{aboutTitle}</label>
+                  <textarea
+                    ref={aboutRef}
+                    className="w-full border p-2 rounded h-28"
+                    value={homeData?.about ?? ''}
+                    onChange={(e) => setHomeData((d) => ({ ...(d ?? {}), about: e.target.value }))}
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button onClick={submitSection} disabled={homeSaving}>
+                    {homeSaving ? 'Saving…' : 'Save About'}
+                  </Button>
+                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* HERO / BANNER / STRATEGIC statements (single-field modals) */}
+            {editSection === 'hero' && !homeLoading && (
+              <>
+                <div>
+                  <label className="text-sm block mb-1">Hero video URL</label>
+                  <input
+                    ref={heroUrlRef}
+                    type="text"
+                    value={homeData?.heroVideo ?? ''}
+                    onChange={(e) =>
+                      setHomeData((d) => ({ ...(d ?? {}), heroVideo: e.target.value }))
+                    }
+                    className="w-full border p-2 rounded"
+                    placeholder="https://..."
+                  />
+                </div>
+                <div>
+                  <label className="text-sm block mb-1">Upload hero video (.mov, .mp4, .gif)</label>
+                  <input
+                    type="file"
+                    accept=".mov,.mp4,.gif,video/*"
+                    onChange={handleHeroFileChange}
+                    disabled={uploading || homeSaving}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={submitSection} disabled={homeSaving}>
+                    {homeSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {editSection === 'banner' && !homeLoading && (
+              <>
+                <div>
+                  <label className="text-sm block mb-1">Banner image</label>
+                  <input
+                    ref={bannerFileRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleBannerFileChange}
+                    disabled={uploading || homeSaving}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={submitSection} disabled={homeSaving}>
+                    {homeSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {editSection === 'vision' && !homeLoading && (
+              <>
                 <div>
                   <label className="text-sm block mb-1">Vision</label>
                   <textarea
                     ref={visionRef}
-                    className="w-full border p-2 rounded h-24"
+                    className="w-full border p-2 rounded h-28"
                     value={homeData?.vision ?? ''}
                     onChange={(e) => setHomeData((d) => ({ ...(d ?? {}), vision: e.target.value }))}
                   />
                 </div>
+                <div className="flex gap-2">
+                  <Button onClick={submitSection} disabled={homeSaving}>
+                    {homeSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {editSection === 'mission' && !homeLoading && (
+              <>
                 <div>
                   <label className="text-sm block mb-1">Mission</label>
                   <textarea
                     ref={missionRef}
-                    className="w-full border p-2 rounded h-24"
+                    className="w-full border p-2 rounded h-28"
                     value={homeData?.mission ?? ''}
                     onChange={(e) =>
                       setHomeData((d) => ({ ...(d ?? {}), mission: e.target.value }))
                     }
                   />
                 </div>
+                <div className="flex gap-2">
+                  <Button onClick={submitSection} disabled={homeSaving}>
+                    {homeSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {editSection === 'focus' && !homeLoading && (
+              <>
                 <div>
                   <label className="text-sm block mb-1">Focus</label>
                   <textarea
@@ -822,6 +1011,19 @@ export default function SiteSettings() {
                     onChange={(e) => setHomeData((d) => ({ ...(d ?? {}), focus: e.target.value }))}
                   />
                 </div>
+                <div className="flex gap-2">
+                  <Button onClick={submitSection} disabled={homeSaving}>
+                    {homeSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {editSection === 'coreValues' && !homeLoading && (
+              <>
                 <div>
                   <label className="text-sm block mb-1">Core values (comma separated)</label>
                   <input
@@ -834,19 +1036,17 @@ export default function SiteSettings() {
                     }
                   />
                 </div>
-
                 <div className="flex gap-2">
                   <Button onClick={submitSection} disabled={homeSaving}>
-                    {homeSaving ? 'Saving…' : 'Save all'}
+                    {homeSaving ? 'Saving…' : 'Save'}
                   </Button>
                   <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
                     Cancel
                   </Button>
                 </div>
               </>
-            ) : (
-              <div className="p-4 text-sm text-muted-foreground">Select a section to edit.</div>
             )}
+
             {homeError && <div className="text-sm text-red-500 mt-2">{homeError}</div>}
             {homeSuccess && <div className="text-sm text-green-600 mt-2">{homeSuccess}</div>}
           </div>
