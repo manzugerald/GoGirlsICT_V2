@@ -1,6 +1,8 @@
 {
+  "/(admin)/admin/dashboard/page": "app/(admin)/admin/dashboard/page.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
   "/api/homepage/[id]/route": "app/api/homepage/[id]/route.js",
   "/api/homepage/route": "app/api/homepage/route.js",
-  "/api/menu/route": "app/api/menu/route.js"
+  "/api/menu/route": "app/api/menu/route.js",
+  "/api/youtube-videos/route": "app/api/youtube-videos/route.js"
 }
