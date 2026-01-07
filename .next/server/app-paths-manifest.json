@@ -1,8 +1,11 @@
 {
   "/(admin)/admin/dashboard/page": "app/(admin)/admin/dashboard/page.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/facebook-posts/route": "app/api/facebook-posts/route.js",
   "/api/homepage/[id]/route": "app/api/homepage/[id]/route.js",
   "/api/homepage/route": "app/api/homepage/route.js",
   "/api/menu/route": "app/api/menu/route.js",
+  "/api/projects/route": "app/api/projects/route.js",
+  "/api/users/[id]/route": "app/api/users/[id]/route.js",
   "/api/youtube-videos/route": "app/api/youtube-videos/route.js"
 }

@@ -260,14 +260,39 @@ export default function ProjectsSection({
               : '-';
 
             const preview = buildPreview(project.content);
+            const firstImage =
+              Array.isArray(project.images) && project.images.length > 0 ? project.images[0] : null;
 
             return (
               <div
                 key={project.id}
                 className="p-4 border rounded-md bg-white dark:bg-gray-900 hover:shadow-sm transition-shadow"
               >
-                <div className="flex items-start justify-between gap-4">
-                  {/* Clickable left area opens the Project inline view */}
+                <div className="flex gap-4 items-start">
+                  {/* Left: Project image (thumbnail) */}
+                  <div
+                    className="flex-shrink-0 w-32 h-24 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 border"
+                    onClick={() => setViewing(project)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') setViewing(project);
+                    }}
+                  >
+                    {firstImage ? (
+                      <img
+                        src={firstImage}
+                        alt={project.title ?? 'project image'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">
+                        No image
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right: main content (title, status, preview). Clicking this opens view */}
                   <div
                     className="flex-1 min-w-0 cursor-pointer"
                     onClick={() => setViewing(project)}
@@ -291,8 +316,7 @@ export default function ProjectsSection({
                       </div>
                     </div>
 
-                    <div className="text-sm text-muted-foreground mt-2">
-                      {/* Two-line preview with ellipsis (approx 60 chars per line) */}
+                    <div className="text-sm mt-2">
                       {preview ? (
                         <div
                           style={{
@@ -309,15 +333,17 @@ export default function ProjectsSection({
                       ) : (
                         <div className="text-sm text-muted">No content</div>
                       )}
-
-                      <div className="text-xs text-gray-500 mt-2">
-                        By: {createdByLabel} · Created: {createdAt}
-                      </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* Actions on the right (same line, vertically centered) */}
-                  <div className="flex items-center gap-2 min-w-max">
+                {/* Bottom row: By: and actions */}
+                <div className="mt-3 flex items-center justify-between">
+                  <div className="text-xs text-gray-500">
+                    By: {createdByLabel} · Created: {createdAt}
+                  </div>
+
+                  <div className="flex items-center gap-2">
                     <Button
                       type="button"
                       size="sm"
