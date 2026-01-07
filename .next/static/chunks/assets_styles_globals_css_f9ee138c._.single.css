@@ -1149,6 +1149,10 @@
     min-height: calc(var(--spacing) * 16);
   }
 
+  .min-h-\[9rem\] {
+    min-height: 9rem;
+  }
+
   .min-h-\[40px\] {
     min-height: 40px;
   }
@@ -3932,6 +3936,18 @@
   @media (width >= 40rem) {
     .sm\:block {
       display: block;
+    }
+  }
+
+  @media (width >= 40rem) {
+    .sm\:h-36 {
+      height: calc(var(--spacing) * 36);
+    }
+  }
+
+  @media (width >= 40rem) {
+    .sm\:w-56 {
+      width: calc(var(--spacing) * 56);
     }
   }
 
