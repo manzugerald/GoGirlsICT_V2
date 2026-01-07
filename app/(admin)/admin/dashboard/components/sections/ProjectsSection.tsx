@@ -100,7 +100,7 @@ export default function ProjectsSection({
     }
 
     fullText = fullText.replace(/\s+/g, ' ').trim();
-    const maxChars = 120; // ~60 chars per line x 2 lines
+    const maxChars = 350; // ~60 chars per line x 2 lines
     if (fullText.length <= maxChars) return fullText;
     return fullText.slice(0, maxChars).trim() + '...';
   }
@@ -268,10 +268,11 @@ export default function ProjectsSection({
                 key={project.id}
                 className="p-4 border rounded-md bg-white dark:bg-gray-900 hover:shadow-sm transition-shadow"
               >
-                <div className="flex gap-4 items-start">
-                  {/* Left: Project image (thumbnail) */}
+                {/* Layout becomes responsive: column on small screens, row on sm+ */}
+                <div className="flex flex-col sm:flex-row gap-4 items-start">
+                  {/* Left: Project image (rectangular thumbnail). Click opens the Project inline view */}
                   <div
-                    className="flex-shrink-0 w-32 h-24 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 border"
+                    className="flex-shrink-0 w-full sm:w-56 h-40 sm:h-36 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 border cursor-pointer"
                     onClick={() => setViewing(project)}
                     role="button"
                     tabIndex={0}
@@ -294,7 +295,7 @@ export default function ProjectsSection({
 
                   {/* Right: main content (title, status, preview). Clicking this opens view */}
                   <div
-                    className="flex-1 min-w-0 cursor-pointer"
+                    className="flex-1 min-w-0 cursor-pointer flex flex-col"
                     onClick={() => setViewing(project)}
                     role="button"
                     tabIndex={0}
@@ -302,26 +303,29 @@ export default function ProjectsSection({
                       if (e.key === 'Enter' || e.key === ' ') setViewing(project);
                     }}
                   >
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-semibold text-lg truncate">
-                        {project.title || 'Untitled Project'}
-                      </h3>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-semibold text-lg truncate">
+                          {project.title || 'Untitled Project'}
+                        </h3>
 
-                      <div className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-sm">
-                        {project.projectStatus ?? '-'}
-                      </div>
+                        <div className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-sm">
+                          {project.projectStatus ?? '-'}
+                        </div>
 
-                      <div className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-sm">
-                        {project.publishStatus ?? '-'}
+                        <div className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-sm">
+                          {project.publishStatus ?? '-'}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="text-sm mt-2">
+                    {/* Make preview expand to roughly the height of the image by flexing */}
+                    <div className="mt-2 flex-1 min-h-[9rem]">
                       {preview ? (
                         <div
                           style={{
                             display: '-webkit-box',
-                            WebkitLineClamp: 2,
+                            WebkitLineClamp: 4, // allow more lines to better match image height
                             WebkitBoxOrient: 'vertical',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -334,52 +338,52 @@ export default function ProjectsSection({
                         <div className="text-sm text-muted">No content</div>
                       )}
                     </div>
-                  </div>
-                </div>
 
-                {/* Bottom row: By: and actions */}
-                <div className="mt-3 flex items-center justify-between">
-                  <div className="text-xs text-gray-500">
-                    By: {createdByLabel} · Created: {createdAt}
-                  </div>
+                    {/* Meta row moved to bottom of the right column so spacing is consistent */}
+                    <div className="mt-3 flex items-center justify-between">
+                      <div className="text-xs text-gray-500">
+                        By: {createdByLabel} · Created: {createdAt}
+                      </div>
 
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setViewing(project);
-                      }}
-                    >
-                      View
-                    </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setViewing(project);
+                          }}
+                        >
+                          View
+                        </Button>
 
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(project);
-                      }}
-                    >
-                      Edit
-                    </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEdit(project);
+                          }}
+                        >
+                          Edit
+                        </Button>
 
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="destructive"
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        await handleDelete(project.id);
-                      }}
-                      disabled={Boolean(deleteLoading && deleteId === project.id)}
-                    >
-                      {deleteLoading && deleteId === project.id ? 'Deleting...' : 'Delete'}
-                    </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="destructive"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            await handleDelete(project.id);
+                          }}
+                          disabled={Boolean(deleteLoading && deleteId === project.id)}
+                        >
+                          {deleteLoading && deleteId === project.id ? 'Deleting...' : 'Delete'}
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
