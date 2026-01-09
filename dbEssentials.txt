@@ -4,4 +4,14 @@ To add a new table called "messages", first, generate the prisma object. Then, m
 After the migration is complete, proceed with database seeding. This should show the inserted items either in prisma studio or pgAdmin4
 1. npx prisma generate
 2. npx prisma migrate dev --name add_homepage_and_projects_and_messages_tables
-3. npx tsx prisma/message.ts
+3. npx tsx prisma/message.tsn
+
+
+npm install -D tsconfig-paths
+npx ts-node -r tsconfig-paths/register db/seed.ts
+
+
+
+http://localhost:3000/resources?type=reports&report=6&reportTitle=Number+4&reportUploader=Eva+Yayi&reportUploaderImage=%2Fassets%2Fimages%2Fusers%2Fevayayi.jpg
+r^L/%HR>W*K8
+npx prisma migrate dev --name rename_video_to_youtube
