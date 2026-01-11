@@ -1114,7 +1114,7 @@ export default function ResponsesSection({
                   tableRef={React.createRef()}
                 />
               ) : null}
-            </div>
+            </div
           </>
         )}
       </div>
