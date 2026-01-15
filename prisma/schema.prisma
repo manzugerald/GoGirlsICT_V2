@@ -209,6 +209,10 @@ model User {
   createdFaqs  FAQ[] @relation("FAQCreatedBy")
   updatedFaqs  FAQ[] @relation("FAQUpdatedBy")
   approvedFaqs FAQ[] @relation("FAQApprovedBy")
+
+  // Team
+  createdTeamMembers Team[] @relation("TeamCreatedBy")
+  updatedTeamMembers Team[] @relation("TeamUpdatedBy")
 }
 
 model PasswordHistory {
@@ -492,3 +496,56 @@ model FacebookCacheMeta {
   id          Int      @id @default(1)
   lastFetched DateTime
 }
+
+
+
+enum TeamRole {
+  founder
+  co_founder
+  board_member
+  project_director
+  program_director
+  project_manager
+  coordinator
+  mentor
+  volunteer
+  advisor
+  communications
+  finance
+  operations
+  web_developer
+  web_maintainer
+  other
+}
+
+
+model Team {
+  id           Int       @id @default(autoincrement())
+
+  firstName    String
+  lastName     String
+  profileImage String?
+  about        String?
+
+  // contact & social
+  email        String?   @unique
+  phone        String?   @unique
+  linkedInUrl  String?
+  facebookUrl  String?
+  xUrl         String?
+  websiteUrl   String?
+
+  // status
+  isActive     Boolean   @default(true)
+
+  // audit
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  createdById  String
+  updatedById  String?
+
+  createdBy    User     @relation("TeamCreatedBy", fields: [createdById], references: [id])
+  updatedBy    User?    @relation("TeamUpdatedBy", fields: [updatedById], references: [id])
+}
+

@@ -19,6 +19,20 @@ datasource db {
  * - Message.allowResponses toggles whether replies are allowed per-message (useful for external messages).
  * - Message.senderEmail / senderIp store visitor metadata when messageKind = external.
  */
+model HomePage {
+  id         Int      @id @default(autoincrement())
+  heroVideo  String
+  vision     String
+  mission    String
+  focus      String
+  coreValues String
+  about      String? // new
+  logo       String? // new
+  banner     String? // new
+  siteName   String? // new
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
 
 model Project {
   id            Int           @id @default(autoincrement())
@@ -36,23 +50,30 @@ model Project {
   approvedBy    User?         @relation("ProjectApprovedBy", fields: [approvedById], references: [id])
   createdBy     User          @relation("ProjectCreatedBy", fields: [createdById], references: [id])
   updatedBy     User?         @relation("ProjectUpdatedBy", fields: [updatedById], references: [id])
-  reports       Report[]
+  reports       Report?
   events        Event[]
 }
 
-model HomePage {
-  id         Int      @id @default(autoincrement())
-  heroVideo  String
-  vision     String
-  mission    String
-  focus      String
-  coreValues String
-  about      String? // new
-  logo       String? // new
-  banner     String? // new
-  siteName   String? // new
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model Report {
+  id            Int           @id @default(autoincrement())
+  title         String
+  slug          String        @unique
+  images        String[]
+  files         String[]
+  publishStatus PublishStatus @default(draft)
+  accessCount   Int           @default(0)
+  downloadCount Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  createdById   String
+  updatedById   String?
+  approvedById  String?
+  projectId     Int?          @unique // one-to-one with Project
+  approvedBy    User?         @relation("ReportApprovedBy", fields: [approvedById], references: [id])
+  createdBy     User          @relation("ReportCreatedBy", fields: [createdById], references: [id])
+  project       Project?      @relation(fields: [projectId], references: [id])
+  updatedBy     User?         @relation("ReportUpdatedBy", fields: [updatedById], references: [id])
+  events        Event[]
 }
 
 enum MessageCategory {
@@ -102,28 +123,6 @@ model Message {
   responses Response[]
 
   @@map("Message")
-}
-
-model Report {
-  id            Int           @id @default(autoincrement())
-  title         String
-  slug          String        @unique
-  images        String[]
-  files         String[]
-  publishStatus PublishStatus @default(draft)
-  accessCount   Int           @default(0)
-  downloadCount Int           @default(0)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  createdById   String
-  updatedById   String?
-  approvedById  String?
-  projectId     Int?
-  approvedBy    User?         @relation("ReportApprovedBy", fields: [approvedById], references: [id])
-  createdBy     User          @relation("ReportCreatedBy", fields: [createdById], references: [id])
-  project       Project?      @relation(fields: [projectId], references: [id])
-  updatedBy     User?         @relation("ReportUpdatedBy", fields: [updatedById], references: [id])
-  events        Event[]
 }
 
 // Prisma schema: User + user-related models (PasswordHistory, PasswordChangeLog,
@@ -206,6 +205,10 @@ model User {
   createdFaqs  FAQ[] @relation("FAQCreatedBy")
   updatedFaqs  FAQ[] @relation("FAQUpdatedBy")
   approvedFaqs FAQ[] @relation("FAQApprovedBy")
+
+  // Team
+  createdTeamMembers Team[] @relation("TeamCreatedBy")
+  updatedTeamMembers Team[] @relation("TeamUpdatedBy")
 }
 
 model PasswordHistory {
@@ -488,4 +491,53 @@ model FacebookPost {
 model FacebookCacheMeta {
   id          Int      @id @default(1)
   lastFetched DateTime
+}
+
+enum TeamRole {
+  founder
+  co_founder
+  board_member
+  project_director
+  program_director
+  project_manager
+  coordinator
+  mentor
+  volunteer
+  advisor
+  communications
+  finance
+  operations
+  web_developer
+  web_maintainer
+  other
+}
+
+model Team {
+  id Int @id @default(autoincrement())
+
+  firstName    String
+  lastName     String
+  profileImage String?
+  about        String?
+
+  // contact & social
+  email       String? @unique
+  phone       String? @unique
+  linkedInUrl String?
+  facebookUrl String?
+  xUrl        String?
+  websiteUrl  String?
+
+  // status
+  isActive Boolean @default(true)
+
+  // audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdById String
+  updatedById String?
+
+  createdBy User  @relation("TeamCreatedBy", fields: [createdById], references: [id])
+  updatedBy User? @relation("TeamUpdatedBy", fields: [updatedById], references: [id])
 }
