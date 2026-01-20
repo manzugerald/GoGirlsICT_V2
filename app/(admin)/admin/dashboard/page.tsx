@@ -45,7 +45,7 @@ import FacebookSection from './components/sections/FacebookSection';
 import YouTubeSection from './components/sections/YouTubeSection';
 import SiteSettings from './components/sections/SiteSettings';
 import AccountSettings from './components/sections/AccountSettings';
-import TeamSection from './components/sections/TeamSection'; // <-- new Team section import
+import TeamsSection from './components/sections/TeamsSection'; // <-- use TeamsSection
 
 // Sidebar Dropdown (reusable)
 import SidebarDropdown from './components/sidebar/SidebarDropdown';
@@ -165,7 +165,7 @@ type Section = (typeof sections)[number];
 const sectionFeatures: Record<Section, { apiRoute?: string }> = {
   home: {},
   projects: { apiRoute: '/api/projects' },
-  team: { apiRoute: '/api/team' }, // <-- team API route
+  team: { apiRoute: '/api/teams' }, // <-- use /api/teams
   events: { apiRoute: '/api/events' },
   reports: { apiRoute: '/api/reports' },
   institutions: { apiRoute: '/api/institutions' },
@@ -725,7 +725,7 @@ export default function AdminDashboardPage() {
         );
       case 'team':
         return (
-          <TeamSection
+          <TeamsSection
             paginatedData={paginatedData}
             page={page}
             rowsPerPage={rowsPerPage}
