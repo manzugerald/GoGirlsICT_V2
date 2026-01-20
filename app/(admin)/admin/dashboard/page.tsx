@@ -45,6 +45,7 @@ import FacebookSection from './components/sections/FacebookSection';
 import YouTubeSection from './components/sections/YouTubeSection';
 import SiteSettings from './components/sections/SiteSettings';
 import AccountSettings from './components/sections/AccountSettings';
+import TeamSection from './components/sections/TeamSection'; // <-- new Team section import
 
 // Sidebar Dropdown (reusable)
 import SidebarDropdown from './components/sidebar/SidebarDropdown';
@@ -143,6 +144,7 @@ function TableControls({
 const sections = [
   'home',
   'projects',
+  'team', // <-- added team section key
   'events',
   'reports',
   'institutions',
@@ -163,6 +165,7 @@ type Section = (typeof sections)[number];
 const sectionFeatures: Record<Section, { apiRoute?: string }> = {
   home: {},
   projects: { apiRoute: '/api/projects' },
+  team: { apiRoute: '/api/team' }, // <-- team API route
   events: { apiRoute: '/api/events' },
   reports: { apiRoute: '/api/reports' },
   institutions: { apiRoute: '/api/institutions' },
@@ -182,6 +185,7 @@ const sectionFeatures: Record<Section, { apiRoute?: string }> = {
 const sectionIcons: Record<Section, React.ReactNode> = {
   home: <FaHome className="text-pink-600 dark:text-pink-400" />,
   projects: <FaClipboardList className="text-yellow-600 dark:text-yellow-400" />,
+  team: <FaUserCircle className="text-teal-600 dark:text-teal-400" />, // team icon
   events: <FaCalendarAlt className="text-green-600 dark:text-green-400" />,
   reports: <FaFilePdf className="text-red-600 dark:text-red-400" />,
   institutions: <FaUniversity className="text-blue-600 dark:text-blue-400" />,
@@ -201,6 +205,7 @@ const sectionIcons: Record<Section, React.ReactNode> = {
 const sectionLabels: Record<Section, string> = {
   home: 'Home',
   projects: 'Projects',
+  team: 'Team', // label for team
   events: 'Events',
   reports: 'Reports',
   institutions: 'Institutions',
@@ -221,6 +226,7 @@ const sectionLabels: Record<Section, string> = {
 const singularLabels: Record<Section, string> = {
   home: 'Home',
   projects: 'Project',
+  team: 'Team Member', // singular label for team
   events: 'Event',
   reports: 'Report',
   institutions: 'Institution',
@@ -596,6 +602,7 @@ export default function AdminDashboardPage() {
               TableActions={() => null}
               deleteId={deleteId}
               deleteLoading={deleteLoading}
+              onToggleControls={(hide: boolean) => setHideControls(hide)}
             />
           );
         case 'institutions':
@@ -709,6 +716,21 @@ export default function AdminDashboardPage() {
             rowsPerPage={rowsPerPage}
             handleEdit={handleEdit}
             handleView={(r: any) => handleView(r, 'projects')}
+            handleDelete={handleDelete}
+            TableActions={() => null}
+            deleteId={deleteId}
+            deleteLoading={deleteLoading}
+            onToggleControls={(hide: boolean) => setHideControls(hide)}
+          />
+        );
+      case 'team':
+        return (
+          <TeamSection
+            paginatedData={paginatedData}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            handleEdit={handleEdit}
+            handleView={(r: any) => handleView(r, 'team')}
             handleDelete={handleDelete}
             TableActions={() => null}
             deleteId={deleteId}
