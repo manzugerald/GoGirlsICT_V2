@@ -1,5 +1,10 @@
 {
   "/(admin)/admin/dashboard/page": "app/(admin)/admin/dashboard/page.js",
+  "/(admin)/admin/page": "app/(admin)/admin/page.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/projects/route": "app/api/projects/route.js"
+  "/api/auth/session-start/route": "app/api/auth/session-start/route.js",
+  "/api/beneficiaries/route": "app/api/beneficiaries/route.js",
+  "/api/projects/route": "app/api/projects/route.js",
+  "/api/teams/[id]/route": "app/api/teams/[id]/route.js",
+  "/api/teams/route": "app/api/teams/route.js"
 }
