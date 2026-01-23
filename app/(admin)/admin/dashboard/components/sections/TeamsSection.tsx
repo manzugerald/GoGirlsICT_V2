@@ -62,9 +62,24 @@ export default function TeamsSection({
             aria-expanded={isExpanded}
             onClick={(e) => handleCardClick(e, member.id)}
             onKeyDown={(e) => handleCardKeyDown(e, member.id)}
-            className={`p-4 border rounded-md bg-white dark:bg-gray-900 hover:shadow-sm transition-all ${cardOverflowClass} cursor-pointer focus:outline-pink-500`}
+            className={`transition-all rounded-md cursor-pointer focus:outline-pink-500 ${cardOverflowClass}
+              ${
+                // Card background choices to contrast with parent:
+                // - light mode parent is usually gray-50 -> make card white
+                // - dark mode parent is dark gray -> make card slightly lighter (gray-800)
+                isExpanded
+                  ? 'ring-1 ring-pink-200 dark:ring-pink-900 shadow-lg'
+                  : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md'
+              }
+              p-0`} /* p-0 since inner upper section has its own padding */
           >
-            <div className="flex items-center justify-between gap-4">
+            {/* UPPER PART: profile + meta + actions
+                When expanded, give this upper area a distinct site-colored background.
+                Use pink tones (site color) for both light and dark modes. */}
+            <div
+              className={`flex items-center justify-between gap-4 p-4 rounded-t-md transition-colors
+                ${isExpanded ? 'bg-pink-50 dark:bg-pink-950' : 'bg-transparent'}`}
+            >
               <div className="flex-1 min-w-0 flex items-center gap-3">
                 {member.profileImage ? (
                   <img
@@ -73,23 +88,36 @@ export default function TeamsSection({
                     className="w-12 h-12 rounded-full object-cover border"
                   />
                 ) : (
-                  <div className="w-12 h-12 flex items-center justify-center rounded-full bg-muted border">
-                    <UserIcon className="w-7 h-7 text-muted-foreground" />
+                  <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 border">
+                    <UserIcon className="w-7 h-7 text-gray-500 dark:text-gray-300" />
                   </div>
                 )}
 
                 <div className="flex flex-col min-w-0">
-                  <div className="font-medium text-lg truncate" title={displayName}>
+                  <div
+                    className={`font-medium text-lg truncate ${
+                      isExpanded ? 'text-pink-700 dark:text-pink-300' : ''
+                    }`}
+                    title={displayName}
+                  >
                     {displayName}
                   </div>
 
                   {/* show email */}
-                  <div className="text-sm text-muted-foreground truncate">
+                  <div
+                    className={`text-sm truncate ${
+                      isExpanded ? 'text-pink-600 dark:text-pink-200' : 'text-muted-foreground'
+                    }`}
+                  >
                     {member.email ?? '—'}
                   </div>
 
-                  {/* BEFORE CLICK: show 'about' (short preview) instead of phone */}
-                  <div className="text-sm text-muted-foreground truncate">
+                  {/* BEFORE CLICK: show short 'about' preview instead of phone */}
+                  <div
+                    className={`text-sm truncate ${
+                      isExpanded ? 'text-pink-600 dark:text-pink-200' : 'text-muted-foreground'
+                    }`}
+                  >
                     {member.about ? member.about : '—'}
                   </div>
                 </div>
@@ -138,7 +166,7 @@ export default function TeamsSection({
             </div>
 
             {isExpanded && (
-              <div className="mt-4 pt-4 border-t">
+              <div className="p-4 border-t bg-white dark:bg-gray-800 rounded-b-md">
                 <div
                   className="grid gap-4"
                   style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}
