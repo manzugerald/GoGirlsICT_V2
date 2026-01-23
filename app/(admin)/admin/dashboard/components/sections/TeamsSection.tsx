@@ -18,8 +18,6 @@ export default function TeamsSection({
 }) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const { data: session } = useSession();
-  const sessionUserId = (session as any)?.user?.id ?? null;
-  const isSuper = String((session as any)?.user?.role ?? '').toLowerCase() === 'super';
 
   useEffect(() => {
     // debugging helper
@@ -84,11 +82,15 @@ export default function TeamsSection({
                   <div className="font-medium text-lg truncate" title={displayName}>
                     {displayName}
                   </div>
+
+                  {/* show email */}
                   <div className="text-sm text-muted-foreground truncate">
                     {member.email ?? '—'}
                   </div>
+
+                  {/* BEFORE CLICK: show 'about' (short preview) instead of phone */}
                   <div className="text-sm text-muted-foreground truncate">
-                    {member.phone ?? '—'}
+                    {member.about ? member.about : '—'}
                   </div>
                 </div>
               </div>

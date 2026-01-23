@@ -60,6 +60,7 @@ import CreateReportForm from './createReportForm';
 import CreateEventForm from './createEventForm';
 import CreateInstitutionForm from './createInstitutionForm';
 import CreateFAQForm from './createFAQForm';
+import CreateTeamForm from './createTeamForm'; // <-- CreateTeamForm import
 
 // View-only components we keep + new ones
 import BeneficiaryView from './components/views/beneficiaryView';
@@ -563,7 +564,7 @@ export default function AdminDashboardPage() {
 
   function handleAddNew() {
     setHideControls(true);
-    setEditRecord({});
+    setEditRecord({}); // empty object means "create" mode in forms
     setViewRecord(null);
   }
 
@@ -698,6 +699,21 @@ export default function AdminDashboardPage() {
               currentUserId={(session?.user as any)?.id}
               onSuccess={handleSaveEdit}
               onCancel={handleCancelEdit}
+            />
+          );
+        case 'team':
+          return (
+            <CreateTeamForm
+              mode={editRecord?.id ? 'edit' : 'create'}
+              teamId={editRecord?.id ? String(editRecord.id) : undefined}
+              initialData={editRecord?.id ? editRecord : undefined}
+              onSuccess={handleSaveEdit}
+              onCancel={handleCancelEdit}
+              onDelete={async (id: string) => {
+                // call delete and refresh
+                await handleDelete(id);
+                await handleMenuClick('team');
+              }}
             />
           );
         default:
