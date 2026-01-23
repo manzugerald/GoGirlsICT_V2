@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { FaAngleRight, FaAngleDown } from 'react-icons/fa';
 
 type DropdownItem = {
-  key: string; // Section key used by parent (e.g. 'projects')
+  key: string;
   label: string;
   subtitle?: string;
   icon?: React.ReactNode;
@@ -20,6 +21,17 @@ type Props = {
   sidebarCollapsed?: boolean;
 };
 
+/**
+ * SidebarDropdown
+ *
+ * - expanded sidebar: inline accordion (opens on hover/click)
+ * - collapsed sidebar: icon-only button that opens a floating panel positioned right of the sidebar
+ *
+ * Important UI:
+ * - All items use the same vertical padding so hover/active don't change height.
+ * - There is consistent spacing between items (space-y) to avoid visual overlap when hovered.
+ * - Active item uses background + left border + subtle hover to keep consistent visuals.
+ */
 export default function SidebarDropdown({
   id = 'sidebar-dropdown',
   label,
@@ -27,7 +39,7 @@ export default function SidebarDropdown({
   items,
   activeKey,
   onNavigate,
-  sidebarCollapsed,
+  sidebarCollapsed = false,
 }: Props) {
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -42,12 +54,14 @@ export default function SidebarDropdown({
 
   const computePos = useCallback(() => {
     const btn = triggerRef.current;
-    if (!btn) return setPos(null);
+    if (!btn) {
+      setPos(null);
+      return;
+    }
     const rect = btn.getBoundingClientRect();
-    const dropdownHeight = panelRef.current?.offsetHeight ?? 140;
+    const dropdownHeight = panelRef.current?.offsetHeight ?? Math.min(44 * items.length + 16, 320);
     const viewportHeight = window.innerHeight;
 
-    // center vertically on the button/caret
     const btnCenterY = rect.top + rect.height / 2;
     let top = btnCenterY - dropdownHeight / 2;
     const minTop = 8;
@@ -55,14 +69,13 @@ export default function SidebarDropdown({
     if (top < minTop) top = minTop;
     if (top > maxTop) top = maxTop;
 
-    // horizontal: position just to the right of the button (so it floats over content)
     let left = rect.right + GAP;
     if (left + WIDTH > window.innerWidth - 8) {
       left = Math.max(8, window.innerWidth - WIDTH - 8);
     }
 
     setPos({ top: Math.round(top), left: Math.round(left) });
-  }, []);
+  }, [items.length]);
 
   useEffect(() => {
     if (!open) return;
@@ -95,7 +108,6 @@ export default function SidebarDropdown({
   }, [open]);
 
   function openMenu() {
-    if (sidebarCollapsed) return;
     if (closeTimer.current) {
       window.clearTimeout(closeTimer.current);
       closeTimer.current = null;
@@ -109,14 +121,23 @@ export default function SidebarDropdown({
       closeTimer.current = null;
     }, delay);
   }
-  function toggle() {
-    if (sidebarCollapsed) return;
+  function toggle(e?: React.MouseEvent) {
+    e?.preventDefault();
     setOpen((s) => !s);
   }
 
-  return (
-    <>
-      <div onMouseEnter={openMenu} onMouseLeave={() => scheduleClose()}>
+  // Shared classes
+  const itemBase =
+    'w-full text-left px-4 py-3 rounded text-sm flex items-start gap-3 transition-colors';
+  const itemHover = 'hover:bg-gray-50 dark:hover:bg-gray-700';
+  // Active decoration uses left border and background; also includes hover so it doesn't "jump"
+  const activeDecoration =
+    'bg-pink-50 dark:bg-pink-950 text-pink-700 dark:text-pink-300 border-l-4 border-pink-600 dark:border-pink-500';
+
+  // Expanded sidebar -> inline accordion
+  if (!sidebarCollapsed) {
+    return (
+      <div onMouseEnter={() => openMenu()} onMouseLeave={() => scheduleClose()}>
         <button
           ref={triggerRef}
           onClick={toggle}
@@ -128,41 +149,74 @@ export default function SidebarDropdown({
               isAnyItemActive
                 ? 'bg-pink-100 dark:bg-pink-950 text-pink-600 dark:text-pink-400'
                 : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900 hover:text-pink-700 dark:hover:text-pink-400'
-            }
-          `}
+            }`}
           style={{ minWidth: 0 }}
           title={label}
         >
           <span className="text-xl">{icon}</span>
-          {!sidebarCollapsed && (
-            <>
-              <span className="truncate text-sm">{label}</span>
-              <span
-                className={`ml-auto mr-2 transition-transform duration-150 ${
-                  open ? 'rotate-90' : 'rotate-0'
-                }`}
-                aria-hidden
-              >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="inline-block"
-                >
-                  <path
-                    d="M8 5l8 7-8 7"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-            </>
-          )}
+          <span className="truncate text-sm">{label}</span>
+          <span
+            className={`ml-auto mr-2 transition-transform duration-150 ${
+              open ? 'rotate-90' : 'rotate-0'
+            }`}
+            aria-hidden
+          >
+            <FaAngleDown />
+          </span>
         </button>
+
+        {/* Use vertical spacing between items to avoid overlap on hover */}
+        {open && (
+          <div className="pl-8 pr-2 mt-2 space-y-2">
+            {items.map((it) => {
+              const active = activeKey === it.key;
+              return (
+                <button
+                  key={it.key}
+                  onClick={() => {
+                    setOpen(false);
+                    onNavigate(it.key);
+                  }}
+                  className={`${itemBase} ${active ? activeDecoration : itemHover}`}
+                >
+                  <span className="mt-0.5 text-base text-gray-600 dark:text-gray-200">
+                    {it.icon}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{it.label}</div>
+                    {it.subtitle && (
+                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">
+                        {it.subtitle}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
+    );
+  }
+
+  // Collapsed sidebar: icon-only button that shows floating panel
+  return (
+    <div className="relative" onMouseEnter={() => openMenu()} onMouseLeave={() => scheduleClose()}>
+      <button
+        ref={triggerRef}
+        onClick={toggle}
+        aria-haspopup="true"
+        aria-expanded={open}
+        aria-controls={`${id}-panel`}
+        className="w-full flex items-center justify-center gap-2 p-2 rounded transition-colors text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900"
+        title={label}
+        style={{ minWidth: 0 }}
+      >
+        <span className="text-lg">{icon}</span>
+        <span className="text-xs text-gray-400" aria-hidden>
+          <FaAngleRight />
+        </span>
+      </button>
 
       {open &&
         pos &&
@@ -183,43 +237,41 @@ export default function SidebarDropdown({
             onMouseLeave={() => scheduleClose()}
           >
             <div className="rounded-md shadow-2xl overflow-hidden ring-1 ring-black ring-opacity-10 bg-white dark:bg-gray-800">
-              <div className="p-2">
-                {items.map((it) => (
-                  <button
-                    key={it.key}
-                    onClick={() => {
-                      setOpen(false);
-                      onNavigate(it.key);
-                    }}
-                    role="menuitem"
-                    className={`w-full text-left p-3 rounded-md flex items-start gap-3 transition
-                    ${
-                      activeKey === it.key
-                        ? 'bg-pink-50 dark:bg-pink-900/40 ring-1 ring-pink-100'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }
-                  `}
-                  >
-                    <span className="mt-0.5 text-base text-gray-600 dark:text-gray-200">
-                      {it.icon}
-                    </span>
-                    <div className="flex-1">
-                      <div className="font-semibold text-sm text-gray-800 dark:text-gray-100">
-                        {it.label}
-                      </div>
-                      {it.subtitle && (
-                        <div className="text-xs text-gray-500 dark:text-gray-300 mt-1">
-                          {it.subtitle}
+              {/* spacing between items via space-y */}
+              <div className="p-3 space-y-2">
+                {items.map((it) => {
+                  const isActive = activeKey === it.key;
+                  return (
+                    <button
+                      key={it.key}
+                      onClick={() => {
+                        setOpen(false);
+                        onNavigate(it.key);
+                      }}
+                      role="menuitem"
+                      className={`${itemBase} ${isActive ? activeDecoration : itemHover}`}
+                    >
+                      <span className="mt-0.5 text-base text-gray-600 dark:text-gray-200">
+                        {it.icon}
+                      </span>
+                      <div className="flex-1">
+                        <div className="font-semibold text-sm text-gray-800 dark:text-gray-100">
+                          {it.label}
                         </div>
-                      )}
-                    </div>
-                  </button>
-                ))}
+                        {it.subtitle && (
+                          <div className="text-xs text-gray-500 dark:text-gray-300 mt-1">
+                            {it.subtitle}
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>,
           document.body
         )}
-    </>
+    </div>
   );
 }
