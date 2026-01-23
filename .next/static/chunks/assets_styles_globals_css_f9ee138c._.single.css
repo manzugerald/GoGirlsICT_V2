@@ -487,6 +487,10 @@
     pointer-events: none;
   }
 
+  .collapse {
+    visibility: collapse;
+  }
+
   .visible {
     visibility: visible;
   }
@@ -557,6 +561,10 @@
 
   .top-10 {
     top: calc(var(--spacing) * 10);
+  }
+
+  .top-12 {
+    top: calc(var(--spacing) * 12);
   }
 
   .top-14 {
@@ -1756,6 +1764,11 @@
   .rounded-r-full {
     border-top-right-radius: 3.40282e38px;
     border-bottom-right-radius: 3.40282e38px;
+  }
+
+  .rounded-b-md {
+    border-bottom-right-radius: calc(var(--radius)  - 2px);
+    border-bottom-left-radius: calc(var(--radius)  - 2px);
   }
 
   .rounded-b-xl {
@@ -2969,6 +2982,10 @@
 
   .ring-pink-100 {
     --tw-ring-color: var(--color-pink-100);
+  }
+
+  .ring-pink-200 {
+    --tw-ring-color: var(--color-pink-200);
   }
 
   .ring-pink-600 {
@@ -4649,6 +4666,14 @@
     color: var(--color-orange-400);
   }
 
+  .dark\:text-pink-200:is(.dark *) {
+    color: var(--color-pink-200);
+  }
+
+  .dark\:text-pink-300:is(.dark *) {
+    color: var(--color-pink-300);
+  }
+
   .dark\:text-pink-400:is(.dark *) {
     color: var(--color-pink-400);
   }
@@ -4735,6 +4760,10 @@
     .dark\:shadow-pink-300\/20:is(.dark *) {
       --tw-shadow-color: color-mix(in oklab, color-mix(in oklab, var(--color-pink-300) 20%, transparent) var(--tw-shadow-alpha), transparent);
     }
+  }
+
+  .dark\:ring-pink-900:is(.dark *) {
+    --tw-ring-color: var(--color-pink-900);
   }
 
   .dark\:backdrop-blur-sm:is(.dark *) {

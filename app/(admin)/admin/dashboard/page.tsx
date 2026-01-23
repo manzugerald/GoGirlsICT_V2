@@ -20,6 +20,7 @@ import {
   FaUniversity,
   FaAngleLeft,
   FaAngleRight,
+  FaAngleDown,
   FaQuestionCircle,
   FaLightbulb,
   FaFacebook,
@@ -145,7 +146,7 @@ function TableControls({
 const sections = [
   'home',
   'projects',
-  'team', // <-- added team section key
+  'team',
   'events',
   'reports',
   'institutions',
@@ -166,7 +167,7 @@ type Section = (typeof sections)[number];
 const sectionFeatures: Record<Section, { apiRoute?: string }> = {
   home: {},
   projects: { apiRoute: '/api/projects' },
-  team: { apiRoute: '/api/teams' }, // <-- use /api/teams
+  team: { apiRoute: '/api/teams' },
   events: { apiRoute: '/api/events' },
   reports: { apiRoute: '/api/reports' },
   institutions: { apiRoute: '/api/institutions' },
@@ -186,7 +187,7 @@ const sectionFeatures: Record<Section, { apiRoute?: string }> = {
 const sectionIcons: Record<Section, React.ReactNode> = {
   home: <FaHome className="text-pink-600 dark:text-pink-400" />,
   projects: <FaClipboardList className="text-yellow-600 dark:text-yellow-400" />,
-  team: <FaUserCircle className="text-teal-600 dark:text-teal-400" />, // team icon
+  team: <FaUserCircle className="text-teal-600 dark:text-teal-400" />,
   events: <FaCalendarAlt className="text-green-600 dark:text-green-400" />,
   reports: <FaFilePdf className="text-red-600 dark:text-red-400" />,
   institutions: <FaUniversity className="text-blue-600 dark:text-blue-400" />,
@@ -206,7 +207,7 @@ const sectionIcons: Record<Section, React.ReactNode> = {
 const sectionLabels: Record<Section, string> = {
   home: 'Home',
   projects: 'Projects',
-  team: 'Team', // label for team
+  team: 'Team',
   events: 'Events',
   reports: 'Reports',
   institutions: 'Institutions',
@@ -223,11 +224,10 @@ const sectionLabels: Record<Section, string> = {
   settings: 'Settings',
 };
 
-// Singular labels map (used for "Add a new ..." CTA)
 const singularLabels: Record<Section, string> = {
   home: 'Home',
   projects: 'Project',
-  team: 'Team Member', // singular label for team
+  team: 'Team Member',
   events: 'Event',
   reports: 'Report',
   institutions: 'Institution',
@@ -268,20 +268,17 @@ export default function AdminDashboardPage() {
   const [downloadColumns, setDownloadColumns] = useState<ColumnOption[]>([]);
   const [pendingDownloadData, setPendingDownloadData] = useState<any[]>([]);
 
-  // Hide controls when viewing/editing/adding
   const [hideControls, setHideControls] = useState(false);
 
   useEffect(() => {
     const searchType = (searchParams.get('type') as Section) ?? null;
     const sectionToLoad: Section =
       searchType && sections.includes(searchType) ? searchType : 'beneficiaries';
-    // Call handleMenuClick but do not replace the URL on initial mount to avoid unnecessary router.replace loops
     handleMenuClick(sectionToLoad, false);
     // eslint-disable-next-line
   }, []);
 
   async function handleMenuClick(section: Section, replaceUrl = true) {
-    // If the user clicks Logout in the sidebar, we will handle that specially:
     if (section === 'logout') {
       if (confirm('Sign out from the admin dashboard?')) {
         signOut();
@@ -367,7 +364,6 @@ export default function AdminDashboardPage() {
   const pageCount = Math.max(1, Math.ceil((filteredData?.length ?? 0) / rowsPerPage));
   const paginatedData = getPaginatedData(filteredData, page, rowsPerPage);
 
-  // Edit/View handlers
   function handleEdit(record: any) {
     setHideControls(true);
     setEditRecord(record);
@@ -389,7 +385,6 @@ export default function AdminDashboardPage() {
     setViewRecord(null);
   }
 
-  // Unified view handler used by sections.
   async function handleView(record: any, source?: Section) {
     setHideControls(true);
 
@@ -398,7 +393,6 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    // Messages: fetch full message + responses and show MessageView
     if (source === 'messages' || sectionRef.current === 'messages') {
       try {
         const id = record?.id ?? record;
@@ -421,11 +415,10 @@ export default function AdminDashboardPage() {
         setActiveSection('messages');
         return;
       } catch {
-        // fallback to showing raw record
+        // fallback
       }
     }
 
-    // Responses: fetch full response
     if (source === 'responses' || sectionRef.current === 'responses') {
       try {
         const id = record?.id ?? record;
@@ -441,7 +434,6 @@ export default function AdminDashboardPage() {
       }
     }
 
-    // For other sections we'll just set viewRecord directly
     setViewRecord(record);
   }
 
@@ -450,7 +442,6 @@ export default function AdminDashboardPage() {
     setViewRecord(null);
   }
 
-  // Legacy parent-initiated delete (used by many other sections)
   async function handleDelete(id: string | number) {
     setDeleteId(id);
     setDeleteLoading(true);
@@ -473,10 +464,6 @@ export default function AdminDashboardPage() {
       setDeleteId(null);
     }
   }
-
-  // ----------------------
-  // New: UI-only callbacks for child-initiated deletes
-  // ----------------------
 
   function handleDeleteMessage(id: string | number) {
     setData((prev) => {
@@ -521,7 +508,6 @@ export default function AdminDashboardPage() {
     }
   }
 
-  // NEW: open password-only edit flow (admin forced change)
   function handlePasswordEdit(record: any) {
     setHideControls(true);
     setEditRecord({ ...record, _passwordOnly: true });
@@ -564,11 +550,10 @@ export default function AdminDashboardPage() {
 
   function handleAddNew() {
     setHideControls(true);
-    setEditRecord({}); // empty object means "create" mode in forms
+    setEditRecord({});
     setViewRecord(null);
   }
 
-  // tiny placeholder component for future sections
   const Placeholder = ({ title }: { title: string }) => (
     <div className="p-8 text-center">
       <h2 className="text-xl font-semibold mb-4">{title}</h2>
@@ -710,7 +695,6 @@ export default function AdminDashboardPage() {
               onSuccess={handleSaveEdit}
               onCancel={handleCancelEdit}
               onDelete={async (id: string) => {
-                // call delete and refresh
                 await handleDelete(id);
                 await handleMenuClick('team');
               }}
@@ -915,18 +899,13 @@ export default function AdminDashboardPage() {
 
   const effectiveHideControls = hideControls || Boolean(editRecord) || Boolean(viewRecord);
 
-  // sidebar widths (must match the CSS widths used for the fixed sidebar)
-  const expandedWidth = 240; // ~w-60 is 15rem = 240px
-  const collapsedWidth = 64; // ~w-16 is 4rem = 64px
+  const expandedWidth = 240;
+  const collapsedWidth = 64;
 
   const sidebarWidth = sidebarCollapsed ? collapsedWidth : expandedWidth;
 
   return (
-    // This container sits inside the layout <main> which already accounts for header/footer.
-    // Use min-h-0 so children with overflow can shrink.
     <div className="flex flex-1 min-h-0 bg-gray-50 dark:bg-gray-900 transition-colors">
-      {/* Sidebar: fixed to the left between header and footer.
-          It will not scroll with main; it will internally scroll only if its content exceeds available height. */}
       <aside
         style={{ width: sidebarWidth }}
         className={`fixed left-0 top-14 bottom-14 bg-white dark:bg-gray-950 border-r dark:border-gray-800 shadow-sm flex flex-col z-30 transition-width duration-300`}
@@ -944,9 +923,7 @@ export default function AdminDashboardPage() {
           </button>
         </div>
 
-        {/* Scrollable content area inside the fixed sidebar */}
         <nav className="mt-2 flex-1 overflow-y-auto px-0">
-          {/* Render Home first */}
           <div>
             <button
               onClick={() => handleMenuClick('home')}
@@ -976,39 +953,45 @@ export default function AdminDashboardPage() {
             </button>
           </div>
 
-          {/* Content dropdown right after Home */}
-          <SidebarDropdown
-            id="content-dropdown"
-            label="Content"
-            icon={<FaClipboardList className="text-yellow-600 dark:text-yellow-400" />}
-            items={[
-              {
-                key: 'projects',
-                label: 'Projects',
-                subtitle: 'Manage projects',
-                icon: sectionIcons.projects,
-              },
-              {
-                key: 'events',
-                label: 'Events',
-                subtitle: 'Manage events',
-                icon: sectionIcons.events,
-              },
-              {
-                key: 'reports',
-                label: 'Reports',
-                subtitle: 'Manage reports',
-                icon: sectionIcons.reports,
-              },
-            ]}
-            activeKey={activeSection}
-            onNavigate={(k) => handleMenuClick(k as Section)}
-            sidebarCollapsed={sidebarCollapsed}
-          />
+          {/* Content dropdown (wrapped to show collapse indicator when collapsed) */}
+          <div className="relative">
+            <SidebarDropdown
+              id="content-dropdown"
+              label="Content"
+              icon={<FaClipboardList className="text-yellow-600 dark:text-yellow-400" />}
+              items={[
+                {
+                  key: 'projects',
+                  label: 'Projects',
+                  subtitle: 'Manage projects',
+                  icon: sectionIcons.projects,
+                },
+                {
+                  key: 'events',
+                  label: 'Events',
+                  subtitle: 'Manage events',
+                  icon: sectionIcons.events,
+                },
+                {
+                  key: 'reports',
+                  label: 'Reports',
+                  subtitle: 'Manage reports',
+                  icon: sectionIcons.reports,
+                },
+              ]}
+              activeKey={activeSection}
+              onNavigate={(k) => handleMenuClick(k as Section)}
+              sidebarCollapsed={sidebarCollapsed}
+            />
+            {sidebarCollapsed && (
+              <div className="absolute left-1/2 transform -translate-x-1/2 top-12 pointer-events-none">
+                <FaAngleDown className="text-gray-400 dark:text-gray-500" size={12} />
+              </div>
+            )}
+          </div>
 
           {/* Remaining top-level items (skipping ones grouped into dropdowns) */}
           {sections.map((section) => {
-            // hide grouped and special entries (they are rendered elsewhere)
             if (
               section === 'home' ||
               section === 'projects' ||
@@ -1016,6 +999,7 @@ export default function AdminDashboardPage() {
               section === 'reports' ||
               section === 'beneficiaries' ||
               section === 'institutions' ||
+              section === 'team' ||
               section === 'account_settings' ||
               section === 'site_settings' ||
               section === 'settings' ||
@@ -1053,56 +1037,75 @@ export default function AdminDashboardPage() {
             );
           })}
 
-          {/* Partners dropdown (Beneficiaries / Institutions) */}
-          <SidebarDropdown
-            id="partners-dropdown"
-            label="Partners"
-            icon={<FaUsers className="text-indigo-600 dark:text-indigo-400" />}
-            items={[
-              {
-                key: 'beneficiaries',
-                label: 'Beneficiaries',
-                subtitle: 'Manage beneficiaries',
-                icon: sectionIcons.beneficiaries,
-              },
-              {
-                key: 'institutions',
-                label: 'Institutions',
-                subtitle: 'Manage institutions',
-                icon: sectionIcons.institutions,
-              },
-            ]}
-            activeKey={activeSection}
-            onNavigate={(k) => handleMenuClick(k as Section)}
-            sidebarCollapsed={sidebarCollapsed}
-          />
+          {/* Partners dropdown now includes Team */}
+          <div className="relative">
+            <SidebarDropdown
+              id="partners-dropdown"
+              label="Partners"
+              icon={<FaUsers className="text-indigo-600 dark:text-indigo-400" />}
+              items={[
+                {
+                  key: 'beneficiaries',
+                  label: 'Beneficiaries',
+                  subtitle: 'Manage beneficiaries',
+                  icon: sectionIcons.beneficiaries,
+                },
+                {
+                  key: 'institutions',
+                  label: 'Institutions',
+                  subtitle: 'Manage institutions',
+                  icon: sectionIcons.institutions,
+                },
+                {
+                  key: 'team',
+                  label: 'Team',
+                  subtitle: 'Manage team',
+                  icon: sectionIcons.team,
+                },
+              ]}
+              activeKey={activeSection}
+              onNavigate={(k) => handleMenuClick(k as Section)}
+              sidebarCollapsed={sidebarCollapsed}
+            />
+            {sidebarCollapsed && (
+              <div className="absolute left-1/2 transform -translate-x-1/2 top-12 pointer-events-none">
+                <FaAngleDown className="text-gray-400 dark:text-gray-500" size={12} />
+              </div>
+            )}
+          </div>
 
           {/* Settings dropdown */}
-          <SidebarDropdown
-            id="settings-dropdown"
-            label="Settings"
-            icon={<FaCogs className="text-gray-700 dark:text-gray-300" />}
-            items={[
-              {
-                key: 'site_settings',
-                label: 'Site Settings',
-                subtitle: 'Homepage content',
-                icon: sectionIcons.site_settings,
-              },
-              {
-                key: 'account_settings',
-                label: 'Account Settings',
-                subtitle: 'Profile & password',
-                icon: sectionIcons.account_settings,
-              },
-            ]}
-            activeKey={activeSection}
-            onNavigate={(k) => handleMenuClick(k as Section)}
-            sidebarCollapsed={sidebarCollapsed}
-          />
+          <div className="relative">
+            <SidebarDropdown
+              id="settings-dropdown"
+              label="Settings"
+              icon={<FaCogs className="text-gray-700 dark:text-gray-300" />}
+              items={[
+                {
+                  key: 'site_settings',
+                  label: 'Site Settings',
+                  subtitle: 'Homepage content',
+                  icon: sectionIcons.site_settings,
+                },
+                {
+                  key: 'account_settings',
+                  label: 'Account Settings',
+                  subtitle: 'Profile & password',
+                  icon: sectionIcons.account_settings,
+                },
+              ]}
+              activeKey={activeSection}
+              onNavigate={(k) => handleMenuClick(k as Section)}
+              sidebarCollapsed={sidebarCollapsed}
+            />
+            {sidebarCollapsed && (
+              <div className="absolute left-1/2 transform -translate-x-1/2 top-12 pointer-events-none">
+                <FaAngleDown className="text-gray-400 dark:text-gray-500" size={12} />
+              </div>
+            )}
+          </div>
         </nav>
 
-        {/* Logout moved to bottom (mt-auto ensures it is at the bottom of the sidebar's column) */}
         <div className="border-t dark:border-gray-800 p-3 mt-auto">
           <button
             onClick={() => {
@@ -1116,13 +1119,10 @@ export default function AdminDashboardPage() {
         </div>
       </aside>
 
-      {/* Main Content: margin-left equals sidebar width so it doesn't overlap the fixed sidebar.
-          main remains the scroll container (the layout <main> already provides top/bottom padding). */}
       <main
         className="flex-1 min-w-0 overflow-y-auto p-4 bg-white dark:bg-gray-900 transition-colors"
         style={{ marginLeft: sidebarWidth }}
       >
-        {/* Section header */}
         <div className="mb-4">
           <div className="flex items-center gap-3">
             <span className="text-2xl">{sectionIcons[activeSection]}</span>
@@ -1149,12 +1149,10 @@ export default function AdminDashboardPage() {
           )}
         </div>
 
-        {/* Section Content */}
         <div className="w-full flex flex-col">
           {activeSection && <div className="mt-2 w-full">{renderSection()}</div>}
         </div>
 
-        {/* Pagination */}
         {pageCount > 1 && !effectiveHideControls && (
           <div className="flex gap-2 mt-4 justify-end items-center">
             <button
@@ -1177,7 +1175,6 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* Download Modal */}
         <DownloadColumnsModal
           isOpen={downloadModalOpen}
           onClose={() => setDownloadModalOpen(false)}
