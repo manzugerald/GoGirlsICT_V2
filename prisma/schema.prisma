@@ -388,7 +388,7 @@ model Location {
   institution    Institution @relation(fields: [institutionId], references: [id])
 }
 
-// Beneficiary modell
+// Beneficiary model
 enum GenderType {
   male
   female
