@@ -2760,10 +2760,6 @@
     padding-bottom: calc(var(--spacing) * 14);
   }
 
-  .pl-3 {
-    padding-left: calc(var(--spacing) * 3);
-  }
-
   .pl-4 {
     padding-left: calc(var(--spacing) * 4);
   }
@@ -3257,10 +3253,6 @@
 
   .ring-black {
     --tw-ring-color: var(--color-black);
-  }
-
-  .ring-pink-100 {
-    --tw-ring-color: var(--color-pink-100);
   }
 
   .ring-pink-200 {
@@ -4795,16 +4787,6 @@
     background-color: var(--color-pink-900);
   }
 
-  .dark\:bg-pink-900\/40:is(.dark *) {
-    background-color: #86104366;
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .dark\:bg-pink-900\/40:is(.dark *) {
-      background-color: color-mix(in oklab, var(--color-pink-900) 40%, transparent);
-    }
-  }
-
   .dark\:bg-pink-950:is(.dark *) {
     background-color: var(--color-pink-950);
   }
@@ -5099,12 +5081,6 @@
   @media (hover: hover) {
     .dark\:hover\:bg-gray-700:is(.dark *):hover {
       background-color: var(--color-gray-700);
-    }
-  }
-
-  @media (hover: hover) {
-    .dark\:hover\:bg-gray-800:is(.dark *):hover {
-      background-color: var(--color-gray-800);
     }
   }
 
