@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import dayjs from 'dayjs';
 import { prisma } from '@/db/prisma';
 
-// Redis caching temporarily disabled.
-// We will consult DB first and only call FB when DB is empty or meta TTL has expired.
-// For testing we use a short TTL: 10 minutes.
-const FETCH_MINUTES_TTL = 60 * 10; // minutes to consider DB fresh for testing
+// Reduced TTL for more frequent updates: 30 minutes (adjust as needed)
+const FETCH_MINUTES_TTL = 600; // 10 hours - change this value to control cache duration
 
 type FbApiPost = {
   id: string;
@@ -45,7 +43,7 @@ function extractImageFromFbPost(p: any): string | null {
   return null;
 }
 
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
   const PAGE_ID = process.env.FB_PAGE_ID;
   const ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
 
@@ -54,54 +52,68 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json({ error: 'Facebook integration not configured' }, { status: 500 });
   }
 
-  // 1) Read from DB first and return if we have posts (preferred source)
+  // Check if force refresh is requested via query param
+  const { searchParams } = new URL(req.url);
+  const forceRefresh = searchParams.get('refresh') === 'true';
+
+  // 1) Read from DB first and check if cache is still valid
   let postsInDb: any[] = [];
   let metaLastFetched: Date | null = null;
+  let needsFetch = forceRefresh; // Force fetch if requested
+
   try {
-    postsInDb = await prisma.facebookPost.findMany({ orderBy: { createdTime: 'desc' } });
     const meta = await prisma.facebookCacheMeta.findUnique({ where: { id: 1 } });
     metaLastFetched = meta?.lastFetched ?? null;
 
-    if (Array.isArray(postsInDb) && postsInDb.length > 0) {
-      const result = makeResult(postsInDb, metaLastFetched);
-      return NextResponse.json(result);
+    // Check if cache is expired
+    if (!forceRefresh) {
+      needsFetch =
+        !metaLastFetched || dayjs().diff(dayjs(metaLastFetched), 'minute') >= FETCH_MINUTES_TTL;
     }
-  } catch (err) {
-    console.warn('Failed to read posts/meta from DB, will attempt fetching from Facebook API', err);
-    // continue to fetch
-  }
 
-  // 2) If DB empty, consult meta to avoid hitting FB too often
-  try {
-    const meta = await prisma.facebookCacheMeta.findUnique({ where: { id: 1 } });
-    const lastFetched = meta?.lastFetched ?? null;
-    const needsFetch =
-      !lastFetched || dayjs().diff(dayjs(lastFetched), 'minute') >= FETCH_MINUTES_TTL;
-
+    // If cache is valid, return DB posts
     if (!needsFetch) {
-      // Recently fetched but DB empty -> return empty with lastFetched
-      const result = makeResult([], lastFetched);
-      return NextResponse.json(result);
+      postsInDb = await prisma.facebookPost.findMany({
+        orderBy: { createdTime: 'desc' },
+        take: 10, // Limit to 10 most recent posts
+      });
+
+      if (postsInDb.length > 0) {
+        console.log(
+          `✅ Returning ${postsInDb.length} cached Facebook posts (last fetched: ${metaLastFetched})`
+        );
+        return NextResponse.json(makeResult(postsInDb, metaLastFetched));
+      }
     }
   } catch (err) {
-    // proceed to fetch if meta read fails
-    console.warn('Failed to read facebookCacheMeta, proceeding to fetch', err);
+    console.warn('Failed to read posts/meta from DB, will fetch from Facebook API', err);
   }
 
-  // 3) Fetch from Facebook Graph API (include attachments as fallback source for images)
+  // 2) Fetch from Facebook Graph API
+  console.log('🔄 Fetching fresh Facebook posts from API...');
   let fbData: any;
   try {
-    // Add attachments to fields so we can derive images when full_picture is not present
     const url = `https://graph.facebook.com/v19.0/${encodeURIComponent(
       PAGE_ID
-    )}/posts?fields=id,message,created_time,permalink_url,full_picture,attachments{media,subattachments}&access_token=${encodeURIComponent(
+    )}/posts?fields=id,message,created_time,permalink_url,full_picture,attachments{media,subattachments}&limit=10&access_token=${encodeURIComponent(
       ACCESS_TOKEN
     )}`;
 
-    const fbRes = await fetch(url, { next: { revalidate: 0 } });
+    const fbRes = await fetch(url, {
+      next: { revalidate: 0 }, // No Next.js caching
+      cache: 'no-store', // No browser caching
+    });
+
     if (!fbRes.ok) {
       const bodyText = await fbRes.text().catch(() => '');
       console.error('Facebook API returned non-OK:', fbRes.status, bodyText);
+
+      // If fetch fails but we have old data, return it
+      if (postsInDb.length > 0) {
+        console.warn('⚠️ Using stale cache due to Facebook API error');
+        return NextResponse.json(makeResult(postsInDb, metaLastFetched));
+      }
+
       return NextResponse.json(
         { error: 'Facebook API returned an error', details: bodyText },
         { status: 502 }
@@ -110,6 +122,13 @@ export async function GET(_req: NextRequest) {
     fbData = await fbRes.json();
   } catch (err) {
     console.error('Facebook fetch failed', err);
+
+    // Fallback to cached data if available
+    if (postsInDb.length > 0) {
+      console.warn('⚠️ Using stale cache due to fetch error');
+      return NextResponse.json(makeResult(postsInDb, metaLastFetched));
+    }
+
     return NextResponse.json({ error: 'Failed to fetch Facebook posts' }, { status: 502 });
   }
 
@@ -123,15 +142,11 @@ export async function GET(_req: NextRequest) {
 
   const rawPosts: FbApiPost[] = Array.isArray(fbData.data) ? fbData.data : [];
 
-  // 4) Normalize and persist posts to DB.
-  // We will only persist posts that we can extract a non-empty fullPicture (DB requires it).
+  // 3) Normalize and persist posts to DB
   const toSave = (rawPosts || [])
     .map((p) => {
       const image = extractImageFromFbPost(p);
-      return {
-        raw: p,
-        image,
-      };
+      return { raw: p, image };
     })
     .filter((x) => x.image) // keep only posts with an image
     .map((x) => {
@@ -147,48 +162,49 @@ export async function GET(_req: NextRequest) {
     });
 
   if (toSave.length === 0) {
-    // We couldn't extract any posts with images; do NOT delete DB. Return empty and do not update meta.
-    console.warn(
-      'Facebook fetch returned no posts with images (toSave is empty). DB left unchanged.'
-    );
-    const result = makeResult([], null);
-    return NextResponse.json(result);
+    console.warn('⚠️ No Facebook posts with images found. DB unchanged.');
+
+    // Return whatever we have in DB
+    try {
+      postsInDb = await prisma.facebookPost.findMany({
+        orderBy: { createdTime: 'desc' },
+        take: 10,
+      });
+      return NextResponse.json(makeResult(postsInDb, metaLastFetched));
+    } catch {
+      return NextResponse.json(makeResult([], null));
+    }
   }
 
+  // 4) Save to database
   try {
-    // Persist: delete existing and insert new (atomic)
     await prisma.$transaction([
       prisma.facebookPost.deleteMany({}),
       prisma.facebookPost.createMany({ data: toSave, skipDuplicates: true }),
     ]);
-  } catch (err) {
-    console.error('Prisma write error while saving facebook posts', err);
-    // continue so we can return whatever we have
-  }
 
-  // update meta
-  try {
+    // Update meta timestamp
     await prisma.facebookCacheMeta.upsert({
       where: { id: 1 },
       update: { lastFetched: new Date() },
       create: { id: 1, lastFetched: new Date() },
     });
+
+    console.log(`✅ Saved ${toSave.length} Facebook posts to database`);
   } catch (err) {
-    console.warn('Failed to update facebookCacheMeta', err);
+    console.error('Prisma write error while saving facebook posts', err);
   }
 
   // 5) Read final posts from DB and return
   try {
-    postsInDb = await prisma.facebookPost.findMany({ orderBy: { createdTime: 'desc' } });
+    postsInDb = await prisma.facebookPost.findMany({
+      orderBy: { createdTime: 'desc' },
+      take: 10,
+    });
   } catch (err) {
-    console.warn(
-      'Failed to read posts from DB after insert, falling back to in-memory toSave',
-      err
-    );
+    console.warn('Failed to read posts from DB after insert, using in-memory data', err);
     postsInDb = toSave;
   }
 
-  const result = makeResult(postsInDb, new Date());
-
-  return NextResponse.json(result);
+  return NextResponse.json(makeResult(postsInDb, new Date()));
 }
