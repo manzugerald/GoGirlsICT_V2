@@ -646,3 +646,49 @@ html {
     transition: none !important;
   }
 }
+
+/* Add this to your existing globals.css */
+
+/* Shimmer animation for donate button */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+/* Pulse animation for background blobs */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.15;
+    transform: scale(1.1);
+  }
+}
+
+/* Smooth wave animation (optional - adds subtle movement) */
+@keyframes wave {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(-25px) translateY(-5px);
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+}
+
+/* Apply wave animation to SVG paths for subtle movement */
+.donate-wave-animation {
+  animation: wave 10s ease-in-out infinite;
+}
