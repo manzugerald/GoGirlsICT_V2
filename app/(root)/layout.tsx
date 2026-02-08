@@ -13,7 +13,7 @@ export default function RootLayout({
     <div className="min-h-screen w-full flex flex-col">
       <Header />
       <ScrollProgressBar />
-      <Breadcrumb />
+      {/* <Breadcrumb /> */}
       <main className="flex-1">{children}</main>
       <Footer />
       <ScrollToTopButton />
