@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense, useEffect, useRef } from 'react';
 import {
   useHomePageContent,
   useExecutiveMessages,
@@ -20,6 +21,9 @@ import MessagesSection from './sections/MessagesSection';
 import GetInvolvedSection from './sections/GetInvolvedSection';
 import AboutSection from './sections/AboutSection';
 import DonateSection from './sections/DonateSection';
+
+// Skeleton components
+import SectionSkeleton from './skeletons/SectionSkeleton';
 
 import type {
   HomePageContent,
@@ -53,6 +57,8 @@ export default function SinglePageHome({
   ssrPartners,
   ssrBeneficiaries,
 }: SinglePageHomeProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   // Use hybrid cached hooks with SSR as initialData
   const { data: content } = useHomePageContent(ssrContent);
   const { data: messages } = useExecutiveMessages(ssrMessages);
@@ -63,51 +69,95 @@ export default function SinglePageHome({
   const { data: partners } = usePartners(ssrPartners);
   const { data: beneficiaries } = useBeneficiaries(ssrBeneficiaries);
 
+  // Intersection Observer for smooth section visibility
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('section-visible');
+          }
+        });
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '50px',
+      }
+    );
+
+    const sections = containerRef.current?.querySelectorAll('.section-snap');
+    sections?.forEach((section) => observer.observe(section));
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="single-page-container">
+    <div ref={containerRef} className="single-page-container">
       {/* 1. Hero Section */}
-      <section id="hero" className="scroll-mt-14">
-        <HeroSection content={content} />
+      <section id="hero" className="section-snap min-h-screen">
+        <Suspense fallback={<SectionSkeleton variant="hero" />}>
+          <HeroSection content={content} />
+        </Suspense>
       </section>
 
       {/* 2. Vision, Mission, Focus, Core Values */}
-      <section id="vision" className="scroll-mt-14 bg-white dark:bg-gray-950">
-        <VisionMissionSection content={content} />
+      <section id="vision" className="section-snap min-h-screen bg-white dark:bg-gray-950">
+        <Suspense fallback={<SectionSkeleton variant="cards" />}>
+          <VisionMissionSection content={content} />
+        </Suspense>
       </section>
 
-      {/* 3. Impact: Stats + Charts (Graphs) - NEW POSITION */}
-      <section id="impact" className="scroll-mt-14 bg-gray-50 dark:bg-gray-900">
-        <ImpactSection />
+      {/* 3. Impact: Stats + Charts (Graphs) */}
+      <section id="impact" className="section-snap min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Suspense fallback={<SectionSkeleton variant="stats" />}>
+          <ImpactSection />
+        </Suspense>
       </section>
 
-      {/* 4. Our Work: Projects + Reports - NOW WITH TABS */}
-      <section id="our-work" className="scroll-mt-14 bg-white dark:bg-gray-950">
-        <OurWorkSection projects={projects} reports={reports} />
+      {/* 4. Our Work: Projects + Reports */}
+      <section id="our-work" className="section-snap min-h-screen bg-white dark:bg-gray-950">
+        <Suspense fallback={<SectionSkeleton variant="tabs" />}>
+          <OurWorkSection projects={projects} reports={reports} />
+        </Suspense>
       </section>
 
       {/* 5. Social Feeds: Facebook + YouTube */}
-      <section id="social" className="scroll-mt-14 bg-gray-50 dark:bg-gray-900">
-        <SocialFeedsSection />
+      <section id="social" className="section-snap min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Suspense fallback={<SectionSkeleton variant="social" />}>
+          <SocialFeedsSection />
+        </Suspense>
       </section>
 
       {/* 6. Executive Messages */}
-      <section id="messages" className="scroll-mt-14 bg-white dark:bg-gray-950">
-        <MessagesSection messages={messages} />
+      <section id="messages" className="section-snap min-h-screen bg-white dark:bg-gray-950">
+        <Suspense fallback={<SectionSkeleton variant="cards" />}>
+          <MessagesSection messages={messages} />
+        </Suspense>
       </section>
 
       {/* 7. Get Involved: Events + Contact */}
-      <section id="get-involved" className="scroll-mt-14 bg-gray-50 dark:bg-gray-900">
-        <GetInvolvedSection events={events} />
+      <section id="get-involved" className="section-snap min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Suspense fallback={<SectionSkeleton variant="events" />}>
+          <GetInvolvedSection events={events} />
+        </Suspense>
       </section>
 
       {/* 8. About: Team + Partners + Beneficiaries */}
-      <section id="about" className="scroll-mt-14 bg-white dark:bg-gray-950">
-        <AboutSection teamMembers={teamMembers} partners={partners} beneficiaries={beneficiaries} />
+      <section id="about" className="section-snap min-h-screen bg-white dark:bg-gray-950">
+        <Suspense fallback={<SectionSkeleton variant="team" />}>
+          <AboutSection
+            teamMembers={teamMembers}
+            partners={partners}
+            beneficiaries={beneficiaries}
+          />
+        </Suspense>
       </section>
 
-      {/* 9. Donate CTA */}
-      <section id="donate" className="scroll-mt-14 bg-[#9f004d] text-white">
-        <DonateSection />
+      {/* 9. Donate CTA - No snap for smooth transition to footer */}
+      <section id="donate" className="min-h-[60vh]">
+        <Suspense fallback={<SectionSkeleton variant="cta" />}>
+          <DonateSection />
+        </Suspense>
       </section>
     </div>
   );

@@ -1,5 +1,5 @@
-import { APP_NAME } from "@/lib/constants";
-import Link from "next/link";
+import { APP_NAME } from '@/lib/constants';
+import Link from 'next/link';
 import { Facebook, Youtube, Mail, Phone, MapPin, Heart, ExternalLink } from 'lucide-react';
 
 const Footer = () => {
@@ -10,13 +10,13 @@ const Footer = () => {
       { label: 'About Us', href: '/#about' },
       { label: 'Our Work', href: '/#our-work' },
       { label: 'Impact', href: '/#impact' },
-      { label: 'Team', href: '/#about' },
+      { label: 'Team', href: '/#team' }, // Changed from /#about
     ],
     getInvolved: [
       { label: 'Donate', href: '/donate' },
       { label: 'Volunteer', href: '/volunteer' },
       { label: 'Partner With Us', href: '/partner' },
-      { label: 'Events', href: '/#get-involved' },
+      { label: 'Events', href: '/#events' }, // Changed from /#get-involved
     ],
     resources: [
       { label: 'Projects', href: '/projects' },
@@ -54,7 +54,7 @@ const Footer = () => {
 
   const contactInfo = [
     { icon: Mail, text: 'info@gogirlsict.org', href: 'mailto:info@gogirlsict.org' },
-    { icon: Phone, text: '+256 XXX XXX XXX', href: 'tel:+211-924-115-895' },
+    { icon: Phone, text: '+211 XXX XXX XXX', href: 'tel:+211-xxx-xx-xxx' },
     { icon: MapPin, text: 'Suk Melitia, Juba, South Sudan', href: '#' },
   ];
 
@@ -103,7 +103,9 @@ const Footer = () => {
             <h3 className="text-lg font-bold mb-4 text-white">Organization</h3>
             <ul className="space-y-3">
               {footerLinks.organization.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
+                  {' '}
+                  {/* Changed key to link.label for uniqueness */}
                   <Link
                     href={link.href}
                     className="text-gray-400 hover:text-white transition-colors duration-200 text-sm inline-flex items-center gap-1 group"
@@ -121,7 +123,9 @@ const Footer = () => {
             <h3 className="text-lg font-bold mb-4 text-white">Get Involved</h3>
             <ul className="space-y-3">
               {footerLinks.getInvolved.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
+                  {' '}
+                  {/* Changed key to link.label for uniqueness */}
                   <Link
                     href={link.href}
                     className="text-gray-400 hover:text-white transition-colors duration-200 text-sm inline-flex items-center gap-1 group"
@@ -139,7 +143,9 @@ const Footer = () => {
             <h3 className="text-lg font-bold mb-4 text-white">Resources</h3>
             <ul className="space-y-3">
               {footerLinks.resources.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
+                  {' '}
+                  {/* Changed key to link.label for uniqueness */}
                   <Link
                     href={link.href}
                     className="text-gray-400 hover:text-white transition-colors duration-200 text-sm inline-flex items-center gap-1 group"
@@ -159,7 +165,9 @@ const Footer = () => {
               {contactInfo.map((contact, idx) => {
                 const Icon = contact.icon;
                 return (
-                  <li key={idx}>
+                  <li key={`contact-${idx}`}>
+                    {' '}
+                    {/* Added prefix to make keys unique */}
                     <a
                       href={contact.href}
                       className="text-gray-400 hover:text-white transition-colors duration-200 text-sm flex items-start gap-2 group"
@@ -210,7 +218,9 @@ const Footer = () => {
             {/* Legal Links */}
             <div className="flex flex-wrap items-center gap-6 text-sm">
               {footerLinks.legal.map((link, idx) => (
-                <span key={link.href} className="flex items-center gap-6">
+                <span key={`legal-${link.label}`} className="flex items-center gap-6">
+                  {' '}
+                  {/* Made key unique */}
                   <Link
                     href={link.href}
                     className="text-gray-400 hover:text-white transition-colors duration-200"

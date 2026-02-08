@@ -52,6 +52,7 @@ export default function HeroSection({ content }: HeroSectionProps) {
         loop
         muted
         playsInline
+        preload="metadata"
         className="absolute inset-0 w-full h-full object-cover"
       >
         Your browser does not support the video tag.
