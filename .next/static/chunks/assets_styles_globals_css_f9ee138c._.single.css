@@ -4705,6 +4705,12 @@
   }
 
   @media (hover: hover) {
+    .hover\:text-gray-800:hover {
+      color: var(--color-gray-800);
+    }
+  }
+
+  @media (hover: hover) {
     .hover\:text-green-400:hover {
       color: var(--color-green-400);
     }
@@ -4860,6 +4866,10 @@
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
 
+  .focus\:ring-blue-500:focus {
+    --tw-ring-color: var(--color-blue-500);
+  }
+
   .focus\:ring-ring:focus {
     --tw-ring-color: var(--ring);
   }
@@ -4938,6 +4948,10 @@
 
   .disabled\:cursor-not-allowed:disabled {
     cursor: not-allowed;
+  }
+
+  .disabled\:bg-blue-400:disabled {
+    background-color: var(--color-blue-400);
   }
 
   .disabled\:opacity-50:disabled {
@@ -6530,6 +6544,12 @@
   @media (hover: hover) {
     .dark\:hover\:text-foreground:is(.dark *):hover {
       color: var(--foreground);
+    }
+  }
+
+  @media (hover: hover) {
+    .dark\:hover\:text-gray-200:is(.dark *):hover {
+      color: var(--color-gray-200);
     }
   }
 

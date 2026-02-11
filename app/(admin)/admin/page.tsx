@@ -117,39 +117,43 @@ export default function AdminLoginPage() {
           Admin Login
         </h1>
 
-        <input
-          type="text"
-          placeholder="Username or email"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded p-2 w-full"
-          required
-        />
-        
+        <div>
+          <input
+            type="text"
+            placeholder="Username or email"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
 
-        <input
-          type={showPassword ? 'text' : 'password'}
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded p-2 w-full"
-          required
+        {/* Password field with toggle */}
+        <div className="relative">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded p-2 pr-10 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-2 top-2 text-gray-600 dark:text-gray-300"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
-            {showPassword ? <EyeOff /> : <Eye />}
+            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
-        
+        </div>
+
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded w-full"
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2 px-4 rounded w-full transition-colors"
         >
           {loading ? 'Signing In...' : 'Sign In'}
         </button>
