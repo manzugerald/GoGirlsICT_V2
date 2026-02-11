@@ -14,7 +14,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const singleCacheKey = SINGLE_LOCATION_CACHE_PREFIX + params.id;
     const cached = await redis.get(singleCacheKey);
     if (cached) {
-      return NextResponse.json(JSON.parse(cached));
+      return NextResponse.json(JSON.parse(cached), {
+        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+      });
     }
 
     const location = await prisma.location.findUnique({
@@ -27,16 +29,18 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     });
 
     if (!location) {
-      return NextResponse.json({ error: 'Location not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Location not found' }, { status: 404, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
     }
 
     // Cache this location
     await redis.set(singleCacheKey, JSON.stringify(location), 'EX', LOCATIONS_CACHE_TTL);
 
-    return NextResponse.json(location);
+    return NextResponse.json(location, {
+      headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+    });
   } catch (error) {
     console.error('Failed to fetch location:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
   }
 }
 
@@ -45,14 +49,14 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const body = await req.json();
     const { locationName, latitude, longitude, institutionId } = body;
 
     if (!institutionId) {
-      return NextResponse.json({ error: 'Missing required field: institutionId' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required field: institutionId' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const updated = await prisma.location.update({
@@ -76,10 +80,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       redis.del(LOCATIONS_ALL_CACHE_KEY),
     ]);
 
-    return NextResponse.json(updated);
+    return NextResponse.json(updated, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error) {
     console.error('Failed to update location:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }
 
@@ -96,12 +102,14 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
       redis.del(LOCATIONS_ALL_CACHE_KEY),
     ]);
 
-    return NextResponse.json({ message: 'Location deleted', location: deleted });
+    return NextResponse.json({ message: 'Location deleted', location: deleted }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error: any) {
     if (error.code === 'P2025') {
-      return NextResponse.json({ error: 'Location not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Location not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
     console.error('Failed to delete location:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }

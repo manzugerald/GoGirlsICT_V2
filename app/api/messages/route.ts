@@ -51,7 +51,9 @@ export async function GET() {
       const firstName = (session?.user as any)?.firstName;
       const lastName = (session?.user as any)?.lastName;
       if (!firstName || !lastName) {
-        return NextResponse.json([]);
+        return NextResponse.json([], {
+          headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' },
+        });
       }
       where = {
         beneficiary: {
@@ -72,17 +74,19 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(messages);
+    return NextResponse.json(messages, {
+      headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' },
+    });
   } catch (error) {
     console.error('GET /api/messages error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' } });
   }
 }
 
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
 
     const role = session.user.role as
       | 'super'
@@ -93,7 +97,7 @@ export async function POST(req: Request) {
       | undefined;
 
     const body = await req.json().catch(() => null);
-    if (!body) return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    if (!body) return NextResponse.json({ error: 'Invalid JSON' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
 
     const {
       title,
@@ -119,11 +123,11 @@ export async function POST(req: Request) {
     };
 
     if (!title) {
-      return NextResponse.json({ error: 'Missing required field: title' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required field: title' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     if (messageCategory !== undefined && !isMessageCategory(messageCategory)) {
-      return NextResponse.json({ error: 'Invalid messageCategory' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid messageCategory' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     let beneficiaryConnect: any = undefined;
@@ -135,7 +139,7 @@ export async function POST(req: Request) {
       if (!firstName || !lastName) {
         return NextResponse.json(
           { error: 'Your profile is missing first/last name; contact admin.' },
-          { status: 400 }
+          { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
         );
       }
       const match = await prisma.beneficiary.findFirst({
@@ -145,7 +149,7 @@ export async function POST(req: Request) {
       if (!match) {
         return NextResponse.json(
           { error: 'Beneficiary profile not found for your account.' },
-          { status: 404 }
+          { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
         );
       }
       beneficiaryConnect = { connect: { id: match.id } };
@@ -226,9 +230,11 @@ export async function POST(req: Request) {
       console.warn('Failed to invalidate beneficiary cache after message create', err);
     }
 
-    return NextResponse.json(created);
+    return NextResponse.json(created, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error) {
     console.error('POST /api/messages error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }

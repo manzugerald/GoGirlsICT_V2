@@ -60,7 +60,9 @@ export async function GET() {
       const { firstName, lastName } = getNames(session);
       if (!firstName || !lastName) {
         // don't leak data
-        return NextResponse.json([]);
+        return NextResponse.json([], {
+          headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' },
+        });
       }
       where = {
         message: {
@@ -92,12 +94,14 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(responses);
+    return NextResponse.json(responses, {
+      headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' },
+    });
   } catch (error: any) {
     console.error('GET /api/responses error:', error);
     return NextResponse.json(
       { error: 'Internal Server Error', message: error?.message ?? '' },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' } }
     );
   }
 }
@@ -119,12 +123,12 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
     const role = asRole(session.user.role);
 
     const body = await req.json().catch(() => null);
-    if (!body) return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    if (!body) return NextResponse.json({ error: 'Invalid JSON' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
 
     const { messageId: rawMessageId, content } = body as {
       messageId?: number | string;
@@ -132,7 +136,7 @@ export async function POST(req: Request) {
     };
 
     if (rawMessageId === undefined || rawMessageId === null || rawMessageId === '') {
-      return NextResponse.json({ error: 'Missing required field: messageId' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required field: messageId' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     // coerce id
@@ -143,7 +147,7 @@ export async function POST(req: Request) {
         : rawMessageId;
 
     if (content === undefined) {
-      return NextResponse.json({ error: 'Missing required field: content' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required field: content' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     // Ensure parent message exists and allows responses and fetch its creator
@@ -151,12 +155,12 @@ export async function POST(req: Request) {
       where: { id: messageId as any },
       select: { id: true, allowResponses: true, beneficiaryId: true, createdById: true },
     });
-    if (!msg) return NextResponse.json({ error: 'Parent message not found' }, { status: 404 });
+    if (!msg) return NextResponse.json({ error: 'Parent message not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
 
     if (!msg.allowResponses) {
       return NextResponse.json(
         { error: 'Responses are not allowed for this message' },
-        { status: 403 }
+        { status: 403, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
       );
     }
 
@@ -183,7 +187,7 @@ export async function POST(req: Request) {
       if (!ownId) {
         return NextResponse.json(
           { error: 'Beneficiary profile not resolvable from session' },
-          { status: 400 }
+          { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
         );
       }
       // allow if message is tied to this beneficiary OR the session user is the message author
@@ -197,7 +201,7 @@ export async function POST(req: Request) {
         responderUserId = sessionUserId ?? undefined;
         responderRole = 'AUTHOR';
       } else {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
       }
     } else {
       // other authenticated users (e.g., regular "user") can respond only if they are the message author
@@ -207,7 +211,7 @@ export async function POST(req: Request) {
         responderRole = 'AUTHOR';
       } else {
         // guests or authenticated non-authors cannot respond
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
       }
     }
 
@@ -235,7 +239,9 @@ export async function POST(req: Request) {
           },
         },
       });
-      return NextResponse.json(created);
+      return NextResponse.json(created, {
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     } catch (err: any) {
       // fallback when responderRole does not exist in the Prisma model / DB
       const msgErr = String(err?.message ?? err);
@@ -266,7 +272,9 @@ export async function POST(req: Request) {
             },
           },
         });
-        return NextResponse.json(created);
+        return NextResponse.json(created, {
+          headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+        });
       }
       // rethrow to outer catch
       throw err;
@@ -275,6 +283,6 @@ export async function POST(req: Request) {
     // Log and return the error message to help debugging (remove message in production)
     console.error('POST /api/responses error:', error);
     const msg = error?.message ?? String(error);
-    return NextResponse.json({ error: 'Internal Server Error', message: msg }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error', message: msg }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }
