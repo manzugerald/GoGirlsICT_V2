@@ -85,7 +85,9 @@ export async function GET() {
         return { ...b, messageCount, responseCount };
       });
 
-      return NextResponse.json(enriched);
+      return NextResponse.json(enriched, {
+        headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+      });
     }
 
     // Others (super/admin/moderator/guest): use cache for "all"
@@ -94,7 +96,9 @@ export async function GET() {
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        return NextResponse.json(Array.isArray(parsed) ? parsed : []);
+        return NextResponse.json(Array.isArray(parsed) ? parsed : [], {
+          headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+        });
       } catch {
         await redis.del(keyAll);
       }
@@ -118,10 +122,15 @@ export async function GET() {
     });
 
     await redis.set(keyAll, JSON.stringify(enrichedAll), 'EX', CACHE_TTL);
-    return NextResponse.json(enrichedAll);
+    return NextResponse.json(enrichedAll, {
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+    });
   } catch (err) {
     console.error('Error fetching beneficiaries:', err);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { 
+      status: 500,
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+    });
   }
 }
 
@@ -198,9 +207,14 @@ export async function POST(req: Request) {
     const responseCount =
       typeof beneficiary._count?.responses === 'number' ? beneficiary._count.responses : 0;
 
-    return NextResponse.json({ ...beneficiary, messageCount, responseCount });
+    return NextResponse.json({ ...beneficiary, messageCount, responseCount }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error) {
     console.error('Failed to create beneficiary:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { 
+      status: 500,
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   }
 }

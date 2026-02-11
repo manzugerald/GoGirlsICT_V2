@@ -38,10 +38,12 @@ export async function GET(_req: Request) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json(members);
+    return NextResponse.json(members, {
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+    });
   } catch (err: any) {
     console.error('GET /api/teams error', err);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
   }
 }
 
@@ -65,13 +67,13 @@ export async function POST(req: Request) {
     // Require authenticated user so we can set createdById automatically
     const session = await getServerSession(authOptions as any);
     if (!session || !(session.user as any)?.id) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
     const createdById = String((session.user as any).id);
 
     const contentType = req.headers.get('content-type') ?? '';
     if (!contentType.includes('form-data')) {
-      return NextResponse.json({ error: 'Expected multipart/form-data' }, { status: 400 });
+      return NextResponse.json({ error: 'Expected multipart/form-data' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const formData = await req.formData();
@@ -90,20 +92,20 @@ export async function POST(req: Request) {
     const profileImageFile = formData.get('profileImage') as File | null;
 
     if (!firstName || !lastName) {
-      return NextResponse.json({ error: 'firstName and lastName are required' }, { status: 400 });
+      return NextResponse.json({ error: 'firstName and lastName are required' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     // Uniqueness checks
     if (email) {
       const existingByEmail = await prisma.team.findUnique({ where: { email } });
       if (existingByEmail) {
-        return NextResponse.json({ error: 'Email already exists' }, { status: 400 });
+        return NextResponse.json({ error: 'Email already exists' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
       }
     }
     if (phone) {
       const existingByPhone = await prisma.team.findUnique({ where: { phone } });
       if (existingByPhone) {
-        return NextResponse.json({ error: 'Phone already exists' }, { status: 400 });
+        return NextResponse.json({ error: 'Phone already exists' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
       }
     }
 
@@ -152,17 +154,17 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ message: 'Team member created', team: created }, { status: 201 });
+    return NextResponse.json({ message: 'Team member created', team: created }, { status: 201, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   } catch (err: any) {
     console.error('POST /api/teams error', err);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }
 
 // Explicitly disallow other methods
 export async function PUT() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
 }
 export async function DELETE() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
 }

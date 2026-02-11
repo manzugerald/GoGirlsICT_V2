@@ -14,14 +14,16 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   try {
     const reportId = Number(params.id);
     if (!reportId || isNaN(reportId)) {
-      return NextResponse.json({ error: 'Invalid Report ID' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid Report ID' }, { status: 400, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
     }
 
     // Try Redis cache first
     const singleCacheKey = SINGLE_REPORT_CACHE_PREFIX + reportId;
     const cached = await redis.get(singleCacheKey);
     if (cached) {
-      return NextResponse.json(JSON.parse(cached));
+      return NextResponse.json(JSON.parse(cached), {
+        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+      });
     }
 
     const report = await prisma.report.findUnique({
@@ -29,16 +31,18 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     });
 
     if (!report) {
-      return NextResponse.json({ error: 'Report not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Report not found' }, { status: 404, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
     }
 
     // Cache result for this report for 7 days
     await redis.set(singleCacheKey, JSON.stringify(report), 'EX', CACHE_TTL);
 
-    return NextResponse.json(report);
+    return NextResponse.json(report, {
+      headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+    });
   } catch (error) {
     console.error('Failed to fetch report:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
   }
 }
 
@@ -48,13 +52,13 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
     const userId = session.user.id;
 
     const reportId = Number(params.id);
     if (!reportId || isNaN(reportId)) {
-      return NextResponse.json({ error: 'Invalid Report ID' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid Report ID' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const data = await req.json();
@@ -69,7 +73,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     } = data;
 
     if (!title) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const slug = slugify(title.trim());
@@ -95,10 +99,12 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       redis.del(ALL_REPORTS_CACHE_KEY),
     ]);
 
-    return NextResponse.json(updatedReport);
+    return NextResponse.json(updatedReport, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error) {
     console.error('Failed to update report:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }
 
@@ -108,12 +114,12 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized Action' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized Action' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const reportId = Number(params.id);
     if (!reportId || isNaN(reportId)) {
-      return NextResponse.json({ error: 'Invalid Report Id' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid Report Id' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     await prisma.report.delete({
@@ -126,12 +132,14 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
       redis.del(ALL_REPORTS_CACHE_KEY),
     ]);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error: any) {
     if (error.code === 'P2025') {
-      return NextResponse.json({ error: 'Report not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Report not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
     console.error('Failed to delete report:', error);
-    return NextResponse.json({ error: 'Failed to delete report' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to delete report' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }

@@ -17,7 +17,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   try {
     const userId = params?.id;
     if (!userId) {
-      return NextResponse.json({ error: 'Missing user id' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing user id' }, { status: 400, headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' } });
     }
 
     const user = await prisma.user.findUnique({
@@ -37,13 +37,13 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404, headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' } });
     }
 
-    return NextResponse.json(user, { status: 200 });
+    return NextResponse.json(user, { status: 200, headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' } });
   } catch (err: any) {
     console.error('GET /api/users/:id error', err);
-    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500, headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' } });
   }
 }
 
@@ -54,7 +54,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const userAgent = req.headers.get('user-agent') ?? 'unknown';
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const formData = await req.formData();
@@ -72,7 +72,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (username && username !== user.username) {
       return NextResponse.json(
         { error: 'The original username does not match the record.' },
-        { status: 400 }
+        { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
       );
     }
 
@@ -82,13 +82,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       if (!currentPassword) {
         return NextResponse.json(
           { error: 'Current password required to change password' },
-          { status: 400 }
+          { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
         );
       }
 
       const ok = await bcrypt.compare(currentPassword, user.password);
       if (!ok) {
-        return NextResponse.json({ error: 'Current password incorrect' }, { status: 401 });
+        return NextResponse.json({ error: 'Current password incorrect' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
       }
 
       // NOTE: Removed previous-password reuse check per request.
@@ -98,7 +98,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         if (pwned) {
           return NextResponse.json(
             { error: `This password appears in ${count} breached datasets. Choose another.` },
-            { status: 400 }
+            { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
           );
         }
       } catch (e) {
@@ -183,7 +183,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         }
       }
 
-      return NextResponse.json({ message: 'Password changed' });
+      return NextResponse.json({ message: 'Password changed' }, {
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     }
 
     // Standard profile update flow
@@ -198,7 +200,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (newUsername && newUsername !== user.username) {
       const existing = await prisma.user.findUnique({ where: { username: newUsername } });
       if (existing) {
-        return NextResponse.json({ error: 'Username already taken' }, { status: 400 });
+        return NextResponse.json({ error: 'Username already taken' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
       }
       updateData.username = newUsername;
     }
@@ -236,7 +238,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
           about: true,
         },
       });
-      return NextResponse.json({ message: 'No changes', user: current });
+      return NextResponse.json({ message: 'No changes', user: current }, {
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     }
 
     const updatedUser = await prisma.user.update({
@@ -254,10 +258,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       },
     });
 
-    return NextResponse.json({ message: 'User updated', user: updatedUser });
+    return NextResponse.json({ message: 'User updated', user: updatedUser }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (err: any) {
     console.error('PATCH /api/users/:id error', err);
-    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }
 
@@ -266,7 +272,7 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
     const userId = params.id;
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     if (user.image) {
@@ -280,16 +286,18 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
 
     await prisma.user.delete({ where: { id: userId } });
 
-    return NextResponse.json({ message: 'User deleted' });
+    return NextResponse.json({ message: 'User deleted' }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (err: any) {
     console.error('DELETE /api/users/:id error', err);
-    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }
 
 export async function POST() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
 }
 export async function PUT() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
 }

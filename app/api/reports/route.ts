@@ -54,7 +54,9 @@ export async function GET(req: Request) {
             // If cached contains a non-empty array, return it
             if (Array.isArray(parsed) && parsed.length > 0) {
               console.log('[/api/reports] returning cached reports count=', parsed.length);
-              return NextResponse.json(parsed);
+              return NextResponse.json(parsed, {
+                headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+              });
             }
             // If cached is empty array, fall through to DB fetch and refresh cache
             console.log('[/api/reports] cached reports empty — refreshing from DB');
@@ -88,10 +90,12 @@ export async function GET(req: Request) {
       }
     }
 
-    return NextResponse.json(reports);
+    return NextResponse.json(reports, {
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+    });
   } catch (err) {
     console.error('[/api/reports] Error fetching reports:', err);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
   }
 }
 
@@ -101,7 +105,7 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
     const userId = session.user.id;
 
@@ -110,7 +114,7 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json(
         { error: 'Authenticated user not found in database.' },
-        { status: 400 }
+        { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
       );
     }
 
@@ -126,7 +130,7 @@ export async function POST(req: Request) {
     } = data;
 
     if (!title) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const slug = slugify(title.trim());
@@ -157,9 +161,11 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json(report);
+    return NextResponse.json(report, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error) {
     console.error('[/api/reports] Failed to create report:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }

@@ -48,7 +48,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const singleCacheKey = SINGLE_INSTITUTION_CACHE_PREFIX + params.id;
     const cached = await redis.get(singleCacheKey);
     if (cached) {
-      return NextResponse.json(JSON.parse(cached));
+      return NextResponse.json(JSON.parse(cached), {
+        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+      });
     }
 
     const institution = await prisma.institution.findUnique({
@@ -63,16 +65,18 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     });
 
     if (!institution) {
-      return NextResponse.json({ error: 'Institution not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Institution not found' }, { status: 404, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
     }
 
     // Cache this institution for 7 days
     await redis.set(singleCacheKey, JSON.stringify(institution), 'EX', CACHE_TTL);
 
-    return NextResponse.json(institution);
+    return NextResponse.json(institution, {
+      headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+    });
   } catch (error) {
     console.error('Failed to fetch institution:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
   }
 }
 
@@ -81,7 +85,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
     const userId = session.user.id;
 
@@ -92,7 +96,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
 
     if (!formData) {
-      return NextResponse.json({ error: 'FormData required' }, { status: 400 });
+      return NextResponse.json({ error: 'FormData required' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     let name = (formData.get('name') as string) || '';
@@ -138,7 +142,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     );
 
     if (!name || !institutionType) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const updated = await prisma.institution.update({
@@ -165,10 +169,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       redis.del(INSTITUTIONS_ALL_CACHE_KEY),
     ]);
 
-    return NextResponse.json(updated);
+    return NextResponse.json(updated, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error) {
     console.error('Failed to update institution:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }
 
@@ -185,12 +191,14 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
       redis.del(INSTITUTIONS_ALL_CACHE_KEY),
     ]);
 
-    return NextResponse.json({ message: 'Institution deleted', institution: deleted });
+    return NextResponse.json({ message: 'Institution deleted', institution: deleted }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error: any) {
     if (error.code === 'P2025') {
-      return NextResponse.json({ error: 'Institution not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Institution not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
     console.error('Failed to delete institution:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }

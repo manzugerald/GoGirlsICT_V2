@@ -202,13 +202,13 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json(normalizedEvents, {
-      headers: { 'Cache-Control': 'no-store' },
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
     });
   } catch (err) {
     console.error('[/api/events] Error fetching events:', err);
     return NextResponse.json(
       { error: 'Internal Server Error' },
-      { status: 500, headers: { 'Cache-Control': 'no-store' } }
+      { status: 500, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } }
     );
   }
 }
@@ -221,12 +221,12 @@ export async function POST(req: Request) {
     // Minimal validation omitted for brevity; original POST logic can be re-added here
     const event = await prisma.event.create({ data });
 
-    return NextResponse.json(event, { headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json(event, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   } catch (err) {
     console.error('[/api/events] Failed to create event:', err);
     return NextResponse.json(
       { error: 'Internal Server Error' },
-      { status: 500, headers: { 'Cache-Control': 'no-store' } }
+      { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
     );
   }
 }
