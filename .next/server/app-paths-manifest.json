@@ -1,6 +1,10 @@
 {
+  "/(admin)/admin/page": "app/(admin)/admin/page.js",
   "/(root)/page": "app/(root)/page.js",
   "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/auth/logout/route": "app/api/auth/logout/route.js",
+  "/api/auth/session-start/route": "app/api/auth/session-start/route.js",
   "/api/beneficiaries/route": "app/api/beneficiaries/route.js",
   "/api/events/route": "app/api/events/route.js",
   "/api/facebook-posts/route": "app/api/facebook-posts/route.js",

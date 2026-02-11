@@ -9,14 +9,14 @@ interface HeroSectionProps {
 
 // Break the text into meaningful segments
 const TEXT_SEGMENTS = [
-  "Empowering girls and young women through technology",
-  "Bridging gender gaps in ICT",
-  "Amplifying underrepresented voices",
-  "Cultivating creators, leaders, and decision-makers",
-  "Building confidence, competence, and critical thinking",
-  "Digital skills as liberation and agency",
-  "Enabling meaningful participation in the digital economy",
-  "Creating just, innovative, and resilient societies"
+  'Empowering girls and young women through technology',
+  'Bridging gender gaps in ICT',
+  'Amplifying underrepresented voices',
+  'Cultivating creators, leaders, and decision-makers',
+  'Building confidence, competence, and critical thinking',
+  'Digital skills as liberation and agency',
+  'Enabling meaningful participation in the digital economy',
+  'Creating just, innovative, and resilient societies',
 ];
 
 export default function HeroSection({ content }: HeroSectionProps) {
@@ -37,11 +37,11 @@ export default function HeroSection({ content }: HeroSectionProps) {
     );
   }
 
-  const videoSrc = content.heroVideo.startsWith('http') 
-    ? content.heroVideo 
-    : content.heroVideo.startsWith('/') 
-    ? content.heroVideo 
-    : `/${content.heroVideo}`;
+  const videoSrc = content.heroVideo.startsWith('http')
+    ? content.heroVideo
+    : content.heroVideo.startsWith('/')
+      ? content.heroVideo
+      : `/${content.heroVideo}`;
 
   return (
     <div className="hero-section relative w-full h-screen overflow-hidden">
@@ -57,7 +57,7 @@ export default function HeroSection({ content }: HeroSectionProps) {
       >
         Your browser does not support the video tag.
       </video>
-      
+
       {/* Dark overlay for better text visibility */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
 
@@ -70,7 +70,7 @@ export default function HeroSection({ content }: HeroSectionProps) {
               {content.siteName || 'GoGirls ICT Initiative'}
             </h1>
             <div className="h-1 w-32 bg-gradient-to-r from-transparent via-pink-500 to-transparent mx-auto rounded-full" />
-            
+
             {/* Call to action buttons */}
             <div className="mt-8 flex flex-wrap gap-4 justify-center">
               <a
@@ -95,7 +95,7 @@ export default function HeroSection({ content }: HeroSectionProps) {
             {/* Gradient fade on edges */}
             <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-black/70 to-transparent z-10 pointer-events-none" />
             <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-black/70 to-transparent z-10 pointer-events-none" />
-            
+
             {/* Single row - scroll left (appears to move right) */}
             <div className={`flex gap-4 ${mounted ? 'animate-scroll-left' : ''}`}>
               {[...TEXT_SEGMENTS, ...TEXT_SEGMENTS].map((text, idx) => (

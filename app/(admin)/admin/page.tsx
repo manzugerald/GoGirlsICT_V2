@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { loginAndSync, logoutAndSync } from '@/lib/authClient';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const { data: session, status } = useSession();
@@ -15,6 +16,7 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Use provided callback query param if present, otherwise default to home dashboard
   const callbackUrl = searchParams?.get('callbackUrl') || '/admin/dashboard?type=home';
@@ -123,14 +125,25 @@ export default function AdminLoginPage() {
           className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded p-2 w-full"
           required
         />
+        
+
         <input
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded p-2 w-full"
           required
-        />
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-2 top-2 text-gray-600 dark:text-gray-300"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+          >
+            {showPassword ? <EyeOff /> : <Eye />}
+          </button>
+        
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <button
