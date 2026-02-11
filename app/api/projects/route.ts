@@ -37,7 +37,9 @@ export async function GET(req: Request) {
             // If cache contains a non-empty array, return it immediately
             if (Array.isArray(parsed) && parsed.length > 0) {
               console.log('[/api/projects] returning cached projects count=', parsed.length);
-              return NextResponse.json(parsed);
+              return NextResponse.json(parsed, {
+                headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+              });
             }
             // If cached is an empty array, fall through to fetch DB and refresh cache
             console.log('[/api/projects] cached projects is empty — refreshing from DB');
@@ -68,10 +70,12 @@ export async function GET(req: Request) {
       console.warn('[/api/projects] redis set error', cacheErr);
     }
 
-    return NextResponse.json(projects);
+    return NextResponse.json(projects, {
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+    });
   } catch (err) {
     console.error('[/api/projects] Error fetching projects:', err);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
   }
 }
 
@@ -81,14 +85,14 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const data = await req.json();
     const { title, slug, content, images, projectStatus, publishStatus } = data;
 
     if (!title || !slug || !content) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const userId = session.user.id;
@@ -115,9 +119,11 @@ export async function POST(req: Request) {
       console.warn('[/api/projects] failed to delete cache after create', cacheErr);
     }
 
-    return NextResponse.json(project);
+    return NextResponse.json(project, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error) {
     console.error('[/api/projects] Failed to create project:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }

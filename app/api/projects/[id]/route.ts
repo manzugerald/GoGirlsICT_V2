@@ -17,14 +17,16 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   try {
     const projectId = Number(params.id);
     if (!projectId || isNaN(projectId)) {
-      return NextResponse.json({ error: 'Invalid Project ID' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid Project ID' }, { status: 400, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
     }
 
     // Try Redis cache first
     const singleCacheKey = SINGLE_PROJECT_CACHE_PREFIX + projectId;
     const cached = await redis.get(singleCacheKey);
     if (cached) {
-      return NextResponse.json(JSON.parse(cached));
+      return NextResponse.json(JSON.parse(cached), {
+        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+      });
     }
 
     const project = await prisma.project.findUnique({
@@ -32,16 +34,18 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     });
 
     if (!project) {
-      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Project not found' }, { status: 404, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
     }
 
     // Cache result for this project for 7 days
     await redis.set(singleCacheKey, JSON.stringify(project), 'EX', CACHE_TTL);
 
-    return NextResponse.json(project);
+    return NextResponse.json(project, {
+      headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+    });
   } catch (error) {
     console.error('Failed to fetch project:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
   }
 }
 
@@ -70,13 +74,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
     const userId = session.user.id;
 
     const projectId = Number(params.id);
     if (!projectId || isNaN(projectId)) {
-      return NextResponse.json({ error: 'Invalid Project ID' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid Project ID' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     // Parse FormData (for file uploads)
@@ -139,7 +143,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     );
 
     if (!title) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const slug = slugify(title.trim());
@@ -163,10 +167,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       redis.del(ALL_PROJECTS_CACHE_KEY),
     ]);
 
-    return NextResponse.json(updatedProject);
+    return NextResponse.json(updatedProject, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error) {
     console.error('Failed to update project:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }
 
@@ -175,7 +181,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   try {
     const projectId = Number(params.id);
     if (!projectId || isNaN(projectId)) {
-      return NextResponse.json({ error: 'Invalid Project ID' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid Project ID' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const deleted = await prisma.project.delete({
@@ -188,13 +194,15 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
       redis.del(ALL_PROJECTS_CACHE_KEY),
     ]);
 
-    return NextResponse.json({ message: 'Project deleted', project: deleted });
+    return NextResponse.json({ message: 'Project deleted', project: deleted }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error: any) {
     if (error.code === 'P2025') {
       // Prisma: Record not found
-      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Project not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
     console.error('Failed to delete project:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }

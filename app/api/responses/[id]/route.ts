@@ -89,7 +89,7 @@ export async function GET(_req: Request, context: { params: any }) {
     const params = await context.params;
     const id = String(params?.id ?? '').trim();
     console.debug('GET /api/responses/[id] - id:', id);
-    if (!id) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    if (!id) return NextResponse.json({ error: 'Invalid id' }, { status: 400, headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' } });
 
     const response = await prisma.response.findUnique({
       where: { id },
@@ -111,13 +111,15 @@ export async function GET(_req: Request, context: { params: any }) {
 
     if (!response) {
       console.debug('GET /api/responses/[id] - not found', { id });
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Not found' }, { status: 404, headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' } });
     }
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, {
+      headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' },
+    });
   } catch (error) {
     console.error('GET /api/responses/[id] error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' } });
   }
 }
 
@@ -127,12 +129,12 @@ export async function PATCH(req: Request, context: { params: any }) {
     const params = await context.params;
     const id = String(params?.id ?? '').trim();
     console.debug('PATCH /api/responses/[id] - id:', id);
-    if (!id) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    if (!id) return NextResponse.json({ error: 'Invalid id' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
 
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       console.debug('PATCH /api/responses/[id] - unauthorized (no session user)', {});
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const dbUser = await resolveDbUser(session);
@@ -157,14 +159,14 @@ export async function PATCH(req: Request, context: { params: any }) {
 
     if (!existing) {
       console.debug('PATCH /api/responses/[id] - not found', { id });
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
     console.debug('PATCH /api/responses/[id] - existing:', existing);
 
     const body = await req.json().catch(() => null);
     if (!body || body.content === undefined) {
       console.debug('PATCH /api/responses/[id] - missing content', {});
-      return NextResponse.json({ error: 'Missing required field: content' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required field: content' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
     const { content } = body as { content: unknown };
 
@@ -196,7 +198,7 @@ export async function PATCH(req: Request, context: { params: any }) {
         resolvedRole,
         existing,
       });
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const updated = await prisma.response.update({
@@ -210,10 +212,12 @@ export async function PATCH(req: Request, context: { params: any }) {
     });
 
     console.debug('PATCH /api/responses/[id] - updated:', { id: updated.id });
-    return NextResponse.json(updated);
+    return NextResponse.json(updated, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error) {
     console.error('PATCH /api/responses/[id] error (stack):', (error as Error).stack ?? error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }
 
@@ -228,14 +232,14 @@ export async function DELETE(_req: Request, context: { params: any }) {
 
     if (!id) {
       console.debug('DELETE invalid id', { id });
-      return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid id' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const session = await getServerSession(authOptions);
     debugContext.sessionPresent = !!session;
     if (!session?.user?.id) {
       console.debug('DELETE unauthorized - no session user', { session: Boolean(session) });
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const sessionSummary = {
@@ -274,12 +278,12 @@ export async function DELETE(_req: Request, context: { params: any }) {
         error: (e as any)?.message ?? e,
         stack: (e as any)?.stack,
       });
-      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     if (!existing) {
       console.debug('DELETE item not found', { id });
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const sessionUserId = String(dbUser?.id ?? session.user?.id ?? '');
@@ -323,7 +327,7 @@ export async function DELETE(_req: Request, context: { params: any }) {
         resolvedRole,
         existing,
       });
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     try {
@@ -343,7 +347,9 @@ export async function DELETE(_req: Request, context: { params: any }) {
         const deleteManyRes = await prisma.response.deleteMany({ where: { id: existing.id } });
         console.debug('DELETE fallback deleteMany result', { deleteManyRes });
         if (deleteManyRes.count > 0) {
-          return NextResponse.json({ message: 'Deleted (fallback)' });
+          return NextResponse.json({ message: 'Deleted (fallback)' }, {
+            headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+          });
         }
       } catch (e2) {
         console.error('DELETE fallback deleteMany also failed', {
@@ -353,12 +359,14 @@ export async function DELETE(_req: Request, context: { params: any }) {
         });
       }
 
-      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
-    return NextResponse.json({ message: 'Deleted' });
+    return NextResponse.json({ message: 'Deleted' }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error) {
     console.error('DELETE /api/responses/[id] error (outer):', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }

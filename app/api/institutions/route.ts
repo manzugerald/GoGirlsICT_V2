@@ -74,10 +74,12 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(institutions);
+    return NextResponse.json(institutions, {
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+    });
   } catch (err) {
     console.error('❌ Error fetching institutions:', err);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
   }
 }
 
@@ -87,7 +89,7 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const contentType = req.headers.get('content-type') ?? '';
@@ -98,7 +100,7 @@ export async function POST(req: Request) {
     }
 
     if (!formData) {
-      return NextResponse.json({ error: 'FormData required' }, { status: 400 });
+      return NextResponse.json({ error: 'FormData required' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const name = (formData.get('name') as string) || '';
@@ -109,7 +111,7 @@ export async function POST(req: Request) {
     const locationsRaw = formData.get('locations') as string;
 
     if (!name || !institutionType) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     // ✅ Save logo
@@ -122,7 +124,7 @@ export async function POST(req: Request) {
         path.join(process.cwd(), 'public', 'uploads', 'institutions')
       );
     } else {
-      return NextResponse.json({ error: 'Logo file required' }, { status: 400 });
+      return NextResponse.json({ error: 'Logo file required' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     // ✅ Save other images
@@ -173,9 +175,11 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json(institution);
+    return NextResponse.json(institution, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error) {
     console.error('❌ Failed to create institution:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }

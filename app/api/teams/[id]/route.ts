@@ -12,7 +12,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   try {
     const teamId = params?.id;
     if (!teamId) {
-      return NextResponse.json({ error: 'Missing team id' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing team id' }, { status: 400, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
     }
 
     const member = await prisma.team.findUnique({
@@ -38,13 +38,13 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     });
 
     if (!member) {
-      return NextResponse.json({ error: 'Team member not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Team member not found' }, { status: 404, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
     }
 
-    return NextResponse.json(member, { status: 200 });
+    return NextResponse.json(member, { status: 200, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
   } catch (err: any) {
     console.error('GET /api/teams/:id error', err);
-    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
   }
 }
 
@@ -52,12 +52,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   try {
     const teamId = params?.id;
     if (!teamId) {
-      return NextResponse.json({ error: 'Missing team id' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing team id' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const existing = await prisma.team.findUnique({ where: { id: Number(teamId) } });
     if (!existing) {
-      return NextResponse.json({ error: 'Team member not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Team member not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const formData = await req.formData();
@@ -83,7 +83,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (email && email !== existing.email) {
       const e = await prisma.team.findUnique({ where: { email } });
       if (e) {
-        return NextResponse.json({ error: 'Email already exists' }, { status: 400 });
+        return NextResponse.json({ error: 'Email already exists' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
       }
     }
 
@@ -91,7 +91,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (phone && phone !== existing.phone) {
       const p = await prisma.team.findUnique({ where: { phone } });
       if (p) {
-        return NextResponse.json({ error: 'Phone already exists' }, { status: 400 });
+        return NextResponse.json({ error: 'Phone already exists' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
       }
     }
 
@@ -165,7 +165,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
           updatedById: true,
         },
       });
-      return NextResponse.json({ message: 'No changes', team: current });
+      return NextResponse.json({ message: 'No changes', team: current }, {
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     }
 
     const updated = await prisma.team.update({
@@ -191,10 +193,10 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       },
     });
 
-    return NextResponse.json({ message: 'Team member updated', team: updated }, { status: 200 });
+    return NextResponse.json({ message: 'Team member updated', team: updated }, { status: 200, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   } catch (err: any) {
     console.error('PATCH /api/teams/:id error', err);
-    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }
 
@@ -202,12 +204,12 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   try {
     const teamId = params?.id;
     if (!teamId) {
-      return NextResponse.json({ error: 'Missing team id' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing team id' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     const member = await prisma.team.findUnique({ where: { id: Number(teamId) } });
     if (!member) {
-      return NextResponse.json({ error: 'Team member not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Team member not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     if (member.profileImage) {
@@ -221,16 +223,16 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
 
     await prisma.team.delete({ where: { id: Number(teamId) } });
 
-    return NextResponse.json({ message: 'Team member deleted' }, { status: 200 });
+    return NextResponse.json({ message: 'Team member deleted' }, { status: 200, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   } catch (err: any) {
     console.error('DELETE /api/teams/:id error', err);
-    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }
 
 export async function POST() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
 }
 export async function PUT() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
 }
