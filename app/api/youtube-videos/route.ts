@@ -36,7 +36,10 @@ export async function GET(_req: NextRequest) {
     metaLastFetched = meta?.lastFetched ?? null;
 
     if (Array.isArray(videosInDb) && videosInDb.length > 0) {
-      return NextResponse.json(makeResult(videosInDb, metaLastFetched), { status: 200 });
+      return NextResponse.json(makeResult(videosInDb, metaLastFetched), { 
+        status: 200,
+        headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600' },
+      });
     }
   } catch (err) {
     console.warn('Failed to read videos/meta from DB, will attempt to fetch from YouTube', err);
@@ -52,7 +55,10 @@ export async function GET(_req: NextRequest) {
 
     if (!needsFetch) {
       // Recently fetched but DB empty -> return empty with lastFetched (so caller knows when last attempt was)
-      return NextResponse.json(makeResult([], lastFetched), { status: 200 });
+      return NextResponse.json(makeResult([], lastFetched), { 
+        status: 200,
+        headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600' },
+      });
     }
   } catch (err) {
     console.warn('Failed to read youTubeCacheMeta, proceeding to fetch', err);
@@ -83,7 +89,10 @@ export async function GET(_req: NextRequest) {
     if (videoIds.length === 0) {
       // No videos found. Do NOT delete DB; return empty result.
       console.warn('YouTube search returned no video IDs.');
-      return NextResponse.json(makeResult([], null), { status: 200 });
+      return NextResponse.json(makeResult([], null), { 
+        status: 200,
+        headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600' },
+      });
     }
 
     const videosUrl = `https://www.googleapis.com/youtube/v3/videos?key=${encodeURIComponent(
@@ -131,7 +140,10 @@ export async function GET(_req: NextRequest) {
     if (toSave.length === 0) {
       console.warn('No video items to save after normalization.');
       // Do not update meta; return empty result so DB is preserved
-      return NextResponse.json(makeResult([], null), { status: 200 });
+      return NextResponse.json(makeResult([], null), { 
+        status: 200,
+        headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600' },
+      });
     }
 
     try {
@@ -162,10 +174,16 @@ export async function GET(_req: NextRequest) {
         orderBy: { publishedAt: 'desc' },
         take: MAX_RESULTS,
       });
-      return NextResponse.json(makeResult(final, now), { status: 200 });
+      return NextResponse.json(makeResult(final, now), { 
+        status: 200,
+        headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600' },
+      });
     } catch (err) {
       console.warn('Failed to read videos from DB after insert, returning normalized list', err);
-      return NextResponse.json(makeResult(toSave, now), { status: 200 });
+      return NextResponse.json(makeResult(toSave, now), { 
+        status: 200,
+        headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600' },
+      });
     }
   } catch (err: any) {
     console.error('Error fetching YouTube videos:', err);
@@ -179,7 +197,10 @@ export async function GET(_req: NextRequest) {
       if (fallback && fallback.length > 0) {
         const meta = await prisma.youTubeCacheMeta.findUnique({ where: { id: 1 } });
         const lastFetched = meta?.lastFetched ?? null;
-        return NextResponse.json(makeResult(fallback, lastFetched), { status: 200 });
+        return NextResponse.json(makeResult(fallback, lastFetched), { 
+          status: 200,
+          headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600' },
+        });
       }
     } catch (dbErr) {
       console.warn('Failed to read fallback videos from DB', dbErr);
@@ -187,7 +208,9 @@ export async function GET(_req: NextRequest) {
 
     return NextResponse.json(
       { error: 'Failed to fetch YouTube videos: ' + (err?.message ?? String(err)) },
-      { status: 500 }
+      { status: 500,
+        headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600' },
+      }
     );
   }
 }

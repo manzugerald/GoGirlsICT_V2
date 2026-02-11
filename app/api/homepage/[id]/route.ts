@@ -76,7 +76,9 @@ export async function GET(req: Request, context: { params: any }) {
     const singleCacheKey = SINGLE_HOMEPAGE_CACHE_PREFIX + id;
     const cached = await redis.get(singleCacheKey);
     if (cached) {
-      return NextResponse.json(JSON.parse(cached));
+      return NextResponse.json(JSON.parse(cached), {
+        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+      });
     }
 
     const homepage = await prisma.homePage.findUnique({
@@ -84,15 +86,23 @@ export async function GET(req: Request, context: { params: any }) {
     });
 
     if (!homepage) {
-      return NextResponse.json({ error: 'HomePage not found' }, { status: 404 });
+      return NextResponse.json({ error: 'HomePage not found' }, { 
+        status: 404,
+        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+      });
     }
 
     await redis.set(singleCacheKey, JSON.stringify(homepage), 'EX', CACHE_TTL);
 
-    return NextResponse.json(homepage);
+    return NextResponse.json(homepage, {
+      headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+    });
   } catch (error) {
     console.error('Failed to fetch homepage:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { 
+      status: 500,
+      headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+    });
   }
 }
 
@@ -169,7 +179,10 @@ export async function PATCH(req: Request, context: { params: any }) {
       if (typeof fBanner === 'string') updates.banner = fBanner;
     } else {
       const body = await req.json().catch(() => null);
-      if (!body) return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+      if (!body) return NextResponse.json({ error: 'Invalid JSON' }, { 
+        status: 400,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
 
       // copy only provided fields (partial update)
       const allowed = [
@@ -196,7 +209,10 @@ export async function PATCH(req: Request, context: { params: any }) {
     }
 
     if (Object.keys(updates).length === 0) {
-      return NextResponse.json({ error: 'No fields provided to update' }, { status: 400 });
+      return NextResponse.json({ error: 'No fields provided to update' }, { 
+        status: 400,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     }
 
     // Ensure the record exists
@@ -204,7 +220,10 @@ export async function PATCH(req: Request, context: { params: any }) {
       where: { id: idNum },
     });
     if (!existing) {
-      return NextResponse.json({ error: 'HomePage not found' }, { status: 404 });
+      return NextResponse.json({ error: 'HomePage not found' }, { 
+        status: 404,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     }
 
     // Update only provided fields (Prisma accepts partial update with only the keys present)
@@ -223,7 +242,9 @@ export async function PATCH(req: Request, context: { params: any }) {
       console.warn('Failed to invalidate homepage caches:', err);
     }
 
-    return NextResponse.json(updated);
+    return NextResponse.json(updated, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (err: any) {
     if (
       err?.message?.includes?.('Body exceeded') ||
@@ -236,15 +257,23 @@ export async function PATCH(req: Request, context: { params: any }) {
           error:
             'Request body too large. Increase server body size limit or upload a smaller file.',
         },
-        { status: 413 }
+        { status: 413,
+          headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+        }
       );
     }
 
     if (err?.code === 'P2025') {
-      return NextResponse.json({ error: 'HomePage not found' }, { status: 404 });
+      return NextResponse.json({ error: 'HomePage not found' }, { 
+        status: 404,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     }
     console.error('Failed to update homepage:', err);
-    return NextResponse.json({ error: err?.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: err?.message || 'Internal Server Error' }, { 
+      status: 500,
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   }
 }
 
@@ -255,11 +284,17 @@ export async function DELETE(req: Request, context: { params: any }) {
   try {
     const { id } = await context.params;
     const idNum = Number(id);
-    if (Number.isNaN(idNum)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+    if (Number.isNaN(idNum)) return NextResponse.json({ error: 'Invalid id' }, { 
+      status: 400,
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
 
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { 
+        status: 401,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     }
 
     const deleted = await prisma.homePage.delete({
@@ -275,12 +310,20 @@ export async function DELETE(req: Request, context: { params: any }) {
       console.warn('Failed to invalidate homepage caches:', err);
     }
 
-    return NextResponse.json({ message: 'HomePage deleted', homepage: deleted });
+    return NextResponse.json({ message: 'HomePage deleted', homepage: deleted }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error: any) {
     if (error?.code === 'P2025') {
-      return NextResponse.json({ error: 'HomePage not found' }, { status: 404 });
+      return NextResponse.json({ error: 'HomePage not found' }, { 
+        status: 404,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     }
     console.error('Failed to delete homepage:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { 
+      status: 500,
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   }
 }

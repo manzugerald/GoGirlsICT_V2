@@ -86,7 +86,9 @@ export async function GET() {
   try {
     const cached = await redis.get(HOMEPAGE_CACHE_KEY);
     if (cached) {
-      return NextResponse.json(JSON.parse(cached));
+      return NextResponse.json(JSON.parse(cached), {
+        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+      });
     }
 
     const homePage = await prisma.homePage.findFirst({
@@ -94,15 +96,23 @@ export async function GET() {
     });
 
     if (!homePage) {
-      return NextResponse.json({ error: 'No HomePage found' }, { status: 404 });
+      return NextResponse.json({ error: 'No HomePage found' }, { 
+        status: 404,
+        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+      });
     }
 
     await redis.set(HOMEPAGE_CACHE_KEY, JSON.stringify(homePage), 'EX', HOMEPAGE_CACHE_TTL);
 
-    return NextResponse.json(homePage);
+    return NextResponse.json(homePage, {
+      headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+    });
   } catch (err: any) {
     console.error('Error fetching homepage:', err);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { 
+      status: 500,
+      headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+    });
   }
 }
 
@@ -205,12 +215,17 @@ export async function POST(req: Request) {
     const hasContentFields = Boolean(vision || mission || focus || coreValues || siteName || about);
     if ((heroVideo || banner || logo) && !hasContentFields) {
       const url = heroVideo ?? banner ?? logo;
-      return NextResponse.json({ url });
+      return NextResponse.json({ url }, {
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     }
 
     // For creation require core fields
     if (!heroVideo || !vision || !mission || !focus || !coreValues) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required fields' }, { 
+        status: 400,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     }
 
     const homePage = await prisma.homePage.create({
@@ -233,7 +248,10 @@ export async function POST(req: Request) {
       console.warn('Failed to invalidate homepage cache:', err);
     }
 
-    return NextResponse.json(homePage, { status: 201 });
+    return NextResponse.json(homePage, { 
+      status: 201,
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (err: any) {
     if (
       err?.message?.includes?.('Body exceeded') ||
@@ -246,11 +264,16 @@ export async function POST(req: Request) {
           error:
             'Request body too large. Increase server body size limit or upload a smaller file.',
         },
-        { status: 413 }
+        { status: 413,
+          headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+        }
       );
     }
 
     console.error('Failed to create homepage:', err);
-    return NextResponse.json({ error: err?.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: err?.message || 'Internal Server Error' }, { 
+      status: 500,
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   }
 }
