@@ -59,7 +59,9 @@ export async function GET(_req: Request, context: { params: any }) {
     const singleCacheKey = SINGLE_BENEFICIARY_CACHE_PREFIX + id;
     const cached = await redis.get(singleCacheKey);
     if (cached) {
-      return NextResponse.json(JSON.parse(cached));
+      return NextResponse.json(JSON.parse(cached), {
+        headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+      });
     }
 
     const beneficiary = await prisma.beneficiary.findUnique({
@@ -74,7 +76,10 @@ export async function GET(_req: Request, context: { params: any }) {
     });
 
     if (!beneficiary) {
-      return NextResponse.json({ error: 'Beneficiary not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Beneficiary not found' }, { 
+        status: 404,
+        headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+      });
     }
 
     // add counts (from _count)
@@ -102,10 +107,15 @@ export async function GET(_req: Request, context: { params: any }) {
       console.warn('beneficiary cache set failed', err);
     }
 
-    return NextResponse.json(payload);
+    return NextResponse.json(payload, {
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+    });
   } catch (error) {
     console.error('Failed to fetch beneficiary:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { 
+      status: 500,
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+    });
   }
 }
 
@@ -243,10 +253,15 @@ export async function PATCH(_req: Request, context: { params: any }) {
         ? updated._count.responses
         : await prisma.response.count({ where: { message: { beneficiaryId: updated.id } } });
 
-    return NextResponse.json({ ...updated, messageCount, responseCount });
+    return NextResponse.json({ ...updated, messageCount, responseCount }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error) {
     console.error('Failed to update beneficiary:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { 
+      status: 500,
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   }
 }
 
@@ -300,12 +315,20 @@ export async function DELETE(_req: Request, context: { params: any }) {
       console.warn('Failed to invalidate beneficiary caches after delete', err);
     }
 
-    return NextResponse.json({ message: 'Beneficiary deleted', beneficiary: deleted });
+    return NextResponse.json({ message: 'Beneficiary deleted', beneficiary: deleted }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (error: any) {
     if (error?.code === 'P2025') {
-      return NextResponse.json({ error: 'Beneficiary not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Beneficiary not found' }, { 
+        status: 404,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     }
     console.error('Failed to delete beneficiary:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { 
+      status: 500,
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   }
 }

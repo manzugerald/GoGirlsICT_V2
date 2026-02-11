@@ -11,13 +11,18 @@ export async function GET() {
     const faqs = await prisma.FAQ.findMany({
       orderBy: { createdAt: 'desc' },
     });
-    return NextResponse.json(faqs);
+    return NextResponse.json(faqs, {
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+    });
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('GET /api/faq error', err);
     return new NextResponse(JSON.stringify({ error: 'Failed to fetch FAQs' }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
     });
   }
 }
@@ -87,7 +92,10 @@ export async function POST(req: Request) {
 
     return new NextResponse(JSON.stringify(created), {
       status: 201,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      },
     });
   } catch (err: any) {
     // eslint-disable-next-line no-console
@@ -96,7 +104,10 @@ export async function POST(req: Request) {
     const message = err?.message ?? 'Failed to create FAQ';
     return new NextResponse(JSON.stringify({ error: message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      },
     });
   }
 }

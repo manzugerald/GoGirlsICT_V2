@@ -171,7 +171,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     if (!event) {
       return NextResponse.json(
         { error: 'Event not found' },
-        { status: 404, headers: { 'Cache-Control': 'no-store' } }
+        { status: 404, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } }
       );
     }
 
@@ -207,12 +207,12 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       eventFile: pdfUrl ?? event.eventFile,
     };
 
-    return NextResponse.json(normalizedEvent, { headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json(normalizedEvent, { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
   } catch (err) {
     console.error('Error fetching event:', err);
     return NextResponse.json(
       { error: 'Internal Server Error' },
-      { status: 500, headers: { 'Cache-Control': 'no-store' } }
+      { status: 500, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } }
     );
   }
 }
@@ -234,7 +234,7 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
     if (isNaN(eventId))
       return NextResponse.json(
         { error: 'Invalid Event ID' },
-        { status: 400, headers: { 'Cache-Control': 'no-store' } }
+        { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
       );
 
     const formData = await req.formData();
@@ -247,13 +247,13 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
     // Placeholder response until you paste your existing PUT body back in:
     return NextResponse.json(
       { error: 'PUT not implemented in this snippet' },
-      { status: 501, headers: { 'Cache-Control': 'no-store' } }
+      { status: 501, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
     );
   } catch (err) {
     console.error('Failed to update event:', err);
     return NextResponse.json(
       { error: 'Internal Server Error' },
-      { status: 500, headers: { 'Cache-Control': 'no-store' } }
+      { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
     );
   }
 }
@@ -265,24 +265,24 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
     if (!session?.user?.id)
       return NextResponse.json(
         { error: 'Unauthorized' },
-        { status: 401, headers: { 'Cache-Control': 'no-store' } }
+        { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
       );
 
     const id = Number(params.id);
     if (isNaN(id))
       return NextResponse.json(
         { error: 'Invalid ID' },
-        { status: 400, headers: { 'Cache-Control': 'no-store' } }
+        { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
       );
 
     await prisma.event.delete({ where: { id } });
 
-    return NextResponse.json({ success: true }, { headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json({ success: true }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   } catch (err) {
     console.error('Failed to delete event:', err);
     return NextResponse.json(
       { error: 'Internal Server Error' },
-      { status: 500, headers: { 'Cache-Control': 'no-store' } }
+      { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
     );
   }
 }

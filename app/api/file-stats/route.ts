@@ -25,7 +25,9 @@ export async function GET() {
   // Try Redis cache first
   const cached = await redis.get(FILE_STATS_CACHE_KEY);
   if (cached) {
-    return NextResponse.json(JSON.parse(cached));
+    return NextResponse.json(JSON.parse(cached), {
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+    });
   }
 
   const projects = await prisma.project.findMany();
@@ -174,5 +176,7 @@ export async function GET() {
   // Cache result in Redis
   await redis.set(FILE_STATS_CACHE_KEY, JSON.stringify(result), 'EX', FILE_STATS_CACHE_TTL);
 
-  return NextResponse.json(result);
+  return NextResponse.json(result, {
+    headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+  });
 }
