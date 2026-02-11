@@ -23,18 +23,26 @@ export async function GET(req: Request) {
     // check-available behavior
     if (searchParams.has('checkAvailable')) {
       const username = searchParams.get('username') ?? '';
-      if (!username) return NextResponse.json({ available: false });
+      if (!username) return NextResponse.json({ available: false }, {
+        headers: { 'Cache-Control': 'private, max-age=60' },
+      });
       const user = await prisma.user.findUnique({ where: { username } });
-      return NextResponse.json({ available: !user });
+      return NextResponse.json({ available: !user }, {
+        headers: { 'Cache-Control': 'private, max-age=60' },
+      });
     }
 
     // check-exact behavior
     if (searchParams.has('checkExact')) {
       const userId = searchParams.get('userId');
       const username = searchParams.get('username');
-      if (!userId || !username) return NextResponse.json({ valid: false });
+      if (!userId || !username) return NextResponse.json({ valid: false }, {
+        headers: { 'Cache-Control': 'private, max-age=60' },
+      });
       const user = await prisma.user.findUnique({ where: { id: userId } });
-      return NextResponse.json({ valid: !!user && user.username === username });
+      return NextResponse.json({ valid: !!user && user.username === username }, {
+        headers: { 'Cache-Control': 'private, max-age=60' },
+      });
     }
 
     // Default: list users (sanitized)
@@ -68,12 +76,16 @@ export async function GET(req: Request) {
     //   console.warn('Redis set failed for users list', err);
     // }
 
-    return NextResponse.json(users);
+    return NextResponse.json(users, {
+      headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' },
+    });
   } catch (error) {
     console.error('Failed to fetch users:', error);
     return NextResponse.json(
       { error: 'Internal Server Error - Please contact the Admin' },
-      { status: 500 }
+      { status: 500,
+        headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' },
+      }
     );
   }
 }
@@ -94,14 +106,22 @@ export async function POST(req: Request) {
       const body = await req.json();
       const imageUrl = body?.imageUrl;
       if (!imageUrl) {
-        return NextResponse.json({ error: 'No imageUrl' }, { status: 400 });
+        return NextResponse.json({ error: 'No imageUrl' }, { 
+          status: 400,
+          headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+        });
       }
       const filePath = path.join(process.cwd(), 'public', imageUrl);
       await fs.unlink(filePath);
-      return NextResponse.json({ message: 'Image deleted' });
+      return NextResponse.json({ message: 'Image deleted' }, {
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     } catch (err: any) {
       console.warn('Failed to delete image', err);
-      return NextResponse.json({ error: 'Image not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Image not found' }, { 
+        status: 404,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     }
   }
 
@@ -118,14 +138,20 @@ export async function POST(req: Request) {
     const about = (formData.get('about') as string) ?? null;
 
     if (!firstName || !lastName || !username || !email || !password || !imageFile) {
-      return NextResponse.json({ error: 'All fields and image are required' }, { status: 400 });
+      return NextResponse.json({ error: 'All fields and image are required' }, { 
+        status: 400,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     }
 
     const existingUser = await prisma.user.findFirst({
       where: { OR: [{ username }, { email }] },
     });
     if (existingUser) {
-      return NextResponse.json({ error: 'Username or email already exists' }, { status: 400 });
+      return NextResponse.json({ error: 'Username or email already exists' }, { 
+        status: 400,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      });
     }
 
     const ext = imageFile.name.split('.').pop() || 'jpg';
@@ -169,17 +195,28 @@ export async function POST(req: Request) {
     //   console.warn('Redis del failed after create user', err);
     // }
 
-    return NextResponse.json({ message: 'User created', user });
+    return NextResponse.json({ message: 'User created', user }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (err: any) {
     console.error('Failed to create user:', err);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { 
+      status: 500,
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   }
 }
 
 // Explicitly respond to other unsupported methods with 405
 export async function PUT() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  return NextResponse.json({ error: 'Method not allowed' }, { 
+    status: 405,
+    headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+  });
 }
 export async function DELETE() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  return NextResponse.json({ error: 'Method not allowed' }, { 
+    status: 405,
+    headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+  });
 }
