@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Play, ExternalLink } from 'lucide-react';
+import { Play, ExternalLink, Clock, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 type YtVideo = {
@@ -15,7 +15,35 @@ type YtVideo = {
   duration?: string | null;
 };
 
-const VIDEOS_TO_SHOW = 6; // Show 6 videos on homepage
+const VIDEOS_TO_SHOW = 6;
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const cardVariant = {
+  hidden: {
+    opacity: 0,
+    y: 40,
+    scale: 0.9,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+};
 
 export default function YouTubeVideosGrid() {
   const [videos, setVideos] = useState<YtVideo[]>([]);
@@ -71,80 +99,149 @@ export default function YouTubeVideosGrid() {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full"
+        />
       </div>
     );
   }
 
   if (error || videos.length === 0) {
     return (
-      <div className="text-center py-12">
-        <Play className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="text-center py-12"
+      >
+        <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 2, repeat: Infinity }}>
+          <Play className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+        </motion.div>
         <p className="text-gray-500 dark:text-gray-400">{error || 'No videos available yet'}</p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <motion.div
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+    >
       {videos.map((video, idx) => (
         <motion.article
           key={video.id}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: idx * 0.1 }}
-          whileHover={{ y: -8 }}
-          className="group relative bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/10 dark:to-orange-900/10 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
+          variants={cardVariant}
+          whileHover={{
+            y: -10,
+            scale: 1.02,
+            transition: { duration: 0.3 },
+          }}
+          className="group relative bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/10 dark:to-orange-900/10 rounded-xl shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden"
         >
+          {/* Glowing border */}
+          <motion.div className="absolute -inset-0.5 bg-gradient-to-r from-red-500 to-orange-500 rounded-xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500" />
+
           {/* Thumbnail */}
           <div className="relative aspect-video overflow-hidden">
             {video.thumbnail ? (
-              <img
+              <motion.img
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.6 }}
                 src={video.thumbnail}
                 alt={video.title || 'Video thumbnail'}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                className="w-full h-full object-cover"
               />
             ) : (
               <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                 <Play className="w-12 h-12 text-gray-400" />
               </div>
             )}
-            {/* Play overlay on hover */}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-              <Play className="w-12 h-12 text-white" fill="white" />
-            </div>
+
+            {/* Play overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileHover={{ opacity: 1 }}
+              className="absolute inset-0 bg-black/60 flex items-center justify-center"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                whileHover={{ scale: 1, rotate: 360 }}
+                transition={{ duration: 0.5 }}
+                className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center"
+              >
+                <Play className="w-8 h-8 text-white ml-1" fill="white" />
+              </motion.div>
+            </motion.div>
+
+            {/* Duration badge */}
+            {video.duration && (
+              <motion.div
+                initial={{ x: 100 }}
+                animate={{ x: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded flex items-center gap-1"
+              >
+                <Clock className="w-3 h-3" />
+                <span>{video.duration}</span>
+              </motion.div>
+            )}
           </div>
 
           {/* Content */}
-          <div className="p-4">
-            <h4 className="font-semibold text-base text-gray-900 dark:text-gray-100 line-clamp-2 mb-2 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+          <div className="relative p-4">
+            <motion.h4 className="font-semibold text-base text-gray-900 dark:text-gray-100 line-clamp-2 mb-2 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
               {video.title || 'Untitled Video'}
-            </h4>
+            </motion.h4>
 
-            {video.publishedAt && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                {new Date(video.publishedAt).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              </p>
-            )}
+            {/* Stats */}
+            <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-3">
+              {video.viewCount !== null && (
+                <div className="flex items-center gap-1">
+                  <Eye className="w-3 h-3" />
+                  <span>{video.viewCount.toLocaleString()}</span>
+                </div>
+              )}
+              {video.publishedAt && (
+                <span>
+                  {new Date(video.publishedAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </span>
+              )}
+            </div>
 
             {/* Watch button */}
-            <a
+            <motion.a
               href={`https://www.youtube.com/watch?v=${video.id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-all duration-300 group-hover:shadow-lg"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-all duration-300 shadow-lg"
             >
               Watch
-              <ExternalLink className="w-3 h-3" />
-            </a>
+              <motion.div
+                animate={{ x: [0, 5, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                <ExternalLink className="w-3 h-3" />
+              </motion.div>
+            </motion.a>
           </div>
+
+          {/* Corner decoration */}
+          <motion.div
+            initial={{ scale: 0 }}
+            whileHover={{ scale: 1 }}
+            className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl from-red-500/10 to-transparent rounded-tl-full"
+          />
         </motion.article>
       ))}
-    </div>
+    </motion.div>
   );
 }

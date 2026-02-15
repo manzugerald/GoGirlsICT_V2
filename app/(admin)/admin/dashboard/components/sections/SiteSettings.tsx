@@ -27,12 +27,12 @@ function formatDateTime(iso?: string | null) {
 }
 
 type EditSectionKey =
-  | 'create' // full-create form when no record exists
+  | 'create'
   | 'hero'
   | 'banner'
-  | 'logo' // Site Identity: Logo
-  | 'siteName' // Site Identity: Site Name (separate card)
-  | 'about' // Site Identity: About
+  | 'logo'
+  | 'siteName'
+  | 'about'
   | 'vision'
   | 'mission'
   | 'focus'
@@ -63,11 +63,9 @@ export default function SiteSettings() {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // modal state
   const [homeModalOpen, setHomeModalOpen] = useState(false);
   const [editSection, setEditSection] = useState<EditSectionKey>(null);
 
-  // refs for focusing inputs inside modal
   const heroUrlRef = useRef<HTMLInputElement | null>(null);
   const siteNameRef = useRef<HTMLInputElement | null>(null);
   const aboutRef = useRef<HTMLTextAreaElement | null>(null);
@@ -120,13 +118,10 @@ export default function SiteSettings() {
     }
   }
 
-  // open modal for exactly one section
-  // if no homepage exists, open full create form (editSection = 'create')
   async function openHomeModalFor(section: EditSectionKey) {
     setHomeError(null);
     setHomeSuccess(null);
     await fetchHomeContent();
-    // if no record, show create form so user can create required fields
     if (!homeData?.id) {
       setEditSection('create');
     } else {
@@ -134,6 +129,7 @@ export default function SiteSettings() {
     }
     setHomeModalOpen(true);
   }
+
   function closeHomeModal() {
     setHomeModalOpen(false);
     setEditSection(null);
@@ -143,14 +139,12 @@ export default function SiteSettings() {
     setUploadProgress(null);
   }
 
-  // Persist an uploaded file URL into the DB for the given field (if a homepage record exists).
   async function persistUploadedFieldToDB(
     targetField: 'heroVideo' | 'banner' | 'logo',
     url: string
   ) {
     if (!homeData) return;
     if (!homeData.id) {
-      // No DB record yet — keep preview and inform user to create the homepage.
       setHomeError(
         'File uploaded and previewed locally. Create the homepage to persist this asset.'
       );
@@ -180,13 +174,10 @@ export default function SiteSettings() {
       setTimeout(() => setHomeSuccess(null), 2000);
     } catch (err: any) {
       setUploadError(err?.message || 'Failed to persist uploaded file');
-      // keep preview locally so user can still see upload
       setHomeData((d) => ({ ...(d ?? {}), [targetField]: url }));
     }
   }
 
-  // Upload file to server endpoint (POST if no record, PATCH if record exists).
-  // Server may return { url } (upload-only) or the updated homepage record.
   async function uploadFileToServer(file: File, target: 'hero' | 'banner' | 'logo') {
     if (!file) throw new Error('No file');
     setUploadError(null);
@@ -215,13 +206,11 @@ export default function SiteSettings() {
 
       const json = await res.json();
 
-      // If server returned an upload-only { url } (no DB record created), use that url as preview.
       if (json?.url && !json?.id) {
         const returnedUrl: string = json.url;
         const field = target === 'logo' ? 'logo' : target === 'banner' ? 'banner' : 'heroVideo';
         setHomeData((prev) => ({ ...(prev ?? {}), [field]: returnedUrl }));
 
-        // If we already have a DB record, persist the field to DB (PATCH)
         if (homeData?.id) {
           await persistUploadedFieldToDB(field as any, returnedUrl);
         } else {
@@ -233,7 +222,6 @@ export default function SiteSettings() {
         return returnedUrl;
       }
 
-      // If server returns the updated record (common for PATCH), merge it in and extract the relevant field
       if (json && typeof json === 'object') {
         setHomeData((prev) => ({ ...(prev ?? {}), ...(json ?? {}) }));
         if (json.logo) return json.logo;
@@ -248,7 +236,6 @@ export default function SiteSettings() {
     }
   }
 
-  // Updated file change handlers: after upload, ensure DB persist if possible and update preview
   async function handleHeroFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -297,7 +284,6 @@ export default function SiteSettings() {
     }
   }
 
-  // submit only the field(s) intended for the opened modal, or create full record if editSection === 'create'
   async function submitSection() {
     if (!editSection) return;
     setHomeError(null);
@@ -305,9 +291,7 @@ export default function SiteSettings() {
     setHomeSaving(true);
 
     try {
-      // CREATE PATH (when no homepage exists and admin is creating)
       if (editSection === 'create') {
-        // Build full payload - server requires heroVideo, vision, mission, focus, coreValues
         const payload = {
           heroVideo: homeData?.heroVideo ?? '',
           vision: homeData?.vision ?? '',
@@ -320,7 +304,6 @@ export default function SiteSettings() {
           siteName: homeData?.siteName ?? null,
         };
 
-        // basic validation: required core fields must be non-empty
         if (
           !payload.heroVideo ||
           !payload.vision ||
@@ -358,7 +341,6 @@ export default function SiteSettings() {
         return;
       }
 
-      // UPDATE PATH
       if (!homeData?.id) {
         setHomeError('No homepage record exists. Please create one first.');
         setHomeSaving(false);
@@ -399,7 +381,6 @@ export default function SiteSettings() {
           break;
       }
 
-      // Remove undefined keys so Prisma receives only explicit changes
       for (const k of Object.keys(payload)) {
         if (payload[k] === undefined) delete payload[k];
       }
@@ -456,18 +437,9 @@ export default function SiteSettings() {
     );
   };
 
-  // renderCard now uses a header background that adapts to light/dark themes.
-  // Light theme: bg-gray-50 with dark text; Dark theme: bg-gray-800 with light text.
   const renderCard = (title: string, content: React.ReactNode, onEdit?: () => void) => (
     <section className="bg-background rounded-xl shadow overflow-hidden">
-      <div
-        className={
-          // header: padded row with themed background + border
-          'p-4 border-b flex items-center justify-between ' +
-          // light / dark background and text
-          'bg-gray-50 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
-        }
-      >
+      <div className="p-4 border-b flex items-center justify-between bg-gray-50 text-gray-900 dark:bg-gray-800 dark:text-gray-100">
         <h3 className="font-semibold m-0">{title}</h3>
         {onEdit && (
           <div>
@@ -492,11 +464,16 @@ export default function SiteSettings() {
     }
   };
 
+  function getVideoUrlWithCacheBuster(url?: string | null) {
+    if (!url) return '';
+    const stamp = homeData?.updatedAt ? new Date(homeData.updatedAt).getTime() : Date.now();
+    return `${url}?t=${stamp}`;
+  }
+
   const aboutTitle = homeData?.siteName
     ? `About ${homeData.siteName}`
     : 'About (Site name not set)';
 
-  // focus the appropriate control when modal opens
   useEffect(() => {
     if (!homeModalOpen || !editSection) return;
     const t = setTimeout(() => {
@@ -517,12 +494,9 @@ export default function SiteSettings() {
     return () => clearTimeout(t);
   }, [homeModalOpen, editSection]);
 
-  // Build image URL with cache-buster so that newly uploaded files appear immediately
   function imageUrlWithCacheBuster(url?: string | null) {
     if (!url) return undefined;
-    // ensure url starts with '/'
     const path = url.startsWith('/') ? url : `/${url}`;
-    // use updatedAt if available to avoid stale cache; fallback to timestamp
     const stamp = homeData?.updatedAt ? new Date(homeData.updatedAt).getTime() : Date.now();
     return `${path}?t=${stamp}`;
   }
@@ -541,15 +515,20 @@ export default function SiteSettings() {
         </div>
       </div>
 
-      {/* Individual parent cards */}
+      {/* Hero Card */}
       {renderCard(
-        'Hero',
+        'Hero Video',
         homeLoading ? (
           <div className="p-6 text-muted-foreground">Loading…</div>
         ) : homeData?.heroVideo ? (
           <>
-            <video controls className="w-full h-auto max-h-[56vh] bg-black">
-              <source src={homeData.heroVideo} />
+            <video
+              key={getVideoUrlWithCacheBuster(homeData.heroVideo)}
+              controls
+              className="w-full h-auto max-h-[56vh] bg-black rounded"
+            >
+              <source src={getVideoUrlWithCacheBuster(homeData.heroVideo)} />
+              Your browser does not support the video tag.
             </video>
             <div className="mt-3 text-xs text-muted-foreground break-all">{homeData.heroVideo}</div>
             {getVideoNameFromUrl(homeData.heroVideo) && (
@@ -557,6 +536,9 @@ export default function SiteSettings() {
                 {getVideoNameFromUrl(homeData.heroVideo)}
               </div>
             )}
+            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              📁 Saved in: public/assets/videos/homePage/hero/
+            </div>
           </>
         ) : (
           <div className="p-6 text-muted-foreground">No hero video set.</div>
@@ -564,6 +546,7 @@ export default function SiteSettings() {
         () => openHomeModalFor('hero')
       )}
 
+      {/* Banner Card */}
       {renderCard(
         'Site banner',
         homeLoading ? (
@@ -582,6 +565,7 @@ export default function SiteSettings() {
         () => openHomeModalFor('banner')
       )}
 
+      {/* Site Name Card */}
       {renderCard(
         'Site Identity: Site Name',
         homeLoading ? (
@@ -594,8 +578,8 @@ export default function SiteSettings() {
         () => openHomeModalFor('siteName')
       )}
 
+      {/* About Card */}
       {renderCard(
-        // About card title now includes the site name (reads from siteName)
         homeLoading
           ? 'Site Identity: About'
           : `Site Identity: About — ${homeData?.siteName ?? 'Site name not set'}`,
@@ -607,6 +591,7 @@ export default function SiteSettings() {
         () => openHomeModalFor('about')
       )}
 
+      {/* Logo Card */}
       {renderCard(
         'Site Identity: Logo',
         homeLoading ? (
@@ -636,6 +621,7 @@ export default function SiteSettings() {
         () => openHomeModalFor('logo')
       )}
 
+      {/* Vision Card */}
       {renderCard(
         'Strategic Statement: Vision',
         homeLoading ? (
@@ -646,6 +632,7 @@ export default function SiteSettings() {
         () => openHomeModalFor('vision')
       )}
 
+      {/* Mission Card */}
       {renderCard(
         'Strategic Statement: Mission',
         homeLoading ? (
@@ -656,6 +643,7 @@ export default function SiteSettings() {
         () => openHomeModalFor('mission')
       )}
 
+      {/* Focus Card */}
       {renderCard(
         'Strategic Statement: Focus',
         homeLoading ? (
@@ -666,6 +654,7 @@ export default function SiteSettings() {
         () => openHomeModalFor('focus')
       )}
 
+      {/* Core Values Card */}
       {renderCard(
         'Strategic Statement: Core values',
         homeLoading ? (
@@ -691,7 +680,7 @@ export default function SiteSettings() {
           <div className="p-4 overflow-y-auto max-h-[72vh] space-y-4">
             {homeLoading && <div className="p-6 text-center">Loading…</div>}
 
-            {/* CREATE: show full form so admin can create a homepage record */}
+            {/* CREATE SECTION */}
             {editSection === 'create' && !homeLoading && (
               <>
                 <div>
@@ -819,7 +808,101 @@ export default function SiteSettings() {
               </>
             )}
 
-            {/* SITE NAME */}
+            {/* HERO SECTION */}
+            {editSection === 'hero' && !homeLoading && (
+              <>
+                <div>
+                  <label className="text-sm block mb-1">Hero video URL</label>
+                  <input
+                    ref={heroUrlRef}
+                    type="text"
+                    value={homeData?.heroVideo ?? ''}
+                    onChange={(e) =>
+                      setHomeData((d) => ({ ...(d ?? {}), heroVideo: e.target.value }))
+                    }
+                    className="w-full border p-2 rounded"
+                    placeholder="/assets/videos/homePage/hero/..."
+                  />
+                </div>
+                <div>
+                  <label className="text-sm block mb-1">
+                    Upload hero video (.mov, .mp4, .webm)
+                  </label>
+                  <input
+                    type="file"
+                    accept=".mov,.mp4,.webm,.m4v,video/*"
+                    onChange={handleHeroFileChange}
+                    disabled={uploading || homeSaving}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    📁 Will be saved to: public/assets/videos/homePage/hero/
+                  </p>
+                </div>
+                {uploading && uploadProgress !== null && (
+                  <div className="text-sm text-blue-600">Uploading... {uploadProgress}%</div>
+                )}
+                {uploadError && <div className="text-sm text-red-500">{uploadError}</div>}
+                <div className="flex gap-2">
+                  <Button onClick={submitSection} disabled={homeSaving}>
+                    {homeSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* BANNER SECTION */}
+            {editSection === 'banner' && !homeLoading && (
+              <>
+                <div>
+                  <label className="text-sm block mb-1">Banner image</label>
+                  <input
+                    ref={bannerFileRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleBannerFileChange}
+                    disabled={uploading || homeSaving}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={submitSection} disabled={homeSaving}>
+                    {homeSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* LOGO SECTION */}
+            {editSection === 'logo' && !homeLoading && (
+              <>
+                <div>
+                  <label className="text-sm block mb-1">Logo image</label>
+                  <input
+                    ref={logoFileRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoFileChange}
+                    disabled={uploading || homeSaving}
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button onClick={submitSection} disabled={homeSaving}>
+                    {homeSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* SITE NAME SECTION */}
             {editSection === 'siteName' && !homeLoading && (
               <>
                 <div>
@@ -846,32 +929,7 @@ export default function SiteSettings() {
               </>
             )}
 
-            {/* LOGO */}
-            {editSection === 'logo' && !homeLoading && (
-              <>
-                <div>
-                  <label className="text-sm block mb-1">Logo image</label>
-                  <input
-                    ref={logoFileRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoFileChange}
-                    disabled={uploading || homeSaving}
-                  />
-                </div>
-
-                <div className="flex gap-2">
-                  <Button onClick={submitSection} disabled={homeSaving}>
-                    {homeSaving ? 'Saving…' : 'Save'}
-                  </Button>
-                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
-                    Cancel
-                  </Button>
-                </div>
-              </>
-            )}
-
-            {/* ABOUT */}
+            {/* ABOUT SECTION */}
             {editSection === 'about' && !homeLoading && (
               <>
                 <div>
@@ -895,65 +953,7 @@ export default function SiteSettings() {
               </>
             )}
 
-            {/* HERO / BANNER / STRATEGIC statements (single-field modals) */}
-            {editSection === 'hero' && !homeLoading && (
-              <>
-                <div>
-                  <label className="text-sm block mb-1">Hero video URL</label>
-                  <input
-                    ref={heroUrlRef}
-                    type="text"
-                    value={homeData?.heroVideo ?? ''}
-                    onChange={(e) =>
-                      setHomeData((d) => ({ ...(d ?? {}), heroVideo: e.target.value }))
-                    }
-                    className="w-full border p-2 rounded"
-                    placeholder="https://..."
-                  />
-                </div>
-                <div>
-                  <label className="text-sm block mb-1">Upload hero video (.mov, .mp4, .gif)</label>
-                  <input
-                    type="file"
-                    accept=".mov,.mp4,.gif,video/*"
-                    onChange={handleHeroFileChange}
-                    disabled={uploading || homeSaving}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button onClick={submitSection} disabled={homeSaving}>
-                    {homeSaving ? 'Saving…' : 'Save'}
-                  </Button>
-                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
-                    Cancel
-                  </Button>
-                </div>
-              </>
-            )}
-
-            {editSection === 'banner' && !homeLoading && (
-              <>
-                <div>
-                  <label className="text-sm block mb-1">Banner image</label>
-                  <input
-                    ref={bannerFileRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleBannerFileChange}
-                    disabled={uploading || homeSaving}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button onClick={submitSection} disabled={homeSaving}>
-                    {homeSaving ? 'Saving…' : 'Save'}
-                  </Button>
-                  <Button variant="outline" onClick={closeHomeModal} disabled={homeSaving}>
-                    Cancel
-                  </Button>
-                </div>
-              </>
-            )}
-
+            {/* VISION SECTION */}
             {editSection === 'vision' && !homeLoading && (
               <>
                 <div>
@@ -976,6 +976,7 @@ export default function SiteSettings() {
               </>
             )}
 
+            {/* MISSION SECTION */}
             {editSection === 'mission' && !homeLoading && (
               <>
                 <div>
@@ -1000,6 +1001,7 @@ export default function SiteSettings() {
               </>
             )}
 
+            {/* FOCUS SECTION */}
             {editSection === 'focus' && !homeLoading && (
               <>
                 <div>
@@ -1022,6 +1024,7 @@ export default function SiteSettings() {
               </>
             )}
 
+            {/* CORE VALUES SECTION */}
             {editSection === 'coreValues' && !homeLoading && (
               <>
                 <div>

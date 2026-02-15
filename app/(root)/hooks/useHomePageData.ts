@@ -1,184 +1,158 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-// Helper to safely parse content that might be a string or object
-function parseContent(content: any) {
-  if (!content) return content;
-  if (typeof content === 'string') {
-    try {
-      return JSON.parse(content);
-    } catch {
-      return content;
+// Generic fetch function with error handling
+async function fetchData<T>(url: string): Promise<T> {
+  try {
+    const res = await fetch(url, {
+      // Remove next.revalidate, use React Query for caching
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
     }
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error(`Failed to fetch from ${url}:`, error);
+    throw error;
   }
-  return content;
 }
 
-// Custom hook for hybrid cached data (SSR + client-side fetching)
-function useHybridCachedData<T>(
-  queryKey: string[],
-  fetcher: () => Promise<T>,
-  initialData?: T,
-  options?: {
-    staleTime?: number;
-    cacheTime?: number;
-    enabled?: boolean;
-  }
-) {
-  return useQuery<T>({
-    queryKey,
-    queryFn: fetcher,
+// Home page content hook with selective refetching
+export function useHomePageContent(initialData?: any) {
+  const queryClient = useQueryClient();
+
+  return useQuery({
+    queryKey: ['homepage-content'],
+    queryFn: () => fetchData<any>('/api/homepage-content'),
     initialData,
-    staleTime: options?.staleTime ?? 1000 * 60 * 5, // 5 minutes default
-    gcTime: options?.cacheTime ?? 1000 * 60 * 10, // 10 minutes default (renamed from cacheTime)
-    enabled: options?.enabled ?? true,
-    retry: 1, // Only retry once
-    retryDelay: 1000, // Wait 1 second before retry
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    gcTime: 1000 * 60 * 60 * 24, // 24 hours
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    // Only refetch when data is older than staleTime
+    refetchInterval: false,
+    // Enable background refetching when data becomes stale
+    refetchOnReconnect: true,
+    retry: 1,
   });
 }
 
-// Home page content
-export function useHomePageContent(initialData?: any) {
-  return useHybridCachedData(
-    ['homepage-content'],
-    async () => {
-      const res = await fetch('/api/homepage-content');
-      if (!res.ok) {
-        // If fetch fails, return initial data instead of throwing
-        if (initialData) return initialData;
-        throw new Error('Failed to fetch homepage content');
-      }
-      const data = await res.json();
-      return parseContent(data);
-    },
-    initialData,
-    { staleTime: 1000 * 60 * 5 }
-  );
+// Hook to manually invalidate and refetch specific data
+export function useInvalidateHomeContent() {
+  const queryClient = useQueryClient();
+
+  return {
+    invalidateContent: () => queryClient.invalidateQueries({ queryKey: ['homepage-content'] }),
+    invalidateMessages: () => queryClient.invalidateQueries({ queryKey: ['executive-messages'] }),
+    invalidateProjects: () => queryClient.invalidateQueries({ queryKey: ['projects'] }),
+    invalidateReports: () => queryClient.invalidateQueries({ queryKey: ['reports'] }),
+    invalidateEvents: () => queryClient.invalidateQueries({ queryKey: ['events'] }),
+    invalidateTeam: () => queryClient.invalidateQueries({ queryKey: ['team-members'] }),
+    invalidatePartners: () => queryClient.invalidateQueries({ queryKey: ['partners'] }),
+    invalidateBeneficiaries: () => queryClient.invalidateQueries({ queryKey: ['beneficiaries'] }),
+    invalidateAll: () => queryClient.invalidateQueries(),
+  };
 }
 
-// Executive messages
+// Executive messages hook
 export function useExecutiveMessages(initialData?: any[]) {
-  return useHybridCachedData(
-    ['executive-messages'],
-    async () => {
-      const res = await fetch('/api/executive-messages');
-      if (!res.ok) {
-        if (initialData) return initialData;
-        return []; // Return empty array instead of throwing
-      }
-      const data = await res.json();
-      return Array.isArray(data) ? data : [];
-    },
-    initialData || [],
-    { staleTime: 1000 * 60 * 5 }
-  );
+  return useQuery({
+    queryKey: ['executive-messages'],
+    queryFn: () => fetchData<any[]>('/api/executive-messages'),
+    initialData: initialData || [],
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 60 * 24,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
 }
 
-// Projects
+// Projects hook
 export function useProjects(initialData?: any[]) {
-  return useHybridCachedData(
-    ['projects'],
-    async () => {
-      const res = await fetch('/api/projects');
-      if (!res.ok) {
-        if (initialData) return initialData;
-        return [];
-      }
-      const data = await res.json();
-      return Array.isArray(data) ? data : [];
-    },
-    initialData || [],
-    { staleTime: 1000 * 60 * 5 }
-  );
+  return useQuery({
+    queryKey: ['projects'],
+    queryFn: () => fetchData<any[]>('/api/projects'),
+    initialData: initialData || [],
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 60 * 24,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
 }
 
-// Reports
+// Reports hook
 export function useReports(initialData?: any[]) {
-  return useHybridCachedData(
-    ['reports'],
-    async () => {
-      const res = await fetch('/api/reports');
-      if (!res.ok) {
-        if (initialData) return initialData;
-        return [];
-      }
-      const data = await res.json();
-      return Array.isArray(data) ? data : [];
-    },
-    initialData || [],
-    { staleTime: 1000 * 60 * 5 }
-  );
+  return useQuery({
+    queryKey: ['reports'],
+    queryFn: () => fetchData<any[]>('/api/reports'),
+    initialData: initialData || [],
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 60 * 24,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
 }
 
-// Events
+// Events hook
 export function useEvents(initialData?: any[]) {
-  return useHybridCachedData(
-    ['events'],
-    async () => {
-      const res = await fetch('/api/events');
-      if (!res.ok) {
-        if (initialData) return initialData;
-        return [];
-      }
-      const data = await res.json();
-      return Array.isArray(data) ? data : [];
-    },
-    initialData || [],
-    { staleTime: 1000 * 60 * 5 }
-  );
+  return useQuery({
+    queryKey: ['events'],
+    queryFn: () => fetchData<any[]>('/api/events'),
+    initialData: initialData || [],
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 60 * 24,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
 }
 
-// Team members
+// Team members hook
 export function useTeamMembers(initialData?: any[]) {
-  return useHybridCachedData(
-    ['team-members'],
-    async () => {
-      const res = await fetch('/api/team-members');
-      if (!res.ok) {
-        if (initialData) return initialData;
-        return [];
-      }
-      const data = await res.json();
-      return Array.isArray(data) ? data : [];
-    },
-    initialData || [],
-    { staleTime: 1000 * 60 * 5 }
-  );
+  return useQuery({
+    queryKey: ['team-members'],
+    queryFn: () => fetchData<any[]>('/api/team-members'),
+    initialData: initialData || [],
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 60 * 24,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
 }
 
-// Partners
+// Partners hook
 export function usePartners(initialData?: any[]) {
-  return useHybridCachedData(
-    ['partners'],
-    async () => {
-      const res = await fetch('/api/partners');
-      if (!res.ok) {
-        if (initialData) return initialData;
-        return [];
-      }
-      const data = await res.json();
-      return Array.isArray(data) ? data : [];
-    },
-    initialData || [],
-    { staleTime: 1000 * 60 * 5 }
-  );
+  return useQuery({
+    queryKey: ['partners'],
+    queryFn: () => fetchData<any[]>('/api/partners'),
+    initialData: initialData || [],
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 60 * 24,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
 }
 
-// Beneficiaries
+// Beneficiaries hook
 export function useBeneficiaries(initialData?: any[]) {
-  return useHybridCachedData(
-    ['beneficiaries'],
-    async () => {
-      const res = await fetch('/api/beneficiaries');
-      if (!res.ok) {
-        if (initialData) return initialData;
-        return [];
-      }
-      const data = await res.json();
-      return Array.isArray(data) ? data : [];
-    },
-    initialData || [],
-    { staleTime: 1000 * 60 * 5 }
-  );
+  return useQuery({
+    queryKey: ['beneficiaries'],
+    queryFn: () => fetchData<any[]>('/api/beneficiaries'),
+    initialData: initialData || [],
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 60 * 24,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
 }

@@ -9,8 +9,6 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 
-// export const runtime = 'nodejs';
-
 const HOMEPAGE_CACHE_KEY = 'homepage:latest';
 const HOMEPAGE_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
 
@@ -32,50 +30,90 @@ async function ensureDir(dir: string) {
 }
 
 /**
- * Save uploaded file (File from formData) into public/assets/images/{folder}
- * Returns public URL path (e.g. /assets/images/homepage/abc.png)
+ * Save uploaded file to appropriate location based on type and target
+ * - Hero videos go to public/assets/videos/homePage/hero
+ * - Logos go to public/assets/images/logo
+ * - Banners go to public/assets/images/banner
+ * Returns public URL path
  */
 async function saveUploadedFileLocal(
   file: File,
   kind: 'image' | 'video',
-  subfolder?: string
+  target?: 'hero' | 'logo' | 'banner'
 ): Promise<string> {
   if (!file) throw new Error('No file provided');
 
   const size = Number(file.size ?? 0);
   if (kind === 'image' && size > IMAGE_MAX_BYTES)
-    throw new Error(`Image too large. Max ${IMAGE_MAX_BYTES} bytes`);
+    throw new Error(`Image too large. Max ${IMAGE_MAX_BYTES / 1024 / 1024}MB`);
   if (kind === 'video' && size > VIDEO_MAX_BYTES)
-    throw new Error(`Video too large. Max ${VIDEO_MAX_BYTES} bytes`);
+    throw new Error(`Video too large. Max ${VIDEO_MAX_BYTES / 1024 / 1024}MB`);
 
   const filenameRaw = String((file as any).name ?? '');
   const extGuess = (filenameRaw.split('.').pop() || '').toLowerCase();
-  const ext = extGuess || (kind === 'image' ? 'png' : 'mp4'); // fallback
+  const ext = extGuess || (kind === 'image' ? 'png' : 'mp4');
 
   if (kind === 'image' && !ALLOWED_IMAGE_EXT.includes(ext)) {
-    throw new Error(`Unsupported image extension .${ext}`);
+    throw new Error(
+      `Unsupported image extension .${ext}. Allowed: ${ALLOWED_IMAGE_EXT.join(', ')}`
+    );
   }
   if (kind === 'video' && !ALLOWED_VIDEO_EXT.includes(ext)) {
-    throw new Error(`Unsupported video extension .${ext}`);
+    throw new Error(
+      `Unsupported video extension .${ext}. Allowed: ${ALLOWED_VIDEO_EXT.join(', ')}`
+    );
   }
 
-  // ensure public/assets/images/... path
-  const folder = subfolder ? String(subfolder) : 'homepage';
-  const saveDir = path.join(process.cwd(), 'public', 'assets', 'images', folder);
-  await ensureDir(saveDir);
+  // ✅ Determine save directory based on target and kind
+  let saveDir: string;
+  let publicUrl: string;
 
-  const unique = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}`;
-  const filename = `${unique}.${ext}`;
-  const outPath = path.join(saveDir, filename);
+  if (target === 'hero' && kind === 'video') {
+    // Hero videos → public/assets/videos/homePage/hero
+    saveDir = path.join(process.cwd(), 'public', 'assets', 'videos', 'homePage', 'hero');
+    const unique = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}`;
+    const filename = `${unique}.${ext}`;
+    await ensureDir(saveDir);
+    const outPath = path.join(saveDir, filename);
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    await fs.promises.writeFile(outPath, buffer, { encoding: 'binary' });
+    publicUrl = `/assets/videos/homePage/hero/${filename}`;
+  } else if (target === 'logo') {
+    // Logos → public/assets/images/logo
+    saveDir = path.join(process.cwd(), 'public', 'assets', 'images', 'logo');
+    const unique = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}`;
+    const filename = `${unique}.${ext}`;
+    await ensureDir(saveDir);
+    const outPath = path.join(saveDir, filename);
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    await fs.promises.writeFile(outPath, buffer, { encoding: 'binary' });
+    publicUrl = `/assets/images/logo/${filename}`;
+  } else if (target === 'banner') {
+    // Banners → public/assets/images/banner
+    saveDir = path.join(process.cwd(), 'public', 'assets', 'images', 'banner');
+    const unique = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}`;
+    const filename = `${unique}.${ext}`;
+    await ensureDir(saveDir);
+    const outPath = path.join(saveDir, filename);
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    await fs.promises.writeFile(outPath, buffer, { encoding: 'binary' });
+    publicUrl = `/assets/images/banner/${filename}`;
+  } else {
+    // Default fallback → public/assets/images/homepage
+    saveDir = path.join(process.cwd(), 'public', 'assets', 'images', 'homepage');
+    const unique = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}`;
+    const filename = `${unique}.${ext}`;
+    await ensureDir(saveDir);
+    const outPath = path.join(saveDir, filename);
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    await fs.promises.writeFile(outPath, buffer, { encoding: 'binary' });
+    publicUrl = `/assets/images/homepage/${filename}`;
+  }
 
-  // File is a web File/Blob - use arrayBuffer
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-
-  await fs.promises.writeFile(outPath, buffer, { encoding: 'binary' });
-
-  // Return public URL path
-  const publicUrl = `/assets/images/${folder}/${filename}`;
   return publicUrl;
 }
 
@@ -96,10 +134,13 @@ export async function GET() {
     });
 
     if (!homePage) {
-      return NextResponse.json({ error: 'No HomePage found' }, { 
-        status: 404,
-        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
-      });
+      return NextResponse.json(
+        { error: 'No HomePage found' },
+        {
+          status: 404,
+          headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+        }
+      );
     }
 
     await redis.set(HOMEPAGE_CACHE_KEY, JSON.stringify(homePage), 'EX', HOMEPAGE_CACHE_TTL);
@@ -109,26 +150,33 @@ export async function GET() {
     });
   } catch (err: any) {
     console.error('Error fetching homepage:', err);
-    return NextResponse.json({ error: 'Internal Server Error' }, { 
-      status: 500,
-      headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
-    });
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      {
+        status: 500,
+        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
+      }
+    );
   }
 }
 
 /**
  * POST:
  * - Accepts multipart/form-data with field "file" to upload a file (video or image).
- *   Returns { url } if upload-only.
- * - Accepts JSON to create a HomePage record including new fields (about, logo, banner, siteName)
- *
+ * - Accepts JSON to create a HomePage record
  * Auth required.
  */
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        {
+          status: 401,
+          headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+        }
+      );
     }
 
     const contentType = String(req.headers.get('content-type') ?? '').toLowerCase();
@@ -148,35 +196,42 @@ export async function POST(req: Request) {
 
       const target = (form.get('target') as string) || undefined;
 
-      // handle file if included
+      // Handle file upload
       const file = form.get('file') as File | null;
       if (file && file instanceof File && (file.size ?? 0) > 0) {
         const mime = file.type || '';
         const kind = mime.startsWith('video/') ? 'video' : 'image';
-        // map target to subfolder: logo -> logo, banner -> banner, otherwise 'homepage'
-        const folder =
-          target === 'logo'
-            ? 'logo'
-            : target === 'banner'
-            ? 'banner'
-            : target === 'hero'
-            ? 'hero'
-            : 'homepage';
-        const savedUrl = await saveUploadedFileLocal(file, kind as any, folder);
-        if (kind === 'video') {
-          // if target explicitly logo/banner, prefer mapping; else video -> heroVideo
-          if (target === 'hero' || !target) heroVideo = savedUrl;
-          else if (target === 'banner') banner = savedUrl;
-          else if (target === 'logo') logo = savedUrl;
+
+        // ✅ Map target to specific locations
+        if (target === 'hero') {
+          const savedUrl = await saveUploadedFileLocal(file, kind, 'hero');
+          if (kind === 'video') {
+            heroVideo = savedUrl;
+          } else {
+            banner = savedUrl; // fallback if hero is image
+          }
+        } else if (target === 'logo') {
+          const savedUrl = await saveUploadedFileLocal(file, 'image', 'logo');
+          logo = savedUrl;
+        } else if (target === 'banner') {
+          const savedUrl = await saveUploadedFileLocal(file, 'image', 'banner');
+          banner = savedUrl;
         } else {
-          // image
-          if (target === 'logo') logo = savedUrl;
-          else if (target === 'banner') banner = savedUrl;
-          else banner = savedUrl;
+          // No target specified
+          const savedUrl = await saveUploadedFileLocal(
+            file,
+            kind,
+            kind === 'video' ? 'hero' : undefined
+          );
+          if (kind === 'video') {
+            heroVideo = savedUrl;
+          } else {
+            banner = savedUrl;
+          }
         }
       }
 
-      // read optional fields from form
+      // Read optional fields from form
       const fHero = form.get('heroVideo');
       const fVision = form.get('vision');
       const fMission = form.get('mission');
@@ -198,7 +253,15 @@ export async function POST(req: Request) {
       siteName = typeof fSiteName === 'string' ? fSiteName : siteName;
     } else {
       const body = await req.json().catch(() => null);
-      if (!body) return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+      if (!body) {
+        return NextResponse.json(
+          { error: 'Invalid JSON' },
+          {
+            status: 400,
+            headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+          }
+        );
+      }
 
       heroVideo = body.heroVideo;
       vision = body.vision;
@@ -215,17 +278,23 @@ export async function POST(req: Request) {
     const hasContentFields = Boolean(vision || mission || focus || coreValues || siteName || about);
     if ((heroVideo || banner || logo) && !hasContentFields) {
       const url = heroVideo ?? banner ?? logo;
-      return NextResponse.json({ url }, {
-        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
-      });
+      return NextResponse.json(
+        { url },
+        {
+          headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+        }
+      );
     }
 
     // For creation require core fields
     if (!heroVideo || !vision || !mission || !focus || !coreValues) {
-      return NextResponse.json({ error: 'Missing required fields' }, { 
-        status: 400,
-        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
-      });
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        {
+          status: 400,
+          headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+        }
+      );
     }
 
     const homePage = await prisma.homePage.create({
@@ -248,7 +317,7 @@ export async function POST(req: Request) {
       console.warn('Failed to invalidate homepage cache:', err);
     }
 
-    return NextResponse.json(homePage, { 
+    return NextResponse.json(homePage, {
       status: 201,
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
@@ -264,16 +333,20 @@ export async function POST(req: Request) {
           error:
             'Request body too large. Increase server body size limit or upload a smaller file.',
         },
-        { status: 413,
+        {
+          status: 413,
           headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
         }
       );
     }
 
     console.error('Failed to create homepage:', err);
-    return NextResponse.json({ error: err?.message || 'Internal Server Error' }, { 
-      status: 500,
-      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
-    });
+    return NextResponse.json(
+      { error: err?.message || 'Internal Server Error' },
+      {
+        status: 500,
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      }
+    );
   }
 }
