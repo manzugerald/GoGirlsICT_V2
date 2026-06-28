@@ -355,6 +355,13 @@ enum InstitutionType {
   other
 }
 
+enum InstitutionCategory {
+  funding
+  collaborating
+  implementing
+  beneficiary
+}
+
 model Institution {
   id                String        @id @default(cuid())
   name              String
@@ -364,6 +371,7 @@ model Institution {
   institutionImages String[]
   headName          String?
   institutionType   InstitutionType
+  institutionCategory InstitutionCategory @default(implementing)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   locations         Location[]

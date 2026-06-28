@@ -5,15 +5,8 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { InstitutionCategory, InstitutionType } from '@/lib/generated/prisma';
 
-/* 
-  ✅ REDIS COMPLETELY DISABLED
-  ❌ import { redis } from '@/utils/redis';
-  ❌ const INSTITUTIONS_CACHE_KEY = ...
-  ❌ const INSTITUTIONS_CACHE_TTL = ...
-*/
-
-// Helper to save uploaded institution images
 async function saveInstitutionFiles(formData: FormData, destDir: string): Promise<string[]> {
   const files = formData.getAll('files') as File[];
   const saved: string[] = [];
@@ -37,7 +30,6 @@ async function saveInstitutionFiles(formData: FormData, destDir: string): Promis
   return saved;
 }
 
-// Helper to save uploaded logo
 async function saveLogoFile(logoFile: File, destDir: string): Promise<string | null> {
   if (!logoFile || typeof logoFile === 'string') return null;
 
@@ -53,7 +45,20 @@ async function saveLogoFile(logoFile: File, destDir: string): Promise<string | n
   return `/uploads/institutions/${filename}`;
 }
 
-// ✅ ✅ ✅ GET — NO CACHE, DIRECT DATABASE FETCH
+function toEnumValue<T extends Record<string, string>>(
+  enumObject: T,
+  value: FormDataEntryValue | null,
+  fallback: T[keyof T]
+): T[keyof T] {
+  const raw = typeof value === 'string' ? value.trim() : '';
+
+  if (raw && Object.values(enumObject).includes(raw as T[keyof T])) {
+    return raw as T[keyof T];
+  }
+
+  return fallback;
+}
+
 export async function GET() {
   try {
     const institutions = await prisma.institution.findMany({
@@ -75,21 +80,39 @@ export async function GET() {
     });
 
     return NextResponse.json(institutions, {
-      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
     });
   } catch (err) {
     console.error('❌ Error fetching institutions:', err);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
+
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      {
+        status: 500,
+        headers: {
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        },
+      }
+    );
   }
 }
 
-// ✅ ✅ ✅ POST — CREATE NEW INSTITUTION (NO CACHE USED)
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        {
+          status: 401,
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+        }
+      );
     }
 
     const contentType = req.headers.get('content-type') ?? '';
@@ -100,21 +123,47 @@ export async function POST(req: Request) {
     }
 
     if (!formData) {
-      return NextResponse.json({ error: 'FormData required' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
+      return NextResponse.json(
+        { error: 'FormData required' },
+        {
+          status: 400,
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+        }
+      );
     }
 
     const name = (formData.get('name') as string) || '';
     const email = (formData.get('email') as string) || '';
     const phone = (formData.get('phone') as string) || '';
     const headName = (formData.get('headName') as string) || '';
-    const institutionType = (formData.get('institutionType') as string) || '';
     const locationsRaw = formData.get('locations') as string;
 
-    if (!name || !institutionType) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
+    const institutionType = toEnumValue(
+      InstitutionType,
+      formData.get('institutionType'),
+      InstitutionType.other
+    );
+
+    const institutionCategory = toEnumValue(
+      InstitutionCategory,
+      formData.get('institutionCategory'),
+      InstitutionCategory.implementing
+    );
+
+    if (!name || !institutionType || !institutionCategory) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        {
+          status: 400,
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+        }
+      );
     }
 
-    // ✅ Save logo
     const logoFile = formData.get('logoFile') as File;
     let logoUrl: string | null = null;
 
@@ -124,16 +173,22 @@ export async function POST(req: Request) {
         path.join(process.cwd(), 'public', 'uploads', 'institutions')
       );
     } else {
-      return NextResponse.json({ error: 'Logo file required' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
+      return NextResponse.json(
+        { error: 'Logo file required' },
+        {
+          status: 400,
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+        }
+      );
     }
 
-    // ✅ Save other images
     const institutionImages = await saveInstitutionFiles(
       formData,
       path.join(process.cwd(), 'public', 'uploads', 'institutions')
     );
 
-    // ✅ Parse locations
     let locations: any[] = [];
 
     if (locationsRaw) {
@@ -149,12 +204,14 @@ export async function POST(req: Request) {
     const institution = await prisma.institution.create({
       data: {
         name,
-        email,
-        phone,
+        email: email || null,
+        phone: phone || null,
         logo: logoUrl,
         institutionImages: institutionImages || [],
-        headName,
+        headName: headName || null,
         institutionType,
+        institutionCategory,
+
         createdById: userId,
         approvedById: userId,
         updatedById: userId,
@@ -176,10 +233,21 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(institution, {
-      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      },
     });
   } catch (error) {
     console.error('❌ Failed to create institution:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
+
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      {
+        status: 500,
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        },
+      }
+    );
   }
 }

@@ -1,7 +1,9 @@
 // seedReports.ts
+// run npx tsx db/seedReports.ts
+import prisma from './prisma';
 import { PrismaClient, PublishStatus } from '@/lib/generated/prisma';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 function slugify(input: string) {
   return input

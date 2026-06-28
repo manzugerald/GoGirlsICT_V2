@@ -1,13 +1,13 @@
 // Import PrismaClient from '@prisma/client' to use the official generated client
 // import { PrismaClient } from '@/lib/generated/prisma';
-
+import prisma from './prisma';
 import { PrismaClient } from '@/lib/generated/prisma';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 async function main() {
     const admin = await prisma.user.findFirst({
-        where: {firstName: 'Eva'},
+        where: {firstName: 'Yine'},
         select: { id: true }
     })
 
@@ -31,7 +31,7 @@ async function main() {
       title: 'Welcome Message',
       affiliated: 'Co-Founder | Executive Director',
       name: 'Eva Yayi',
-      message: 'Welcome to our vibrant and inclusive community! At the heart of our work is a belief that every individual, regardless of background, deserves the opportunity to thrive in a connected, digital world. We are thrilled to launch our new programs aimed at empowering youth, promoting innovation, and making lasting change in the communities we serve. Let us build a future of equal access and shared success.',
+      content: 'Welcome to our vibrant and inclusive community! At the heart of our work is a belief that every individual, regardless of background, deserves the opportunity to thrive in a connected, digital world. We are thrilled to launch our new programs aimed at empowering youth, promoting innovation, and making lasting change in the communities we serve. Let us build a future of equal access and shared success.',
       nameImageUrl: '/assets/images/messages/nameImages/programsDirector.jpg',
       messageStatus: 'published',
       createdById: admin.id,

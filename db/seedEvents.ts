@@ -1,6 +1,7 @@
+import prisma from './prisma';
 import { PrismaClient, EventStatus, AttendanceType, PublishStatus } from '@/lib/generated/prisma';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 // Helper to shift dates
 function addDays(days: number) {

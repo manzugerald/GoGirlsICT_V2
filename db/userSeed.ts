@@ -1,7 +1,10 @@
+import prisma from './prisma';
 import { PrismaClient, Role, LoginStatus } from '@/lib/generated/prisma';
 import bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient({
+//   log: ['query', 'error', 'warn'],
+// });
 
 async function main() {
   const PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'ChangeMe!234';

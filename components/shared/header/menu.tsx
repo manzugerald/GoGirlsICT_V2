@@ -7,6 +7,7 @@ import { Menu as MenuIcon, X, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ModeToggle from './mode-toggle';
 import { APP_NAME } from '@/lib/constants';
+import FontSizeToggle from './font-size-toggle';
 
 export default function Menu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -121,12 +122,14 @@ export default function Menu() {
           </Button>
         </a>
 
-        {/* Mode Toggle */}
+        {/* Toggles */}
+        <FontSizeToggle />
         <ModeToggle />
       </div>
 
       {/* Mobile: Mode Toggle + Menu Button */}
       <div className="lg:hidden flex items-center gap-2">
+        <FontSizeToggle />
         <ModeToggle />
 
         <button

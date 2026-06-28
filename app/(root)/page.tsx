@@ -63,14 +63,18 @@ export default async function HomePage() {
 
     // Institutions (partners)
     prisma.institution.findMany({
-      include: {
-        locations: true,
-        _count: {
-          select: { beneficiaries: true },
-        },
+      where: {
+        institutionCategory: 'funding'
+      },
+      select: {
+        id: true,
+        name: true,
+        logo: true,
+        institutionType: true,
+        institutionCategory: true
       },
       orderBy: { name: 'asc' },
-      take: 10,
+      take: 3,
     }),
 
     // Beneficiaries - published only

@@ -1,7 +1,8 @@
 // seedProjects.ts
+import prisma from './prisma';
 import { PrismaClient, Status, PublishStatus } from '@/lib/generated/prisma';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 /**
  * Generate TipTap-style JSON (rich, long, realistic).

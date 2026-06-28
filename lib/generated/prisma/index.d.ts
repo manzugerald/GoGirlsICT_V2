@@ -204,6 +204,16 @@ export const InstitutionType: {
 export type InstitutionType = (typeof InstitutionType)[keyof typeof InstitutionType]
 
 
+export const InstitutionCategory: {
+  funding: 'funding',
+  collaborating: 'collaborating',
+  implementing: 'implementing',
+  beneficiary: 'beneficiary'
+};
+
+export type InstitutionCategory = (typeof InstitutionCategory)[keyof typeof InstitutionCategory]
+
+
 export const GenderType: {
   male: 'male',
   female: 'female'
@@ -289,6 +299,10 @@ export const AttendanceType: typeof $Enums.AttendanceType
 export type InstitutionType = $Enums.InstitutionType
 
 export const InstitutionType: typeof $Enums.InstitutionType
+
+export type InstitutionCategory = $Enums.InstitutionCategory
+
+export const InstitutionCategory: typeof $Enums.InstitutionCategory
 
 export type GenderType = $Enums.GenderType
 
@@ -18083,6 +18097,7 @@ export namespace Prisma {
     logo: string | null
     headName: string | null
     institutionType: $Enums.InstitutionType | null
+    institutionCategory: $Enums.InstitutionCategory | null
     createdAt: Date | null
     updatedAt: Date | null
     createdById: string | null
@@ -18098,6 +18113,7 @@ export namespace Prisma {
     logo: string | null
     headName: string | null
     institutionType: $Enums.InstitutionType | null
+    institutionCategory: $Enums.InstitutionCategory | null
     createdAt: Date | null
     updatedAt: Date | null
     createdById: string | null
@@ -18114,6 +18130,7 @@ export namespace Prisma {
     institutionImages: number
     headName: number
     institutionType: number
+    institutionCategory: number
     createdAt: number
     updatedAt: number
     createdById: number
@@ -18131,6 +18148,7 @@ export namespace Prisma {
     logo?: true
     headName?: true
     institutionType?: true
+    institutionCategory?: true
     createdAt?: true
     updatedAt?: true
     createdById?: true
@@ -18146,6 +18164,7 @@ export namespace Prisma {
     logo?: true
     headName?: true
     institutionType?: true
+    institutionCategory?: true
     createdAt?: true
     updatedAt?: true
     createdById?: true
@@ -18162,6 +18181,7 @@ export namespace Prisma {
     institutionImages?: true
     headName?: true
     institutionType?: true
+    institutionCategory?: true
     createdAt?: true
     updatedAt?: true
     createdById?: true
@@ -18251,6 +18271,7 @@ export namespace Prisma {
     institutionImages: string[]
     headName: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory: $Enums.InstitutionCategory
     createdAt: Date
     updatedAt: Date
     createdById: string
@@ -18284,6 +18305,7 @@ export namespace Prisma {
     institutionImages?: boolean
     headName?: boolean
     institutionType?: boolean
+    institutionCategory?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     createdById?: boolean
@@ -18306,6 +18328,7 @@ export namespace Prisma {
     institutionImages?: boolean
     headName?: boolean
     institutionType?: boolean
+    institutionCategory?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     createdById?: boolean
@@ -18325,6 +18348,7 @@ export namespace Prisma {
     institutionImages?: boolean
     headName?: boolean
     institutionType?: boolean
+    institutionCategory?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     createdById?: boolean
@@ -18344,6 +18368,7 @@ export namespace Prisma {
     institutionImages?: boolean
     headName?: boolean
     institutionType?: boolean
+    institutionCategory?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     createdById?: boolean
@@ -18351,7 +18376,7 @@ export namespace Prisma {
     approvedById?: boolean
   }
 
-  export type InstitutionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "phone" | "logo" | "institutionImages" | "headName" | "institutionType" | "createdAt" | "updatedAt" | "createdById" | "updatedById" | "approvedById", ExtArgs["result"]["institution"]>
+  export type InstitutionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "phone" | "logo" | "institutionImages" | "headName" | "institutionType" | "institutionCategory" | "createdAt" | "updatedAt" | "createdById" | "updatedById" | "approvedById", ExtArgs["result"]["institution"]>
   export type InstitutionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     locations?: boolean | Institution$locationsArgs<ExtArgs>
     beneficiaries?: boolean | Institution$beneficiariesArgs<ExtArgs>
@@ -18389,6 +18414,7 @@ export namespace Prisma {
       institutionImages: string[]
       headName: string | null
       institutionType: $Enums.InstitutionType
+      institutionCategory: $Enums.InstitutionCategory
       createdAt: Date
       updatedAt: Date
       createdById: string
@@ -18830,6 +18856,7 @@ export namespace Prisma {
     readonly institutionImages: FieldRef<"Institution", 'String[]'>
     readonly headName: FieldRef<"Institution", 'String'>
     readonly institutionType: FieldRef<"Institution", 'InstitutionType'>
+    readonly institutionCategory: FieldRef<"Institution", 'InstitutionCategory'>
     readonly createdAt: FieldRef<"Institution", 'DateTime'>
     readonly updatedAt: FieldRef<"Institution", 'DateTime'>
     readonly createdById: FieldRef<"Institution", 'String'>
@@ -27597,6 +27624,7 @@ export namespace Prisma {
     institutionImages: 'institutionImages',
     headName: 'headName',
     institutionType: 'institutionType',
+    institutionCategory: 'institutionCategory',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     createdById: 'createdById',
@@ -27937,6 +27965,20 @@ export namespace Prisma {
    * Reference to a field of type 'InstitutionType[]'
    */
   export type ListEnumInstitutionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InstitutionType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'InstitutionCategory'
+   */
+  export type EnumInstitutionCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InstitutionCategory'>
+    
+
+
+  /**
+   * Reference to a field of type 'InstitutionCategory[]'
+   */
+  export type ListEnumInstitutionCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InstitutionCategory[]'>
     
 
 
@@ -29146,6 +29188,7 @@ export namespace Prisma {
     institutionImages?: StringNullableListFilter<"Institution">
     headName?: StringNullableFilter<"Institution"> | string | null
     institutionType?: EnumInstitutionTypeFilter<"Institution"> | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFilter<"Institution"> | $Enums.InstitutionCategory
     createdAt?: DateTimeFilter<"Institution"> | Date | string
     updatedAt?: DateTimeFilter<"Institution"> | Date | string
     createdById?: StringFilter<"Institution"> | string
@@ -29167,6 +29210,7 @@ export namespace Prisma {
     institutionImages?: SortOrder
     headName?: SortOrderInput | SortOrder
     institutionType?: SortOrder
+    institutionCategory?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     createdById?: SortOrder
@@ -29191,6 +29235,7 @@ export namespace Prisma {
     institutionImages?: StringNullableListFilter<"Institution">
     headName?: StringNullableFilter<"Institution"> | string | null
     institutionType?: EnumInstitutionTypeFilter<"Institution"> | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFilter<"Institution"> | $Enums.InstitutionCategory
     createdAt?: DateTimeFilter<"Institution"> | Date | string
     updatedAt?: DateTimeFilter<"Institution"> | Date | string
     createdById?: StringFilter<"Institution"> | string
@@ -29212,6 +29257,7 @@ export namespace Prisma {
     institutionImages?: SortOrder
     headName?: SortOrderInput | SortOrder
     institutionType?: SortOrder
+    institutionCategory?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     createdById?: SortOrder
@@ -29234,6 +29280,7 @@ export namespace Prisma {
     institutionImages?: StringNullableListFilter<"Institution">
     headName?: StringNullableWithAggregatesFilter<"Institution"> | string | null
     institutionType?: EnumInstitutionTypeWithAggregatesFilter<"Institution"> | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryWithAggregatesFilter<"Institution"> | $Enums.InstitutionCategory
     createdAt?: DateTimeWithAggregatesFilter<"Institution"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Institution"> | Date | string
     createdById?: StringWithAggregatesFilter<"Institution"> | string
@@ -31054,6 +31101,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     locations?: LocationCreateNestedManyWithoutInstitutionInput
@@ -31072,6 +31120,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     createdById: string
@@ -31090,6 +31139,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     locations?: LocationUpdateManyWithoutInstitutionNestedInput
@@ -31108,6 +31158,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: StringFieldUpdateOperationsInput | string
@@ -31126,6 +31177,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     createdById: string
@@ -31142,6 +31194,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -31155,6 +31208,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: StringFieldUpdateOperationsInput | string
@@ -32873,6 +32927,13 @@ export namespace Prisma {
     not?: NestedEnumInstitutionTypeFilter<$PrismaModel> | $Enums.InstitutionType
   }
 
+  export type EnumInstitutionCategoryFilter<$PrismaModel = never> = {
+    equals?: $Enums.InstitutionCategory | EnumInstitutionCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.InstitutionCategory[] | ListEnumInstitutionCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InstitutionCategory[] | ListEnumInstitutionCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumInstitutionCategoryFilter<$PrismaModel> | $Enums.InstitutionCategory
+  }
+
   export type LocationListRelationFilter = {
     every?: LocationWhereInput
     some?: LocationWhereInput
@@ -32892,6 +32953,7 @@ export namespace Prisma {
     institutionImages?: SortOrder
     headName?: SortOrder
     institutionType?: SortOrder
+    institutionCategory?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     createdById?: SortOrder
@@ -32907,6 +32969,7 @@ export namespace Prisma {
     logo?: SortOrder
     headName?: SortOrder
     institutionType?: SortOrder
+    institutionCategory?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     createdById?: SortOrder
@@ -32922,6 +32985,7 @@ export namespace Prisma {
     logo?: SortOrder
     headName?: SortOrder
     institutionType?: SortOrder
+    institutionCategory?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     createdById?: SortOrder
@@ -32937,6 +33001,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumInstitutionTypeFilter<$PrismaModel>
     _max?: NestedEnumInstitutionTypeFilter<$PrismaModel>
+  }
+
+  export type EnumInstitutionCategoryWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InstitutionCategory | EnumInstitutionCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.InstitutionCategory[] | ListEnumInstitutionCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InstitutionCategory[] | ListEnumInstitutionCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumInstitutionCategoryWithAggregatesFilter<$PrismaModel> | $Enums.InstitutionCategory
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInstitutionCategoryFilter<$PrismaModel>
+    _max?: NestedEnumInstitutionCategoryFilter<$PrismaModel>
   }
 
   export type FloatNullableFilter<$PrismaModel = never> = {
@@ -35068,6 +35142,10 @@ export namespace Prisma {
     set?: $Enums.InstitutionType
   }
 
+  export type EnumInstitutionCategoryFieldUpdateOperationsInput = {
+    set?: $Enums.InstitutionCategory
+  }
+
   export type LocationUpdateManyWithoutInstitutionNestedInput = {
     create?: XOR<LocationCreateWithoutInstitutionInput, LocationUncheckedCreateWithoutInstitutionInput> | LocationCreateWithoutInstitutionInput[] | LocationUncheckedCreateWithoutInstitutionInput[]
     connectOrCreate?: LocationCreateOrConnectWithoutInstitutionInput | LocationCreateOrConnectWithoutInstitutionInput[]
@@ -35832,6 +35910,13 @@ export namespace Prisma {
     not?: NestedEnumInstitutionTypeFilter<$PrismaModel> | $Enums.InstitutionType
   }
 
+  export type NestedEnumInstitutionCategoryFilter<$PrismaModel = never> = {
+    equals?: $Enums.InstitutionCategory | EnumInstitutionCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.InstitutionCategory[] | ListEnumInstitutionCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InstitutionCategory[] | ListEnumInstitutionCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumInstitutionCategoryFilter<$PrismaModel> | $Enums.InstitutionCategory
+  }
+
   export type NestedEnumInstitutionTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.InstitutionType | EnumInstitutionTypeFieldRefInput<$PrismaModel>
     in?: $Enums.InstitutionType[] | ListEnumInstitutionTypeFieldRefInput<$PrismaModel>
@@ -35840,6 +35925,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumInstitutionTypeFilter<$PrismaModel>
     _max?: NestedEnumInstitutionTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumInstitutionCategoryWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InstitutionCategory | EnumInstitutionCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.InstitutionCategory[] | ListEnumInstitutionCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InstitutionCategory[] | ListEnumInstitutionCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumInstitutionCategoryWithAggregatesFilter<$PrismaModel> | $Enums.InstitutionCategory
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInstitutionCategoryFilter<$PrismaModel>
+    _max?: NestedEnumInstitutionCategoryFilter<$PrismaModel>
   }
 
   export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -38962,6 +39057,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     locations?: LocationCreateNestedManyWithoutInstitutionInput
@@ -38979,6 +39075,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     updatedById?: string | null
@@ -39006,6 +39103,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     locations?: LocationCreateNestedManyWithoutInstitutionInput
@@ -39023,6 +39121,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     createdById: string
@@ -39050,6 +39149,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     locations?: LocationCreateNestedManyWithoutInstitutionInput
@@ -39067,6 +39167,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     createdById: string
@@ -39736,6 +39837,7 @@ export namespace Prisma {
     institutionImages?: StringNullableListFilter<"Institution">
     headName?: StringNullableFilter<"Institution"> | string | null
     institutionType?: EnumInstitutionTypeFilter<"Institution"> | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFilter<"Institution"> | $Enums.InstitutionCategory
     createdAt?: DateTimeFilter<"Institution"> | Date | string
     updatedAt?: DateTimeFilter<"Institution"> | Date | string
     createdById?: StringFilter<"Institution"> | string
@@ -41907,6 +42009,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     beneficiaries?: BeneficiaryCreateNestedManyWithoutInstitutionInput
@@ -41924,6 +42027,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     createdById: string
@@ -41957,6 +42061,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     beneficiaries?: BeneficiaryUpdateManyWithoutInstitutionNestedInput
@@ -41974,6 +42079,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: StringFieldUpdateOperationsInput | string
@@ -42072,6 +42178,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     locations?: LocationCreateNestedManyWithoutInstitutionInput
@@ -42089,6 +42196,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     createdById: string
@@ -42433,6 +42541,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     locations?: LocationUpdateManyWithoutInstitutionNestedInput
@@ -42450,6 +42559,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: StringFieldUpdateOperationsInput | string
@@ -44662,6 +44772,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     updatedById?: string | null
@@ -44677,6 +44788,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     createdById: string
@@ -44692,6 +44804,7 @@ export namespace Prisma {
     institutionImages?: InstitutionCreateinstitutionImagesInput | string[]
     headName?: string | null
     institutionType: $Enums.InstitutionType
+    institutionCategory?: $Enums.InstitutionCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     createdById: string
@@ -45698,6 +45811,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     locations?: LocationUpdateManyWithoutInstitutionNestedInput
@@ -45715,6 +45829,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45732,6 +45847,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedById?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45747,6 +45863,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     locations?: LocationUpdateManyWithoutInstitutionNestedInput
@@ -45764,6 +45881,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: StringFieldUpdateOperationsInput | string
@@ -45781,6 +45899,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: StringFieldUpdateOperationsInput | string
@@ -45796,6 +45915,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     locations?: LocationUpdateManyWithoutInstitutionNestedInput
@@ -45813,6 +45933,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: StringFieldUpdateOperationsInput | string
@@ -45830,6 +45951,7 @@ export namespace Prisma {
     institutionImages?: InstitutionUpdateinstitutionImagesInput | string[]
     headName?: NullableStringFieldUpdateOperationsInput | string | null
     institutionType?: EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+    institutionCategory?: EnumInstitutionCategoryFieldUpdateOperationsInput | $Enums.InstitutionCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: StringFieldUpdateOperationsInput | string

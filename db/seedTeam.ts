@@ -1,12 +1,20 @@
-import prisma from '@/db/prisma'
+// run: npx tsx db/seedTeam.ts
+
+import prisma from './prisma';
+import { Role } from '@/lib/generated/prisma';
 
 async function main() {
   const TEAM_IMAGE_URL = '/assets/images/team/avatar.png';
 
-  // pick a system actor
   const admin = await prisma.user.findFirst({
-    where: { role: { in: ['super', 'admin'] } },
-    orderBy: { createdAt: 'asc' },
+    where: {
+      role: {
+        in: [Role.super, Role.admin],
+      },
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
   });
 
   if (!admin) {
@@ -47,8 +55,10 @@ async function main() {
   ];
 
   for (const member of teamMembers) {
-    await prisma.team.upsert({
-      where: { email: member.email },
+    const created = await prisma.team.upsert({
+      where: {
+        email: member.email,
+      },
       update: {
         firstName: member.firstName,
         lastName: member.lastName,
@@ -66,10 +76,11 @@ async function main() {
         profileImage: TEAM_IMAGE_URL,
         isActive: true,
         createdById: admin.id,
+        updatedById: admin.id,
       },
     });
 
-    console.log(`👥 Seeded team member: ${member.firstName} ${member.lastName}`);
+    console.log(`👥 Seeded team member: ${created.firstName} ${created.lastName}`);
   }
 }
 

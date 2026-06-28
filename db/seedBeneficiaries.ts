@@ -1,6 +1,7 @@
+import prisma from './prisma';
 import { PrismaClient, GenderType } from '@/lib/generated/prisma';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 async function seedBeneficiaries() {
   const IMAGE_URL = '/assets/images/beneficiaries/manzu.jpg';

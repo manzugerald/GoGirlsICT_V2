@@ -1002,3 +1002,230 @@ body {
   background-size: 200% 200%;
   animation: gradient-shift 3s ease infinite;
 }
+
+
+
+/* =======================================================================
+   GOGIRLS ICT DESIGN SYSTEM
+   Phase 1: Typography + Semantic Colors + Accessibility
+   ======================================================================= */
+
+/* ---------- Brand Colors ---------- */
+
+:root {
+  --gogirls-primary: #9f004d;
+  --gogirls-primary-dark: #8a0042;
+  --gogirls-pink: #ec4899;
+  --gogirls-purple: #9333ea;
+
+  /* Accessibility */
+  --font-scale: 1;
+
+  /* Semantic text colors (Light Theme) */
+  --site-text-primary: #111827;
+  --site-text-secondary: #4b5563;
+  --site-text-muted: #6b7280;
+
+  /* Text shown on dark/video backgrounds */
+  --site-text-inverse: #ffffff;
+  --site-text-inverse-secondary: rgba(255,255,255,.86);
+  --site-text-inverse-muted: rgba(255,255,255,.70);
+}
+
+/* Dark Theme */
+
+.dark {
+  --site-text-primary: #f9fafb;
+  --site-text-secondary: #d1d5db;
+  --site-text-muted: #9ca3af;
+}
+
+/* ---------- Accessibility Font Scale ---------- */
+
+html[data-font-size="small"] {
+  --font-scale: .92;
+}
+
+html[data-font-size="normal"] {
+  --font-scale: 1;
+}
+
+html[data-font-size="large"] {
+  --font-scale: 1.12;
+}
+
+html[data-font-size="xlarge"] {
+  --font-scale: 1.25;
+}
+
+/* =======================================================================
+   SEMANTIC TEXT COLORS
+   ======================================================================= */
+
+.text-site-primary {
+  color: var(--site-text-primary);
+}
+
+.text-site-secondary {
+  color: var(--site-text-secondary);
+}
+
+.text-site-muted {
+  color: var(--site-text-muted);
+}
+
+.text-site-inverse {
+  color: var(--site-text-inverse);
+}
+
+.text-site-inverse-secondary {
+  color: var(--site-text-inverse-secondary);
+}
+
+.text-site-inverse-muted {
+  color: var(--site-text-inverse-muted);
+}
+
+/* =======================================================================
+   TYPOGRAPHY
+   ======================================================================= */
+
+.heading-hero {
+
+  font-size: clamp(
+      3rem,
+      calc(7vw * var(--font-scale)),
+      calc(6rem * var(--font-scale))
+  );
+
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -.03em;
+}
+
+.heading-1 {
+
+  font-size: clamp(
+      2.5rem,
+      calc(5vw * var(--font-scale)),
+      calc(4.5rem * var(--font-scale))
+  );
+
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.heading-2 {
+
+  font-size: clamp(
+      2rem,
+      calc(4vw * var(--font-scale)),
+      calc(3.25rem * var(--font-scale))
+  );
+
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.heading-3 {
+
+  font-size: clamp(
+      1.5rem,
+      calc(2.5vw * var(--font-scale)),
+      calc(2rem * var(--font-scale))
+  );
+
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.body-lg {
+
+  font-size: calc(1.125rem * var(--font-scale));
+  line-height: 1.8;
+}
+
+.body {
+
+  font-size: calc(1rem * var(--font-scale));
+  line-height: 1.7;
+}
+
+.caption {
+
+  font-size: calc(.875rem * var(--font-scale));
+  line-height: 1.5;
+}
+
+/* =======================================================================
+   BUTTONS
+   ======================================================================= */
+
+.btn-primary {
+
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:1rem 2rem;
+
+  border-radius:9999px;
+
+  background:var(--gogirls-primary);
+
+  color:white;
+
+  font-weight:700;
+
+  box-shadow:0 18px 40px rgba(159,0,77,.28);
+
+  transition:
+      transform .25s ease,
+      box-shadow .25s ease,
+      background .25s ease;
+}
+
+.btn-primary:hover{
+
+  background:var(--gogirls-primary-dark);
+
+  transform:translateY(-2px);
+
+  box-shadow:0 25px 55px rgba(159,0,77,.42);
+}
+
+.btn-secondary{
+
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:1rem 2rem;
+
+  border-radius:9999px;
+
+  background:rgba(255,255,255,.10);
+
+  border:2px solid rgba(255,255,255,.30);
+
+  backdrop-filter:blur(12px);
+
+  color:white;
+
+  font-weight:700;
+
+  transition:
+      transform .25s ease,
+      background .25s ease,
+      border-color .25s ease;
+}
+
+.btn-secondary:hover{
+
+  background:rgba(255,255,255,.20);
+
+  border-color:rgba(255,255,255,.60);
+
+  transform:translateY(-2px);
+}
+

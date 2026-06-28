@@ -1,11 +1,27 @@
 'use client';
 
-import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay, EffectCoverflow } from 'swiper/modules';
-import { Mail, Phone, Linkedin, Facebook, Globe, User, Sparkles } from 'lucide-react';
+import {
+  Mail,
+  Phone,
+  Linkedin,
+  Facebook,
+  Globe,
+  User,
+  ShieldCheck,
+  Users,
+  GraduationCap,
+  ArrowRight,
+} from 'lucide-react';
 import type { TeamMember } from '../../types/home';
+
+import Section from '../shared/components/Section';
+import SectionHeader from '../shared/components/SectionHeader';
+import SectionBackground from '../shared/components/SectionBackground';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -36,339 +52,464 @@ const getAvatarColor = (firstName?: string, lastName?: string) => {
 
   const name = `${firstName}${lastName}`;
   const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
   return colors[index % colors.length];
 };
 
+const getTeamCategory = (member: TeamMember) => {
+  const text = `${member.about || ''}`.toLowerCase();
+
+  if (text.includes('advisory') || text.includes('board')) return 'advisory';
+  if (text.includes('mentor')) return 'mentors';
+
+  return 'core';
+};
+
 export default function TeamSection({ teamMembers }: TeamSectionProps) {
+  const [activeTab, setActiveTab] = useState('core');
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, margin: '-100px' });
 
-  if (!teamMembers || teamMembers.length === 0) {
-    return null;
-  }
+  if (!teamMembers || teamMembers.length === 0) return null;
+
+  const advisoryBoard = teamMembers.filter((member) => getTeamCategory(member) === 'advisory');
+  const coreTeam = teamMembers.filter((member) => getTeamCategory(member) === 'core');
+  const mentors = teamMembers.filter((member) => getTeamCategory(member) === 'mentors');
 
   return (
-    <div ref={containerRef} className="wrapper max-w-7xl mx-auto px-4 py-16 relative">
-      {/* Animated background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <Section className="relative">
+      <div ref={containerRef}>
+        <SectionBackground
+          gradient="from-[#9f004d] via-pink-500 to-purple-500"
+          position="center"
+          duration={30}
+          opacity={[0.03, 0.08, 0.03]}
+        />
+
+        <SectionHeader
+          badge="Our Team"
+          title="Meet the People Behind Our Mission"
+          description="Dedicated professionals, advisors, and mentors working together to empower girls through technology"
+          icon={<User className="w-4 h-4" />}
+          badgeClassName="bg-[#9f004d]/10 dark:bg-[#9f004d]/20 text-[#9f004d] dark:text-pink-400"
+          titleGradient="from-[#9f004d] via-pink-600 to-purple-600"
+          dividerGradient="from-[#9f004d] via-pink-500 to-purple-500"
+        />
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.35, duration: 0.8 }}
+          className="relative z-10"
+        >
+          <Tabs defaultValue="core" onValueChange={setActiveTab} className="w-full">
+            <TabsList className="max-w-5xl mx-auto mb-12">
+              <TeamTabTrigger
+                value="advisory"
+                activeTab={activeTab}
+                icon={<ShieldCheck className="w-4 h-4" />}
+                label="Advisory Board"
+                count={advisoryBoard.length}
+              />
+
+              <TeamTabTrigger
+                value="core"
+                activeTab={activeTab}
+                icon={<Users className="w-4 h-4" />}
+                label="Core Team"
+                count={coreTeam.length}
+              />
+
+              <TeamTabTrigger
+                value="mentors"
+                activeTab={activeTab}
+                icon={<GraduationCap className="w-4 h-4" />}
+                label="Mentors"
+                count={mentors.length}
+              />
+            </TabsList>
+
+            <TabsContent value="advisory" className="mt-0">
+              <TeamCarousel
+                members={advisoryBoard}
+                active={activeTab === 'advisory'}
+                emptyTitle="No Advisory Board Members Yet"
+                emptyDescription="Advisory board members will appear here once added."
+              />
+            </TabsContent>
+
+            <TabsContent value="core" className="mt-0">
+              <TeamCarousel
+                members={coreTeam}
+                active={activeTab === 'core'}
+                emptyTitle="No Core Team Members Yet"
+                emptyDescription="Core team members will appear here once added."
+              />
+            </TabsContent>
+
+            <TabsContent value="mentors" className="mt-0">
+              <TeamCarousel
+                members={mentors}
+                active={activeTab === 'mentors'}
+                emptyTitle="No Mentors Yet"
+                emptyDescription="Mentors will appear here once added."
+              />
+            </TabsContent>
+          </Tabs>
+        </motion.div>
+      </div>
+    </Section>
+  );
+}
+
+function TeamTabTrigger({
+  value,
+  activeTab,
+  icon,
+  label,
+  count,
+}: {
+  value: string;
+  activeTab: string;
+  icon: React.ReactNode;
+  label: string;
+  count: number;
+}) {
+  return (
+    <TabsTrigger value={value}>
+      <motion.span
+        animate={activeTab === value ? { rotate: 360 } : {}}
+        transition={{ duration: 0.6 }}
+        className="flex items-center shrink-0"
+      >
+        {icon}
+      </motion.span>
+
+      <span className="truncate">{label}</span>
+
+      {count > 0 && (
+        <span className="shrink-0 px-2 py-0.5 caption rounded-full bg-white/20 text-current">
+          {count}
+        </span>
+      )}
+    </TabsTrigger>
+  );
+}
+
+function TeamCarousel({
+  members,
+  active,
+  emptyTitle,
+  emptyDescription,
+}: {
+  members: TeamMember[];
+  active: boolean;
+  emptyTitle: string;
+  emptyDescription: string;
+}) {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  return (
+    <AnimatePresence mode="wait">
+      {active && (
+        <motion.div
+          key={emptyTitle}
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.5 }}
+          className="relative"
+        >
+          {members.length > 0 ? (
+            <>
+              <Swiper
+                modules={[Navigation, Pagination, Autoplay, EffectCoverflow]}
+                effect="coverflow"
+                grabCursor
+                centeredSlides
+                slidesPerView={1}
+                spaceBetween={28}
+                coverflowEffect={{
+                  rotate: 0,
+                  stretch: 0,
+                  depth: 120,
+                  modifier: 2,
+                  slideShadows: false,
+                }}
+                pagination={{
+                  clickable: true,
+                  dynamicBullets: true,
+                }}
+                navigation
+                autoplay={{
+                  delay: 4000,
+                  disableOnInteraction: false,
+                  pauseOnMouseEnter: true,
+                }}
+                loop={members.length > 3}
+                onRealIndexChange={(swiper) => setActiveIndex(swiper.realIndex)}
+                onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
+                breakpoints={{
+                  320: {
+                    slidesPerView: 1,
+                    spaceBetween: 24,
+                  },
+                  768: {
+                    slidesPerView: 2,
+                    spaceBetween: 32,
+                  },
+                  1024: {
+                    slidesPerView: 3,
+                    spaceBetween: 40,
+                  },
+                }}
+                className="team-swiper pb-16 !px-4 md:!px-8"
+              >
+                {members.map((member, idx) => (
+                  <SwiperSlide key={member.id} className="!h-auto py-4">
+                    <TeamCard
+                      member={member}
+                      isActive={idx === activeIndex}
+                    />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+
+              <div className="mt-2 flex justify-center">
+                <motion.a
+                  href="/team"
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#9f004d] px-7 py-3 text-white shadow-xl hover:bg-[#8a0042] transition-all"
+                >
+                  <span className="body font-semibold">Find More</span>
+                  <ArrowRight className="w-5 h-5" />
+                </motion.a>
+              </div>
+            </>
+          ) : (
+            <EmptyTeamState title={emptyTitle} description={emptyDescription} />
+          )}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function TeamCard({
+  member,
+  isActive,
+}: {
+  member: TeamMember;
+  isActive: boolean;
+}) {
+  const initials = getInitials(member.firstName, member.lastName);
+  const avatarColor = getAvatarColor(member.firstName, member.lastName);
+
+  return (
+    <motion.article
+      animate={{
+        scale: isActive ? 1.03 : 0.94,
+        opacity: isActive ? 1 : 0.72,
+        y: isActive ? -8 : 0,
+      }}
+      transition={{ duration: 0.35 }}
+      className="
+        group
+        relative
+        overflow-hidden
+        rounded-3xl
+        bg-white/90
+        dark:bg-gray-900/90
+        backdrop-blur-xl
+        border
+        border-gray-200
+        dark:border-gray-800
+        shadow-lg
+        transition-all
+        duration-500
+      "
+    >
+      {isActive && (
         <motion.div
           animate={{
-            scale: [1, 1.3, 1],
-            opacity: [0.03, 0.08, 0.03],
-            rotate: [0, 180, 360],
+            opacity: [0.18, 0.32, 0.18],
           }}
-          transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-br from-[#9f004d] via-purple-500 to-pink-500 rounded-full blur-3xl"
+          transition={{
+            duration: 2.5,
+            repeat: Infinity,
+          }}
+          className="absolute -inset-0.5 bg-gradient-to-r from-[#9f004d] via-pink-500 to-purple-500 blur"
         />
-      </div>
+      )}
 
-      {/* Section Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8 }}
-        className="text-center mb-12 relative z-10"
-      >
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0 }}
-          animate={isInView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#9f004d]/10 dark:bg-[#9f004d]/20 rounded-full mb-4 shadow-lg"
-        >
+      <div className="relative bg-white/95 dark:bg-gray-900/95 rounded-3xl">
+        <div
+          className={`h-28 bg-gradient-to-br ${
+            isActive
+              ? 'from-[#9f004d] via-pink-600 to-purple-600'
+              : 'from-gray-200 via-gray-100 to-gray-200 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800'
+          }`}
+        />
+
+        <div className="relative px-6 pb-6 -mt-16 flex flex-col items-center text-center">
           <motion.div
-            animate={{ rotate: [0, 360] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+            animate={
+              isActive
+                ? {
+                    scale: [1, 1.04, 1],
+                    rotate: [0, 1.5, 0],
+                  }
+                : undefined
+            }
+            transition={{ duration: 3, repeat: Infinity }}
+            className="relative mb-4"
           >
-            <User className="w-4 h-4 text-[#9f004d] dark:text-pink-400" />
-          </motion.div>
-          <span className="text-[#9f004d] dark:text-pink-400 font-semibold text-sm uppercase tracking-wide">
-            Our Team
-          </span>
-        </motion.div>
-
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.3, duration: 0.8 }}
-          className="text-4xl md:text-5xl font-bold mb-4 text-gray-800 dark:text-gray-100"
-        >
-          <motion.span
-            animate={{
-              backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-            }}
-            transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
-            className="bg-clip-text text-transparent bg-gradient-to-r from-[#9f004d] via-pink-600 to-purple-600"
-            style={{ backgroundSize: '200% 200%' }}
-          >
-            Meet the People Behind Our Mission
-          </motion.span>
-        </motion.h2>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ delay: 0.4, duration: 0.8 }}
-          className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
-        >
-          Dedicated professionals working together to empower girls through technology
-        </motion.p>
-
-        {/* Decorative line */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={isInView ? { scaleX: 1 } : {}}
-          transition={{ delay: 0.6, duration: 1 }}
-          className="h-1 w-32 bg-gradient-to-r from-[#9f004d] via-pink-500 to-purple-500 mx-auto rounded-full mt-6"
-        />
-      </motion.div>
-
-      {/* Team Carousel */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ delay: 0.5, duration: 0.8 }}
-        className="relative z-10"
-      >
-        <Swiper
-          modules={[Navigation, Pagination, Autoplay, EffectCoverflow]}
-          effect="coverflow"
-          grabCursor={true}
-          centeredSlides={true}
-          slidesPerView="auto"
-          coverflowEffect={{
-            rotate: 0,
-            stretch: 0,
-            depth: 100,
-            modifier: 2,
-            slideShadows: true,
-          }}
-          pagination={{
-            clickable: true,
-            dynamicBullets: true,
-          }}
-          navigation={true}
-          autoplay={{
-            delay: 3500,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-          }}
-          loop={teamMembers.length > 3}
-          breakpoints={{
-            320: {
-              slidesPerView: 1,
-              spaceBetween: 20,
-            },
-            768: {
-              slidesPerView: 2,
-              spaceBetween: 30,
-            },
-            1024: {
-              slidesPerView: 3,
-              spaceBetween: 40,
-            },
-          }}
-          className="team-swiper pb-16"
-        >
-          {teamMembers.map((member, idx) => {
-            const initials = getInitials(member.firstName, member.lastName);
-            const avatarColor = getAvatarColor(member.firstName, member.lastName);
-
-            return (
-              <SwiperSlide key={member.id} className="!h-auto">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: idx * 0.1 }}
-                  whileHover={{
-                    y: -10,
-                    scale: 1.03,
-                    transition: { duration: 0.3 },
-                  }}
-                  className="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden h-full"
-                  style={{ transformStyle: 'preserve-3d' }}
+            <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-900 shadow-2xl bg-white dark:bg-gray-900">
+              {member.profileImage ? (
+                <img
+                  src={member.profileImage}
+                  alt={`${member.firstName} ${member.lastName}`}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div
+                  className={`w-full h-full bg-gradient-to-br ${avatarColor} flex items-center justify-center`}
                 >
-                  {/* Glowing border effect */}
-                  <motion.div className="absolute -inset-0.5 bg-gradient-to-r from-[#9f004d] via-pink-500 to-purple-500 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500" />
+                  <span className="text-white text-3xl font-bold">{initials}</span>
+                </div>
+              )}
+            </div>
 
-                  {/* Gradient overlay */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    whileHover={{ opacity: 0.1 }}
-                    className="absolute inset-0 bg-gradient-to-br from-[#9f004d]/5 to-pink-500/5"
-                  />
+            {isActive && (
+              <motion.div
+                animate={{
+                  scale: [1, 1.22, 1],
+                  opacity: [0.45, 0, 0.45],
+                }}
+                transition={{ duration: 2.2, repeat: Infinity }}
+                className="absolute inset-0 border-4 border-[#9f004d]/70 rounded-full"
+              />
+            )}
+          </motion.div>
 
-                  {/* Floating particles */}
-                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    {[...Array(3)].map((_, i) => (
-                      <motion.div
-                        key={i}
-                        animate={{
-                          y: ['100%', '-100%'],
-                          opacity: [0, 0.5, 0],
-                        }}
-                        transition={{
-                          duration: Math.random() * 3 + 2,
-                          repeat: Infinity,
-                          delay: Math.random() * 2,
-                        }}
-                        className="absolute w-1 h-1 bg-pink-500 rounded-full"
-                        style={{ left: `${Math.random() * 100}%` }}
-                      />
-                    ))}
-                  </div>
+          <h3 className="heading-3 text-site-primary mb-2">
+            {member.firstName} {member.lastName}
+          </h3>
 
-                  {/* Card Content */}
-                  <div className="relative p-6 flex flex-col items-center text-center">
-                    {/* Profile Image */}
-                    <motion.div
-                      className="relative mb-4"
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-xl">
-                        {member.profileImage ? (
-                          <motion.img
-                            whileHover={{ scale: 1.2 }}
-                            transition={{ duration: 0.6 }}
-                            src={member.profileImage}
-                            alt={`${member.firstName} ${member.lastName}`}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div
-                            className={`w-full h-full bg-gradient-to-br ${avatarColor} flex items-center justify-center`}
-                          >
-                            <span className="text-white text-3xl font-bold">{initials}</span>
-                          </div>
-                        )}
-                      </div>
+          {member.about && (
+            <span className="inline-block px-3 py-1 bg-[#9f004d]/10 text-[#9f004d] dark:bg-pink-500/20 dark:text-pink-400 caption font-semibold rounded-full mb-4 max-w-full">
+              {member.about}
+            </span>
+          )}
 
-                      {/* Pulse ring */}
-                      <motion.div
-                        animate={{
-                          scale: [1, 1.3, 1],
-                          opacity: [0.5, 0, 0.5],
-                        }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="absolute inset-0 border-4 border-[#9f004d] rounded-full"
-                      />
+          <div
+            className={`h-1 rounded-full bg-gradient-to-r from-[#9f004d] to-pink-500 mb-5 transition-all duration-500 ${
+              isActive ? 'w-32' : 'w-16'
+            }`}
+          />
 
-                      {/* Online indicator */}
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"
-                      />
-                    </motion.div>
+          <div className="space-y-2 w-full mb-5">
+            {member.email && (
+              <a
+                href={`mailto:${member.email}`}
+                className="flex items-center justify-center gap-2 caption text-site-secondary hover:text-[#9f004d] dark:hover:text-pink-400 transition-colors"
+              >
+                <Mail className="w-4 h-4 shrink-0" />
+                <span className="truncate max-w-[220px]">{member.email}</span>
+              </a>
+            )}
 
-                    {/* Name & Role */}
-                    <motion.h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1 group-hover:text-[#9f004d] dark:group-hover:text-pink-400 transition-colors">
-                      {member.firstName} {member.lastName}
-                    </motion.h3>
+            {member.phone && (
+              <a
+                href={`tel:${member.phone}`}
+                className="flex items-center justify-center gap-2 caption text-site-secondary hover:text-[#9f004d] dark:hover:text-pink-400 transition-colors"
+              >
+                <Phone className="w-4 h-4 shrink-0" />
+                <span>{member.phone}</span>
+              </a>
+            )}
+          </div>
 
-                    {member.about && (
-                      <motion.span
-                        whileHover={{ scale: 1.05 }}
-                        className="inline-block px-3 py-1 bg-[#9f004d]/10 text-[#9f004d] dark:bg-pink-500/20 dark:text-pink-400 text-sm font-medium rounded-full mb-4"
-                      >
-                        {member.about}
-                      </motion.span>
-                    )}
+          {(member.linkedInUrl || member.facebookUrl || member.websiteUrl) && (
+            <div className="flex items-center justify-center gap-3 pt-5 border-t border-gray-200 dark:border-gray-800 w-full">
+              {member.linkedInUrl && (
+                <SocialLink href={member.linkedInUrl} label="LinkedIn">
+                  <Linkedin className="w-5 h-5" />
+                </SocialLink>
+              )}
 
-                    {/* Animated divider */}
-                    <motion.div
-                      initial={{ width: '4rem' }}
-                      whileHover={{ width: '100%' }}
-                      transition={{ duration: 0.5 }}
-                      className="h-1 bg-gradient-to-r from-[#9f004d] to-pink-500 rounded-full mb-4"
-                    />
+              {member.facebookUrl && (
+                <SocialLink href={member.facebookUrl} label="Facebook">
+                  <Facebook className="w-5 h-5" />
+                </SocialLink>
+              )}
 
-                    {/* Contact Info */}
-                    <div className="space-y-2 w-full mb-4">
-                      {member.email && (
-                        <motion.a
-                          href={`mailto:${member.email}`}
-                          whileHover={{ scale: 1.05, x: 5 }}
-                          className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-[#9f004d] dark:hover:text-pink-400 transition-colors"
-                        >
-                          <Mail className="w-4 h-4" />
-                          <span className="truncate max-w-[200px]">{member.email}</span>
-                        </motion.a>
-                      )}
+              {member.websiteUrl && (
+                <SocialLink href={member.websiteUrl} label="Website">
+                  <Globe className="w-5 h-5" />
+                </SocialLink>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.article>
+  );
+}
 
-                      {member.phone && (
-                        <motion.a
-                          href={`tel:${member.phone}`}
-                          whileHover={{ scale: 1.05, x: 5 }}
-                          className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-[#9f004d] dark:hover:text-pink-400 transition-colors"
-                        >
-                          <Phone className="w-4 h-4" />
-                          <span>{member.phone}</span>
-                        </motion.a>
-                      )}
-                    </div>
+function SocialLink({
+  href,
+  label,
+  children,
+}: {
+  href: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <motion.a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      whileHover={{ scale: 1.18, rotate: 360 }}
+      transition={{ duration: 0.3 }}
+      className="
+        p-2
+        bg-gray-100
+        dark:bg-gray-800
+        hover:bg-[#9f004d]/10
+        dark:hover:bg-pink-900/30
+        rounded-xl
+        text-site-secondary
+        hover:text-[#9f004d]
+        dark:hover:text-pink-400
+        transition-colors
+      "
+      aria-label={label}
+    >
+      {children}
+    </motion.a>
+  );
+}
 
-                    {/* Social Links */}
-                    {(member.linkedInUrl || member.facebookUrl || member.websiteUrl) && (
-                      <div className="flex items-center justify-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 w-full">
-                        {member.linkedInUrl && (
-                          <motion.a
-                            href={member.linkedInUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            whileHover={{ scale: 1.2, rotate: 360 }}
-                            transition={{ duration: 0.3 }}
-                            className="p-2 bg-gray-100 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg"
-                            aria-label="LinkedIn"
-                          >
-                            <Linkedin className="w-5 h-5 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400" />
-                          </motion.a>
-                        )}
-
-                        {member.facebookUrl && (
-                          <motion.a
-                            href={member.facebookUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            whileHover={{ scale: 1.2, rotate: 360 }}
-                            transition={{ duration: 0.3 }}
-                            className="p-2 bg-gray-100 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg"
-                            aria-label="Facebook"
-                          >
-                            <Facebook className="w-5 h-5 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400" />
-                          </motion.a>
-                        )}
-
-                        {member.websiteUrl && (
-                          <motion.a
-                            href={member.websiteUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            whileHover={{ scale: 1.2, rotate: 360 }}
-                            transition={{ duration: 0.3 }}
-                            className="p-2 bg-gray-100 dark:bg-gray-700 hover:bg-[#9f004d]/10 dark:hover:bg-pink-900/30 rounded-lg"
-                            aria-label="Website"
-                          >
-                            <Globe className="w-5 h-5 text-gray-600 dark:text-gray-400 hover:text-[#9f004d] dark:hover:text-pink-400" />
-                          </motion.a>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Corner decoration */}
-                  <motion.div
-                    initial={{ scale: 0, rotate: -45 }}
-                    whileHover={{ scale: 1, rotate: 0 }}
-                    className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[#9f004d]/20 to-transparent rounded-bl-full"
-                  />
-                </motion.div>
-              </SwiperSlide>
-            );
-          })}
-        </Swiper>
-      </motion.div>
-    </div>
+function EmptyTeamState({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+      className="flex flex-col items-center justify-center py-20 text-center"
+    >
+      <User className="w-16 h-16 text-pink-300 dark:text-pink-700 mb-4" />
+      <h3 className="heading-3 text-site-primary mb-2">{title}</h3>
+      <p className="body text-site-secondary max-w-md">{description}</p>
+    </motion.div>
   );
 }

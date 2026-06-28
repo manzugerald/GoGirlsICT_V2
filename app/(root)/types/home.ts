@@ -106,6 +106,7 @@ export interface Partner {
   institutionImages: string[];
   headName?: string | null;
   institutionType: string; // InstitutionType enum
+  institutionCategory: string;
   createdAt?: Date;
   updatedAt?: Date;
   locations?: {

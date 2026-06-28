@@ -1,283 +1,158 @@
 'use client';
 
-import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
-import { ExternalLink, MapPin, Users, Building2, Sparkles } from 'lucide-react';
+import { motion, useInView } from 'framer-motion';
+import { ArrowRight, Building2, HeartHandshake, Star } from 'lucide-react';
 import type { Partner } from '../../types/home';
+
+import Section from '../shared/components/Section';
+import SectionHeader from '../shared/components/SectionHeader';
+import SectionBackground from '../shared/components/SectionBackground';
 
 interface PartnersSectionProps {
   partners: Partner[] | null;
 }
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-};
+const isFundingPartner = (partner: Partner) => partner.institutionCategory === 'funding';
 
-const cardVariant = {
-  hidden: {
-    opacity: 0,
-    y: 40,
-    scale: 0.9,
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      duration: 0.6,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  },
+const formatInstitutionType = (type?: string | null) => {
+  if (!type) return 'Institution';
+
+  return type.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
 export default function PartnersSection({ partners }: PartnersSectionProps) {
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, margin: '-100px' });
 
-  if (!partners || partners.length === 0) {
-    return null;
-  }
+  if (!partners || partners.length === 0) return null;
+
+  const fundingPartners = partners.filter(isFundingPartner).slice(0, 3);
 
   return (
-    <div ref={containerRef} className="wrapper max-w-7xl mx-auto px-4 py-16 relative">
-      {/* Animated background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.05, 0.1, 0.05],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-          className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full blur-3xl"
+    <Section className="relative">
+      <div ref={containerRef}>
+        <SectionBackground
+          gradient="from-pink-500 via-purple-500 to-[#9f004d]"
+          position="top-left"
+          duration={45}
+          opacity={[0.015, 0.035, 0.015]}
         />
-      </div>
 
-      {/* Section Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8 }}
-        className="text-center mb-12 relative z-10"
-      >
-        {/* Badge */}
+        <SectionHeader
+          badge="Funding Partners"
+          title="Partners Supporting Our Mission"
+          description="We work with stakeholders who share our vision of engaging, educating, and empowering communities through Innovation and Technology"
+          icon={<HeartHandshake className="w-4 h-4" />}
+          badgeClassName="bg-[#9f004d]/10 dark:bg-[#9f004d]/20 text-[#9f004d] dark:text-pink-400"
+          titleGradient="from-[#9f004d] via-pink-600 to-purple-600"
+          dividerGradient="from-[#9f004d] via-pink-500 to-purple-500"
+        />
+
         <motion.div
-          initial={{ opacity: 0, scale: 0 }}
-          animate={isInView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/20 rounded-full mb-4 shadow-lg"
-        >
-          <motion.div
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            🤝
-          </motion.div>
-          <span className="text-blue-600 dark:text-blue-400 font-semibold text-sm uppercase tracking-wide">
-            Our Partners
-          </span>
-        </motion.div>
-
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.3, duration: 0.8 }}
-          className="text-4xl md:text-5xl font-bold mb-4 text-gray-800 dark:text-gray-100"
+          transition={{ delay: 0.35, duration: 0.7 }}
+          className="relative z-10"
         >
-          <motion.span
-            animate={{
-              backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-            }}
-            transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
-            className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600"
-            style={{ backgroundSize: '200% 200%' }}
-          >
-            Working Together for Change
-          </motion.span>
-        </motion.h2>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ delay: 0.4, duration: 0.8 }}
-          className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
-        >
-          Collaborating with organizations that share our vision of empowering girls through
-          technology
-        </motion.p>
-
-        {/* Decorative line */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={isInView ? { scaleX: 1 } : {}}
-          transition={{ delay: 0.6, duration: 1 }}
-          className="h-1 w-32 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 mx-auto rounded-full mt-6"
-        />
-      </motion.div>
-
-      {/* Partners Grid */}
-      <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        animate={isInView ? 'visible' : 'hidden'}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10"
-      >
-        {partners.map((partner, idx) => (
-          <motion.div
-            key={partner.id}
-            variants={cardVariant}
-            whileHover={{
-              y: -10,
-              scale: 1.03,
-              rotateY: 5,
-              transition: { duration: 0.3 },
-            }}
-            className="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden"
-            style={{ transformStyle: 'preserve-3d' }}
-          >
-            {/* Glowing border */}
-            <motion.div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-2xl opacity-0 group-hover:opacity-30 blur transition-opacity duration-500" />
-
-            {/* Gradient overlay */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileHover={{ opacity: 0.1 }}
-              className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5"
-            />
-
-            {/* Card Content */}
-            <div className="relative p-6">
-              {/* Logo/Name Section */}
-              <div className="flex items-start gap-4 mb-4">
-                {partner.logo ? (
-                  <motion.div
-                    whileHover={{ scale: 1.15, rotate: 5 }}
-                    transition={{ duration: 0.3 }}
-                    className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0 shadow-md"
-                  >
-                    <img
-                      src={partner.logo}
-                      alt={partner.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    whileHover={{ scale: 1.15, rotate: 360 }}
-                    transition={{ duration: 0.6 }}
-                    className="w-16 h-16 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0 shadow-md"
-                  >
-                    <span className="text-white text-2xl font-bold">
-                      {partner.name.charAt(0).toUpperCase()}
-                    </span>
-                  </motion.div>
-                )}
-
-                <div className="flex-1 min-w-0">
-                  <motion.h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
-                    {partner.name}
-                  </motion.h3>
-
-                  {partner.type && (
-                    <motion.span
-                      whileHover={{ scale: 1.05 }}
-                      className="inline-block px-2 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-medium rounded"
-                    >
-                      {partner.type}
-                    </motion.span>
-                  )}
-                </div>
-              </div>
-
-              {/* Animated divider */}
-              <motion.div
-                initial={{ width: '4rem' }}
-                whileHover={{ width: '100%' }}
-                transition={{ duration: 0.5 }}
-                className="h-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mb-4"
-              />
-
-              {/* Description */}
-              {partner.description && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3 leading-relaxed">
-                  {partner.description}
-                </p>
-              )}
-
-              {/* Stats */}
-              <div className="flex items-center gap-4 mb-4 text-xs text-gray-500 dark:text-gray-400">
-                {partner._count?.beneficiaries !== undefined && (
-                  <motion.div whileHover={{ scale: 1.1 }} className="flex items-center gap-1">
-                    <Users className="w-4 h-4 text-blue-500" />
-                    <span>{partner._count.beneficiaries} beneficiaries</span>
-                  </motion.div>
-                )}
-
-                {partner.locations && partner.locations.length > 0 && (
-                  <motion.div whileHover={{ scale: 1.1 }} className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4 text-blue-500" />
-                    <span>{partner.locations.length} locations</span>
-                  </motion.div>
-                )}
-              </div>
-
-              {/* Locations */}
-              {partner.locations && partner.locations.length > 0 && (
-                <div className="mb-4">
-                  <div className="flex flex-wrap gap-2">
-                    {partner.locations.slice(0, 3).map((location: any) => (
-                      <motion.span
-                        key={location.id}
-                        whileHover={{ scale: 1.05 }}
-                        className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded"
-                      >
-                        {location.name}
-                      </motion.span>
-                    ))}
-                    {partner.locations.length > 3 && (
-                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs rounded">
-                        +{partner.locations.length - 3} more
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Website Link */}
-              {partner.website && (
-                <motion.a
-                  href={partner.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.05, x: 5 }}
-                  className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold"
+          {fundingPartners.length > 0 ? (
+            <div className="flex flex-wrap justify-center gap-6">
+              {fundingPartners.map((partner, index) => (
+                <div
+                  key={partner.id}
+                  className="w-full sm:w-[360px] flex-shrink-0"
                 >
-                  <span>Visit Website</span>
-                  <motion.div
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </motion.div>
-                </motion.a>
-              )}
+                  <PartnerCard partner={partner} index={index} />
+                </div>
+              ))}
             </div>
+          ) : (
+            <EmptyState />
+          )}
 
-            {/* Corner decoration */}
-            <motion.div
-              initial={{ scale: 0 }}
-              whileHover={{ scale: 1 }}
-              className="absolute bottom-0 left-0 w-20 h-20 bg-gradient-to-tr from-blue-500/20 to-transparent rounded-tr-full"
-            />
-          </motion.div>
-        ))}
-      </motion.div>
+          <div className="mt-10 flex justify-center">
+            <motion.a
+              href="/stakeholders"
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.96 }}
+              className="inline-flex items-center gap-2 rounded-full bg-[#9f004d] hover:bg-[#8a0042] px-7 py-3 text-white shadow-xl transition-all"
+            >
+              <span className="body font-semibold">Check all our Stakeholders</span>
+              <ArrowRight className="w-5 h-5" />
+            </motion.a>
+          </div>
+        </motion.div>
+      </div>
+    </Section>
+  );
+}
+
+function PartnerCard({ partner, index }: { partner: Partner; index: number }) {
+  return (
+    <motion.article
+  initial={{ opacity: 0, y: 28 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true }}
+  transition={{ delay: index * 0.08, duration: 0.55 }}
+  whileHover={{ y: -6 }}
+  className="group relative flex h-full overflow-hidden rounded-3xl border border-gray-200 bg-white/90 shadow-lg transition-all duration-500 hover:shadow-2xl dark:border-gray-800 dark:bg-gray-900/90"
+>
+  {/* Accent bar */}
+  <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#9f004d] via-pink-500 to-purple-500" />
+
+  {/* Funding badge */}
+  <div className="absolute top-5 right-5 z-10">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#9f004d]/10 px-3 py-1 caption font-semibold text-[#9f004d] dark:bg-pink-500/20 dark:text-pink-400">
+      <Star className="h-3.5 w-3.5 fill-current" />
+      Funding
+    </span>
+  </div>
+
+  <div className="flex w-full flex-col p-6">
+    {/* Top row */}
+    <div className="flex items-start gap-4 pr-24">
+      {partner.logo ? (
+        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-gray-200 bg-gray-100 shadow-md dark:border-gray-700 dark:bg-gray-800">
+          <img
+            src={partner.logo}
+            alt={partner.name}
+            className="h-full w-full object-cover"
+          />
+        </div>
+      ) : (
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#9f004d] to-pink-600 shadow-md">
+          <span className="text-2xl font-bold text-white">
+            {partner.name.charAt(0).toUpperCase()}
+          </span>
+        </div>
+      )}
+
+      <div className="min-w-0 flex-1">
+        <h3 className="heading-3 line-clamp-2 text-site-primary transition-colors group-hover:text-[#9f004d] dark:group-hover:text-pink-400">
+          {partner.name}
+        </h3>
+      </div>
+    </div>
+
+    {/* Institution type */}
+    <div className="mt-5">
+      <span className="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-gray-50 px-4 py-2 caption font-semibold text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+        {formatInstitutionType(partner.institutionType)}
+      </span>
+    </div>
+  </div>
+</motion.article>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center rounded-3xl bg-white/80 dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800">
+      <Building2 className="w-14 h-14 text-pink-300 dark:text-pink-700 mb-4" />
+      <h3 className="heading-3 text-site-primary mb-2">No Funding Partners Yet</h3>
+      <p className="body text-site-secondary max-w-md">
+        Funding partners will appear here once added.
+      </p>
     </div>
   );
 }
