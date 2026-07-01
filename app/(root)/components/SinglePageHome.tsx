@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useRef } from 'react';
-import { motion, useScroll, useSpring } from 'framer-motion';
+// import { motion, useScroll, useSpring } from 'framer-motion';
 import { useHomePageContent, usePartners } from '../hooks/useHomePageData';
 
 import HeroSection from './sections/HeroSection';
@@ -43,16 +43,9 @@ export default function SinglePageHome({
   const { data: content } = useHomePageContent(ssrContent);
   const { data: partners } = usePartners(ssrPartners);
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end end'],
-  });
+  
 
-  const scaleProgress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001,
-  });
+  
 
   useEffect(() => {
     document.documentElement.style.scrollBehavior = 'smooth';
@@ -67,12 +60,7 @@ export default function SinglePageHome({
       ref={containerRef}
       className="single-page-container relative bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 overflow-hidden"
     >
-      {/* Scroll Progress Bar */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#9f004d] via-pink-500 to-purple-500 origin-left z-50 shadow-lg shadow-pink-500/30"
-        style={{ scaleX: scaleProgress }}
-      />
-
+      
       {/* 1. Hero Section */}
       <section id="hero" className="min-h-screen relative z-10">
         <Suspense fallback={<SectionSkeleton variant="hero" />}>
