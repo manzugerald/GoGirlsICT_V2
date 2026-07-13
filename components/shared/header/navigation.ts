@@ -113,7 +113,7 @@ export const navigationItems: NavigationItem[] = [
     ],
   },
   {
-    label: 'Media',
+    label: 'SNS',
     href: '/media',
     description: 'Follow our news, stories, videos, galleries, and social updates.',
     icon: Images,

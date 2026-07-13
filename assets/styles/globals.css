@@ -1229,3 +1229,21 @@ html[data-font-size="xlarge"] {
   transform:translateY(-2px);
 }
 
+
+@keyframes drawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes barShoot {
+  from {
+    transform: scaleY(0);
+    opacity: 0.25;
+  }
+
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}

@@ -1,7 +1,6 @@
 'use client';
 
 import { Suspense, useEffect, useRef } from 'react';
-// import { motion, useScroll, useSpring } from 'framer-motion';
 import { useHomePageContent, usePartners } from '../hooks/useHomePageData';
 
 import HeroSection from './sections/HeroSection';
