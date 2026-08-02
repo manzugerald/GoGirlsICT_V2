@@ -64,7 +64,7 @@ export default function TeamDirectory({
     groupedMembers[activeCategory];
 
   return (
-    <section className="mt-12">
+    <section className="mt-12 sm:mt-14">
       <div className="mx-auto flex max-w-5xl flex-wrap justify-center gap-2 rounded-3xl border border-gray-200 bg-white/80 p-2 shadow-lg backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900/80">
         {teamCategories.map((category) => {
           const Icon = category.icon;
@@ -144,7 +144,7 @@ export default function TeamDirectory({
             y: -12,
           }}
           transition={{ duration: 0.35 }}
-          className="mt-12"
+          className="mt-10"
         >
           <div className="mb-9 text-center">
             <h2 className="heading-2 text-site-primary">

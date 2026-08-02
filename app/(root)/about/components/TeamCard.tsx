@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import {
   ArrowUpRight,
   Check,
@@ -40,6 +41,23 @@ function getInitials(member: TeamMember): string {
   const last = member.lastName?.[0] || '';
 
   return `${first}${last}`.toUpperCase() || 'TM';
+}
+
+const BIO_PREVIEW_WORD_LIMIT = 10;
+
+function truncateToWords(
+  text: string,
+  wordLimit: number
+): string {
+  const words = text
+    .trim()
+    .split(/\s+/);
+
+  if (words.length <= wordLimit) {
+    return text.trim();
+  }
+
+  return `${words.slice(0, wordLimit).join(' ')}…`;
 }
 
 type SocialEntry = {
@@ -117,6 +135,9 @@ function SocialLink({ entry }: { entry: SocialEntry }) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={entry.label}
+            onClick={(event) =>
+              event.stopPropagation()
+            }
             className={
               'flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-[transform,background-color,border-color,color] duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9f004d] focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:focus-visible:ring-pink-500 dark:focus-visible:ring-offset-gray-950 ' +
               entry.hoverClassName
@@ -199,18 +220,6 @@ function ProtectedEmail({
   );
 }
 
-function ProfileDivider() {
-  return (
-    <div className="flex items-center gap-2.5 px-5 pt-4">
-      <span className="h-px w-8 bg-[#9f004d]" />
-
-      <span className="h-1.5 w-1.5 rotate-45 bg-[#9f004d]" />
-
-      <span className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
-    </div>
-  );
-}
-
 function ViewProfileTrigger() {
   return (
     <DialogTrigger asChild>
@@ -245,62 +254,73 @@ export default function TeamCard({
     member.about ||
     `${fullName} is a valued member of the GoGirls ICT Initiative team.`;
 
+  const bioPreview = truncateToWords(
+    bio,
+    BIO_PREVIEW_WORD_LIMIT
+  );
+
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
-      <article
-        className="animate-in fade-in slide-in-from-bottom-3 fill-mode-backwards group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_10px_28px_-24px_rgba(31,25,28,0.5)] transition-[transform,border-color,box-shadow] duration-300 motion-safe:hover:-translate-y-1 hover:border-[#9f004d]/30 hover:shadow-[0_18px_38px_-22px_rgba(159,0,77,0.22)] motion-reduce:animate-none motion-reduce:transition-none dark:border-gray-800 dark:bg-gray-900 dark:hover:border-pink-500/30"
-        style={{
-          animationDelay: `${Math.min(index, 8) * 60}ms`,
-          animationDuration: '500ms',
+    <Dialog
+      open={open}
+      onOpenChange={setOpen}
+    >
+      <motion.article
+        initial={{
+          opacity: 0,
+          y: 20,
         }}
+        whileInView={{
+          opacity: 1,
+          y: 0,
+        }}
+        viewport={{
+          once: true,
+          margin: '-60px',
+        }}
+        transition={{
+          delay: Math.min(index, 8) * 0.06,
+          duration: 0.4,
+        }}
+        onClick={() => setOpen(true)}
+        className="group flex h-full cursor-pointer flex-col items-center overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-sm transition-[transform,border-color,box-shadow] duration-300 motion-safe:hover:-translate-y-1 hover:border-[#9f004d]/30 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900"
       >
-        {/* 
-          Fixed-height portrait mat.
-          The photograph uses object-contain, so it is never cropped.
-        */}
-        <div className="relative flex h-48 w-full items-center justify-center overflow-hidden bg-gradient-to-br from-[#9f004d]/[0.05] via-gray-50 to-purple-500/[0.06] dark:from-pink-500/[0.06] dark:via-gray-950 dark:to-purple-500/[0.08]">
+        {/* Portrait */}
+        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full bg-gray-100 ring-4 ring-gray-50 dark:bg-gray-800 dark:ring-gray-800/60">
           {member.profileImage ? (
-            <div className="relative h-[86%] w-[58%] max-w-[150px] overflow-hidden rounded-xl bg-white shadow-[0_6px_20px_-8px_rgba(31,25,28,0.35)] ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/10">
-              <Image
-                src={member.profileImage}
-                alt={`Portrait of ${fullName}`}
-                fill
-                priority={index < 2}
-                sizes="150px"
-                className="object-contain object-center grayscale transition-[filter,transform] duration-700 ease-out motion-safe:group-hover:scale-[1.04] group-hover:grayscale-0 motion-reduce:transition-none"
-              />
-            </div>
+            <Image
+              src={member.profileImage}
+              alt={`Portrait of ${fullName}`}
+              fill
+              priority={index < 2}
+              sizes="96px"
+              className="object-cover object-top"
+            />
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#9f004d] via-pink-600 to-purple-700 shadow-[0_6px_20px_-8px_rgba(159,0,77,0.5)]">
-              <span className="font-serif text-2xl font-semibold tracking-tight text-white/95">
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#9f004d] via-pink-600 to-purple-700">
+              <span className="font-serif text-xl font-semibold tracking-tight text-white/95">
                 {initials}
               </span>
             </div>
           )}
         </div>
 
-        {/* Accent divider */}
-        <ProfileDivider />
-
         {/* Identity and biography */}
-        <div className="flex flex-1 flex-col gap-3 px-5 pb-5 pt-3">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500">
-              Team Member
-            </p>
+        <div className="flex flex-1 flex-col items-center gap-2 pt-4">
+          <h3 className="font-serif text-lg font-semibold leading-tight text-gray-900 dark:text-white">
+            {fullName}
+          </h3>
 
-            <h3 className="mt-1 font-serif text-xl font-semibold leading-tight text-gray-900 dark:text-white">
-              {fullName}
-            </h3>
-          </div>
-
-          <p className="line-clamp-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
-            {bio}
+          <p className="text-sm leading-6 text-gray-600 dark:text-gray-300">
+            {bioPreview}
           </p>
 
-          <div className="mt-auto flex items-center justify-between gap-3 pt-3">
-            {socials.length > 0 ? (
-              <div className="flex flex-wrap items-center gap-1.5">
+          <div className="mt-auto flex w-full items-center justify-between gap-3 pt-2">
+            <ViewProfileTrigger />
+
+            {socials.length > 0 && (
+              <div className="flex flex-wrap items-center justify-end gap-1.5">
                 {socials.map((entry) => (
                   <SocialLink
                     key={entry.key}
@@ -308,14 +328,10 @@ export default function TeamCard({
                   />
                 ))}
               </div>
-            ) : (
-              <span />
             )}
-
-            <ViewProfileTrigger />
           </div>
         </div>
-      </article>
+      </motion.article>
 
       {/* Full biography dialog */}
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">

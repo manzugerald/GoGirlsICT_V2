@@ -9,10 +9,11 @@ import Partners from './components/Partners';
 import { getAboutPageData } from './data';
 
 export const metadata: Metadata = {
-  title: 'About | GoGirls ICT Initiative',
+  title:
+    'About | GoGirls ICT Initiative',
 
   description:
-    'Learn about GoGirls ICT Initiative, our people, and the partners who make our work possible.',
+    'Learn about GoGirls ICT Initiative, our people, our foundation, and the partners who make our work possible.',
 };
 
 export default async function AboutPage() {
@@ -36,12 +37,14 @@ export default async function AboutPage() {
         }
       `}</style>
 
+      {/* About page banner */}
       <PageHero
         title="About GoGirls ICT Initiative"
         description="Discover who we are, what guides us, the partners supporting our work, and the people turning our mission into meaningful community impact."
         backgroundImage="/assets/images/about/about-banner.jpg"
       />
 
+      {/* Who We Are and Our Foundation */}
       <div
         id="about"
         className="scroll-mt-20 sm:scroll-mt-24"
@@ -49,19 +52,24 @@ export default async function AboutPage() {
         <AboutUs content={content} />
       </div>
 
-      
-
+      {/* Our Team */}
       <div
         id="team"
         className="scroll-mt-20 sm:scroll-mt-24"
       >
-        <OurTeam teamMembers={teamMembers} />
+        <OurTeam
+          teamMembers={teamMembers}
+        />
       </div>
+
+      {/* Partners */}
       <div
         id="partners"
         className="scroll-mt-20 sm:scroll-mt-24"
       >
-        <Partners partners={partners} />
+        <Partners
+          partners={partners}
+        />
       </div>
     </main>
   );
