@@ -25,7 +25,7 @@ type YouTubeVideo = {
   duration: string | null;
 };
 
-const VIDEOS_TO_SHOW = 3;
+const VIDEOS_TO_SHOW = 9;
 
 export default function YouTubeVideosGrid() {
   const [videos, setVideos] =
@@ -38,8 +38,8 @@ export default function YouTubeVideosGrid() {
     useState<string | null>(null);
 
   const [
-    hoveredVideoId,
-    setHoveredVideoId,
+    expandedVideoId,
+    setExpandedVideoId,
   ] = useState<string | null>(null);
 
   useEffect(() => {
@@ -192,98 +192,120 @@ export default function YouTubeVideosGrid() {
   }
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {videos.map(
         (video, index) => {
-          const isHovered =
-            hoveredVideoId ===
+          const isExpanded =
+            expandedVideoId ===
             video.id;
+
+          function toggle() {
+            setExpandedVideoId(
+              (current) =>
+                current === video.id
+                  ? null
+                  : video.id
+            );
+          }
 
           return (
             <motion.article
               key={video.id}
               initial={{
                 opacity: 0,
-                y: 24,
+                y: 20,
               }}
-              animate={{
+              whileInView={{
                 opacity: 1,
-                y: isHovered
-                  ? -7
-                  : 0,
+                y: 0,
+              }}
+              viewport={{
+                once: true,
+                margin: '-60px',
               }}
               transition={{
                 delay:
-                  index * 0.07,
+                  Math.min(
+                    index,
+                    8
+                  ) * 0.05,
                 duration: 0.35,
               }}
-              onMouseEnter={() =>
-                setHoveredVideoId(
-                  video.id
-                )
-              }
-              onMouseLeave={() =>
-                setHoveredVideoId(
-                  null
-                )
-              }
-              className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md transition-shadow hover:shadow-xl dark:border-gray-800 dark:bg-gray-950"
+              className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-[transform,border-color,box-shadow] duration-300 motion-safe:hover:-translate-y-1 hover:border-red-300 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900"
             >
-              <a
-                href={`https://www.youtube.com/watch?v=${video.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              >
-                <div className="relative aspect-video overflow-hidden bg-gray-200 dark:bg-gray-800">
-                  {video.thumbnail ? (
-                    <motion.img
-                      src={
-                        video.thumbnail
-                      }
-                      alt={
-                        video.title ||
-                        'YouTube video thumbnail'
-                      }
-                      animate={{
-                        scale:
-                          isHovered
-                            ? 1.07
-                            : 1,
-                      }}
-                      transition={{
-                        duration: 0.45,
-                      }}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center">
-                      <Play className="h-12 w-12 text-gray-400" />
+              <div className="relative aspect-video overflow-hidden bg-gray-950">
+                {isExpanded ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${video.id}?autoplay=1`}
+                    title={
+                      video.title ||
+                      'YouTube video'
+                    }
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="h-full w-full"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={toggle}
+                    aria-label={`Play ${video.title || 'video'}`}
+                    className="absolute inset-0 h-full w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  >
+                    {video.thumbnail ? (
+                      <img
+                        src={
+                          video.thumbnail
+                        }
+                        alt=""
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <Play className="h-10 w-10 text-gray-400" />
+                      </div>
+                    )}
+
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/15 transition-colors group-hover:bg-black/40">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-white shadow-lg transition-transform group-hover:scale-110">
+                        <Play className="ml-0.5 h-5 w-5 fill-current" />
+                      </span>
                     </div>
-                  )}
 
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors group-hover:bg-black/45">
-                    <span className="flex h-14 w-14 items-center justify-center rounded-full bg-red-600 text-white shadow-xl transition-transform group-hover:scale-110">
-                      <Play className="ml-1 h-7 w-7 fill-current" />
-                    </span>
-                  </div>
+                    {video.duration && (
+                      <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded bg-black/80 px-1.5 py-0.5 text-[11px] text-white">
+                        <Clock className="h-3 w-3" />
 
-                  {video.duration && (
-                    <span className="caption absolute bottom-2 right-2 flex items-center gap-1 rounded bg-black/80 px-2 py-1 text-white">
-                      <Clock className="h-3 w-3" />
+                        {video.duration}
+                      </span>
+                    )}
+                  </button>
+                )}
+              </div>
 
-                      {video.duration}
-                    </span>
-                  )}
-                </div>
-
-                <div className="p-4">
-                  <h3 className="body line-clamp-2 font-semibold text-site-primary transition-colors group-hover:text-red-600 dark:group-hover:text-red-400">
+              <div className="flex flex-1 flex-col gap-2 p-4">
+                <button
+                  type="button"
+                  onClick={toggle}
+                  aria-expanded={
+                    isExpanded
+                  }
+                  className="text-left"
+                >
+                  <h3
+                    className={`font-semibold leading-6 text-gray-900 transition-[font-size] duration-300 dark:text-white ${
+                      isExpanded
+                        ? 'text-sm'
+                        : 'line-clamp-2 text-sm group-hover:text-base'
+                    }`}
+                  >
                     {video.title ||
                       'Untitled Video'}
                   </h3>
+                </button>
 
-                  <div className="caption mt-3 flex flex-wrap items-center gap-3 text-site-muted">
+                <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2 text-xs text-gray-400 dark:text-gray-500">
+                  <span className="flex items-center gap-2">
                     {video.viewCount !==
                       null &&
                       Number.isFinite(
@@ -306,20 +328,32 @@ export default function YouTubeVideosGrid() {
                             month:
                               'short',
                             day: 'numeric',
-                            year: 'numeric',
                           }
                         )}
                       </span>
                     )}
-                  </div>
+                  </span>
 
-                  <span className="caption mt-4 inline-flex items-center gap-2 font-semibold text-red-600 dark:text-red-400">
-                    Watch video
+                  {!isExpanded && (
+                    <span className="inline-flex items-center gap-1 font-semibold uppercase tracking-[0.06em] text-red-600 dark:text-red-400">
+                      Watch
+                    </span>
+                  )}
+                </div>
+
+                {isExpanded && (
+                  <a
+                    href={`https://www.youtube.com/watch?v=${video.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                  >
+                    Open on YouTube
 
                     <ExternalLink className="h-3.5 w-3.5" />
-                  </span>
-                </div>
-              </a>
+                  </a>
+                )}
+              </div>
             </motion.article>
           );
         }

@@ -16,12 +16,11 @@ import {
   Youtube,
 } from 'lucide-react';
 
-import FacebookPostsCard from '@/components/shared/facebookPostsCard/facebookPostsCard';
-
 import {
   socialLinks,
 } from '../data';
 
+import FacebookPostsGrid from './FacebookPostsGrid';
 import YouTubeVideosGrid from './YouTubeVideosGrid';
 
 export default function SocialFeeds() {
@@ -78,7 +77,7 @@ export default function SocialFeeds() {
             delay={0.15}
             isInView={isInView}
           >
-            <FacebookPostsCard />
+            <FacebookPostsGrid />
           </SocialFeedBlock>
 
           <div
@@ -197,9 +196,6 @@ function SocialFeedBlock({
           button:
             'bg-blue-600 hover:bg-blue-700',
 
-          border:
-            'from-blue-500 to-cyan-500',
-
           title:
             'group-hover:text-blue-600 dark:group-hover:text-blue-400',
         }
@@ -209,9 +205,6 @@ function SocialFeedBlock({
 
           button:
             'bg-red-600 hover:bg-red-700',
-
-          border:
-            'from-red-500 to-orange-500',
 
           title:
             'group-hover:text-red-600 dark:group-hover:text-red-400',
@@ -270,13 +263,7 @@ function SocialFeedBlock({
         </a>
       </div>
 
-      <div
-        className={`relative rounded-3xl bg-gradient-to-r p-px shadow-lg ${styles.border}`}
-      >
-        <div className="rounded-[calc(1.5rem-1px)] bg-white p-4 dark:bg-gray-900 sm:p-6">
-          {children}
-        </div>
-      </div>
+      {children}
     </motion.article>
   );
 }

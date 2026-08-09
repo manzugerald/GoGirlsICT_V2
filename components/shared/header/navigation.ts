@@ -19,6 +19,7 @@ import {
   Target,
   Award,
   Mail,
+  HandCoins,
 } from 'lucide-react';
 
 export type NavigationChild = {
@@ -120,7 +121,7 @@ export const navigationItems: NavigationItem[] = [
     children: [
       {
         label: 'Reports',
-        href: '/resources?type=reports',
+        href: '/reports',
         description:
           'Annual reports, program reports, and impact documents.',
         icon: FileText,
@@ -184,21 +185,28 @@ export const navigationItems: NavigationItem[] = [
     children: [
       {
         label: 'Events',
-        href: '/events',
+        href: '/get-involved#events',
         description:
           'Upcoming workshops, bootcamps, trainings, and activities.',
         icon: CalendarDays,
       },
       {
         label: 'Volunteer',
-        href: '/get-involved/volunteer',
+        href: '/get-involved#volunteer',
         description:
           'Support our mission with your time and skills.',
         icon: Users,
       },
       {
+        label: 'Donate',
+        href: '/get-involved#donate',
+        description:
+          'Support our mission with a financial contribution.',
+        icon: HandCoins,
+      },
+      {
         label: 'Contact',
-        href: '/contact',
+        href: '/get-involved#contact',
         description:
           'Reach out to the GoGirls ICT team.',
         icon: Mail,
@@ -209,5 +217,5 @@ export const navigationItems: NavigationItem[] = [
 
 export const donateLink = {
   label: 'Donate',
-  href: '/donate',
+  href: '/get-involved#donate',
 };
