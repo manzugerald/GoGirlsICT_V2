@@ -8,34 +8,31 @@ export async function getProgramsPageData() {
     orderBy: {
       createdAt: 'desc',
     },
-    include: {
-      createdBy: {
-        select: {
-          username: true,
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      images: true,
+      projectStatus: true,
+      createdAt: true,
+
+      // Only counts are needed on the list page.
+      reports: {
+        where: {
+          publishStatus: 'published',
         },
-      },
-      approvedBy: {
         select: {
-          username: true,
-        },
-      },
-      updatedBy: {
-        select: {
-          username: true,
+          id: true,
         },
       },
 
-      // One optional report per project.
-      reports: true,
-
-      // Only public/published events are used in public statistics.
       events: {
         where: {
           publishStatus: 'published',
           deletedAt: null,
         },
-        orderBy: {
-          eventStartDate: 'desc',
+        select: {
+          id: true,
         },
       },
     },
@@ -59,21 +56,12 @@ export async function getProgramsPageData() {
   );
 
   const totalReports = programs.reduce(
-    (total, program) => total + (program.reports ? 1 : 0),
+    (total, program) => total + program.reports.length,
     0
   );
 
-  // Send only the fields needed by the client Chart.js component.
-  const analyticsPrograms = programs.map((program) => ({
-    id: program.id,
-    createdAt: program.createdAt.toISOString(),
-    projectStatus: program.projectStatus,
-  }));
-
   return {
     programs,
-    analyticsPrograms,
-    featuredProgram: programs[0] ?? null,
 
     stats: {
       total: programs.length,
@@ -106,25 +94,31 @@ export async function getProgramBySlugOrId(slugOrId: string) {
           : []),
       ],
     },
-    include: {
-      createdBy: {
-        select: {
-          username: true,
-        },
-      },
-      approvedBy: {
-        select: {
-          username: true,
-        },
-      },
-      updatedBy: {
-        select: {
-          username: true,
-        },
-      },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      content: true,
+      images: true,
+      projectStatus: true,
+      createdAt: true,
 
-      // Singular optional report.
-      reports: true,
+      // A project can have any number of published reports.
+      reports: {
+        where: {
+          publishStatus: 'published',
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          images: true,
+          createdAt: true,
+        },
+      },
 
       events: {
         where: {
@@ -133,6 +127,13 @@ export async function getProgramBySlugOrId(slugOrId: string) {
         },
         orderBy: {
           eventStartDate: 'asc',
+        },
+        select: {
+          id: true,
+          eventTitle: true,
+          slug: true,
+          eventBanner: true,
+          eventStartDate: true,
         },
       },
     },
@@ -151,14 +152,13 @@ export async function getRelatedPrograms(currentProgramId: number) {
       createdAt: 'desc',
     },
     take: 3,
-    include: {
-      reports: true,
-      events: {
-        where: {
-          publishStatus: 'published',
-          deletedAt: null,
-        },
-      },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      images: true,
+      projectStatus: true,
+      createdAt: true,
     },
   });
 }

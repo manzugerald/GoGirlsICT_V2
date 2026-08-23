@@ -1,3 +1,8 @@
+import {
+  Calendar,
+  FileText,
+} from 'lucide-react';
+
 import ContentCard from '@/app/(root)/components/shared/cards/ContentCard';
 import StatusBadge from '@/app/(root)/components/shared/badges/StatusBadge';
 
@@ -45,6 +50,15 @@ export default function ProgramCard({
 }: {
   program: any;
 }) {
+  const reportCount: number =
+    program.reports?.length ?? 0;
+
+  const eventCount: number =
+    program.events?.length ?? 0;
+
+  const hasRelated =
+    reportCount > 0 || eventCount > 0;
+
   return (
     <ContentCard
       title={truncateTitle(program.title)}
@@ -59,6 +73,31 @@ export default function ProgramCard({
         <StatusBadge
           status={program.projectStatus}
         />
+      }
+      extra={
+        hasRelated ? (
+          <>
+            {reportCount > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <FileText className="h-3 w-3 shrink-0" />
+                {reportCount}{' '}
+                {reportCount === 1
+                  ? 'Report'
+                  : 'Reports'}
+              </span>
+            )}
+
+            {eventCount > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <Calendar className="h-3 w-3 shrink-0" />
+                {eventCount}{' '}
+                {eventCount === 1
+                  ? 'Event'
+                  : 'Events'}
+              </span>
+            )}
+          </>
+        ) : undefined
       }
     />
   );

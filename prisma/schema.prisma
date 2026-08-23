@@ -50,7 +50,7 @@ model Project {
   approvedBy    User?         @relation("ProjectApprovedBy", fields: [approvedById], references: [id])
   createdBy     User          @relation("ProjectCreatedBy", fields: [createdById], references: [id])
   updatedBy     User?         @relation("ProjectUpdatedBy", fields: [updatedById], references: [id])
-  reports       Report?
+  reports       Report[]
   events        Event[]
 }
 
@@ -68,12 +68,33 @@ model Report {
   createdById   String
   updatedById   String?
   approvedById  String?
-  projectId     Int? @unique // one-to-one with Project
+  projectId     Int? // many-to-one with Project
   approvedBy    User?         @relation("ReportApprovedBy", fields: [approvedById], references: [id])
   createdBy     User          @relation("ReportCreatedBy", fields: [createdById], references: [id])
   project       Project?      @relation(fields: [projectId], references: [id])
   updatedBy     User?         @relation("ReportUpdatedBy", fields: [updatedById], references: [id])
   events        Event[]
+}
+
+model Podcast {
+  id            Int           @id @default(autoincrement())
+  title         String
+  slug          String        @unique
+  description   Json // Tiptap JSON doc (edited/viewed via components/editor/*)
+  image         String? // illustration / cover artwork
+  audioUrl      String // mp3 path under public/assets/audio/podcasts
+  waveform      Float[]       @default([]) // precomputed amplitude peaks (0..1) for the waveform UI
+  publishedAt   DateTime      @default(now())
+  publishStatus PublishStatus @default(draft)
+  accessCount   Int           @default(0) // play count
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  createdById   String
+  updatedById   String?
+  approvedById  String?
+  approvedBy    User?         @relation("PodcastApprovedBy", fields: [approvedById], references: [id])
+  createdBy     User          @relation("PodcastCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User?         @relation("PodcastUpdatedBy", fields: [updatedById], references: [id])
 }
 
 
@@ -190,6 +211,11 @@ model User {
   approvedReports  Report[]  @relation("ReportApprovedBy")
   createdReports   Report[]  @relation("ReportCreatedBy")
   updatedReports   Report[]  @relation("ReportUpdatedBy")
+
+  // Podcasts
+  approvedPodcasts Podcast[] @relation("PodcastApprovedBy")
+  createdPodcasts  Podcast[] @relation("PodcastCreatedBy")
+  updatedPodcasts  Podcast[] @relation("PodcastUpdatedBy")
 
   // Events
   createdEvents Event[]        @relation("EventCreatedBy")

@@ -92,7 +92,7 @@ export default async function ProgramDetailsPage({
 
   const coverImage = images[0] ?? null;
 
-  const reportCount = program.reports ? 1 : 0;
+  const reportCount = program.reports.length;
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -196,6 +196,54 @@ export default async function ProgramDetailsPage({
           )}
         </article>
       </PageSection>
+
+      {/* Related reports */}
+      {program.reports.length > 0 && (
+        <GridSection
+          title="Related Reports"
+          description="Published reports connected to this program."
+          columns="3"
+          className="pb-5 pt-5"
+        >
+          {program.reports.map((report) => (
+            <ContentCard
+              key={report.id}
+              title={report.title}
+              href={`/reports/${report.slug}`}
+              image={report.images?.[0]}
+              imageAlt={report.title}
+              meta={formatDate(
+                report.createdAt
+              )}
+              ctaLabel="View Report"
+            />
+          ))}
+        </GridSection>
+      )}
+
+      {/* Related events */}
+      {program.events.length > 0 && (
+        <GridSection
+          title="Related Events"
+          description="Events tied to this program."
+          columns="3"
+          className="pb-5 pt-5"
+        >
+          {program.events.map((event) => (
+            <ContentCard
+              key={event.id}
+              title={event.eventTitle}
+              href={`/events/${event.slug}`}
+              image={event.eventBanner}
+              imageAlt={event.eventTitle}
+              meta={formatDate(
+                event.eventStartDate
+              )}
+              ctaLabel="View Event"
+            />
+          ))}
+        </GridSection>
+      )}
 
       {/* Related programs */}
       {relatedPrograms.length > 0 && (

@@ -2,30 +2,44 @@ import type { Metadata } from 'next';
 
 import PageHero from '@/app/(root)/components/shared/page/PageHero';
 
+import PodcastsSection from './components/PodcastsSection';
 import ReportsGrid from './components/ReportsGrid';
 
-import { getReportsPageData } from './data';
+import {
+  getPodcasts,
+  getReportsPageData,
+} from './data';
 
 export const metadata: Metadata = {
   title:
-    'Reports | GoGirls ICT Initiative',
+    'Resources | GoGirls ICT Initiative',
 
   description:
-    'Browse published reports, program outcomes, and impact documentation from GoGirls ICT Initiative.',
+    'Listen to our podcasts and browse published reports, program outcomes, and impact documentation from GoGirls ICT Initiative.',
 };
 
 export default async function ReportsPage() {
-  const { reports } =
-    await getReportsPageData();
+  const [{ reports }, podcasts] =
+    await Promise.all([
+      getReportsPageData(),
+      getPodcasts(),
+    ]);
 
   return (
     <main className="min-h-screen bg-white dark:bg-gray-950">
       <PageHero
-        title="Reports & Publications"
-        description="Explore our published reports, program outcomes, and impact documentation."
+        title="Resources"
+        description="Listen to our podcasts and explore our published reports, program outcomes, and impact documentation."
       />
 
-      <ReportsGrid reports={reports} />
+      <PodcastsSection podcasts={podcasts} />
+
+      <div
+        id="reports"
+        className="scroll-mt-20 sm:scroll-mt-24"
+      >
+        <ReportsGrid reports={reports} />
+      </div>
     </main>
   );
 }

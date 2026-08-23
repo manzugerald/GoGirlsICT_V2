@@ -25,6 +25,7 @@ import {
   FaLightbulb,
   FaFacebook,
   FaYoutube,
+  FaPodcast,
   FaUserCircle,
   FaCog,
   FaSignOutAlt,
@@ -40,6 +41,7 @@ import ChartSection from './chartSection'; // Chart / Home section
 import ProjectsSection from './components/sections/ProjectsSection';
 import EventsSection from './components/sections/EventsSection';
 import ReportsSection from './components/sections/ReportsSection';
+import PodcastsSection from './components/sections/PodcastsSection';
 import InstitutionsSection from './components/sections/InstitutionsSection';
 import FAQsSection from './components/sections/FAQsSection';
 import FacebookSection from './components/sections/FacebookSection';
@@ -58,6 +60,7 @@ import CreateResponseForm from './createResponseForm';
 import CreateUserForm from './createUserForm';
 import CreateProjectForm from './createProjectForm';
 import CreateReportForm from './createReportForm';
+import CreatePodcastForm from './createPodcastForm';
 import CreateEventForm from './createEventForm';
 import CreateInstitutionForm from './createInstitutionForm';
 import CreateFAQForm from './createFAQForm';
@@ -149,6 +152,7 @@ const sections = [
   'team',
   'events',
   'reports',
+  'podcasts',
   'institutions',
   'faqs',
   'beneficiaries',
@@ -170,6 +174,7 @@ const sectionFeatures: Record<Section, { apiRoute?: string }> = {
   team: { apiRoute: '/api/teams' },
   events: { apiRoute: '/api/events' },
   reports: { apiRoute: '/api/reports' },
+  podcasts: { apiRoute: '/api/podcasts' },
   institutions: { apiRoute: '/api/institutions' },
   faqs: { apiRoute: '/api/faq' },
   beneficiaries: { apiRoute: '/api/beneficiaries' },
@@ -190,6 +195,7 @@ const sectionIcons: Record<Section, React.ReactNode> = {
   team: <FaUserCircle className="text-teal-600 dark:text-teal-400" />,
   events: <FaCalendarAlt className="text-green-600 dark:text-green-400" />,
   reports: <FaFilePdf className="text-red-600 dark:text-red-400" />,
+  podcasts: <FaPodcast className="text-purple-600 dark:text-purple-400" />,
   institutions: <FaUniversity className="text-blue-600 dark:text-blue-400" />,
   faqs: <FaLightbulb className="text-yellow-600 dark:text-yellow-400" />,
   beneficiaries: <FaUsers className="text-indigo-600 dark:text-indigo-400" />,
@@ -210,6 +216,7 @@ const sectionLabels: Record<Section, string> = {
   team: 'Team',
   events: 'Events',
   reports: 'Reports',
+  podcasts: 'Podcasts',
   institutions: 'Institutions',
   faqs: 'FAQs',
   beneficiaries: 'Beneficiaries',
@@ -230,6 +237,7 @@ const singularLabels: Record<Section, string> = {
   team: 'Team Member',
   events: 'Event',
   reports: 'Report',
+  podcasts: 'Podcast',
   institutions: 'Institution',
   faqs: 'FAQ',
   beneficiaries: 'Beneficiary',
@@ -620,6 +628,14 @@ export default function AdminDashboardPage() {
               onCancel={handleCancelEdit}
             />
           );
+        case 'podcasts':
+          return (
+            <CreatePodcastForm
+              initialValues={editRecord}
+              onSuccess={handleSaveEdit}
+              onCancel={handleCancelEdit}
+            />
+          );
         case 'events':
           return (
             <CreateEventForm
@@ -762,6 +778,20 @@ export default function AdminDashboardPage() {
             handleEdit={handleEdit}
             handleDelete={handleDelete}
             currentUserRole={(session?.user as any)?.role ?? ''}
+            TableActions={() => null}
+            deleteId={deleteId}
+            deleteLoading={deleteLoading}
+            onToggleControls={(hide: boolean) => setHideControls(hide)}
+          />
+        );
+      case 'podcasts':
+        return (
+          <PodcastsSection
+            paginatedData={paginatedData}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            handleEdit={handleEdit}
+            handleDelete={handleDelete}
             TableActions={() => null}
             deleteId={deleteId}
             deleteLoading={deleteLoading}
@@ -978,6 +1008,12 @@ export default function AdminDashboardPage() {
                   subtitle: 'Manage reports',
                   icon: sectionIcons.reports,
                 },
+                {
+                  key: 'podcasts',
+                  label: 'Podcasts',
+                  subtitle: 'Manage podcasts',
+                  icon: sectionIcons.podcasts,
+                },
               ]}
               activeKey={activeSection}
               onNavigate={(k) => handleMenuClick(k as Section)}
@@ -997,6 +1033,7 @@ export default function AdminDashboardPage() {
               section === 'projects' ||
               section === 'events' ||
               section === 'reports' ||
+              section === 'podcasts' ||
               section === 'beneficiaries' ||
               section === 'institutions' ||
               section === 'team' ||

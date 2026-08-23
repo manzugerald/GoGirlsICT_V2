@@ -1,41 +1,9 @@
-import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
-import ReportsList from './components/ReportsList';
-
-import {
-  getResourcesPageData,
-  normalizeResourceType,
-} from './data';
-
-export const metadata: Metadata = {
-  title:
-    'Resources | GoGirls ICT Initiative',
-  description:
-    'Browse reports and resources published by GoGirls ICT Initiative.',
-};
-
-type ResourcesPageProps = {
-  searchParams: Promise<{
-    type?: string | string[];
-  }>;
-};
-
-export default async function ResourcesPage({
-  searchParams,
-}: ResourcesPageProps) {
-  const params = await searchParams;
-
-  const activeType =
-    normalizeResourceType(params.type);
-
-  const { reports } =
-    await getResourcesPageData();
-
-  return (
-    <main className="min-h-screen bg-white dark:bg-gray-950">
-      {activeType === 'reports' && (
-        <ReportsList reports={reports} />
-      )}
-    </main>
-  );
+/*
+ * The Resources hub now lives at /reports (podcasts + reports).
+ * This route is kept only to redirect any old bookmarks/links.
+ */
+export default function ResourcesPage() {
+  redirect('/reports');
 }

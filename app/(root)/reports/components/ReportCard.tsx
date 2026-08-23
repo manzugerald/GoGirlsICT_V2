@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   Download,
@@ -146,9 +147,13 @@ export default function ReportCard({
     });
   }
 
+  const dateLabel = formatDate(
+    report.createdAt
+  );
+
   const meta = report.project?.title
-    ? `${report.project.title} · ${formatDate(report.createdAt)}`
-    : formatDate(report.createdAt);
+    ? `${report.project.title} · ${dateLabel}`
+    : dateLabel;
 
   return (
     <Dialog>
@@ -194,11 +199,29 @@ export default function ReportCard({
         {/* Title and meta */}
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-serif text-[length:calc(1rem*var(--font-scale))] font-semibold leading-tight text-gray-900 dark:text-white">
-            {report.title}
+            <Link
+              href={`/reports/${report.slug}`}
+              className="hover:text-[#9f004d] dark:hover:text-pink-400"
+            >
+              {report.title}
+            </Link>
           </h3>
 
           <p className="truncate text-[length:calc(0.75rem*var(--font-scale))] text-gray-500 dark:text-gray-400">
-            {meta}
+            {report.project ? (
+              <>
+                <Link
+                  href={`/programs/${report.project.slug}`}
+                  className="font-medium hover:text-[#9f004d] dark:hover:text-pink-400"
+                >
+                  {report.project.title}
+                </Link>
+                {' · '}
+                {dateLabel}
+              </>
+            ) : (
+              dateLabel
+            )}
           </p>
         </div>
 

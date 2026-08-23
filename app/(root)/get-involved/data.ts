@@ -24,6 +24,14 @@ export async function getGetInvolvedPageData() {
         eventStatus: true,
         eventAttendance: true,
         maxAttendees: true,
+
+        project: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+          },
+        },
       },
     });
 

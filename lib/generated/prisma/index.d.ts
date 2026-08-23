@@ -37,6 +37,11 @@ export type Project = $Result.DefaultSelection<Prisma.$ProjectPayload>
  */
 export type Report = $Result.DefaultSelection<Prisma.$ReportPayload>
 /**
+ * Model Podcast
+ * 
+ */
+export type Podcast = $Result.DefaultSelection<Prisma.$PodcastPayload>
+/**
  * Model Message
  * 
  */
@@ -466,6 +471,16 @@ export class PrismaClient<
     * ```
     */
   get report(): Prisma.ReportDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.podcast`: Exposes CRUD operations for the **Podcast** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Podcasts
+    * const podcasts = await prisma.podcast.findMany()
+    * ```
+    */
+  get podcast(): Prisma.PodcastDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.message`: Exposes CRUD operations for the **Message** model.
@@ -1073,6 +1088,7 @@ export namespace Prisma {
     HomePage: 'HomePage',
     Project: 'Project',
     Report: 'Report',
+    Podcast: 'Podcast',
     Message: 'Message',
     User: 'User',
     PasswordHistory: 'PasswordHistory',
@@ -1105,7 +1121,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "homePage" | "project" | "report" | "message" | "user" | "passwordHistory" | "passwordChangeLog" | "failedLoginAttempt" | "session" | "event" | "youtube" | "youTubeCacheMeta" | "institution" | "location" | "beneficiary" | "response" | "fAQ" | "facebookPost" | "facebookCacheMeta" | "team"
+      modelProps: "homePage" | "project" | "report" | "podcast" | "message" | "user" | "passwordHistory" | "passwordChangeLog" | "failedLoginAttempt" | "session" | "event" | "youtube" | "youTubeCacheMeta" | "institution" | "location" | "beneficiary" | "response" | "fAQ" | "facebookPost" | "facebookCacheMeta" | "team"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1328,6 +1344,80 @@ export namespace Prisma {
           count: {
             args: Prisma.ReportCountArgs<ExtArgs>
             result: $Utils.Optional<ReportCountAggregateOutputType> | number
+          }
+        }
+      }
+      Podcast: {
+        payload: Prisma.$PodcastPayload<ExtArgs>
+        fields: Prisma.PodcastFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PodcastFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodcastPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PodcastFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodcastPayload>
+          }
+          findFirst: {
+            args: Prisma.PodcastFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodcastPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PodcastFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodcastPayload>
+          }
+          findMany: {
+            args: Prisma.PodcastFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodcastPayload>[]
+          }
+          create: {
+            args: Prisma.PodcastCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodcastPayload>
+          }
+          createMany: {
+            args: Prisma.PodcastCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PodcastCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodcastPayload>[]
+          }
+          delete: {
+            args: Prisma.PodcastDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodcastPayload>
+          }
+          update: {
+            args: Prisma.PodcastUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodcastPayload>
+          }
+          deleteMany: {
+            args: Prisma.PodcastDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PodcastUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PodcastUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodcastPayload>[]
+          }
+          upsert: {
+            args: Prisma.PodcastUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodcastPayload>
+          }
+          aggregate: {
+            args: Prisma.PodcastAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePodcast>
+          }
+          groupBy: {
+            args: Prisma.PodcastGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PodcastGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PodcastCountArgs<ExtArgs>
+            result: $Utils.Optional<PodcastCountAggregateOutputType> | number
           }
         }
       }
@@ -2700,6 +2790,7 @@ export namespace Prisma {
     homePage?: HomePageOmit
     project?: ProjectOmit
     report?: ReportOmit
+    podcast?: PodcastOmit
     message?: MessageOmit
     user?: UserOmit
     passwordHistory?: PasswordHistoryOmit
@@ -2797,10 +2888,12 @@ export namespace Prisma {
    */
 
   export type ProjectCountOutputType = {
+    reports: number
     events: number
   }
 
   export type ProjectCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    reports?: boolean | ProjectCountOutputTypeCountReportsArgs
     events?: boolean | ProjectCountOutputTypeCountEventsArgs
   }
 
@@ -2813,6 +2906,13 @@ export namespace Prisma {
      * Select specific fields to fetch from the ProjectCountOutputType
      */
     select?: ProjectCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ProjectCountOutputType without action
+   */
+  export type ProjectCountOutputTypeCountReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReportWhereInput
   }
 
   /**
@@ -2904,6 +3004,9 @@ export namespace Prisma {
     approvedReports: number
     createdReports: number
     updatedReports: number
+    approvedPodcasts: number
+    createdPodcasts: number
+    updatedPodcasts: number
     createdEvents: number
     updatedEvents: number
     createdBeneficiaries: number
@@ -2934,6 +3037,9 @@ export namespace Prisma {
     approvedReports?: boolean | UserCountOutputTypeCountApprovedReportsArgs
     createdReports?: boolean | UserCountOutputTypeCountCreatedReportsArgs
     updatedReports?: boolean | UserCountOutputTypeCountUpdatedReportsArgs
+    approvedPodcasts?: boolean | UserCountOutputTypeCountApprovedPodcastsArgs
+    createdPodcasts?: boolean | UserCountOutputTypeCountCreatedPodcastsArgs
+    updatedPodcasts?: boolean | UserCountOutputTypeCountUpdatedPodcastsArgs
     createdEvents?: boolean | UserCountOutputTypeCountCreatedEventsArgs
     updatedEvents?: boolean | UserCountOutputTypeCountUpdatedEventsArgs
     createdBeneficiaries?: boolean | UserCountOutputTypeCountCreatedBeneficiariesArgs
@@ -3056,6 +3162,27 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountUpdatedReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ReportWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountApprovedPodcastsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PodcastWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCreatedPodcastsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PodcastWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountUpdatedPodcastsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PodcastWhereInput
   }
 
   /**
@@ -4685,7 +4812,7 @@ export namespace Prisma {
       approvedBy: Prisma.$UserPayload<ExtArgs> | null
       createdBy: Prisma.$UserPayload<ExtArgs>
       updatedBy: Prisma.$UserPayload<ExtArgs> | null
-      reports: Prisma.$ReportPayload<ExtArgs> | null
+      reports: Prisma.$ReportPayload<ExtArgs>[]
       events: Prisma.$EventPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -5098,7 +5225,7 @@ export namespace Prisma {
     approvedBy<T extends Project$approvedByArgs<ExtArgs> = {}>(args?: Subset<T, Project$approvedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     createdBy<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     updatedBy<T extends Project$updatedByArgs<ExtArgs> = {}>(args?: Subset<T, Project$updatedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    reports<T extends Project$reportsArgs<ExtArgs> = {}>(args?: Subset<T, Project$reportsArgs<ExtArgs>>): Prisma__ReportClient<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    reports<T extends Project$reportsArgs<ExtArgs> = {}>(args?: Subset<T, Project$reportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     events<T extends Project$eventsArgs<ExtArgs> = {}>(args?: Subset<T, Project$eventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -5591,6 +5718,11 @@ export namespace Prisma {
      */
     include?: ReportInclude<ExtArgs> | null
     where?: ReportWhereInput
+    orderBy?: ReportOrderByWithRelationInput | ReportOrderByWithRelationInput[]
+    cursor?: ReportWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReportScalarFieldEnum | ReportScalarFieldEnum[]
   }
 
   /**
@@ -6957,6 +7089,1282 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ReportInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Podcast
+   */
+
+  export type AggregatePodcast = {
+    _count: PodcastCountAggregateOutputType | null
+    _avg: PodcastAvgAggregateOutputType | null
+    _sum: PodcastSumAggregateOutputType | null
+    _min: PodcastMinAggregateOutputType | null
+    _max: PodcastMaxAggregateOutputType | null
+  }
+
+  export type PodcastAvgAggregateOutputType = {
+    id: number | null
+    waveform: number | null
+    accessCount: number | null
+  }
+
+  export type PodcastSumAggregateOutputType = {
+    id: number | null
+    waveform: number[]
+    accessCount: number | null
+  }
+
+  export type PodcastMinAggregateOutputType = {
+    id: number | null
+    title: string | null
+    slug: string | null
+    image: string | null
+    audioUrl: string | null
+    publishedAt: Date | null
+    publishStatus: $Enums.PublishStatus | null
+    accessCount: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    createdById: string | null
+    updatedById: string | null
+    approvedById: string | null
+  }
+
+  export type PodcastMaxAggregateOutputType = {
+    id: number | null
+    title: string | null
+    slug: string | null
+    image: string | null
+    audioUrl: string | null
+    publishedAt: Date | null
+    publishStatus: $Enums.PublishStatus | null
+    accessCount: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    createdById: string | null
+    updatedById: string | null
+    approvedById: string | null
+  }
+
+  export type PodcastCountAggregateOutputType = {
+    id: number
+    title: number
+    slug: number
+    description: number
+    image: number
+    audioUrl: number
+    waveform: number
+    publishedAt: number
+    publishStatus: number
+    accessCount: number
+    createdAt: number
+    updatedAt: number
+    createdById: number
+    updatedById: number
+    approvedById: number
+    _all: number
+  }
+
+
+  export type PodcastAvgAggregateInputType = {
+    id?: true
+    waveform?: true
+    accessCount?: true
+  }
+
+  export type PodcastSumAggregateInputType = {
+    id?: true
+    waveform?: true
+    accessCount?: true
+  }
+
+  export type PodcastMinAggregateInputType = {
+    id?: true
+    title?: true
+    slug?: true
+    image?: true
+    audioUrl?: true
+    publishedAt?: true
+    publishStatus?: true
+    accessCount?: true
+    createdAt?: true
+    updatedAt?: true
+    createdById?: true
+    updatedById?: true
+    approvedById?: true
+  }
+
+  export type PodcastMaxAggregateInputType = {
+    id?: true
+    title?: true
+    slug?: true
+    image?: true
+    audioUrl?: true
+    publishedAt?: true
+    publishStatus?: true
+    accessCount?: true
+    createdAt?: true
+    updatedAt?: true
+    createdById?: true
+    updatedById?: true
+    approvedById?: true
+  }
+
+  export type PodcastCountAggregateInputType = {
+    id?: true
+    title?: true
+    slug?: true
+    description?: true
+    image?: true
+    audioUrl?: true
+    waveform?: true
+    publishedAt?: true
+    publishStatus?: true
+    accessCount?: true
+    createdAt?: true
+    updatedAt?: true
+    createdById?: true
+    updatedById?: true
+    approvedById?: true
+    _all?: true
+  }
+
+  export type PodcastAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Podcast to aggregate.
+     */
+    where?: PodcastWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Podcasts to fetch.
+     */
+    orderBy?: PodcastOrderByWithRelationInput | PodcastOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PodcastWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Podcasts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Podcasts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Podcasts
+    **/
+    _count?: true | PodcastCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PodcastAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PodcastSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PodcastMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PodcastMaxAggregateInputType
+  }
+
+  export type GetPodcastAggregateType<T extends PodcastAggregateArgs> = {
+        [P in keyof T & keyof AggregatePodcast]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePodcast[P]>
+      : GetScalarType<T[P], AggregatePodcast[P]>
+  }
+
+
+
+
+  export type PodcastGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PodcastWhereInput
+    orderBy?: PodcastOrderByWithAggregationInput | PodcastOrderByWithAggregationInput[]
+    by: PodcastScalarFieldEnum[] | PodcastScalarFieldEnum
+    having?: PodcastScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PodcastCountAggregateInputType | true
+    _avg?: PodcastAvgAggregateInputType
+    _sum?: PodcastSumAggregateInputType
+    _min?: PodcastMinAggregateInputType
+    _max?: PodcastMaxAggregateInputType
+  }
+
+  export type PodcastGroupByOutputType = {
+    id: number
+    title: string
+    slug: string
+    description: JsonValue
+    image: string | null
+    audioUrl: string
+    waveform: number[]
+    publishedAt: Date
+    publishStatus: $Enums.PublishStatus
+    accessCount: number
+    createdAt: Date
+    updatedAt: Date
+    createdById: string
+    updatedById: string | null
+    approvedById: string | null
+    _count: PodcastCountAggregateOutputType | null
+    _avg: PodcastAvgAggregateOutputType | null
+    _sum: PodcastSumAggregateOutputType | null
+    _min: PodcastMinAggregateOutputType | null
+    _max: PodcastMaxAggregateOutputType | null
+  }
+
+  type GetPodcastGroupByPayload<T extends PodcastGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PodcastGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PodcastGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PodcastGroupByOutputType[P]>
+            : GetScalarType<T[P], PodcastGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PodcastSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    slug?: boolean
+    description?: boolean
+    image?: boolean
+    audioUrl?: boolean
+    waveform?: boolean
+    publishedAt?: boolean
+    publishStatus?: boolean
+    accessCount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    approvedById?: boolean
+    approvedBy?: boolean | Podcast$approvedByArgs<ExtArgs>
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    updatedBy?: boolean | Podcast$updatedByArgs<ExtArgs>
+  }, ExtArgs["result"]["podcast"]>
+
+  export type PodcastSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    slug?: boolean
+    description?: boolean
+    image?: boolean
+    audioUrl?: boolean
+    waveform?: boolean
+    publishedAt?: boolean
+    publishStatus?: boolean
+    accessCount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    approvedById?: boolean
+    approvedBy?: boolean | Podcast$approvedByArgs<ExtArgs>
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    updatedBy?: boolean | Podcast$updatedByArgs<ExtArgs>
+  }, ExtArgs["result"]["podcast"]>
+
+  export type PodcastSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    slug?: boolean
+    description?: boolean
+    image?: boolean
+    audioUrl?: boolean
+    waveform?: boolean
+    publishedAt?: boolean
+    publishStatus?: boolean
+    accessCount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    approvedById?: boolean
+    approvedBy?: boolean | Podcast$approvedByArgs<ExtArgs>
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    updatedBy?: boolean | Podcast$updatedByArgs<ExtArgs>
+  }, ExtArgs["result"]["podcast"]>
+
+  export type PodcastSelectScalar = {
+    id?: boolean
+    title?: boolean
+    slug?: boolean
+    description?: boolean
+    image?: boolean
+    audioUrl?: boolean
+    waveform?: boolean
+    publishedAt?: boolean
+    publishStatus?: boolean
+    accessCount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    createdById?: boolean
+    updatedById?: boolean
+    approvedById?: boolean
+  }
+
+  export type PodcastOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "slug" | "description" | "image" | "audioUrl" | "waveform" | "publishedAt" | "publishStatus" | "accessCount" | "createdAt" | "updatedAt" | "createdById" | "updatedById" | "approvedById", ExtArgs["result"]["podcast"]>
+  export type PodcastInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    approvedBy?: boolean | Podcast$approvedByArgs<ExtArgs>
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    updatedBy?: boolean | Podcast$updatedByArgs<ExtArgs>
+  }
+  export type PodcastIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    approvedBy?: boolean | Podcast$approvedByArgs<ExtArgs>
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    updatedBy?: boolean | Podcast$updatedByArgs<ExtArgs>
+  }
+  export type PodcastIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    approvedBy?: boolean | Podcast$approvedByArgs<ExtArgs>
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    updatedBy?: boolean | Podcast$updatedByArgs<ExtArgs>
+  }
+
+  export type $PodcastPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Podcast"
+    objects: {
+      approvedBy: Prisma.$UserPayload<ExtArgs> | null
+      createdBy: Prisma.$UserPayload<ExtArgs>
+      updatedBy: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      title: string
+      slug: string
+      description: Prisma.JsonValue
+      image: string | null
+      audioUrl: string
+      waveform: number[]
+      publishedAt: Date
+      publishStatus: $Enums.PublishStatus
+      accessCount: number
+      createdAt: Date
+      updatedAt: Date
+      createdById: string
+      updatedById: string | null
+      approvedById: string | null
+    }, ExtArgs["result"]["podcast"]>
+    composites: {}
+  }
+
+  type PodcastGetPayload<S extends boolean | null | undefined | PodcastDefaultArgs> = $Result.GetResult<Prisma.$PodcastPayload, S>
+
+  type PodcastCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PodcastFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PodcastCountAggregateInputType | true
+    }
+
+  export interface PodcastDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Podcast'], meta: { name: 'Podcast' } }
+    /**
+     * Find zero or one Podcast that matches the filter.
+     * @param {PodcastFindUniqueArgs} args - Arguments to find a Podcast
+     * @example
+     * // Get one Podcast
+     * const podcast = await prisma.podcast.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PodcastFindUniqueArgs>(args: SelectSubset<T, PodcastFindUniqueArgs<ExtArgs>>): Prisma__PodcastClient<$Result.GetResult<Prisma.$PodcastPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Podcast that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PodcastFindUniqueOrThrowArgs} args - Arguments to find a Podcast
+     * @example
+     * // Get one Podcast
+     * const podcast = await prisma.podcast.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PodcastFindUniqueOrThrowArgs>(args: SelectSubset<T, PodcastFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PodcastClient<$Result.GetResult<Prisma.$PodcastPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Podcast that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodcastFindFirstArgs} args - Arguments to find a Podcast
+     * @example
+     * // Get one Podcast
+     * const podcast = await prisma.podcast.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PodcastFindFirstArgs>(args?: SelectSubset<T, PodcastFindFirstArgs<ExtArgs>>): Prisma__PodcastClient<$Result.GetResult<Prisma.$PodcastPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Podcast that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodcastFindFirstOrThrowArgs} args - Arguments to find a Podcast
+     * @example
+     * // Get one Podcast
+     * const podcast = await prisma.podcast.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PodcastFindFirstOrThrowArgs>(args?: SelectSubset<T, PodcastFindFirstOrThrowArgs<ExtArgs>>): Prisma__PodcastClient<$Result.GetResult<Prisma.$PodcastPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Podcasts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodcastFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Podcasts
+     * const podcasts = await prisma.podcast.findMany()
+     * 
+     * // Get first 10 Podcasts
+     * const podcasts = await prisma.podcast.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const podcastWithIdOnly = await prisma.podcast.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PodcastFindManyArgs>(args?: SelectSubset<T, PodcastFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodcastPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Podcast.
+     * @param {PodcastCreateArgs} args - Arguments to create a Podcast.
+     * @example
+     * // Create one Podcast
+     * const Podcast = await prisma.podcast.create({
+     *   data: {
+     *     // ... data to create a Podcast
+     *   }
+     * })
+     * 
+     */
+    create<T extends PodcastCreateArgs>(args: SelectSubset<T, PodcastCreateArgs<ExtArgs>>): Prisma__PodcastClient<$Result.GetResult<Prisma.$PodcastPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Podcasts.
+     * @param {PodcastCreateManyArgs} args - Arguments to create many Podcasts.
+     * @example
+     * // Create many Podcasts
+     * const podcast = await prisma.podcast.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PodcastCreateManyArgs>(args?: SelectSubset<T, PodcastCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Podcasts and returns the data saved in the database.
+     * @param {PodcastCreateManyAndReturnArgs} args - Arguments to create many Podcasts.
+     * @example
+     * // Create many Podcasts
+     * const podcast = await prisma.podcast.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Podcasts and only return the `id`
+     * const podcastWithIdOnly = await prisma.podcast.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PodcastCreateManyAndReturnArgs>(args?: SelectSubset<T, PodcastCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodcastPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Podcast.
+     * @param {PodcastDeleteArgs} args - Arguments to delete one Podcast.
+     * @example
+     * // Delete one Podcast
+     * const Podcast = await prisma.podcast.delete({
+     *   where: {
+     *     // ... filter to delete one Podcast
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PodcastDeleteArgs>(args: SelectSubset<T, PodcastDeleteArgs<ExtArgs>>): Prisma__PodcastClient<$Result.GetResult<Prisma.$PodcastPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Podcast.
+     * @param {PodcastUpdateArgs} args - Arguments to update one Podcast.
+     * @example
+     * // Update one Podcast
+     * const podcast = await prisma.podcast.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PodcastUpdateArgs>(args: SelectSubset<T, PodcastUpdateArgs<ExtArgs>>): Prisma__PodcastClient<$Result.GetResult<Prisma.$PodcastPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Podcasts.
+     * @param {PodcastDeleteManyArgs} args - Arguments to filter Podcasts to delete.
+     * @example
+     * // Delete a few Podcasts
+     * const { count } = await prisma.podcast.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PodcastDeleteManyArgs>(args?: SelectSubset<T, PodcastDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Podcasts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodcastUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Podcasts
+     * const podcast = await prisma.podcast.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PodcastUpdateManyArgs>(args: SelectSubset<T, PodcastUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Podcasts and returns the data updated in the database.
+     * @param {PodcastUpdateManyAndReturnArgs} args - Arguments to update many Podcasts.
+     * @example
+     * // Update many Podcasts
+     * const podcast = await prisma.podcast.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Podcasts and only return the `id`
+     * const podcastWithIdOnly = await prisma.podcast.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PodcastUpdateManyAndReturnArgs>(args: SelectSubset<T, PodcastUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodcastPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Podcast.
+     * @param {PodcastUpsertArgs} args - Arguments to update or create a Podcast.
+     * @example
+     * // Update or create a Podcast
+     * const podcast = await prisma.podcast.upsert({
+     *   create: {
+     *     // ... data to create a Podcast
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Podcast we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PodcastUpsertArgs>(args: SelectSubset<T, PodcastUpsertArgs<ExtArgs>>): Prisma__PodcastClient<$Result.GetResult<Prisma.$PodcastPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Podcasts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodcastCountArgs} args - Arguments to filter Podcasts to count.
+     * @example
+     * // Count the number of Podcasts
+     * const count = await prisma.podcast.count({
+     *   where: {
+     *     // ... the filter for the Podcasts we want to count
+     *   }
+     * })
+    **/
+    count<T extends PodcastCountArgs>(
+      args?: Subset<T, PodcastCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PodcastCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Podcast.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodcastAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PodcastAggregateArgs>(args: Subset<T, PodcastAggregateArgs>): Prisma.PrismaPromise<GetPodcastAggregateType<T>>
+
+    /**
+     * Group by Podcast.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodcastGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PodcastGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PodcastGroupByArgs['orderBy'] }
+        : { orderBy?: PodcastGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PodcastGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPodcastGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Podcast model
+   */
+  readonly fields: PodcastFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Podcast.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PodcastClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    approvedBy<T extends Podcast$approvedByArgs<ExtArgs> = {}>(args?: Subset<T, Podcast$approvedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    createdBy<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    updatedBy<T extends Podcast$updatedByArgs<ExtArgs> = {}>(args?: Subset<T, Podcast$updatedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Podcast model
+   */
+  interface PodcastFieldRefs {
+    readonly id: FieldRef<"Podcast", 'Int'>
+    readonly title: FieldRef<"Podcast", 'String'>
+    readonly slug: FieldRef<"Podcast", 'String'>
+    readonly description: FieldRef<"Podcast", 'Json'>
+    readonly image: FieldRef<"Podcast", 'String'>
+    readonly audioUrl: FieldRef<"Podcast", 'String'>
+    readonly waveform: FieldRef<"Podcast", 'Float[]'>
+    readonly publishedAt: FieldRef<"Podcast", 'DateTime'>
+    readonly publishStatus: FieldRef<"Podcast", 'PublishStatus'>
+    readonly accessCount: FieldRef<"Podcast", 'Int'>
+    readonly createdAt: FieldRef<"Podcast", 'DateTime'>
+    readonly updatedAt: FieldRef<"Podcast", 'DateTime'>
+    readonly createdById: FieldRef<"Podcast", 'String'>
+    readonly updatedById: FieldRef<"Podcast", 'String'>
+    readonly approvedById: FieldRef<"Podcast", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Podcast findUnique
+   */
+  export type PodcastFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Podcast
+     */
+    select?: PodcastSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Podcast
+     */
+    omit?: PodcastOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodcastInclude<ExtArgs> | null
+    /**
+     * Filter, which Podcast to fetch.
+     */
+    where: PodcastWhereUniqueInput
+  }
+
+  /**
+   * Podcast findUniqueOrThrow
+   */
+  export type PodcastFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Podcast
+     */
+    select?: PodcastSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Podcast
+     */
+    omit?: PodcastOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodcastInclude<ExtArgs> | null
+    /**
+     * Filter, which Podcast to fetch.
+     */
+    where: PodcastWhereUniqueInput
+  }
+
+  /**
+   * Podcast findFirst
+   */
+  export type PodcastFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Podcast
+     */
+    select?: PodcastSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Podcast
+     */
+    omit?: PodcastOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodcastInclude<ExtArgs> | null
+    /**
+     * Filter, which Podcast to fetch.
+     */
+    where?: PodcastWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Podcasts to fetch.
+     */
+    orderBy?: PodcastOrderByWithRelationInput | PodcastOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Podcasts.
+     */
+    cursor?: PodcastWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Podcasts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Podcasts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Podcasts.
+     */
+    distinct?: PodcastScalarFieldEnum | PodcastScalarFieldEnum[]
+  }
+
+  /**
+   * Podcast findFirstOrThrow
+   */
+  export type PodcastFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Podcast
+     */
+    select?: PodcastSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Podcast
+     */
+    omit?: PodcastOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodcastInclude<ExtArgs> | null
+    /**
+     * Filter, which Podcast to fetch.
+     */
+    where?: PodcastWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Podcasts to fetch.
+     */
+    orderBy?: PodcastOrderByWithRelationInput | PodcastOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Podcasts.
+     */
+    cursor?: PodcastWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Podcasts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Podcasts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Podcasts.
+     */
+    distinct?: PodcastScalarFieldEnum | PodcastScalarFieldEnum[]
+  }
+
+  /**
+   * Podcast findMany
+   */
+  export type PodcastFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Podcast
+     */
+    select?: PodcastSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Podcast
+     */
+    omit?: PodcastOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodcastInclude<ExtArgs> | null
+    /**
+     * Filter, which Podcasts to fetch.
+     */
+    where?: PodcastWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Podcasts to fetch.
+     */
+    orderBy?: PodcastOrderByWithRelationInput | PodcastOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Podcasts.
+     */
+    cursor?: PodcastWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Podcasts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Podcasts.
+     */
+    skip?: number
+    distinct?: PodcastScalarFieldEnum | PodcastScalarFieldEnum[]
+  }
+
+  /**
+   * Podcast create
+   */
+  export type PodcastCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Podcast
+     */
+    select?: PodcastSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Podcast
+     */
+    omit?: PodcastOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodcastInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Podcast.
+     */
+    data: XOR<PodcastCreateInput, PodcastUncheckedCreateInput>
+  }
+
+  /**
+   * Podcast createMany
+   */
+  export type PodcastCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Podcasts.
+     */
+    data: PodcastCreateManyInput | PodcastCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Podcast createManyAndReturn
+   */
+  export type PodcastCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Podcast
+     */
+    select?: PodcastSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Podcast
+     */
+    omit?: PodcastOmit<ExtArgs> | null
+    /**
+     * The data used to create many Podcasts.
+     */
+    data: PodcastCreateManyInput | PodcastCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodcastIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Podcast update
+   */
+  export type PodcastUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Podcast
+     */
+    select?: PodcastSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Podcast
+     */
+    omit?: PodcastOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodcastInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Podcast.
+     */
+    data: XOR<PodcastUpdateInput, PodcastUncheckedUpdateInput>
+    /**
+     * Choose, which Podcast to update.
+     */
+    where: PodcastWhereUniqueInput
+  }
+
+  /**
+   * Podcast updateMany
+   */
+  export type PodcastUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Podcasts.
+     */
+    data: XOR<PodcastUpdateManyMutationInput, PodcastUncheckedUpdateManyInput>
+    /**
+     * Filter which Podcasts to update
+     */
+    where?: PodcastWhereInput
+    /**
+     * Limit how many Podcasts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Podcast updateManyAndReturn
+   */
+  export type PodcastUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Podcast
+     */
+    select?: PodcastSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Podcast
+     */
+    omit?: PodcastOmit<ExtArgs> | null
+    /**
+     * The data used to update Podcasts.
+     */
+    data: XOR<PodcastUpdateManyMutationInput, PodcastUncheckedUpdateManyInput>
+    /**
+     * Filter which Podcasts to update
+     */
+    where?: PodcastWhereInput
+    /**
+     * Limit how many Podcasts to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodcastIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Podcast upsert
+   */
+  export type PodcastUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Podcast
+     */
+    select?: PodcastSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Podcast
+     */
+    omit?: PodcastOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodcastInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Podcast to update in case it exists.
+     */
+    where: PodcastWhereUniqueInput
+    /**
+     * In case the Podcast found by the `where` argument doesn't exist, create a new Podcast with this data.
+     */
+    create: XOR<PodcastCreateInput, PodcastUncheckedCreateInput>
+    /**
+     * In case the Podcast was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PodcastUpdateInput, PodcastUncheckedUpdateInput>
+  }
+
+  /**
+   * Podcast delete
+   */
+  export type PodcastDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Podcast
+     */
+    select?: PodcastSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Podcast
+     */
+    omit?: PodcastOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodcastInclude<ExtArgs> | null
+    /**
+     * Filter which Podcast to delete.
+     */
+    where: PodcastWhereUniqueInput
+  }
+
+  /**
+   * Podcast deleteMany
+   */
+  export type PodcastDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Podcasts to delete
+     */
+    where?: PodcastWhereInput
+    /**
+     * Limit how many Podcasts to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Podcast.approvedBy
+   */
+  export type Podcast$approvedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * Podcast.updatedBy
+   */
+  export type Podcast$updatedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * Podcast without action
+   */
+  export type PodcastDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Podcast
+     */
+    select?: PodcastSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Podcast
+     */
+    omit?: PodcastOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodcastInclude<ExtArgs> | null
   }
 
 
@@ -8639,6 +10047,9 @@ export namespace Prisma {
     approvedReports?: boolean | User$approvedReportsArgs<ExtArgs>
     createdReports?: boolean | User$createdReportsArgs<ExtArgs>
     updatedReports?: boolean | User$updatedReportsArgs<ExtArgs>
+    approvedPodcasts?: boolean | User$approvedPodcastsArgs<ExtArgs>
+    createdPodcasts?: boolean | User$createdPodcastsArgs<ExtArgs>
+    updatedPodcasts?: boolean | User$updatedPodcastsArgs<ExtArgs>
     createdEvents?: boolean | User$createdEventsArgs<ExtArgs>
     updatedEvents?: boolean | User$updatedEventsArgs<ExtArgs>
     createdBeneficiaries?: boolean | User$createdBeneficiariesArgs<ExtArgs>
@@ -8725,6 +10136,9 @@ export namespace Prisma {
     approvedReports?: boolean | User$approvedReportsArgs<ExtArgs>
     createdReports?: boolean | User$createdReportsArgs<ExtArgs>
     updatedReports?: boolean | User$updatedReportsArgs<ExtArgs>
+    approvedPodcasts?: boolean | User$approvedPodcastsArgs<ExtArgs>
+    createdPodcasts?: boolean | User$createdPodcastsArgs<ExtArgs>
+    updatedPodcasts?: boolean | User$updatedPodcastsArgs<ExtArgs>
     createdEvents?: boolean | User$createdEventsArgs<ExtArgs>
     updatedEvents?: boolean | User$updatedEventsArgs<ExtArgs>
     createdBeneficiaries?: boolean | User$createdBeneficiariesArgs<ExtArgs>
@@ -8760,6 +10174,9 @@ export namespace Prisma {
       approvedReports: Prisma.$ReportPayload<ExtArgs>[]
       createdReports: Prisma.$ReportPayload<ExtArgs>[]
       updatedReports: Prisma.$ReportPayload<ExtArgs>[]
+      approvedPodcasts: Prisma.$PodcastPayload<ExtArgs>[]
+      createdPodcasts: Prisma.$PodcastPayload<ExtArgs>[]
+      updatedPodcasts: Prisma.$PodcastPayload<ExtArgs>[]
       createdEvents: Prisma.$EventPayload<ExtArgs>[]
       updatedEvents: Prisma.$EventPayload<ExtArgs>[]
       createdBeneficiaries: Prisma.$BeneficiaryPayload<ExtArgs>[]
@@ -9198,6 +10615,9 @@ export namespace Prisma {
     approvedReports<T extends User$approvedReportsArgs<ExtArgs> = {}>(args?: Subset<T, User$approvedReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     createdReports<T extends User$createdReportsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     updatedReports<T extends User$updatedReportsArgs<ExtArgs> = {}>(args?: Subset<T, User$updatedReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    approvedPodcasts<T extends User$approvedPodcastsArgs<ExtArgs> = {}>(args?: Subset<T, User$approvedPodcastsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodcastPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    createdPodcasts<T extends User$createdPodcastsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdPodcastsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodcastPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    updatedPodcasts<T extends User$updatedPodcastsArgs<ExtArgs> = {}>(args?: Subset<T, User$updatedPodcastsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodcastPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     createdEvents<T extends User$createdEventsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdEventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     updatedEvents<T extends User$updatedEventsArgs<ExtArgs> = {}>(args?: Subset<T, User$updatedEventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     createdBeneficiaries<T extends User$createdBeneficiariesArgs<ExtArgs> = {}>(args?: Subset<T, User$createdBeneficiariesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BeneficiaryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -9976,6 +11396,78 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ReportScalarFieldEnum | ReportScalarFieldEnum[]
+  }
+
+  /**
+   * User.approvedPodcasts
+   */
+  export type User$approvedPodcastsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Podcast
+     */
+    select?: PodcastSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Podcast
+     */
+    omit?: PodcastOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodcastInclude<ExtArgs> | null
+    where?: PodcastWhereInput
+    orderBy?: PodcastOrderByWithRelationInput | PodcastOrderByWithRelationInput[]
+    cursor?: PodcastWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PodcastScalarFieldEnum | PodcastScalarFieldEnum[]
+  }
+
+  /**
+   * User.createdPodcasts
+   */
+  export type User$createdPodcastsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Podcast
+     */
+    select?: PodcastSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Podcast
+     */
+    omit?: PodcastOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodcastInclude<ExtArgs> | null
+    where?: PodcastWhereInput
+    orderBy?: PodcastOrderByWithRelationInput | PodcastOrderByWithRelationInput[]
+    cursor?: PodcastWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PodcastScalarFieldEnum | PodcastScalarFieldEnum[]
+  }
+
+  /**
+   * User.updatedPodcasts
+   */
+  export type User$updatedPodcastsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Podcast
+     */
+    select?: PodcastSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Podcast
+     */
+    omit?: PodcastOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodcastInclude<ExtArgs> | null
+    where?: PodcastWhereInput
+    orderBy?: PodcastOrderByWithRelationInput | PodcastOrderByWithRelationInput[]
+    cursor?: PodcastWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PodcastScalarFieldEnum | PodcastScalarFieldEnum[]
   }
 
   /**
@@ -27470,6 +28962,27 @@ export namespace Prisma {
   export type ReportScalarFieldEnum = (typeof ReportScalarFieldEnum)[keyof typeof ReportScalarFieldEnum]
 
 
+  export const PodcastScalarFieldEnum: {
+    id: 'id',
+    title: 'title',
+    slug: 'slug',
+    description: 'description',
+    image: 'image',
+    audioUrl: 'audioUrl',
+    waveform: 'waveform',
+    publishedAt: 'publishedAt',
+    publishStatus: 'publishStatus',
+    accessCount: 'accessCount',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    createdById: 'createdById',
+    updatedById: 'updatedById',
+    approvedById: 'approvedById'
+  };
+
+  export type PodcastScalarFieldEnum = (typeof PodcastScalarFieldEnum)[keyof typeof PodcastScalarFieldEnum]
+
+
   export const MessageScalarFieldEnum: {
     id: 'id',
     title: 'title',
@@ -27878,6 +29391,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Float[]'
+   */
+  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Float'
+   */
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+  /**
    * Reference to a field of type 'MessageCategory'
    */
   export type EnumMessageCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageCategory'>
@@ -27979,20 +29506,6 @@ export namespace Prisma {
    * Reference to a field of type 'InstitutionCategory[]'
    */
   export type ListEnumInstitutionCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InstitutionCategory[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Float'
-   */
-  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-  /**
-   * Reference to a field of type 'Float[]'
-   */
-  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 
@@ -28149,7 +29662,7 @@ export namespace Prisma {
     approvedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     createdBy?: XOR<UserScalarRelationFilter, UserWhereInput>
     updatedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
-    reports?: XOR<ReportNullableScalarRelationFilter, ReportWhereInput> | null
+    reports?: ReportListRelationFilter
     events?: EventListRelationFilter
   }
 
@@ -28169,7 +29682,7 @@ export namespace Prisma {
     approvedBy?: UserOrderByWithRelationInput
     createdBy?: UserOrderByWithRelationInput
     updatedBy?: UserOrderByWithRelationInput
-    reports?: ReportOrderByWithRelationInput
+    reports?: ReportOrderByRelationAggregateInput
     events?: EventOrderByRelationAggregateInput
   }
 
@@ -28192,7 +29705,7 @@ export namespace Prisma {
     approvedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     createdBy?: XOR<UserScalarRelationFilter, UserWhereInput>
     updatedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
-    reports?: XOR<ReportNullableScalarRelationFilter, ReportWhereInput> | null
+    reports?: ReportListRelationFilter
     events?: EventListRelationFilter
   }, "id" | "slug">
 
@@ -28284,7 +29797,6 @@ export namespace Prisma {
   export type ReportWhereUniqueInput = Prisma.AtLeast<{
     id?: number
     slug?: string
-    projectId?: number
     AND?: ReportWhereInput | ReportWhereInput[]
     OR?: ReportWhereInput[]
     NOT?: ReportWhereInput | ReportWhereInput[]
@@ -28299,12 +29811,13 @@ export namespace Prisma {
     createdById?: StringFilter<"Report"> | string
     updatedById?: StringNullableFilter<"Report"> | string | null
     approvedById?: StringNullableFilter<"Report"> | string | null
+    projectId?: IntNullableFilter<"Report"> | number | null
     approvedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     createdBy?: XOR<UserScalarRelationFilter, UserWhereInput>
     project?: XOR<ProjectNullableScalarRelationFilter, ProjectWhereInput> | null
     updatedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     events?: EventListRelationFilter
-  }, "id" | "slug" | "projectId">
+  }, "id" | "slug">
 
   export type ReportOrderByWithAggregationInput = {
     id?: SortOrder
@@ -28346,6 +29859,119 @@ export namespace Prisma {
     updatedById?: StringNullableWithAggregatesFilter<"Report"> | string | null
     approvedById?: StringNullableWithAggregatesFilter<"Report"> | string | null
     projectId?: IntNullableWithAggregatesFilter<"Report"> | number | null
+  }
+
+  export type PodcastWhereInput = {
+    AND?: PodcastWhereInput | PodcastWhereInput[]
+    OR?: PodcastWhereInput[]
+    NOT?: PodcastWhereInput | PodcastWhereInput[]
+    id?: IntFilter<"Podcast"> | number
+    title?: StringFilter<"Podcast"> | string
+    slug?: StringFilter<"Podcast"> | string
+    description?: JsonFilter<"Podcast">
+    image?: StringNullableFilter<"Podcast"> | string | null
+    audioUrl?: StringFilter<"Podcast"> | string
+    waveform?: FloatNullableListFilter<"Podcast">
+    publishedAt?: DateTimeFilter<"Podcast"> | Date | string
+    publishStatus?: EnumPublishStatusFilter<"Podcast"> | $Enums.PublishStatus
+    accessCount?: IntFilter<"Podcast"> | number
+    createdAt?: DateTimeFilter<"Podcast"> | Date | string
+    updatedAt?: DateTimeFilter<"Podcast"> | Date | string
+    createdById?: StringFilter<"Podcast"> | string
+    updatedById?: StringNullableFilter<"Podcast"> | string | null
+    approvedById?: StringNullableFilter<"Podcast"> | string | null
+    approvedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    createdBy?: XOR<UserScalarRelationFilter, UserWhereInput>
+    updatedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type PodcastOrderByWithRelationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    slug?: SortOrder
+    description?: SortOrder
+    image?: SortOrderInput | SortOrder
+    audioUrl?: SortOrder
+    waveform?: SortOrder
+    publishedAt?: SortOrder
+    publishStatus?: SortOrder
+    accessCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    approvedById?: SortOrderInput | SortOrder
+    approvedBy?: UserOrderByWithRelationInput
+    createdBy?: UserOrderByWithRelationInput
+    updatedBy?: UserOrderByWithRelationInput
+  }
+
+  export type PodcastWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    slug?: string
+    AND?: PodcastWhereInput | PodcastWhereInput[]
+    OR?: PodcastWhereInput[]
+    NOT?: PodcastWhereInput | PodcastWhereInput[]
+    title?: StringFilter<"Podcast"> | string
+    description?: JsonFilter<"Podcast">
+    image?: StringNullableFilter<"Podcast"> | string | null
+    audioUrl?: StringFilter<"Podcast"> | string
+    waveform?: FloatNullableListFilter<"Podcast">
+    publishedAt?: DateTimeFilter<"Podcast"> | Date | string
+    publishStatus?: EnumPublishStatusFilter<"Podcast"> | $Enums.PublishStatus
+    accessCount?: IntFilter<"Podcast"> | number
+    createdAt?: DateTimeFilter<"Podcast"> | Date | string
+    updatedAt?: DateTimeFilter<"Podcast"> | Date | string
+    createdById?: StringFilter<"Podcast"> | string
+    updatedById?: StringNullableFilter<"Podcast"> | string | null
+    approvedById?: StringNullableFilter<"Podcast"> | string | null
+    approvedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    createdBy?: XOR<UserScalarRelationFilter, UserWhereInput>
+    updatedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id" | "slug">
+
+  export type PodcastOrderByWithAggregationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    slug?: SortOrder
+    description?: SortOrder
+    image?: SortOrderInput | SortOrder
+    audioUrl?: SortOrder
+    waveform?: SortOrder
+    publishedAt?: SortOrder
+    publishStatus?: SortOrder
+    accessCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    approvedById?: SortOrderInput | SortOrder
+    _count?: PodcastCountOrderByAggregateInput
+    _avg?: PodcastAvgOrderByAggregateInput
+    _max?: PodcastMaxOrderByAggregateInput
+    _min?: PodcastMinOrderByAggregateInput
+    _sum?: PodcastSumOrderByAggregateInput
+  }
+
+  export type PodcastScalarWhereWithAggregatesInput = {
+    AND?: PodcastScalarWhereWithAggregatesInput | PodcastScalarWhereWithAggregatesInput[]
+    OR?: PodcastScalarWhereWithAggregatesInput[]
+    NOT?: PodcastScalarWhereWithAggregatesInput | PodcastScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"Podcast"> | number
+    title?: StringWithAggregatesFilter<"Podcast"> | string
+    slug?: StringWithAggregatesFilter<"Podcast"> | string
+    description?: JsonWithAggregatesFilter<"Podcast">
+    image?: StringNullableWithAggregatesFilter<"Podcast"> | string | null
+    audioUrl?: StringWithAggregatesFilter<"Podcast"> | string
+    waveform?: FloatNullableListFilter<"Podcast">
+    publishedAt?: DateTimeWithAggregatesFilter<"Podcast"> | Date | string
+    publishStatus?: EnumPublishStatusWithAggregatesFilter<"Podcast"> | $Enums.PublishStatus
+    accessCount?: IntWithAggregatesFilter<"Podcast"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"Podcast"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Podcast"> | Date | string
+    createdById?: StringWithAggregatesFilter<"Podcast"> | string
+    updatedById?: StringNullableWithAggregatesFilter<"Podcast"> | string | null
+    approvedById?: StringNullableWithAggregatesFilter<"Podcast"> | string | null
   }
 
   export type MessageWhereInput = {
@@ -28515,6 +30141,9 @@ export namespace Prisma {
     approvedReports?: ReportListRelationFilter
     createdReports?: ReportListRelationFilter
     updatedReports?: ReportListRelationFilter
+    approvedPodcasts?: PodcastListRelationFilter
+    createdPodcasts?: PodcastListRelationFilter
+    updatedPodcasts?: PodcastListRelationFilter
     createdEvents?: EventListRelationFilter
     updatedEvents?: EventListRelationFilter
     createdBeneficiaries?: BeneficiaryListRelationFilter
@@ -28560,6 +30189,9 @@ export namespace Prisma {
     approvedReports?: ReportOrderByRelationAggregateInput
     createdReports?: ReportOrderByRelationAggregateInput
     updatedReports?: ReportOrderByRelationAggregateInput
+    approvedPodcasts?: PodcastOrderByRelationAggregateInput
+    createdPodcasts?: PodcastOrderByRelationAggregateInput
+    updatedPodcasts?: PodcastOrderByRelationAggregateInput
     createdEvents?: EventOrderByRelationAggregateInput
     updatedEvents?: EventOrderByRelationAggregateInput
     createdBeneficiaries?: BeneficiaryOrderByRelationAggregateInput
@@ -28608,6 +30240,9 @@ export namespace Prisma {
     approvedReports?: ReportListRelationFilter
     createdReports?: ReportListRelationFilter
     updatedReports?: ReportListRelationFilter
+    approvedPodcasts?: PodcastListRelationFilter
+    createdPodcasts?: PodcastListRelationFilter
+    updatedPodcasts?: PodcastListRelationFilter
     createdEvents?: EventListRelationFilter
     updatedEvents?: EventListRelationFilter
     createdBeneficiaries?: BeneficiaryListRelationFilter
@@ -29961,7 +31596,7 @@ export namespace Prisma {
     approvedBy?: UserCreateNestedOneWithoutApprovedProjectsInput
     createdBy: UserCreateNestedOneWithoutCreatedProjectsInput
     updatedBy?: UserCreateNestedOneWithoutUpdatedProjectsInput
-    reports?: ReportCreateNestedOneWithoutProjectInput
+    reports?: ReportCreateNestedManyWithoutProjectInput
     events?: EventCreateNestedManyWithoutProjectInput
   }
 
@@ -29978,7 +31613,7 @@ export namespace Prisma {
     createdById: string
     updatedById?: string | null
     approvedById?: string | null
-    reports?: ReportUncheckedCreateNestedOneWithoutProjectInput
+    reports?: ReportUncheckedCreateNestedManyWithoutProjectInput
     events?: EventUncheckedCreateNestedManyWithoutProjectInput
   }
 
@@ -29994,7 +31629,7 @@ export namespace Prisma {
     approvedBy?: UserUpdateOneWithoutApprovedProjectsNestedInput
     createdBy?: UserUpdateOneRequiredWithoutCreatedProjectsNestedInput
     updatedBy?: UserUpdateOneWithoutUpdatedProjectsNestedInput
-    reports?: ReportUpdateOneWithoutProjectNestedInput
+    reports?: ReportUpdateManyWithoutProjectNestedInput
     events?: EventUpdateManyWithoutProjectNestedInput
   }
 
@@ -30011,7 +31646,7 @@ export namespace Prisma {
     createdById?: StringFieldUpdateOperationsInput | string
     updatedById?: NullableStringFieldUpdateOperationsInput | string | null
     approvedById?: NullableStringFieldUpdateOperationsInput | string | null
-    reports?: ReportUncheckedUpdateOneWithoutProjectNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutProjectNestedInput
     events?: EventUncheckedUpdateManyWithoutProjectNestedInput
   }
 
@@ -30170,6 +31805,126 @@ export namespace Prisma {
     updatedById?: NullableStringFieldUpdateOperationsInput | string | null
     approvedById?: NullableStringFieldUpdateOperationsInput | string | null
     projectId?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type PodcastCreateInput = {
+    title: string
+    slug: string
+    description: JsonNullValueInput | InputJsonValue
+    image?: string | null
+    audioUrl: string
+    waveform?: PodcastCreatewaveformInput | number[]
+    publishedAt?: Date | string
+    publishStatus?: $Enums.PublishStatus
+    accessCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    approvedBy?: UserCreateNestedOneWithoutApprovedPodcastsInput
+    createdBy: UserCreateNestedOneWithoutCreatedPodcastsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedPodcastsInput
+  }
+
+  export type PodcastUncheckedCreateInput = {
+    id?: number
+    title: string
+    slug: string
+    description: JsonNullValueInput | InputJsonValue
+    image?: string | null
+    audioUrl: string
+    waveform?: PodcastCreatewaveformInput | number[]
+    publishedAt?: Date | string
+    publishStatus?: $Enums.PublishStatus
+    accessCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdById: string
+    updatedById?: string | null
+    approvedById?: string | null
+  }
+
+  export type PodcastUpdateInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: StringFieldUpdateOperationsInput | string
+    waveform?: PodcastUpdatewaveformInput | number[]
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    approvedBy?: UserUpdateOneWithoutApprovedPodcastsNestedInput
+    createdBy?: UserUpdateOneRequiredWithoutCreatedPodcastsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedPodcastsNestedInput
+  }
+
+  export type PodcastUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: StringFieldUpdateOperationsInput | string
+    waveform?: PodcastUpdatewaveformInput | number[]
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type PodcastCreateManyInput = {
+    id?: number
+    title: string
+    slug: string
+    description: JsonNullValueInput | InputJsonValue
+    image?: string | null
+    audioUrl: string
+    waveform?: PodcastCreatewaveformInput | number[]
+    publishedAt?: Date | string
+    publishStatus?: $Enums.PublishStatus
+    accessCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdById: string
+    updatedById?: string | null
+    approvedById?: string | null
+  }
+
+  export type PodcastUpdateManyMutationInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: StringFieldUpdateOperationsInput | string
+    waveform?: PodcastUpdatewaveformInput | number[]
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PodcastUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: StringFieldUpdateOperationsInput | string
+    waveform?: PodcastUpdatewaveformInput | number[]
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MessageCreateInput = {
@@ -30346,6 +32101,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -30391,6 +32149,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -30436,6 +32197,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -30481,6 +32245,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -32024,15 +33791,20 @@ export namespace Prisma {
     isNot?: UserWhereInput
   }
 
-  export type ReportNullableScalarRelationFilter = {
-    is?: ReportWhereInput | null
-    isNot?: ReportWhereInput | null
+  export type ReportListRelationFilter = {
+    every?: ReportWhereInput
+    some?: ReportWhereInput
+    none?: ReportWhereInput
   }
 
   export type EventListRelationFilter = {
     every?: EventWhereInput
     some?: EventWhereInput
     none?: EventWhereInput
+  }
+
+  export type ReportOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type EventOrderByRelationAggregateInput = {
@@ -32227,6 +33999,76 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
+  export type FloatNullableListFilter<$PrismaModel = never> = {
+    equals?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    has?: number | FloatFieldRefInput<$PrismaModel> | null
+    hasEvery?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    hasSome?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
+  export type PodcastCountOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    slug?: SortOrder
+    description?: SortOrder
+    image?: SortOrder
+    audioUrl?: SortOrder
+    waveform?: SortOrder
+    publishedAt?: SortOrder
+    publishStatus?: SortOrder
+    accessCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    approvedById?: SortOrder
+  }
+
+  export type PodcastAvgOrderByAggregateInput = {
+    id?: SortOrder
+    waveform?: SortOrder
+    accessCount?: SortOrder
+  }
+
+  export type PodcastMaxOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    slug?: SortOrder
+    image?: SortOrder
+    audioUrl?: SortOrder
+    publishedAt?: SortOrder
+    publishStatus?: SortOrder
+    accessCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    approvedById?: SortOrder
+  }
+
+  export type PodcastMinOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    slug?: SortOrder
+    image?: SortOrder
+    audioUrl?: SortOrder
+    publishedAt?: SortOrder
+    publishStatus?: SortOrder
+    accessCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    createdById?: SortOrder
+    updatedById?: SortOrder
+    approvedById?: SortOrder
+  }
+
+  export type PodcastSumOrderByAggregateInput = {
+    id?: SortOrder
+    waveform?: SortOrder
+    accessCount?: SortOrder
+  }
+
   export type EnumMessageCategoryFilter<$PrismaModel = never> = {
     equals?: $Enums.MessageCategory | EnumMessageCategoryFieldRefInput<$PrismaModel>
     in?: $Enums.MessageCategory[] | ListEnumMessageCategoryFieldRefInput<$PrismaModel>
@@ -32402,10 +34244,10 @@ export namespace Prisma {
     none?: ProjectWhereInput
   }
 
-  export type ReportListRelationFilter = {
-    every?: ReportWhereInput
-    some?: ReportWhereInput
-    none?: ReportWhereInput
+  export type PodcastListRelationFilter = {
+    every?: PodcastWhereInput
+    some?: PodcastWhereInput
+    none?: PodcastWhereInput
   }
 
   export type BeneficiaryListRelationFilter = {
@@ -32456,7 +34298,7 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type ReportOrderByRelationAggregateInput = {
+  export type PodcastOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -32709,6 +34551,11 @@ export namespace Prisma {
     in?: $Enums.AttendanceType[] | ListEnumAttendanceTypeFieldRefInput<$PrismaModel>
     notIn?: $Enums.AttendanceType[] | ListEnumAttendanceTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumAttendanceTypeFilter<$PrismaModel> | $Enums.AttendanceType
+  }
+
+  export type ReportNullableScalarRelationFilter = {
+    is?: ReportWhereInput | null
+    isNot?: ReportWhereInput | null
   }
 
   export type EventCountOrderByAggregateInput = {
@@ -33434,10 +35281,11 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
-  export type ReportCreateNestedOneWithoutProjectInput = {
-    create?: XOR<ReportCreateWithoutProjectInput, ReportUncheckedCreateWithoutProjectInput>
-    connectOrCreate?: ReportCreateOrConnectWithoutProjectInput
-    connect?: ReportWhereUniqueInput
+  export type ReportCreateNestedManyWithoutProjectInput = {
+    create?: XOR<ReportCreateWithoutProjectInput, ReportUncheckedCreateWithoutProjectInput> | ReportCreateWithoutProjectInput[] | ReportUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutProjectInput | ReportCreateOrConnectWithoutProjectInput[]
+    createMany?: ReportCreateManyProjectInputEnvelope
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
   }
 
   export type EventCreateNestedManyWithoutProjectInput = {
@@ -33447,10 +35295,11 @@ export namespace Prisma {
     connect?: EventWhereUniqueInput | EventWhereUniqueInput[]
   }
 
-  export type ReportUncheckedCreateNestedOneWithoutProjectInput = {
-    create?: XOR<ReportCreateWithoutProjectInput, ReportUncheckedCreateWithoutProjectInput>
-    connectOrCreate?: ReportCreateOrConnectWithoutProjectInput
-    connect?: ReportWhereUniqueInput
+  export type ReportUncheckedCreateNestedManyWithoutProjectInput = {
+    create?: XOR<ReportCreateWithoutProjectInput, ReportUncheckedCreateWithoutProjectInput> | ReportCreateWithoutProjectInput[] | ReportUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutProjectInput | ReportCreateOrConnectWithoutProjectInput[]
+    createMany?: ReportCreateManyProjectInputEnvelope
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
   }
 
   export type EventUncheckedCreateNestedManyWithoutProjectInput = {
@@ -33501,14 +35350,18 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutUpdatedProjectsInput, UserUpdateWithoutUpdatedProjectsInput>, UserUncheckedUpdateWithoutUpdatedProjectsInput>
   }
 
-  export type ReportUpdateOneWithoutProjectNestedInput = {
-    create?: XOR<ReportCreateWithoutProjectInput, ReportUncheckedCreateWithoutProjectInput>
-    connectOrCreate?: ReportCreateOrConnectWithoutProjectInput
-    upsert?: ReportUpsertWithoutProjectInput
-    disconnect?: ReportWhereInput | boolean
-    delete?: ReportWhereInput | boolean
-    connect?: ReportWhereUniqueInput
-    update?: XOR<XOR<ReportUpdateToOneWithWhereWithoutProjectInput, ReportUpdateWithoutProjectInput>, ReportUncheckedUpdateWithoutProjectInput>
+  export type ReportUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<ReportCreateWithoutProjectInput, ReportUncheckedCreateWithoutProjectInput> | ReportCreateWithoutProjectInput[] | ReportUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutProjectInput | ReportCreateOrConnectWithoutProjectInput[]
+    upsert?: ReportUpsertWithWhereUniqueWithoutProjectInput | ReportUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: ReportCreateManyProjectInputEnvelope
+    set?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    disconnect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    delete?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    update?: ReportUpdateWithWhereUniqueWithoutProjectInput | ReportUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: ReportUpdateManyWithWhereWithoutProjectInput | ReportUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: ReportScalarWhereInput | ReportScalarWhereInput[]
   }
 
   export type EventUpdateManyWithoutProjectNestedInput = {
@@ -33525,14 +35378,18 @@ export namespace Prisma {
     deleteMany?: EventScalarWhereInput | EventScalarWhereInput[]
   }
 
-  export type ReportUncheckedUpdateOneWithoutProjectNestedInput = {
-    create?: XOR<ReportCreateWithoutProjectInput, ReportUncheckedCreateWithoutProjectInput>
-    connectOrCreate?: ReportCreateOrConnectWithoutProjectInput
-    upsert?: ReportUpsertWithoutProjectInput
-    disconnect?: ReportWhereInput | boolean
-    delete?: ReportWhereInput | boolean
-    connect?: ReportWhereUniqueInput
-    update?: XOR<XOR<ReportUpdateToOneWithWhereWithoutProjectInput, ReportUpdateWithoutProjectInput>, ReportUncheckedUpdateWithoutProjectInput>
+  export type ReportUncheckedUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<ReportCreateWithoutProjectInput, ReportUncheckedCreateWithoutProjectInput> | ReportCreateWithoutProjectInput[] | ReportUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: ReportCreateOrConnectWithoutProjectInput | ReportCreateOrConnectWithoutProjectInput[]
+    upsert?: ReportUpsertWithWhereUniqueWithoutProjectInput | ReportUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: ReportCreateManyProjectInputEnvelope
+    set?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    disconnect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    delete?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+    update?: ReportUpdateWithWhereUniqueWithoutProjectInput | ReportUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: ReportUpdateManyWithWhereWithoutProjectInput | ReportUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: ReportScalarWhereInput | ReportScalarWhereInput[]
   }
 
   export type EventUncheckedUpdateManyWithoutProjectNestedInput = {
@@ -33677,6 +35534,61 @@ export namespace Prisma {
     update?: EventUpdateWithWhereUniqueWithoutReportInput | EventUpdateWithWhereUniqueWithoutReportInput[]
     updateMany?: EventUpdateManyWithWhereWithoutReportInput | EventUpdateManyWithWhereWithoutReportInput[]
     deleteMany?: EventScalarWhereInput | EventScalarWhereInput[]
+  }
+
+  export type PodcastCreatewaveformInput = {
+    set: number[]
+  }
+
+  export type UserCreateNestedOneWithoutApprovedPodcastsInput = {
+    create?: XOR<UserCreateWithoutApprovedPodcastsInput, UserUncheckedCreateWithoutApprovedPodcastsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutApprovedPodcastsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutCreatedPodcastsInput = {
+    create?: XOR<UserCreateWithoutCreatedPodcastsInput, UserUncheckedCreateWithoutCreatedPodcastsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedPodcastsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutUpdatedPodcastsInput = {
+    create?: XOR<UserCreateWithoutUpdatedPodcastsInput, UserUncheckedCreateWithoutUpdatedPodcastsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUpdatedPodcastsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type PodcastUpdatewaveformInput = {
+    set?: number[]
+    push?: number | number[]
+  }
+
+  export type UserUpdateOneWithoutApprovedPodcastsNestedInput = {
+    create?: XOR<UserCreateWithoutApprovedPodcastsInput, UserUncheckedCreateWithoutApprovedPodcastsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutApprovedPodcastsInput
+    upsert?: UserUpsertWithoutApprovedPodcastsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutApprovedPodcastsInput, UserUpdateWithoutApprovedPodcastsInput>, UserUncheckedUpdateWithoutApprovedPodcastsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutCreatedPodcastsNestedInput = {
+    create?: XOR<UserCreateWithoutCreatedPodcastsInput, UserUncheckedCreateWithoutCreatedPodcastsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedPodcastsInput
+    upsert?: UserUpsertWithoutCreatedPodcastsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedPodcastsInput, UserUpdateWithoutCreatedPodcastsInput>, UserUncheckedUpdateWithoutCreatedPodcastsInput>
+  }
+
+  export type UserUpdateOneWithoutUpdatedPodcastsNestedInput = {
+    create?: XOR<UserCreateWithoutUpdatedPodcastsInput, UserUncheckedCreateWithoutUpdatedPodcastsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUpdatedPodcastsInput
+    upsert?: UserUpsertWithoutUpdatedPodcastsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutUpdatedPodcastsInput, UserUpdateWithoutUpdatedPodcastsInput>, UserUncheckedUpdateWithoutUpdatedPodcastsInput>
   }
 
   export type UserCreateNestedOneWithoutCreatedMessagesInput = {
@@ -33891,6 +35803,27 @@ export namespace Prisma {
     connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
   }
 
+  export type PodcastCreateNestedManyWithoutApprovedByInput = {
+    create?: XOR<PodcastCreateWithoutApprovedByInput, PodcastUncheckedCreateWithoutApprovedByInput> | PodcastCreateWithoutApprovedByInput[] | PodcastUncheckedCreateWithoutApprovedByInput[]
+    connectOrCreate?: PodcastCreateOrConnectWithoutApprovedByInput | PodcastCreateOrConnectWithoutApprovedByInput[]
+    createMany?: PodcastCreateManyApprovedByInputEnvelope
+    connect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+  }
+
+  export type PodcastCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<PodcastCreateWithoutCreatedByInput, PodcastUncheckedCreateWithoutCreatedByInput> | PodcastCreateWithoutCreatedByInput[] | PodcastUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: PodcastCreateOrConnectWithoutCreatedByInput | PodcastCreateOrConnectWithoutCreatedByInput[]
+    createMany?: PodcastCreateManyCreatedByInputEnvelope
+    connect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+  }
+
+  export type PodcastCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<PodcastCreateWithoutUpdatedByInput, PodcastUncheckedCreateWithoutUpdatedByInput> | PodcastCreateWithoutUpdatedByInput[] | PodcastUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: PodcastCreateOrConnectWithoutUpdatedByInput | PodcastCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: PodcastCreateManyUpdatedByInputEnvelope
+    connect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+  }
+
   export type EventCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<EventCreateWithoutCreatedByInput, EventUncheckedCreateWithoutCreatedByInput> | EventCreateWithoutCreatedByInput[] | EventUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: EventCreateOrConnectWithoutCreatedByInput | EventCreateOrConnectWithoutCreatedByInput[]
@@ -34078,6 +36011,27 @@ export namespace Prisma {
     connectOrCreate?: ReportCreateOrConnectWithoutUpdatedByInput | ReportCreateOrConnectWithoutUpdatedByInput[]
     createMany?: ReportCreateManyUpdatedByInputEnvelope
     connect?: ReportWhereUniqueInput | ReportWhereUniqueInput[]
+  }
+
+  export type PodcastUncheckedCreateNestedManyWithoutApprovedByInput = {
+    create?: XOR<PodcastCreateWithoutApprovedByInput, PodcastUncheckedCreateWithoutApprovedByInput> | PodcastCreateWithoutApprovedByInput[] | PodcastUncheckedCreateWithoutApprovedByInput[]
+    connectOrCreate?: PodcastCreateOrConnectWithoutApprovedByInput | PodcastCreateOrConnectWithoutApprovedByInput[]
+    createMany?: PodcastCreateManyApprovedByInputEnvelope
+    connect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+  }
+
+  export type PodcastUncheckedCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<PodcastCreateWithoutCreatedByInput, PodcastUncheckedCreateWithoutCreatedByInput> | PodcastCreateWithoutCreatedByInput[] | PodcastUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: PodcastCreateOrConnectWithoutCreatedByInput | PodcastCreateOrConnectWithoutCreatedByInput[]
+    createMany?: PodcastCreateManyCreatedByInputEnvelope
+    connect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+  }
+
+  export type PodcastUncheckedCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<PodcastCreateWithoutUpdatedByInput, PodcastUncheckedCreateWithoutUpdatedByInput> | PodcastCreateWithoutUpdatedByInput[] | PodcastUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: PodcastCreateOrConnectWithoutUpdatedByInput | PodcastCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: PodcastCreateManyUpdatedByInputEnvelope
+    connect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
   }
 
   export type EventUncheckedCreateNestedManyWithoutCreatedByInput = {
@@ -34377,6 +36331,48 @@ export namespace Prisma {
     update?: ReportUpdateWithWhereUniqueWithoutUpdatedByInput | ReportUpdateWithWhereUniqueWithoutUpdatedByInput[]
     updateMany?: ReportUpdateManyWithWhereWithoutUpdatedByInput | ReportUpdateManyWithWhereWithoutUpdatedByInput[]
     deleteMany?: ReportScalarWhereInput | ReportScalarWhereInput[]
+  }
+
+  export type PodcastUpdateManyWithoutApprovedByNestedInput = {
+    create?: XOR<PodcastCreateWithoutApprovedByInput, PodcastUncheckedCreateWithoutApprovedByInput> | PodcastCreateWithoutApprovedByInput[] | PodcastUncheckedCreateWithoutApprovedByInput[]
+    connectOrCreate?: PodcastCreateOrConnectWithoutApprovedByInput | PodcastCreateOrConnectWithoutApprovedByInput[]
+    upsert?: PodcastUpsertWithWhereUniqueWithoutApprovedByInput | PodcastUpsertWithWhereUniqueWithoutApprovedByInput[]
+    createMany?: PodcastCreateManyApprovedByInputEnvelope
+    set?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    disconnect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    delete?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    connect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    update?: PodcastUpdateWithWhereUniqueWithoutApprovedByInput | PodcastUpdateWithWhereUniqueWithoutApprovedByInput[]
+    updateMany?: PodcastUpdateManyWithWhereWithoutApprovedByInput | PodcastUpdateManyWithWhereWithoutApprovedByInput[]
+    deleteMany?: PodcastScalarWhereInput | PodcastScalarWhereInput[]
+  }
+
+  export type PodcastUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<PodcastCreateWithoutCreatedByInput, PodcastUncheckedCreateWithoutCreatedByInput> | PodcastCreateWithoutCreatedByInput[] | PodcastUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: PodcastCreateOrConnectWithoutCreatedByInput | PodcastCreateOrConnectWithoutCreatedByInput[]
+    upsert?: PodcastUpsertWithWhereUniqueWithoutCreatedByInput | PodcastUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: PodcastCreateManyCreatedByInputEnvelope
+    set?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    disconnect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    delete?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    connect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    update?: PodcastUpdateWithWhereUniqueWithoutCreatedByInput | PodcastUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: PodcastUpdateManyWithWhereWithoutCreatedByInput | PodcastUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: PodcastScalarWhereInput | PodcastScalarWhereInput[]
+  }
+
+  export type PodcastUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<PodcastCreateWithoutUpdatedByInput, PodcastUncheckedCreateWithoutUpdatedByInput> | PodcastCreateWithoutUpdatedByInput[] | PodcastUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: PodcastCreateOrConnectWithoutUpdatedByInput | PodcastCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: PodcastUpsertWithWhereUniqueWithoutUpdatedByInput | PodcastUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: PodcastCreateManyUpdatedByInputEnvelope
+    set?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    disconnect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    delete?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    connect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    update?: PodcastUpdateWithWhereUniqueWithoutUpdatedByInput | PodcastUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: PodcastUpdateManyWithWhereWithoutUpdatedByInput | PodcastUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: PodcastScalarWhereInput | PodcastScalarWhereInput[]
   }
 
   export type EventUpdateManyWithoutCreatedByNestedInput = {
@@ -34755,6 +36751,48 @@ export namespace Prisma {
     update?: ReportUpdateWithWhereUniqueWithoutUpdatedByInput | ReportUpdateWithWhereUniqueWithoutUpdatedByInput[]
     updateMany?: ReportUpdateManyWithWhereWithoutUpdatedByInput | ReportUpdateManyWithWhereWithoutUpdatedByInput[]
     deleteMany?: ReportScalarWhereInput | ReportScalarWhereInput[]
+  }
+
+  export type PodcastUncheckedUpdateManyWithoutApprovedByNestedInput = {
+    create?: XOR<PodcastCreateWithoutApprovedByInput, PodcastUncheckedCreateWithoutApprovedByInput> | PodcastCreateWithoutApprovedByInput[] | PodcastUncheckedCreateWithoutApprovedByInput[]
+    connectOrCreate?: PodcastCreateOrConnectWithoutApprovedByInput | PodcastCreateOrConnectWithoutApprovedByInput[]
+    upsert?: PodcastUpsertWithWhereUniqueWithoutApprovedByInput | PodcastUpsertWithWhereUniqueWithoutApprovedByInput[]
+    createMany?: PodcastCreateManyApprovedByInputEnvelope
+    set?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    disconnect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    delete?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    connect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    update?: PodcastUpdateWithWhereUniqueWithoutApprovedByInput | PodcastUpdateWithWhereUniqueWithoutApprovedByInput[]
+    updateMany?: PodcastUpdateManyWithWhereWithoutApprovedByInput | PodcastUpdateManyWithWhereWithoutApprovedByInput[]
+    deleteMany?: PodcastScalarWhereInput | PodcastScalarWhereInput[]
+  }
+
+  export type PodcastUncheckedUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<PodcastCreateWithoutCreatedByInput, PodcastUncheckedCreateWithoutCreatedByInput> | PodcastCreateWithoutCreatedByInput[] | PodcastUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: PodcastCreateOrConnectWithoutCreatedByInput | PodcastCreateOrConnectWithoutCreatedByInput[]
+    upsert?: PodcastUpsertWithWhereUniqueWithoutCreatedByInput | PodcastUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: PodcastCreateManyCreatedByInputEnvelope
+    set?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    disconnect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    delete?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    connect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    update?: PodcastUpdateWithWhereUniqueWithoutCreatedByInput | PodcastUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: PodcastUpdateManyWithWhereWithoutCreatedByInput | PodcastUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: PodcastScalarWhereInput | PodcastScalarWhereInput[]
+  }
+
+  export type PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<PodcastCreateWithoutUpdatedByInput, PodcastUncheckedCreateWithoutUpdatedByInput> | PodcastCreateWithoutUpdatedByInput[] | PodcastUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: PodcastCreateOrConnectWithoutUpdatedByInput | PodcastCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: PodcastUpsertWithWhereUniqueWithoutUpdatedByInput | PodcastUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: PodcastCreateManyUpdatedByInputEnvelope
+    set?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    disconnect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    delete?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    connect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+    update?: PodcastUpdateWithWhereUniqueWithoutUpdatedByInput | PodcastUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: PodcastUpdateManyWithWhereWithoutUpdatedByInput | PodcastUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: PodcastScalarWhereInput | PodcastScalarWhereInput[]
   }
 
   export type EventUncheckedUpdateManyWithoutCreatedByNestedInput = {
@@ -36033,6 +38071,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -36077,6 +38118,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -36126,6 +38170,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -36170,6 +38217,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -36219,6 +38269,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -36263,6 +38316,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -36319,6 +38375,11 @@ export namespace Prisma {
   export type ReportCreateOrConnectWithoutProjectInput = {
     where: ReportWhereUniqueInput
     create: XOR<ReportCreateWithoutProjectInput, ReportUncheckedCreateWithoutProjectInput>
+  }
+
+  export type ReportCreateManyProjectInputEnvelope = {
+    data: ReportCreateManyProjectInput | ReportCreateManyProjectInput[]
+    skipDuplicates?: boolean
   }
 
   export type EventCreateWithoutProjectInput = {
@@ -36424,6 +38485,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -36468,6 +38532,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -36523,6 +38590,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -36567,6 +38637,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -36622,6 +38695,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -36666,6 +38742,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -36681,48 +38760,40 @@ export namespace Prisma {
     updatedTeamMembers?: TeamUncheckedUpdateManyWithoutUpdatedByNestedInput
   }
 
-  export type ReportUpsertWithoutProjectInput = {
+  export type ReportUpsertWithWhereUniqueWithoutProjectInput = {
+    where: ReportWhereUniqueInput
     update: XOR<ReportUpdateWithoutProjectInput, ReportUncheckedUpdateWithoutProjectInput>
     create: XOR<ReportCreateWithoutProjectInput, ReportUncheckedCreateWithoutProjectInput>
-    where?: ReportWhereInput
   }
 
-  export type ReportUpdateToOneWithWhereWithoutProjectInput = {
-    where?: ReportWhereInput
+  export type ReportUpdateWithWhereUniqueWithoutProjectInput = {
+    where: ReportWhereUniqueInput
     data: XOR<ReportUpdateWithoutProjectInput, ReportUncheckedUpdateWithoutProjectInput>
   }
 
-  export type ReportUpdateWithoutProjectInput = {
-    title?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
-    images?: ReportUpdateimagesInput | string[]
-    files?: ReportUpdatefilesInput | string[]
-    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
-    accessCount?: IntFieldUpdateOperationsInput | number
-    downloadCount?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    approvedBy?: UserUpdateOneWithoutApprovedReportsNestedInput
-    createdBy?: UserUpdateOneRequiredWithoutCreatedReportsNestedInput
-    updatedBy?: UserUpdateOneWithoutUpdatedReportsNestedInput
-    events?: EventUpdateManyWithoutReportNestedInput
+  export type ReportUpdateManyWithWhereWithoutProjectInput = {
+    where: ReportScalarWhereInput
+    data: XOR<ReportUpdateManyMutationInput, ReportUncheckedUpdateManyWithoutProjectInput>
   }
 
-  export type ReportUncheckedUpdateWithoutProjectInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
-    images?: ReportUpdateimagesInput | string[]
-    files?: ReportUpdatefilesInput | string[]
-    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
-    accessCount?: IntFieldUpdateOperationsInput | number
-    downloadCount?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdById?: StringFieldUpdateOperationsInput | string
-    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
-    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
-    events?: EventUncheckedUpdateManyWithoutReportNestedInput
+  export type ReportScalarWhereInput = {
+    AND?: ReportScalarWhereInput | ReportScalarWhereInput[]
+    OR?: ReportScalarWhereInput[]
+    NOT?: ReportScalarWhereInput | ReportScalarWhereInput[]
+    id?: IntFilter<"Report"> | number
+    title?: StringFilter<"Report"> | string
+    slug?: StringFilter<"Report"> | string
+    images?: StringNullableListFilter<"Report">
+    files?: StringNullableListFilter<"Report">
+    publishStatus?: EnumPublishStatusFilter<"Report"> | $Enums.PublishStatus
+    accessCount?: IntFilter<"Report"> | number
+    downloadCount?: IntFilter<"Report"> | number
+    createdAt?: DateTimeFilter<"Report"> | Date | string
+    updatedAt?: DateTimeFilter<"Report"> | Date | string
+    createdById?: StringFilter<"Report"> | string
+    updatedById?: StringNullableFilter<"Report"> | string | null
+    approvedById?: StringNullableFilter<"Report"> | string | null
+    projectId?: IntNullableFilter<"Report"> | number | null
   }
 
   export type EventUpsertWithWhereUniqueWithoutProjectInput = {
@@ -36801,6 +38872,9 @@ export namespace Prisma {
     updatedProjects?: ProjectCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -36845,6 +38919,9 @@ export namespace Prisma {
     updatedProjects?: ProjectUncheckedCreateNestedManyWithoutUpdatedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -36894,6 +38971,9 @@ export namespace Prisma {
     updatedProjects?: ProjectCreateNestedManyWithoutUpdatedByInput
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -36938,6 +39018,9 @@ export namespace Prisma {
     updatedProjects?: ProjectUncheckedCreateNestedManyWithoutUpdatedByInput
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -37023,6 +39106,9 @@ export namespace Prisma {
     updatedProjects?: ProjectCreateNestedManyWithoutUpdatedByInput
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -37067,6 +39153,9 @@ export namespace Prisma {
     updatedProjects?: ProjectUncheckedCreateNestedManyWithoutUpdatedByInput
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -37190,6 +39279,9 @@ export namespace Prisma {
     updatedProjects?: ProjectUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -37234,6 +39326,9 @@ export namespace Prisma {
     updatedProjects?: ProjectUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -37289,6 +39384,9 @@ export namespace Prisma {
     updatedProjects?: ProjectUpdateManyWithoutUpdatedByNestedInput
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -37333,6 +39431,9 @@ export namespace Prisma {
     updatedProjects?: ProjectUncheckedUpdateManyWithoutUpdatedByNestedInput
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -37430,6 +39531,9 @@ export namespace Prisma {
     updatedProjects?: ProjectUpdateManyWithoutUpdatedByNestedInput
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -37474,6 +39578,9 @@ export namespace Prisma {
     updatedProjects?: ProjectUncheckedUpdateManyWithoutUpdatedByNestedInput
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -37505,6 +39612,618 @@ export namespace Prisma {
     data: XOR<EventUpdateManyMutationInput, EventUncheckedUpdateManyWithoutReportInput>
   }
 
+  export type UserCreateWithoutApprovedPodcastsInput = {
+    id?: string
+    firstName?: string | null
+    lastName?: string | null
+    username: string
+    password: string
+    email?: string | null
+    image?: string | null
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    about?: string | null
+    lastLogin?: Date | string | null
+    loginStatus?: $Enums.LoginStatus
+    failedLoginCount?: number
+    lockedUntil?: Date | string | null
+    passwordHistory?: PasswordHistoryCreateNestedManyWithoutUserInput
+    passwordChangeLog?: PasswordChangeLogCreateNestedManyWithoutUserInput
+    failedLogins?: FailedLoginAttemptCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    approvedMessages?: MessageCreateNestedManyWithoutApproverInput
+    createdMessages?: MessageCreateNestedManyWithoutCreatedByInput
+    updatedMessages?: MessageCreateNestedManyWithoutUpdatedByInput
+    responses?: ResponseCreateNestedManyWithoutResponderUserInput
+    approvedProjects?: ProjectCreateNestedManyWithoutApprovedByInput
+    createdProjects?: ProjectCreateNestedManyWithoutCreatedByInput
+    updatedProjects?: ProjectCreateNestedManyWithoutUpdatedByInput
+    approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
+    updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
+    createdEvents?: EventCreateNestedManyWithoutCreatedByInput
+    updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
+    createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
+    updatedBeneficiaries?: BeneficiaryCreateNestedManyWithoutUpdatedByInput
+    approvedBeneficiaries?: BeneficiaryCreateNestedManyWithoutApprovedByInput
+    createdInstitutions?: InstitutionCreateNestedManyWithoutCreatedByInput
+    updatedInstitutions?: InstitutionCreateNestedManyWithoutUpdatedByInput
+    approvedInstitutions?: InstitutionCreateNestedManyWithoutApprovedByInput
+    createdFaqs?: FAQCreateNestedManyWithoutCreatedByInput
+    updatedFaqs?: FAQCreateNestedManyWithoutUpdatedByInput
+    approvedFaqs?: FAQCreateNestedManyWithoutApprovedByInput
+    createdTeamMembers?: TeamCreateNestedManyWithoutCreatedByInput
+    updatedTeamMembers?: TeamCreateNestedManyWithoutUpdatedByInput
+  }
+
+  export type UserUncheckedCreateWithoutApprovedPodcastsInput = {
+    id?: string
+    firstName?: string | null
+    lastName?: string | null
+    username: string
+    password: string
+    email?: string | null
+    image?: string | null
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    about?: string | null
+    lastLogin?: Date | string | null
+    loginStatus?: $Enums.LoginStatus
+    failedLoginCount?: number
+    lockedUntil?: Date | string | null
+    passwordHistory?: PasswordHistoryUncheckedCreateNestedManyWithoutUserInput
+    passwordChangeLog?: PasswordChangeLogUncheckedCreateNestedManyWithoutUserInput
+    failedLogins?: FailedLoginAttemptUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    approvedMessages?: MessageUncheckedCreateNestedManyWithoutApproverInput
+    createdMessages?: MessageUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedMessages?: MessageUncheckedCreateNestedManyWithoutUpdatedByInput
+    responses?: ResponseUncheckedCreateNestedManyWithoutResponderUserInput
+    approvedProjects?: ProjectUncheckedCreateNestedManyWithoutApprovedByInput
+    createdProjects?: ProjectUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedProjects?: ProjectUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutApprovedByInput
+    createdInstitutions?: InstitutionUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedInstitutions?: InstitutionUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedInstitutions?: InstitutionUncheckedCreateNestedManyWithoutApprovedByInput
+    createdFaqs?: FAQUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedFaqs?: FAQUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedFaqs?: FAQUncheckedCreateNestedManyWithoutApprovedByInput
+    createdTeamMembers?: TeamUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedTeamMembers?: TeamUncheckedCreateNestedManyWithoutUpdatedByInput
+  }
+
+  export type UserCreateOrConnectWithoutApprovedPodcastsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutApprovedPodcastsInput, UserUncheckedCreateWithoutApprovedPodcastsInput>
+  }
+
+  export type UserCreateWithoutCreatedPodcastsInput = {
+    id?: string
+    firstName?: string | null
+    lastName?: string | null
+    username: string
+    password: string
+    email?: string | null
+    image?: string | null
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    about?: string | null
+    lastLogin?: Date | string | null
+    loginStatus?: $Enums.LoginStatus
+    failedLoginCount?: number
+    lockedUntil?: Date | string | null
+    passwordHistory?: PasswordHistoryCreateNestedManyWithoutUserInput
+    passwordChangeLog?: PasswordChangeLogCreateNestedManyWithoutUserInput
+    failedLogins?: FailedLoginAttemptCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    approvedMessages?: MessageCreateNestedManyWithoutApproverInput
+    createdMessages?: MessageCreateNestedManyWithoutCreatedByInput
+    updatedMessages?: MessageCreateNestedManyWithoutUpdatedByInput
+    responses?: ResponseCreateNestedManyWithoutResponderUserInput
+    approvedProjects?: ProjectCreateNestedManyWithoutApprovedByInput
+    createdProjects?: ProjectCreateNestedManyWithoutCreatedByInput
+    updatedProjects?: ProjectCreateNestedManyWithoutUpdatedByInput
+    approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
+    updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
+    createdEvents?: EventCreateNestedManyWithoutCreatedByInput
+    updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
+    createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
+    updatedBeneficiaries?: BeneficiaryCreateNestedManyWithoutUpdatedByInput
+    approvedBeneficiaries?: BeneficiaryCreateNestedManyWithoutApprovedByInput
+    createdInstitutions?: InstitutionCreateNestedManyWithoutCreatedByInput
+    updatedInstitutions?: InstitutionCreateNestedManyWithoutUpdatedByInput
+    approvedInstitutions?: InstitutionCreateNestedManyWithoutApprovedByInput
+    createdFaqs?: FAQCreateNestedManyWithoutCreatedByInput
+    updatedFaqs?: FAQCreateNestedManyWithoutUpdatedByInput
+    approvedFaqs?: FAQCreateNestedManyWithoutApprovedByInput
+    createdTeamMembers?: TeamCreateNestedManyWithoutCreatedByInput
+    updatedTeamMembers?: TeamCreateNestedManyWithoutUpdatedByInput
+  }
+
+  export type UserUncheckedCreateWithoutCreatedPodcastsInput = {
+    id?: string
+    firstName?: string | null
+    lastName?: string | null
+    username: string
+    password: string
+    email?: string | null
+    image?: string | null
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    about?: string | null
+    lastLogin?: Date | string | null
+    loginStatus?: $Enums.LoginStatus
+    failedLoginCount?: number
+    lockedUntil?: Date | string | null
+    passwordHistory?: PasswordHistoryUncheckedCreateNestedManyWithoutUserInput
+    passwordChangeLog?: PasswordChangeLogUncheckedCreateNestedManyWithoutUserInput
+    failedLogins?: FailedLoginAttemptUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    approvedMessages?: MessageUncheckedCreateNestedManyWithoutApproverInput
+    createdMessages?: MessageUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedMessages?: MessageUncheckedCreateNestedManyWithoutUpdatedByInput
+    responses?: ResponseUncheckedCreateNestedManyWithoutResponderUserInput
+    approvedProjects?: ProjectUncheckedCreateNestedManyWithoutApprovedByInput
+    createdProjects?: ProjectUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedProjects?: ProjectUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutApprovedByInput
+    createdInstitutions?: InstitutionUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedInstitutions?: InstitutionUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedInstitutions?: InstitutionUncheckedCreateNestedManyWithoutApprovedByInput
+    createdFaqs?: FAQUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedFaqs?: FAQUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedFaqs?: FAQUncheckedCreateNestedManyWithoutApprovedByInput
+    createdTeamMembers?: TeamUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedTeamMembers?: TeamUncheckedCreateNestedManyWithoutUpdatedByInput
+  }
+
+  export type UserCreateOrConnectWithoutCreatedPodcastsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCreatedPodcastsInput, UserUncheckedCreateWithoutCreatedPodcastsInput>
+  }
+
+  export type UserCreateWithoutUpdatedPodcastsInput = {
+    id?: string
+    firstName?: string | null
+    lastName?: string | null
+    username: string
+    password: string
+    email?: string | null
+    image?: string | null
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    about?: string | null
+    lastLogin?: Date | string | null
+    loginStatus?: $Enums.LoginStatus
+    failedLoginCount?: number
+    lockedUntil?: Date | string | null
+    passwordHistory?: PasswordHistoryCreateNestedManyWithoutUserInput
+    passwordChangeLog?: PasswordChangeLogCreateNestedManyWithoutUserInput
+    failedLogins?: FailedLoginAttemptCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    approvedMessages?: MessageCreateNestedManyWithoutApproverInput
+    createdMessages?: MessageCreateNestedManyWithoutCreatedByInput
+    updatedMessages?: MessageCreateNestedManyWithoutUpdatedByInput
+    responses?: ResponseCreateNestedManyWithoutResponderUserInput
+    approvedProjects?: ProjectCreateNestedManyWithoutApprovedByInput
+    createdProjects?: ProjectCreateNestedManyWithoutCreatedByInput
+    updatedProjects?: ProjectCreateNestedManyWithoutUpdatedByInput
+    approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
+    createdReports?: ReportCreateNestedManyWithoutCreatedByInput
+    updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    createdEvents?: EventCreateNestedManyWithoutCreatedByInput
+    updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
+    createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
+    updatedBeneficiaries?: BeneficiaryCreateNestedManyWithoutUpdatedByInput
+    approvedBeneficiaries?: BeneficiaryCreateNestedManyWithoutApprovedByInput
+    createdInstitutions?: InstitutionCreateNestedManyWithoutCreatedByInput
+    updatedInstitutions?: InstitutionCreateNestedManyWithoutUpdatedByInput
+    approvedInstitutions?: InstitutionCreateNestedManyWithoutApprovedByInput
+    createdFaqs?: FAQCreateNestedManyWithoutCreatedByInput
+    updatedFaqs?: FAQCreateNestedManyWithoutUpdatedByInput
+    approvedFaqs?: FAQCreateNestedManyWithoutApprovedByInput
+    createdTeamMembers?: TeamCreateNestedManyWithoutCreatedByInput
+    updatedTeamMembers?: TeamCreateNestedManyWithoutUpdatedByInput
+  }
+
+  export type UserUncheckedCreateWithoutUpdatedPodcastsInput = {
+    id?: string
+    firstName?: string | null
+    lastName?: string | null
+    username: string
+    password: string
+    email?: string | null
+    image?: string | null
+    role?: $Enums.Role
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    about?: string | null
+    lastLogin?: Date | string | null
+    loginStatus?: $Enums.LoginStatus
+    failedLoginCount?: number
+    lockedUntil?: Date | string | null
+    passwordHistory?: PasswordHistoryUncheckedCreateNestedManyWithoutUserInput
+    passwordChangeLog?: PasswordChangeLogUncheckedCreateNestedManyWithoutUserInput
+    failedLogins?: FailedLoginAttemptUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    approvedMessages?: MessageUncheckedCreateNestedManyWithoutApproverInput
+    createdMessages?: MessageUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedMessages?: MessageUncheckedCreateNestedManyWithoutUpdatedByInput
+    responses?: ResponseUncheckedCreateNestedManyWithoutResponderUserInput
+    approvedProjects?: ProjectUncheckedCreateNestedManyWithoutApprovedByInput
+    createdProjects?: ProjectUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedProjects?: ProjectUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
+    createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutApprovedByInput
+    createdInstitutions?: InstitutionUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedInstitutions?: InstitutionUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedInstitutions?: InstitutionUncheckedCreateNestedManyWithoutApprovedByInput
+    createdFaqs?: FAQUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedFaqs?: FAQUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedFaqs?: FAQUncheckedCreateNestedManyWithoutApprovedByInput
+    createdTeamMembers?: TeamUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedTeamMembers?: TeamUncheckedCreateNestedManyWithoutUpdatedByInput
+  }
+
+  export type UserCreateOrConnectWithoutUpdatedPodcastsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutUpdatedPodcastsInput, UserUncheckedCreateWithoutUpdatedPodcastsInput>
+  }
+
+  export type UserUpsertWithoutApprovedPodcastsInput = {
+    update: XOR<UserUpdateWithoutApprovedPodcastsInput, UserUncheckedUpdateWithoutApprovedPodcastsInput>
+    create: XOR<UserCreateWithoutApprovedPodcastsInput, UserUncheckedCreateWithoutApprovedPodcastsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutApprovedPodcastsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutApprovedPodcastsInput, UserUncheckedUpdateWithoutApprovedPodcastsInput>
+  }
+
+  export type UserUpdateWithoutApprovedPodcastsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    about?: NullableStringFieldUpdateOperationsInput | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    loginStatus?: EnumLoginStatusFieldUpdateOperationsInput | $Enums.LoginStatus
+    failedLoginCount?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordHistory?: PasswordHistoryUpdateManyWithoutUserNestedInput
+    passwordChangeLog?: PasswordChangeLogUpdateManyWithoutUserNestedInput
+    failedLogins?: FailedLoginAttemptUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    approvedMessages?: MessageUpdateManyWithoutApproverNestedInput
+    createdMessages?: MessageUpdateManyWithoutCreatedByNestedInput
+    updatedMessages?: MessageUpdateManyWithoutUpdatedByNestedInput
+    responses?: ResponseUpdateManyWithoutResponderUserNestedInput
+    approvedProjects?: ProjectUpdateManyWithoutApprovedByNestedInput
+    createdProjects?: ProjectUpdateManyWithoutCreatedByNestedInput
+    updatedProjects?: ProjectUpdateManyWithoutUpdatedByNestedInput
+    approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
+    updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
+    createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
+    updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
+    createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
+    updatedBeneficiaries?: BeneficiaryUpdateManyWithoutUpdatedByNestedInput
+    approvedBeneficiaries?: BeneficiaryUpdateManyWithoutApprovedByNestedInput
+    createdInstitutions?: InstitutionUpdateManyWithoutCreatedByNestedInput
+    updatedInstitutions?: InstitutionUpdateManyWithoutUpdatedByNestedInput
+    approvedInstitutions?: InstitutionUpdateManyWithoutApprovedByNestedInput
+    createdFaqs?: FAQUpdateManyWithoutCreatedByNestedInput
+    updatedFaqs?: FAQUpdateManyWithoutUpdatedByNestedInput
+    approvedFaqs?: FAQUpdateManyWithoutApprovedByNestedInput
+    createdTeamMembers?: TeamUpdateManyWithoutCreatedByNestedInput
+    updatedTeamMembers?: TeamUpdateManyWithoutUpdatedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutApprovedPodcastsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    about?: NullableStringFieldUpdateOperationsInput | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    loginStatus?: EnumLoginStatusFieldUpdateOperationsInput | $Enums.LoginStatus
+    failedLoginCount?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordHistory?: PasswordHistoryUncheckedUpdateManyWithoutUserNestedInput
+    passwordChangeLog?: PasswordChangeLogUncheckedUpdateManyWithoutUserNestedInput
+    failedLogins?: FailedLoginAttemptUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    approvedMessages?: MessageUncheckedUpdateManyWithoutApproverNestedInput
+    createdMessages?: MessageUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedMessages?: MessageUncheckedUpdateManyWithoutUpdatedByNestedInput
+    responses?: ResponseUncheckedUpdateManyWithoutResponderUserNestedInput
+    approvedProjects?: ProjectUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdProjects?: ProjectUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedProjects?: ProjectUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdInstitutions?: InstitutionUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedInstitutions?: InstitutionUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedInstitutions?: InstitutionUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdFaqs?: FAQUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedFaqs?: FAQUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedFaqs?: FAQUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdTeamMembers?: TeamUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedTeamMembers?: TeamUncheckedUpdateManyWithoutUpdatedByNestedInput
+  }
+
+  export type UserUpsertWithoutCreatedPodcastsInput = {
+    update: XOR<UserUpdateWithoutCreatedPodcastsInput, UserUncheckedUpdateWithoutCreatedPodcastsInput>
+    create: XOR<UserCreateWithoutCreatedPodcastsInput, UserUncheckedCreateWithoutCreatedPodcastsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCreatedPodcastsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCreatedPodcastsInput, UserUncheckedUpdateWithoutCreatedPodcastsInput>
+  }
+
+  export type UserUpdateWithoutCreatedPodcastsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    about?: NullableStringFieldUpdateOperationsInput | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    loginStatus?: EnumLoginStatusFieldUpdateOperationsInput | $Enums.LoginStatus
+    failedLoginCount?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordHistory?: PasswordHistoryUpdateManyWithoutUserNestedInput
+    passwordChangeLog?: PasswordChangeLogUpdateManyWithoutUserNestedInput
+    failedLogins?: FailedLoginAttemptUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    approvedMessages?: MessageUpdateManyWithoutApproverNestedInput
+    createdMessages?: MessageUpdateManyWithoutCreatedByNestedInput
+    updatedMessages?: MessageUpdateManyWithoutUpdatedByNestedInput
+    responses?: ResponseUpdateManyWithoutResponderUserNestedInput
+    approvedProjects?: ProjectUpdateManyWithoutApprovedByNestedInput
+    createdProjects?: ProjectUpdateManyWithoutCreatedByNestedInput
+    updatedProjects?: ProjectUpdateManyWithoutUpdatedByNestedInput
+    approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
+    updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
+    createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
+    updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
+    createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
+    updatedBeneficiaries?: BeneficiaryUpdateManyWithoutUpdatedByNestedInput
+    approvedBeneficiaries?: BeneficiaryUpdateManyWithoutApprovedByNestedInput
+    createdInstitutions?: InstitutionUpdateManyWithoutCreatedByNestedInput
+    updatedInstitutions?: InstitutionUpdateManyWithoutUpdatedByNestedInput
+    approvedInstitutions?: InstitutionUpdateManyWithoutApprovedByNestedInput
+    createdFaqs?: FAQUpdateManyWithoutCreatedByNestedInput
+    updatedFaqs?: FAQUpdateManyWithoutUpdatedByNestedInput
+    approvedFaqs?: FAQUpdateManyWithoutApprovedByNestedInput
+    createdTeamMembers?: TeamUpdateManyWithoutCreatedByNestedInput
+    updatedTeamMembers?: TeamUpdateManyWithoutUpdatedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCreatedPodcastsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    about?: NullableStringFieldUpdateOperationsInput | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    loginStatus?: EnumLoginStatusFieldUpdateOperationsInput | $Enums.LoginStatus
+    failedLoginCount?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordHistory?: PasswordHistoryUncheckedUpdateManyWithoutUserNestedInput
+    passwordChangeLog?: PasswordChangeLogUncheckedUpdateManyWithoutUserNestedInput
+    failedLogins?: FailedLoginAttemptUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    approvedMessages?: MessageUncheckedUpdateManyWithoutApproverNestedInput
+    createdMessages?: MessageUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedMessages?: MessageUncheckedUpdateManyWithoutUpdatedByNestedInput
+    responses?: ResponseUncheckedUpdateManyWithoutResponderUserNestedInput
+    approvedProjects?: ProjectUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdProjects?: ProjectUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedProjects?: ProjectUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdInstitutions?: InstitutionUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedInstitutions?: InstitutionUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedInstitutions?: InstitutionUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdFaqs?: FAQUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedFaqs?: FAQUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedFaqs?: FAQUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdTeamMembers?: TeamUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedTeamMembers?: TeamUncheckedUpdateManyWithoutUpdatedByNestedInput
+  }
+
+  export type UserUpsertWithoutUpdatedPodcastsInput = {
+    update: XOR<UserUpdateWithoutUpdatedPodcastsInput, UserUncheckedUpdateWithoutUpdatedPodcastsInput>
+    create: XOR<UserCreateWithoutUpdatedPodcastsInput, UserUncheckedCreateWithoutUpdatedPodcastsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutUpdatedPodcastsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutUpdatedPodcastsInput, UserUncheckedUpdateWithoutUpdatedPodcastsInput>
+  }
+
+  export type UserUpdateWithoutUpdatedPodcastsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    about?: NullableStringFieldUpdateOperationsInput | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    loginStatus?: EnumLoginStatusFieldUpdateOperationsInput | $Enums.LoginStatus
+    failedLoginCount?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordHistory?: PasswordHistoryUpdateManyWithoutUserNestedInput
+    passwordChangeLog?: PasswordChangeLogUpdateManyWithoutUserNestedInput
+    failedLogins?: FailedLoginAttemptUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    approvedMessages?: MessageUpdateManyWithoutApproverNestedInput
+    createdMessages?: MessageUpdateManyWithoutCreatedByNestedInput
+    updatedMessages?: MessageUpdateManyWithoutUpdatedByNestedInput
+    responses?: ResponseUpdateManyWithoutResponderUserNestedInput
+    approvedProjects?: ProjectUpdateManyWithoutApprovedByNestedInput
+    createdProjects?: ProjectUpdateManyWithoutCreatedByNestedInput
+    updatedProjects?: ProjectUpdateManyWithoutUpdatedByNestedInput
+    approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
+    createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
+    updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
+    updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
+    createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
+    updatedBeneficiaries?: BeneficiaryUpdateManyWithoutUpdatedByNestedInput
+    approvedBeneficiaries?: BeneficiaryUpdateManyWithoutApprovedByNestedInput
+    createdInstitutions?: InstitutionUpdateManyWithoutCreatedByNestedInput
+    updatedInstitutions?: InstitutionUpdateManyWithoutUpdatedByNestedInput
+    approvedInstitutions?: InstitutionUpdateManyWithoutApprovedByNestedInput
+    createdFaqs?: FAQUpdateManyWithoutCreatedByNestedInput
+    updatedFaqs?: FAQUpdateManyWithoutUpdatedByNestedInput
+    approvedFaqs?: FAQUpdateManyWithoutApprovedByNestedInput
+    createdTeamMembers?: TeamUpdateManyWithoutCreatedByNestedInput
+    updatedTeamMembers?: TeamUpdateManyWithoutUpdatedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutUpdatedPodcastsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    about?: NullableStringFieldUpdateOperationsInput | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    loginStatus?: EnumLoginStatusFieldUpdateOperationsInput | $Enums.LoginStatus
+    failedLoginCount?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    passwordHistory?: PasswordHistoryUncheckedUpdateManyWithoutUserNestedInput
+    passwordChangeLog?: PasswordChangeLogUncheckedUpdateManyWithoutUserNestedInput
+    failedLogins?: FailedLoginAttemptUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    approvedMessages?: MessageUncheckedUpdateManyWithoutApproverNestedInput
+    createdMessages?: MessageUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedMessages?: MessageUncheckedUpdateManyWithoutUpdatedByNestedInput
+    responses?: ResponseUncheckedUpdateManyWithoutResponderUserNestedInput
+    approvedProjects?: ProjectUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdProjects?: ProjectUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedProjects?: ProjectUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdInstitutions?: InstitutionUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedInstitutions?: InstitutionUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedInstitutions?: InstitutionUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdFaqs?: FAQUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedFaqs?: FAQUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedFaqs?: FAQUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdTeamMembers?: TeamUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedTeamMembers?: TeamUncheckedUpdateManyWithoutUpdatedByNestedInput
+  }
+
   export type UserCreateWithoutCreatedMessagesInput = {
     id?: string
     firstName?: string | null
@@ -37534,6 +40253,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -37578,6 +40300,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -37627,6 +40352,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -37671,6 +40399,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -37720,6 +40451,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -37764,6 +40498,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -37899,6 +40636,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -37943,6 +40683,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -37998,6 +40741,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -38042,6 +40788,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -38097,6 +40846,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -38141,6 +40893,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -38531,7 +41286,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedProjectsInput
     updatedBy?: UserCreateNestedOneWithoutUpdatedProjectsInput
-    reports?: ReportCreateNestedOneWithoutProjectInput
+    reports?: ReportCreateNestedManyWithoutProjectInput
     events?: EventCreateNestedManyWithoutProjectInput
   }
 
@@ -38547,7 +41302,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     createdById: string
     updatedById?: string | null
-    reports?: ReportUncheckedCreateNestedOneWithoutProjectInput
+    reports?: ReportUncheckedCreateNestedManyWithoutProjectInput
     events?: EventUncheckedCreateNestedManyWithoutProjectInput
   }
 
@@ -38572,7 +41327,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     approvedBy?: UserCreateNestedOneWithoutApprovedProjectsInput
     updatedBy?: UserCreateNestedOneWithoutUpdatedProjectsInput
-    reports?: ReportCreateNestedOneWithoutProjectInput
+    reports?: ReportCreateNestedManyWithoutProjectInput
     events?: EventCreateNestedManyWithoutProjectInput
   }
 
@@ -38588,7 +41343,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     updatedById?: string | null
     approvedById?: string | null
-    reports?: ReportUncheckedCreateNestedOneWithoutProjectInput
+    reports?: ReportUncheckedCreateNestedManyWithoutProjectInput
     events?: EventUncheckedCreateNestedManyWithoutProjectInput
   }
 
@@ -38613,7 +41368,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     approvedBy?: UserCreateNestedOneWithoutApprovedProjectsInput
     createdBy: UserCreateNestedOneWithoutCreatedProjectsInput
-    reports?: ReportCreateNestedOneWithoutProjectInput
+    reports?: ReportCreateNestedManyWithoutProjectInput
     events?: EventCreateNestedManyWithoutProjectInput
   }
 
@@ -38629,7 +41384,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     createdById: string
     approvedById?: string | null
-    reports?: ReportUncheckedCreateNestedOneWithoutProjectInput
+    reports?: ReportUncheckedCreateNestedManyWithoutProjectInput
     events?: EventUncheckedCreateNestedManyWithoutProjectInput
   }
 
@@ -38769,6 +41524,135 @@ export namespace Prisma {
 
   export type ReportCreateManyUpdatedByInputEnvelope = {
     data: ReportCreateManyUpdatedByInput | ReportCreateManyUpdatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PodcastCreateWithoutApprovedByInput = {
+    title: string
+    slug: string
+    description: JsonNullValueInput | InputJsonValue
+    image?: string | null
+    audioUrl: string
+    waveform?: PodcastCreatewaveformInput | number[]
+    publishedAt?: Date | string
+    publishStatus?: $Enums.PublishStatus
+    accessCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy: UserCreateNestedOneWithoutCreatedPodcastsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedPodcastsInput
+  }
+
+  export type PodcastUncheckedCreateWithoutApprovedByInput = {
+    id?: number
+    title: string
+    slug: string
+    description: JsonNullValueInput | InputJsonValue
+    image?: string | null
+    audioUrl: string
+    waveform?: PodcastCreatewaveformInput | number[]
+    publishedAt?: Date | string
+    publishStatus?: $Enums.PublishStatus
+    accessCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdById: string
+    updatedById?: string | null
+  }
+
+  export type PodcastCreateOrConnectWithoutApprovedByInput = {
+    where: PodcastWhereUniqueInput
+    create: XOR<PodcastCreateWithoutApprovedByInput, PodcastUncheckedCreateWithoutApprovedByInput>
+  }
+
+  export type PodcastCreateManyApprovedByInputEnvelope = {
+    data: PodcastCreateManyApprovedByInput | PodcastCreateManyApprovedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PodcastCreateWithoutCreatedByInput = {
+    title: string
+    slug: string
+    description: JsonNullValueInput | InputJsonValue
+    image?: string | null
+    audioUrl: string
+    waveform?: PodcastCreatewaveformInput | number[]
+    publishedAt?: Date | string
+    publishStatus?: $Enums.PublishStatus
+    accessCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    approvedBy?: UserCreateNestedOneWithoutApprovedPodcastsInput
+    updatedBy?: UserCreateNestedOneWithoutUpdatedPodcastsInput
+  }
+
+  export type PodcastUncheckedCreateWithoutCreatedByInput = {
+    id?: number
+    title: string
+    slug: string
+    description: JsonNullValueInput | InputJsonValue
+    image?: string | null
+    audioUrl: string
+    waveform?: PodcastCreatewaveformInput | number[]
+    publishedAt?: Date | string
+    publishStatus?: $Enums.PublishStatus
+    accessCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    updatedById?: string | null
+    approvedById?: string | null
+  }
+
+  export type PodcastCreateOrConnectWithoutCreatedByInput = {
+    where: PodcastWhereUniqueInput
+    create: XOR<PodcastCreateWithoutCreatedByInput, PodcastUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type PodcastCreateManyCreatedByInputEnvelope = {
+    data: PodcastCreateManyCreatedByInput | PodcastCreateManyCreatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PodcastCreateWithoutUpdatedByInput = {
+    title: string
+    slug: string
+    description: JsonNullValueInput | InputJsonValue
+    image?: string | null
+    audioUrl: string
+    waveform?: PodcastCreatewaveformInput | number[]
+    publishedAt?: Date | string
+    publishStatus?: $Enums.PublishStatus
+    accessCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    approvedBy?: UserCreateNestedOneWithoutApprovedPodcastsInput
+    createdBy: UserCreateNestedOneWithoutCreatedPodcastsInput
+  }
+
+  export type PodcastUncheckedCreateWithoutUpdatedByInput = {
+    id?: number
+    title: string
+    slug: string
+    description: JsonNullValueInput | InputJsonValue
+    image?: string | null
+    audioUrl: string
+    waveform?: PodcastCreatewaveformInput | number[]
+    publishedAt?: Date | string
+    publishStatus?: $Enums.PublishStatus
+    accessCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdById: string
+    approvedById?: string | null
+  }
+
+  export type PodcastCreateOrConnectWithoutUpdatedByInput = {
+    where: PodcastWhereUniqueInput
+    create: XOR<PodcastCreateWithoutUpdatedByInput, PodcastUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type PodcastCreateManyUpdatedByInputEnvelope = {
+    data: PodcastCreateManyUpdatedByInput | PodcastCreateManyUpdatedByInput[]
     skipDuplicates?: boolean
   }
 
@@ -39655,26 +42539,6 @@ export namespace Prisma {
     data: XOR<ReportUpdateManyMutationInput, ReportUncheckedUpdateManyWithoutApprovedByInput>
   }
 
-  export type ReportScalarWhereInput = {
-    AND?: ReportScalarWhereInput | ReportScalarWhereInput[]
-    OR?: ReportScalarWhereInput[]
-    NOT?: ReportScalarWhereInput | ReportScalarWhereInput[]
-    id?: IntFilter<"Report"> | number
-    title?: StringFilter<"Report"> | string
-    slug?: StringFilter<"Report"> | string
-    images?: StringNullableListFilter<"Report">
-    files?: StringNullableListFilter<"Report">
-    publishStatus?: EnumPublishStatusFilter<"Report"> | $Enums.PublishStatus
-    accessCount?: IntFilter<"Report"> | number
-    downloadCount?: IntFilter<"Report"> | number
-    createdAt?: DateTimeFilter<"Report"> | Date | string
-    updatedAt?: DateTimeFilter<"Report"> | Date | string
-    createdById?: StringFilter<"Report"> | string
-    updatedById?: StringNullableFilter<"Report"> | string | null
-    approvedById?: StringNullableFilter<"Report"> | string | null
-    projectId?: IntNullableFilter<"Report"> | number | null
-  }
-
   export type ReportUpsertWithWhereUniqueWithoutCreatedByInput = {
     where: ReportWhereUniqueInput
     update: XOR<ReportUpdateWithoutCreatedByInput, ReportUncheckedUpdateWithoutCreatedByInput>
@@ -39705,6 +42569,75 @@ export namespace Prisma {
   export type ReportUpdateManyWithWhereWithoutUpdatedByInput = {
     where: ReportScalarWhereInput
     data: XOR<ReportUpdateManyMutationInput, ReportUncheckedUpdateManyWithoutUpdatedByInput>
+  }
+
+  export type PodcastUpsertWithWhereUniqueWithoutApprovedByInput = {
+    where: PodcastWhereUniqueInput
+    update: XOR<PodcastUpdateWithoutApprovedByInput, PodcastUncheckedUpdateWithoutApprovedByInput>
+    create: XOR<PodcastCreateWithoutApprovedByInput, PodcastUncheckedCreateWithoutApprovedByInput>
+  }
+
+  export type PodcastUpdateWithWhereUniqueWithoutApprovedByInput = {
+    where: PodcastWhereUniqueInput
+    data: XOR<PodcastUpdateWithoutApprovedByInput, PodcastUncheckedUpdateWithoutApprovedByInput>
+  }
+
+  export type PodcastUpdateManyWithWhereWithoutApprovedByInput = {
+    where: PodcastScalarWhereInput
+    data: XOR<PodcastUpdateManyMutationInput, PodcastUncheckedUpdateManyWithoutApprovedByInput>
+  }
+
+  export type PodcastScalarWhereInput = {
+    AND?: PodcastScalarWhereInput | PodcastScalarWhereInput[]
+    OR?: PodcastScalarWhereInput[]
+    NOT?: PodcastScalarWhereInput | PodcastScalarWhereInput[]
+    id?: IntFilter<"Podcast"> | number
+    title?: StringFilter<"Podcast"> | string
+    slug?: StringFilter<"Podcast"> | string
+    description?: JsonFilter<"Podcast">
+    image?: StringNullableFilter<"Podcast"> | string | null
+    audioUrl?: StringFilter<"Podcast"> | string
+    waveform?: FloatNullableListFilter<"Podcast">
+    publishedAt?: DateTimeFilter<"Podcast"> | Date | string
+    publishStatus?: EnumPublishStatusFilter<"Podcast"> | $Enums.PublishStatus
+    accessCount?: IntFilter<"Podcast"> | number
+    createdAt?: DateTimeFilter<"Podcast"> | Date | string
+    updatedAt?: DateTimeFilter<"Podcast"> | Date | string
+    createdById?: StringFilter<"Podcast"> | string
+    updatedById?: StringNullableFilter<"Podcast"> | string | null
+    approvedById?: StringNullableFilter<"Podcast"> | string | null
+  }
+
+  export type PodcastUpsertWithWhereUniqueWithoutCreatedByInput = {
+    where: PodcastWhereUniqueInput
+    update: XOR<PodcastUpdateWithoutCreatedByInput, PodcastUncheckedUpdateWithoutCreatedByInput>
+    create: XOR<PodcastCreateWithoutCreatedByInput, PodcastUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type PodcastUpdateWithWhereUniqueWithoutCreatedByInput = {
+    where: PodcastWhereUniqueInput
+    data: XOR<PodcastUpdateWithoutCreatedByInput, PodcastUncheckedUpdateWithoutCreatedByInput>
+  }
+
+  export type PodcastUpdateManyWithWhereWithoutCreatedByInput = {
+    where: PodcastScalarWhereInput
+    data: XOR<PodcastUpdateManyMutationInput, PodcastUncheckedUpdateManyWithoutCreatedByInput>
+  }
+
+  export type PodcastUpsertWithWhereUniqueWithoutUpdatedByInput = {
+    where: PodcastWhereUniqueInput
+    update: XOR<PodcastUpdateWithoutUpdatedByInput, PodcastUncheckedUpdateWithoutUpdatedByInput>
+    create: XOR<PodcastCreateWithoutUpdatedByInput, PodcastUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type PodcastUpdateWithWhereUniqueWithoutUpdatedByInput = {
+    where: PodcastWhereUniqueInput
+    data: XOR<PodcastUpdateWithoutUpdatedByInput, PodcastUncheckedUpdateWithoutUpdatedByInput>
+  }
+
+  export type PodcastUpdateManyWithWhereWithoutUpdatedByInput = {
+    where: PodcastScalarWhereInput
+    data: XOR<PodcastUpdateManyMutationInput, PodcastUncheckedUpdateManyWithoutUpdatedByInput>
   }
 
   export type EventUpsertWithWhereUniqueWithoutCreatedByInput = {
@@ -40024,6 +42957,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -40068,6 +43004,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -40128,6 +43067,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -40172,6 +43114,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -40216,6 +43161,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -40260,6 +43208,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -40320,6 +43271,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -40364,6 +43318,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -40408,6 +43365,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -40452,6 +43412,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -40512,6 +43475,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -40556,6 +43522,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -40600,6 +43569,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -40644,6 +43616,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -40704,6 +43679,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -40748,6 +43726,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -40793,6 +43774,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
     updatedBeneficiaries?: BeneficiaryCreateNestedManyWithoutUpdatedByInput
@@ -40837,6 +43821,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
     updatedBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutUpdatedByInput
@@ -40886,6 +43873,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
     updatedBeneficiaries?: BeneficiaryCreateNestedManyWithoutUpdatedByInput
@@ -40930,6 +43920,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
     updatedBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutUpdatedByInput
@@ -40961,7 +43954,7 @@ export namespace Prisma {
     approvedBy?: UserCreateNestedOneWithoutApprovedProjectsInput
     createdBy: UserCreateNestedOneWithoutCreatedProjectsInput
     updatedBy?: UserCreateNestedOneWithoutUpdatedProjectsInput
-    reports?: ReportCreateNestedOneWithoutProjectInput
+    reports?: ReportCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutEventsInput = {
@@ -40977,7 +43970,7 @@ export namespace Prisma {
     createdById: string
     updatedById?: string | null
     approvedById?: string | null
-    reports?: ReportUncheckedCreateNestedOneWithoutProjectInput
+    reports?: ReportUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutEventsInput = {
@@ -41064,6 +44057,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
     updatedBeneficiaries?: BeneficiaryUpdateManyWithoutUpdatedByNestedInput
@@ -41108,6 +44104,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutUpdatedByNestedInput
@@ -41163,6 +44162,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
     updatedBeneficiaries?: BeneficiaryUpdateManyWithoutUpdatedByNestedInput
@@ -41207,6 +44209,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutUpdatedByNestedInput
@@ -41244,7 +44249,7 @@ export namespace Prisma {
     approvedBy?: UserUpdateOneWithoutApprovedProjectsNestedInput
     createdBy?: UserUpdateOneRequiredWithoutCreatedProjectsNestedInput
     updatedBy?: UserUpdateOneWithoutUpdatedProjectsNestedInput
-    reports?: ReportUpdateOneWithoutProjectNestedInput
+    reports?: ReportUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutEventsInput = {
@@ -41260,7 +44265,7 @@ export namespace Prisma {
     createdById?: StringFieldUpdateOperationsInput | string
     updatedById?: NullableStringFieldUpdateOperationsInput | string | null
     approvedById?: NullableStringFieldUpdateOperationsInput | string | null
-    reports?: ReportUncheckedUpdateOneWithoutProjectNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ReportUpsertWithoutEventsInput = {
@@ -41411,6 +44416,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -41455,6 +44463,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -41504,6 +44515,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -41548,6 +44562,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -41597,6 +44614,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -41641,6 +44661,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -41744,6 +44767,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -41788,6 +44814,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -41843,6 +44872,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -41887,6 +44919,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -41942,6 +44977,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -41986,6 +45024,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -42240,6 +45281,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     updatedBeneficiaries?: BeneficiaryCreateNestedManyWithoutUpdatedByInput
@@ -42284,6 +45328,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     updatedBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutUpdatedByInput
@@ -42333,6 +45380,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -42377,6 +45427,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -42426,6 +45479,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -42470,6 +45526,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -42609,6 +45668,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     updatedBeneficiaries?: BeneficiaryUpdateManyWithoutUpdatedByNestedInput
@@ -42653,6 +45715,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     updatedBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutUpdatedByNestedInput
@@ -42708,6 +45773,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -42752,6 +45820,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -42807,6 +45878,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -42851,6 +45925,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -42940,6 +46017,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -42984,6 +46064,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -43141,6 +46224,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -43185,6 +46271,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -43281,6 +46370,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -43325,6 +46417,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -43374,6 +46469,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -43418,6 +46516,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -43467,6 +46568,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -43511,6 +46615,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -43571,6 +46678,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -43615,6 +46725,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -43670,6 +46783,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -43714,6 +46830,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -43769,6 +46888,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -43813,6 +46935,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -43857,6 +46982,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -43901,6 +47029,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -43950,6 +47081,9 @@ export namespace Prisma {
     approvedReports?: ReportCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryCreateNestedManyWithoutCreatedByInput
@@ -43994,6 +47128,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedCreateNestedManyWithoutApprovedByInput
     createdReports?: ReportUncheckedCreateNestedManyWithoutCreatedByInput
     updatedReports?: ReportUncheckedCreateNestedManyWithoutUpdatedByInput
+    approvedPodcasts?: PodcastUncheckedCreateNestedManyWithoutApprovedByInput
+    createdPodcasts?: PodcastUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedPodcasts?: PodcastUncheckedCreateNestedManyWithoutUpdatedByInput
     createdEvents?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     updatedEvents?: EventUncheckedCreateNestedManyWithoutUpdatedByInput
     createdBeneficiaries?: BeneficiaryUncheckedCreateNestedManyWithoutCreatedByInput
@@ -44054,6 +47191,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -44098,6 +47238,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -44153,6 +47296,9 @@ export namespace Prisma {
     approvedReports?: ReportUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUpdateManyWithoutCreatedByNestedInput
@@ -44197,6 +47343,9 @@ export namespace Prisma {
     approvedReports?: ReportUncheckedUpdateManyWithoutApprovedByNestedInput
     createdReports?: ReportUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedReports?: ReportUncheckedUpdateManyWithoutUpdatedByNestedInput
+    approvedPodcasts?: PodcastUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdPodcasts?: PodcastUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedPodcasts?: PodcastUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdEvents?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     updatedEvents?: EventUncheckedUpdateManyWithoutUpdatedByNestedInput
     createdBeneficiaries?: BeneficiaryUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -44209,6 +47358,22 @@ export namespace Prisma {
     updatedFaqs?: FAQUncheckedUpdateManyWithoutUpdatedByNestedInput
     approvedFaqs?: FAQUncheckedUpdateManyWithoutApprovedByNestedInput
     createdTeamMembers?: TeamUncheckedUpdateManyWithoutCreatedByNestedInput
+  }
+
+  export type ReportCreateManyProjectInput = {
+    id?: number
+    title: string
+    slug: string
+    images?: ReportCreateimagesInput | string[]
+    files?: ReportCreatefilesInput | string[]
+    publishStatus?: $Enums.PublishStatus
+    accessCount?: number
+    downloadCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdById: string
+    updatedById?: string | null
+    approvedById?: string | null
   }
 
   export type EventCreateManyProjectInput = {
@@ -44236,6 +47401,55 @@ export namespace Prisma {
     createdById: string
     updatedById: string
     reportId?: number | null
+  }
+
+  export type ReportUpdateWithoutProjectInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    images?: ReportUpdateimagesInput | string[]
+    files?: ReportUpdatefilesInput | string[]
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    downloadCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    approvedBy?: UserUpdateOneWithoutApprovedReportsNestedInput
+    createdBy?: UserUpdateOneRequiredWithoutCreatedReportsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedReportsNestedInput
+    events?: EventUpdateManyWithoutReportNestedInput
+  }
+
+  export type ReportUncheckedUpdateWithoutProjectInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    images?: ReportUpdateimagesInput | string[]
+    files?: ReportUpdatefilesInput | string[]
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    downloadCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+    events?: EventUncheckedUpdateManyWithoutReportNestedInput
+  }
+
+  export type ReportUncheckedUpdateManyWithoutProjectInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    images?: ReportUpdateimagesInput | string[]
+    files?: ReportUpdatefilesInput | string[]
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    downloadCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type EventUpdateWithoutProjectInput = {
@@ -44653,6 +47867,57 @@ export namespace Prisma {
     createdById: string
     approvedById?: string | null
     projectId?: number | null
+  }
+
+  export type PodcastCreateManyApprovedByInput = {
+    id?: number
+    title: string
+    slug: string
+    description: JsonNullValueInput | InputJsonValue
+    image?: string | null
+    audioUrl: string
+    waveform?: PodcastCreatewaveformInput | number[]
+    publishedAt?: Date | string
+    publishStatus?: $Enums.PublishStatus
+    accessCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdById: string
+    updatedById?: string | null
+  }
+
+  export type PodcastCreateManyCreatedByInput = {
+    id?: number
+    title: string
+    slug: string
+    description: JsonNullValueInput | InputJsonValue
+    image?: string | null
+    audioUrl: string
+    waveform?: PodcastCreatewaveformInput | number[]
+    publishedAt?: Date | string
+    publishStatus?: $Enums.PublishStatus
+    accessCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    updatedById?: string | null
+    approvedById?: string | null
+  }
+
+  export type PodcastCreateManyUpdatedByInput = {
+    id?: number
+    title: string
+    slug: string
+    description: JsonNullValueInput | InputJsonValue
+    image?: string | null
+    audioUrl: string
+    waveform?: PodcastCreatewaveformInput | number[]
+    publishedAt?: Date | string
+    publishStatus?: $Enums.PublishStatus
+    accessCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdById: string
+    approvedById?: string | null
   }
 
   export type EventCreateManyCreatedByInput = {
@@ -45197,7 +48462,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedProjectsNestedInput
     updatedBy?: UserUpdateOneWithoutUpdatedProjectsNestedInput
-    reports?: ReportUpdateOneWithoutProjectNestedInput
+    reports?: ReportUpdateManyWithoutProjectNestedInput
     events?: EventUpdateManyWithoutProjectNestedInput
   }
 
@@ -45213,7 +48478,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: StringFieldUpdateOperationsInput | string
     updatedById?: NullableStringFieldUpdateOperationsInput | string | null
-    reports?: ReportUncheckedUpdateOneWithoutProjectNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutProjectNestedInput
     events?: EventUncheckedUpdateManyWithoutProjectNestedInput
   }
 
@@ -45242,7 +48507,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedBy?: UserUpdateOneWithoutApprovedProjectsNestedInput
     updatedBy?: UserUpdateOneWithoutUpdatedProjectsNestedInput
-    reports?: ReportUpdateOneWithoutProjectNestedInput
+    reports?: ReportUpdateManyWithoutProjectNestedInput
     events?: EventUpdateManyWithoutProjectNestedInput
   }
 
@@ -45258,7 +48523,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedById?: NullableStringFieldUpdateOperationsInput | string | null
     approvedById?: NullableStringFieldUpdateOperationsInput | string | null
-    reports?: ReportUncheckedUpdateOneWithoutProjectNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutProjectNestedInput
     events?: EventUncheckedUpdateManyWithoutProjectNestedInput
   }
 
@@ -45287,7 +48552,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedBy?: UserUpdateOneWithoutApprovedProjectsNestedInput
     createdBy?: UserUpdateOneRequiredWithoutCreatedProjectsNestedInput
-    reports?: ReportUpdateOneWithoutProjectNestedInput
+    reports?: ReportUpdateManyWithoutProjectNestedInput
     events?: EventUpdateManyWithoutProjectNestedInput
   }
 
@@ -45303,7 +48568,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: StringFieldUpdateOperationsInput | string
     approvedById?: NullableStringFieldUpdateOperationsInput | string | null
-    reports?: ReportUncheckedUpdateOneWithoutProjectNestedInput
+    reports?: ReportUncheckedUpdateManyWithoutProjectNestedInput
     events?: EventUncheckedUpdateManyWithoutProjectNestedInput
   }
 
@@ -45466,6 +48731,156 @@ export namespace Prisma {
     createdById?: StringFieldUpdateOperationsInput | string
     approvedById?: NullableStringFieldUpdateOperationsInput | string | null
     projectId?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type PodcastUpdateWithoutApprovedByInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: StringFieldUpdateOperationsInput | string
+    waveform?: PodcastUpdatewaveformInput | number[]
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneRequiredWithoutCreatedPodcastsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedPodcastsNestedInput
+  }
+
+  export type PodcastUncheckedUpdateWithoutApprovedByInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: StringFieldUpdateOperationsInput | string
+    waveform?: PodcastUpdatewaveformInput | number[]
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type PodcastUncheckedUpdateManyWithoutApprovedByInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: StringFieldUpdateOperationsInput | string
+    waveform?: PodcastUpdatewaveformInput | number[]
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type PodcastUpdateWithoutCreatedByInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: StringFieldUpdateOperationsInput | string
+    waveform?: PodcastUpdatewaveformInput | number[]
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    approvedBy?: UserUpdateOneWithoutApprovedPodcastsNestedInput
+    updatedBy?: UserUpdateOneWithoutUpdatedPodcastsNestedInput
+  }
+
+  export type PodcastUncheckedUpdateWithoutCreatedByInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: StringFieldUpdateOperationsInput | string
+    waveform?: PodcastUpdatewaveformInput | number[]
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type PodcastUncheckedUpdateManyWithoutCreatedByInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: StringFieldUpdateOperationsInput | string
+    waveform?: PodcastUpdatewaveformInput | number[]
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type PodcastUpdateWithoutUpdatedByInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: StringFieldUpdateOperationsInput | string
+    waveform?: PodcastUpdatewaveformInput | number[]
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    approvedBy?: UserUpdateOneWithoutApprovedPodcastsNestedInput
+    createdBy?: UserUpdateOneRequiredWithoutCreatedPodcastsNestedInput
+  }
+
+  export type PodcastUncheckedUpdateWithoutUpdatedByInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: StringFieldUpdateOperationsInput | string
+    waveform?: PodcastUpdatewaveformInput | number[]
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type PodcastUncheckedUpdateManyWithoutUpdatedByInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?: JsonNullValueInput | InputJsonValue
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: StringFieldUpdateOperationsInput | string
+    waveform?: PodcastUpdatewaveformInput | number[]
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
+    accessCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    approvedById?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type EventUpdateWithoutCreatedByInput = {

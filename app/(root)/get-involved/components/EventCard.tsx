@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   AnimatePresence,
   motion,
@@ -8,6 +9,8 @@ import {
 import {
   Calendar,
   ChevronDown,
+  ExternalLink,
+  FolderOpen,
   MapPin,
   Users,
 } from 'lucide-react';
@@ -290,6 +293,37 @@ export default function EventCard({
                   attendees
                 </div>
               )}
+
+              <div className="flex flex-wrap items-center gap-3">
+                {event.project && (
+                  <Link
+                    href={`/programs/${event.project.slug}`}
+                    onClick={(
+                      clickEvent
+                    ) =>
+                      clickEvent.stopPropagation()
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#9f004d]/10 px-3 py-1.5 text-[length:calc(0.75rem*var(--font-scale))] font-semibold text-[#9f004d] transition-colors hover:bg-[#9f004d]/15 dark:bg-pink-500/10 dark:text-pink-400"
+                  >
+                    <FolderOpen className="h-3.5 w-3.5" />
+                    Related project:{' '}
+                    {event.project.title}
+                  </Link>
+                )}
+
+                <Link
+                  href={`/events/${event.slug}`}
+                  onClick={(
+                    clickEvent
+                  ) =>
+                    clickEvent.stopPropagation()
+                  }
+                  className="inline-flex items-center gap-1 text-[length:calc(0.75rem*var(--font-scale))] font-semibold text-gray-500 transition-colors hover:text-[#9f004d] dark:text-gray-400 dark:hover:text-pink-400"
+                >
+                  View full details
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </Link>
+              </div>
 
               {requiresRegistration ? (
                 <EventRegistrationForm

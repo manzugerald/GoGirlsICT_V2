@@ -1,14 +1,13 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { loginAndSync, logoutAndSync } from '@/lib/authClient';
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const [username, setUsername] = useState('');
@@ -21,29 +20,54 @@ export default function AdminLoginPage() {
   // Use provided callback query param if present, otherwise default to home dashboard
   const callbackUrl = searchParams?.get('callbackUrl') || '/admin/dashboard?type=home';
 
+  /*
+   * Guards against a real race: next-auth's own session cookie (and thus
+   * `status`) can flip to "authenticated" as soon as signIn() resolves,
+   * but middleware also requires a second, server-set `app_session`
+   * cookie that a later step in loginAndSync() is still writing at that
+   * exact moment. If this effect reacted to that early flip, middleware
+   * would see one cookie present and one missing, bounce the navigation
+   * back to /admin?callbackUrl=..., and — since `status` never changes
+   * again — the effect would never retry, stranding an authenticated
+   * user on the login page. While a submit is in flight, `handleSubmit`
+   * owns the redirect and does it only once both cookies are confirmed.
+   */
+  const isSubmittingRef = useRef(false);
+
   useEffect(() => {
-    // If already authenticated, redirect to callbackUrl
-    if (status === 'authenticated') {
-      router.replace(callbackUrl);
+    // If already authenticated (e.g. a direct visit to /admin while a
+    // session is still valid), redirect to callbackUrl. A full reload
+    // (rather than router.replace) guarantees middleware re-checks with
+    // whatever cookies are currently committed, sidestepping any client
+    // router-cache staleness.
+    if (status === 'authenticated' && !isSubmittingRef.current) {
+      window.location.href = callbackUrl;
     }
-  }, [status, router, callbackUrl]);
+  }, [status, callbackUrl]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    isSubmittingRef.current = true;
 
     try {
       const result = await loginAndSync({ identifier: username, password, callbackUrl });
       setLoading(false);
       if (!result.ok) {
+        isSubmittingRef.current = false;
         setError(result.error || 'Login failed');
         return;
       }
-      // Prefer redirectUrl returned by loginAndSync (which prefers next-auth url, then callback, then default)
-      router.push(result.redirectUrl ?? callbackUrl);
+      // Both the next-auth session cookie and the server-side app_session
+      // cookie are guaranteed set by now. Use a full navigation (not
+      // router.push) so middleware sees a fresh request with both
+      // cookies attached, rather than a client-side transition that can
+      // race ahead of cookie propagation.
+      window.location.href = result.redirectUrl ?? callbackUrl;
     } catch (err: any) {
       console.error('Login error', err);
+      isSubmittingRef.current = false;
       setError('Server error during login');
     } finally {
       setLoading(false);
@@ -88,7 +112,9 @@ export default function AdminLoginPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-2 justify-center mt-2">
             <button
-              onClick={() => router.push(callbackUrl)}
+              onClick={() => {
+                window.location.href = callbackUrl;
+              }}
               className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition-colors"
             >
               Continue to Dashboard

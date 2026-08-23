@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   Check,
   Copy,
@@ -9,6 +10,54 @@ import {
 
 const EMAIL_LOCAL = 'info';
 const EMAIL_DOMAIN = 'gogirlsict.org';
+
+function playCopySound() {
+  try {
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as any).webkitAudioContext;
+
+    if (!AudioContextClass) {
+      return;
+    }
+
+    const context = new AudioContextClass();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+
+    oscillator.type = 'sine';
+
+    oscillator.frequency.setValueAtTime(
+      1046.5,
+      context.currentTime
+    );
+
+    gain.gain.setValueAtTime(
+      0.18,
+      context.currentTime
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.0001,
+      context.currentTime + 0.16
+    );
+
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.16);
+
+    oscillator.onended = () => {
+      context.close();
+    };
+  } catch {
+    /*
+     * Audio feedback is a nice-to-have; never let it
+     * block the copy action if playback fails.
+     */
+  }
+}
 
 export default function ContactSection() {
   const [copied, setCopied] =
@@ -21,10 +70,11 @@ export default function ContactSection() {
       );
 
       setCopied(true);
+      playCopySound();
 
       window.setTimeout(() => {
         setCopied(false);
-      }, 1800);
+      }, 2200);
     } catch {
       /*
        * Clipboard access may be unavailable.
@@ -57,7 +107,7 @@ export default function ContactSection() {
           hello? Reach out by email.
         </p>
 
-        <div className="mx-auto mt-8 max-w-md rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900 sm:mt-10">
+        <div className="relative mx-auto mt-8 max-w-md rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900 sm:mt-10">
           <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#9f004d]/10 text-[#9f004d] dark:bg-pink-500/10 dark:text-pink-400">
             <Mail
               aria-hidden="true"
@@ -96,6 +146,41 @@ export default function ContactSection() {
               </>
             )}
           </button>
+
+          <div
+            role="status"
+            aria-live="polite"
+            className="pointer-events-none absolute inset-x-0 -bottom-4 flex justify-center"
+          >
+            <AnimatePresence>
+              {copied && (
+                <motion.span
+                  initial={{
+                    opacity: 0,
+                    y: -6,
+                    scale: 0.9,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    y: -6,
+                    scale: 0.9,
+                  }}
+                  transition={{
+                    duration: 0.2,
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1.5 text-xs font-semibold text-white shadow-lg dark:bg-white dark:text-gray-900"
+                >
+                  <Check className="h-3.5 w-3.5" />
+                  Copied to clipboard!
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </section>
