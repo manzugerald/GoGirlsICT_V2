@@ -3,6 +3,7 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
+import { extractPlainText } from '@/lib/tiptap';
 import '@/assets/styles/tiptap-editor.css';
 
 const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-viewer'), {
@@ -19,7 +20,7 @@ type ReportType = {
   createdAt?: string | Date | null;
   updatedAt?: string | Date | null;
   createdBy?: { firstName?: string | null; lastName?: string | null } | null;
-  project?: { id?: number; title?: string } | null;
+  project?: { id?: number; title?: unknown } | null; // Project.title is a Tiptap JSON doc
 };
 
 /**
@@ -46,7 +47,9 @@ export default function ReportView({
             {data.createdBy
               ? `${data.createdBy.firstName ?? ''} ${data.createdBy.lastName ?? ''}`
               : 'System'}
-            {data.project ? <span className="ml-3">· Project: {data.project.title}</span> : null}
+            {data.project ? (
+              <span className="ml-3">· Project: {extractPlainText(data.project.title)}</span>
+            ) : null}
           </div>
         </div>
 

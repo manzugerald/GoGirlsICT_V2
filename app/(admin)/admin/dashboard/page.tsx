@@ -4,6 +4,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
+import { extractPlainText, isTiptapDoc } from '@/lib/tiptap';
 import DownloadColumnsModal, { ColumnOption } from './components/downloadColumnsModal';
 import { handleDownloadPDF } from './components/handleDownloadPDF';
 
@@ -312,7 +313,7 @@ export default function AdminDashboardPage() {
     const feat = sectionFeatures[section];
     if (feat?.apiRoute) {
       try {
-        const res = await fetch(feat.apiRoute);
+        const res = await fetch(feat.apiRoute, { cache: 'no-store' });
         if (!res.ok) {
           setData([]);
           return;
@@ -356,9 +357,13 @@ export default function AdminDashboardPage() {
     if (!search.trim()) return sortedData;
     const lower = search.toLowerCase();
     return sortedData.filter((item) =>
-      Object.keys(item).some(
-        (key) => typeof item[key] === 'string' && item[key].toLowerCase().includes(lower)
-      )
+      Object.keys(item).some((key) => {
+        const value = item[key];
+        if (typeof value === 'string') return value.toLowerCase().includes(lower);
+        // Tiptap JSON doc fields (title, content, etc.) — search their plain text
+        if (isTiptapDoc(value)) return extractPlainText(value).toLowerCase().includes(lower);
+        return false;
+      })
     );
   }
 

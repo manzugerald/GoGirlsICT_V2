@@ -3,6 +3,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Response } from '@/lib/generated/prisma';
 import { Button } from '@/components/ui/button';
+import { extractPlainText } from '@/lib/tiptap';
 
 type ResponseWithRelations = Response & {
   responderUser?: {
@@ -18,7 +19,7 @@ type ResponseWithRelations = Response & {
   } | null;
   message?: {
     id: number;
-    title?: string | null;
+    title?: unknown; // Tiptap JSON doc, optional
     messageKind?: string | null;
   } | null;
 };
@@ -43,7 +44,7 @@ export function responseColumns({
     {
       accessorKey: 'message',
       header: 'Message',
-      cell: ({ row }) => row.original.message?.title ?? '-',
+      cell: ({ row }) => extractPlainText(row.original.message?.title).trim() || '-',
     },
     {
       accessorKey: 'message.messageKind',

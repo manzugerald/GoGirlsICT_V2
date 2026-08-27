@@ -4503,7 +4503,6 @@ export namespace Prisma {
 
   export type ProjectMinAggregateOutputType = {
     id: number | null
-    title: string | null
     slug: string | null
     projectStatus: $Enums.Status | null
     publishStatus: $Enums.PublishStatus | null
@@ -4516,7 +4515,6 @@ export namespace Prisma {
 
   export type ProjectMaxAggregateOutputType = {
     id: number | null
-    title: string | null
     slug: string | null
     projectStatus: $Enums.Status | null
     publishStatus: $Enums.PublishStatus | null
@@ -4554,7 +4552,6 @@ export namespace Prisma {
 
   export type ProjectMinAggregateInputType = {
     id?: true
-    title?: true
     slug?: true
     projectStatus?: true
     publishStatus?: true
@@ -4567,7 +4564,6 @@ export namespace Prisma {
 
   export type ProjectMaxAggregateInputType = {
     id?: true
-    title?: true
     slug?: true
     projectStatus?: true
     publishStatus?: true
@@ -4682,7 +4678,7 @@ export namespace Prisma {
 
   export type ProjectGroupByOutputType = {
     id: number
-    title: string
+    title: JsonValue
     slug: string
     content: JsonValue
     images: string[]
@@ -4817,7 +4813,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
-      title: string
+      title: Prisma.JsonValue
       slug: string
       content: Prisma.JsonValue
       images: string[]
@@ -5257,7 +5253,7 @@ export namespace Prisma {
    */
   interface ProjectFieldRefs {
     readonly id: FieldRef<"Project", 'Int'>
-    readonly title: FieldRef<"Project", 'String'>
+    readonly title: FieldRef<"Project", 'Json'>
     readonly slug: FieldRef<"Project", 'String'>
     readonly content: FieldRef<"Project", 'Json'>
     readonly images: FieldRef<"Project", 'String[]'>
@@ -7118,7 +7114,6 @@ export namespace Prisma {
 
   export type PodcastMinAggregateOutputType = {
     id: number | null
-    title: string | null
     slug: string | null
     image: string | null
     audioUrl: string | null
@@ -7134,7 +7129,6 @@ export namespace Prisma {
 
   export type PodcastMaxAggregateOutputType = {
     id: number | null
-    title: string | null
     slug: string | null
     image: string | null
     audioUrl: string | null
@@ -7182,7 +7176,6 @@ export namespace Prisma {
 
   export type PodcastMinAggregateInputType = {
     id?: true
-    title?: true
     slug?: true
     image?: true
     audioUrl?: true
@@ -7198,7 +7191,6 @@ export namespace Prisma {
 
   export type PodcastMaxAggregateInputType = {
     id?: true
-    title?: true
     slug?: true
     image?: true
     audioUrl?: true
@@ -7319,7 +7311,7 @@ export namespace Prisma {
 
   export type PodcastGroupByOutputType = {
     id: number
-    title: string
+    title: JsonValue
     slug: string
     description: JsonValue
     image: string | null
@@ -7461,7 +7453,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
-      title: string
+      title: Prisma.JsonValue
       slug: string
       description: Prisma.JsonValue
       image: string | null
@@ -7902,7 +7894,7 @@ export namespace Prisma {
    */
   interface PodcastFieldRefs {
     readonly id: FieldRef<"Podcast", 'Int'>
-    readonly title: FieldRef<"Podcast", 'String'>
+    readonly title: FieldRef<"Podcast", 'Json'>
     readonly slug: FieldRef<"Podcast", 'String'>
     readonly description: FieldRef<"Podcast", 'Json'>
     readonly image: FieldRef<"Podcast", 'String'>
@@ -8390,7 +8382,6 @@ export namespace Prisma {
 
   export type MessageMinAggregateOutputType = {
     id: number | null
-    title: string | null
     affiliated: string | null
     name: string | null
     nameImageUrl: string | null
@@ -8410,7 +8401,6 @@ export namespace Prisma {
 
   export type MessageMaxAggregateOutputType = {
     id: number | null
-    title: string | null
     affiliated: string | null
     name: string | null
     nameImageUrl: string | null
@@ -8461,7 +8451,6 @@ export namespace Prisma {
 
   export type MessageMinAggregateInputType = {
     id?: true
-    title?: true
     affiliated?: true
     name?: true
     nameImageUrl?: true
@@ -8481,7 +8470,6 @@ export namespace Prisma {
 
   export type MessageMaxAggregateInputType = {
     id?: true
-    title?: true
     affiliated?: true
     name?: true
     nameImageUrl?: true
@@ -8609,7 +8597,7 @@ export namespace Prisma {
 
   export type MessageGroupByOutputType = {
     id: number
-    title: string | null
+    title: JsonValue | null
     affiliated: string | null
     name: string | null
     content: JsonValue
@@ -8778,7 +8766,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
-      title: string | null
+      title: Prisma.JsonValue | null
       affiliated: string | null
       name: string | null
       content: Prisma.JsonValue
@@ -9224,7 +9212,7 @@ export namespace Prisma {
    */
   interface MessageFieldRefs {
     readonly id: FieldRef<"Message", 'Int'>
-    readonly title: FieldRef<"Message", 'String'>
+    readonly title: FieldRef<"Message", 'Json'>
     readonly affiliated: FieldRef<"Message", 'String'>
     readonly name: FieldRef<"Message", 'String'>
     readonly content: FieldRef<"Message", 'Json'>
@@ -16111,7 +16099,6 @@ export namespace Prisma {
   export type EventMinAggregateOutputType = {
     id: number | null
     slug: string | null
-    eventTitle: string | null
     eventLocation: string | null
     eventBanner: string | null
     eventFile: string | null
@@ -16135,7 +16122,6 @@ export namespace Prisma {
   export type EventMaxAggregateOutputType = {
     id: number | null
     slug: string | null
-    eventTitle: string | null
     eventLocation: string | null
     eventBanner: string | null
     eventFile: string | null
@@ -16207,7 +16193,6 @@ export namespace Prisma {
   export type EventMinAggregateInputType = {
     id?: true
     slug?: true
-    eventTitle?: true
     eventLocation?: true
     eventBanner?: true
     eventFile?: true
@@ -16231,7 +16216,6 @@ export namespace Prisma {
   export type EventMaxAggregateInputType = {
     id?: true
     slug?: true
-    eventTitle?: true
     eventLocation?: true
     eventBanner?: true
     eventFile?: true
@@ -16370,7 +16354,7 @@ export namespace Prisma {
   export type EventGroupByOutputType = {
     id: number
     slug: string
-    eventTitle: string
+    eventTitle: JsonValue
     eventDescription: JsonValue
     eventDetails: JsonValue | null
     eventLocation: string | null
@@ -16569,7 +16553,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: number
       slug: string
-      eventTitle: string
+      eventTitle: Prisma.JsonValue
       eventDescription: Prisma.JsonValue
       eventDetails: Prisma.JsonValue | null
       eventLocation: string | null
@@ -17021,7 +17005,7 @@ export namespace Prisma {
   interface EventFieldRefs {
     readonly id: FieldRef<"Event", 'Int'>
     readonly slug: FieldRef<"Event", 'String'>
-    readonly eventTitle: FieldRef<"Event", 'String'>
+    readonly eventTitle: FieldRef<"Event", 'Json'>
     readonly eventDescription: FieldRef<"Event", 'Json'>
     readonly eventDetails: FieldRef<"Event", 'Json'>
     readonly eventLocation: FieldRef<"Event", 'String'>
@@ -29648,7 +29632,7 @@ export namespace Prisma {
     OR?: ProjectWhereInput[]
     NOT?: ProjectWhereInput | ProjectWhereInput[]
     id?: IntFilter<"Project"> | number
-    title?: StringFilter<"Project"> | string
+    title?: JsonFilter<"Project">
     slug?: StringFilter<"Project"> | string
     content?: JsonFilter<"Project">
     images?: StringNullableListFilter<"Project">
@@ -29692,7 +29676,7 @@ export namespace Prisma {
     AND?: ProjectWhereInput | ProjectWhereInput[]
     OR?: ProjectWhereInput[]
     NOT?: ProjectWhereInput | ProjectWhereInput[]
-    title?: StringFilter<"Project"> | string
+    title?: JsonFilter<"Project">
     content?: JsonFilter<"Project">
     images?: StringNullableListFilter<"Project">
     projectStatus?: EnumStatusFilter<"Project"> | $Enums.Status
@@ -29734,7 +29718,7 @@ export namespace Prisma {
     OR?: ProjectScalarWhereWithAggregatesInput[]
     NOT?: ProjectScalarWhereWithAggregatesInput | ProjectScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"Project"> | number
-    title?: StringWithAggregatesFilter<"Project"> | string
+    title?: JsonWithAggregatesFilter<"Project">
     slug?: StringWithAggregatesFilter<"Project"> | string
     content?: JsonWithAggregatesFilter<"Project">
     images?: StringNullableListFilter<"Project">
@@ -29866,7 +29850,7 @@ export namespace Prisma {
     OR?: PodcastWhereInput[]
     NOT?: PodcastWhereInput | PodcastWhereInput[]
     id?: IntFilter<"Podcast"> | number
-    title?: StringFilter<"Podcast"> | string
+    title?: JsonFilter<"Podcast">
     slug?: StringFilter<"Podcast"> | string
     description?: JsonFilter<"Podcast">
     image?: StringNullableFilter<"Podcast"> | string | null
@@ -29912,7 +29896,7 @@ export namespace Prisma {
     AND?: PodcastWhereInput | PodcastWhereInput[]
     OR?: PodcastWhereInput[]
     NOT?: PodcastWhereInput | PodcastWhereInput[]
-    title?: StringFilter<"Podcast"> | string
+    title?: JsonFilter<"Podcast">
     description?: JsonFilter<"Podcast">
     image?: StringNullableFilter<"Podcast"> | string | null
     audioUrl?: StringFilter<"Podcast"> | string
@@ -29958,7 +29942,7 @@ export namespace Prisma {
     OR?: PodcastScalarWhereWithAggregatesInput[]
     NOT?: PodcastScalarWhereWithAggregatesInput | PodcastScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"Podcast"> | number
-    title?: StringWithAggregatesFilter<"Podcast"> | string
+    title?: JsonWithAggregatesFilter<"Podcast">
     slug?: StringWithAggregatesFilter<"Podcast"> | string
     description?: JsonWithAggregatesFilter<"Podcast">
     image?: StringNullableWithAggregatesFilter<"Podcast"> | string | null
@@ -29979,7 +29963,7 @@ export namespace Prisma {
     OR?: MessageWhereInput[]
     NOT?: MessageWhereInput | MessageWhereInput[]
     id?: IntFilter<"Message"> | number
-    title?: StringNullableFilter<"Message"> | string | null
+    title?: JsonNullableFilter<"Message">
     affiliated?: StringNullableFilter<"Message"> | string | null
     name?: StringNullableFilter<"Message"> | string | null
     content?: JsonFilter<"Message">
@@ -30034,7 +30018,7 @@ export namespace Prisma {
     AND?: MessageWhereInput | MessageWhereInput[]
     OR?: MessageWhereInput[]
     NOT?: MessageWhereInput | MessageWhereInput[]
-    title?: StringNullableFilter<"Message"> | string | null
+    title?: JsonNullableFilter<"Message">
     affiliated?: StringNullableFilter<"Message"> | string | null
     name?: StringNullableFilter<"Message"> | string | null
     content?: JsonFilter<"Message">
@@ -30089,7 +30073,7 @@ export namespace Prisma {
     OR?: MessageScalarWhereWithAggregatesInput[]
     NOT?: MessageScalarWhereWithAggregatesInput | MessageScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"Message"> | number
-    title?: StringNullableWithAggregatesFilter<"Message"> | string | null
+    title?: JsonNullableWithAggregatesFilter<"Message">
     affiliated?: StringNullableWithAggregatesFilter<"Message"> | string | null
     name?: StringNullableWithAggregatesFilter<"Message"> | string | null
     content?: JsonWithAggregatesFilter<"Message">
@@ -30538,7 +30522,7 @@ export namespace Prisma {
     NOT?: EventWhereInput | EventWhereInput[]
     id?: IntFilter<"Event"> | number
     slug?: StringFilter<"Event"> | string
-    eventTitle?: StringFilter<"Event"> | string
+    eventTitle?: JsonFilter<"Event">
     eventDescription?: JsonFilter<"Event">
     eventDetails?: JsonNullableFilter<"Event">
     eventLocation?: StringNullableFilter<"Event"> | string | null
@@ -30605,7 +30589,7 @@ export namespace Prisma {
     AND?: EventWhereInput | EventWhereInput[]
     OR?: EventWhereInput[]
     NOT?: EventWhereInput | EventWhereInput[]
-    eventTitle?: StringFilter<"Event"> | string
+    eventTitle?: JsonFilter<"Event">
     eventDescription?: JsonFilter<"Event">
     eventDetails?: JsonNullableFilter<"Event">
     eventLocation?: StringNullableFilter<"Event"> | string | null
@@ -30673,7 +30657,7 @@ export namespace Prisma {
     NOT?: EventScalarWhereWithAggregatesInput | EventScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"Event"> | number
     slug?: StringWithAggregatesFilter<"Event"> | string
-    eventTitle?: StringWithAggregatesFilter<"Event"> | string
+    eventTitle?: JsonWithAggregatesFilter<"Event">
     eventDescription?: JsonWithAggregatesFilter<"Event">
     eventDetails?: JsonNullableWithAggregatesFilter<"Event">
     eventLocation?: StringNullableWithAggregatesFilter<"Event"> | string | null
@@ -31585,7 +31569,7 @@ export namespace Prisma {
   }
 
   export type ProjectCreateInput = {
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -31602,7 +31586,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedCreateInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -31618,7 +31602,7 @@ export namespace Prisma {
   }
 
   export type ProjectUpdateInput = {
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -31635,7 +31619,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -31652,7 +31636,7 @@ export namespace Prisma {
 
   export type ProjectCreateManyInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -31666,7 +31650,7 @@ export namespace Prisma {
   }
 
   export type ProjectUpdateManyMutationInput = {
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -31678,7 +31662,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -31808,7 +31792,7 @@ export namespace Prisma {
   }
 
   export type PodcastCreateInput = {
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
@@ -31826,7 +31810,7 @@ export namespace Prisma {
 
   export type PodcastUncheckedCreateInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
@@ -31843,7 +31827,7 @@ export namespace Prisma {
   }
 
   export type PodcastUpdateInput = {
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31861,7 +31845,7 @@ export namespace Prisma {
 
   export type PodcastUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31879,7 +31863,7 @@ export namespace Prisma {
 
   export type PodcastCreateManyInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
@@ -31896,7 +31880,7 @@ export namespace Prisma {
   }
 
   export type PodcastUpdateManyMutationInput = {
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31911,7 +31895,7 @@ export namespace Prisma {
 
   export type PodcastUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31928,7 +31912,7 @@ export namespace Prisma {
   }
 
   export type MessageCreateInput = {
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -31950,7 +31934,7 @@ export namespace Prisma {
 
   export type MessageUncheckedCreateInput = {
     id?: number
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -31971,7 +31955,7 @@ export namespace Prisma {
   }
 
   export type MessageUpdateInput = {
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -31993,7 +31977,7 @@ export namespace Prisma {
 
   export type MessageUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -32015,7 +31999,7 @@ export namespace Prisma {
 
   export type MessageCreateManyInput = {
     id?: number
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -32035,7 +32019,7 @@ export namespace Prisma {
   }
 
   export type MessageUpdateManyMutationInput = {
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -32052,7 +32036,7 @@ export namespace Prisma {
 
   export type MessageUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -32553,7 +32537,7 @@ export namespace Prisma {
 
   export type EventCreateInput = {
     slug: string
-    eventTitle: string
+    eventTitle: JsonNullValueInput | InputJsonValue
     eventDescription: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: string | null
@@ -32581,7 +32565,7 @@ export namespace Prisma {
   export type EventUncheckedCreateInput = {
     id?: number
     slug: string
-    eventTitle: string
+    eventTitle: JsonNullValueInput | InputJsonValue
     eventDescription: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: string | null
@@ -32608,7 +32592,7 @@ export namespace Prisma {
 
   export type EventUpdateInput = {
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32636,7 +32620,7 @@ export namespace Prisma {
   export type EventUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32664,7 +32648,7 @@ export namespace Prisma {
   export type EventCreateManyInput = {
     id?: number
     slug: string
-    eventTitle: string
+    eventTitle: JsonNullValueInput | InputJsonValue
     eventDescription: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: string | null
@@ -32691,7 +32675,7 @@ export namespace Prisma {
 
   export type EventUpdateManyMutationInput = {
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32715,7 +32699,7 @@ export namespace Prisma {
   export type EventUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33832,7 +33816,6 @@ export namespace Prisma {
 
   export type ProjectMaxOrderByAggregateInput = {
     id?: SortOrder
-    title?: SortOrder
     slug?: SortOrder
     projectStatus?: SortOrder
     publishStatus?: SortOrder
@@ -33845,7 +33828,6 @@ export namespace Prisma {
 
   export type ProjectMinOrderByAggregateInput = {
     id?: SortOrder
-    title?: SortOrder
     slug?: SortOrder
     projectStatus?: SortOrder
     publishStatus?: SortOrder
@@ -34033,7 +34015,6 @@ export namespace Prisma {
 
   export type PodcastMaxOrderByAggregateInput = {
     id?: SortOrder
-    title?: SortOrder
     slug?: SortOrder
     image?: SortOrder
     audioUrl?: SortOrder
@@ -34049,7 +34030,6 @@ export namespace Prisma {
 
   export type PodcastMinOrderByAggregateInput = {
     id?: SortOrder
-    title?: SortOrder
     slug?: SortOrder
     image?: SortOrder
     audioUrl?: SortOrder
@@ -34067,6 +34047,29 @@ export namespace Prisma {
     id?: SortOrder
     waveform?: SortOrder
     accessCount?: SortOrder
+  }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type EnumMessageCategoryFilter<$PrismaModel = never> = {
@@ -34123,7 +34126,6 @@ export namespace Prisma {
 
   export type MessageMaxOrderByAggregateInput = {
     id?: SortOrder
-    title?: SortOrder
     affiliated?: SortOrder
     name?: SortOrder
     nameImageUrl?: SortOrder
@@ -34143,7 +34145,6 @@ export namespace Prisma {
 
   export type MessageMinOrderByAggregateInput = {
     id?: SortOrder
-    title?: SortOrder
     affiliated?: SortOrder
     name?: SortOrder
     nameImageUrl?: SortOrder
@@ -34163,6 +34164,32 @@ export namespace Prisma {
 
   export type MessageSumOrderByAggregateInput = {
     id?: SortOrder
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type EnumMessageCategoryWithAggregatesFilter<$PrismaModel = never> = {
@@ -34515,29 +34542,6 @@ export namespace Prisma {
     userAgent?: SortOrder
     active?: SortOrder
   }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type EnumEventStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.EventStatus | EnumEventStatusFieldRefInput<$PrismaModel>
@@ -34598,7 +34602,6 @@ export namespace Prisma {
   export type EventMaxOrderByAggregateInput = {
     id?: SortOrder
     slug?: SortOrder
-    eventTitle?: SortOrder
     eventLocation?: SortOrder
     eventBanner?: SortOrder
     eventFile?: SortOrder
@@ -34622,7 +34625,6 @@ export namespace Prisma {
   export type EventMinOrderByAggregateInput = {
     id?: SortOrder
     slug?: SortOrder
-    eventTitle?: SortOrder
     eventLocation?: SortOrder
     eventBanner?: SortOrder
     eventFile?: SortOrder
@@ -34650,32 +34652,6 @@ export namespace Prisma {
     downloadCount?: SortOrder
     projectId?: SortOrder
     reportId?: SortOrder
-  }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type EnumEventStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -37806,6 +37782,29 @@ export namespace Prisma {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NestedEnumMessageCategoryWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.MessageCategory | EnumMessageCategoryFieldRefInput<$PrismaModel>
@@ -37896,29 +37895,6 @@ export namespace Prisma {
     in?: $Enums.AttendanceType[] | ListEnumAttendanceTypeFieldRefInput<$PrismaModel>
     notIn?: $Enums.AttendanceType[] | ListEnumAttendanceTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumAttendanceTypeFilter<$PrismaModel> | $Enums.AttendanceType
-  }
-  export type NestedJsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type NestedEnumEventStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -38384,7 +38360,7 @@ export namespace Prisma {
 
   export type EventCreateWithoutProjectInput = {
     slug: string
-    eventTitle: string
+    eventTitle: JsonNullValueInput | InputJsonValue
     eventDescription: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: string | null
@@ -38411,7 +38387,7 @@ export namespace Prisma {
   export type EventUncheckedCreateWithoutProjectInput = {
     id?: number
     slug: string
-    eventTitle: string
+    eventTitle: JsonNullValueInput | InputJsonValue
     eventDescription: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: string | null
@@ -38818,7 +38794,7 @@ export namespace Prisma {
     NOT?: EventScalarWhereInput | EventScalarWhereInput[]
     id?: IntFilter<"Event"> | number
     slug?: StringFilter<"Event"> | string
-    eventTitle?: StringFilter<"Event"> | string
+    eventTitle?: JsonFilter<"Event">
     eventDescription?: JsonFilter<"Event">
     eventDetails?: JsonNullableFilter<"Event">
     eventLocation?: StringNullableFilter<"Event"> | string | null
@@ -39042,7 +39018,7 @@ export namespace Prisma {
   }
 
   export type ProjectCreateWithoutReportsInput = {
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -39058,7 +39034,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedCreateWithoutReportsInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -39178,7 +39154,7 @@ export namespace Prisma {
 
   export type EventCreateWithoutReportInput = {
     slug: string
-    eventTitle: string
+    eventTitle: JsonNullValueInput | InputJsonValue
     eventDescription: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: string | null
@@ -39205,7 +39181,7 @@ export namespace Prisma {
   export type EventUncheckedCreateWithoutReportInput = {
     id?: number
     slug: string
-    eventTitle: string
+    eventTitle: JsonNullValueInput | InputJsonValue
     eventDescription: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: string | null
@@ -39461,7 +39437,7 @@ export namespace Prisma {
   }
 
   export type ProjectUpdateWithoutReportsInput = {
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -39477,7 +39453,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedUpdateWithoutReportsInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -41093,7 +41069,7 @@ export namespace Prisma {
   }
 
   export type MessageCreateWithoutApproverInput = {
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -41114,7 +41090,7 @@ export namespace Prisma {
 
   export type MessageUncheckedCreateWithoutApproverInput = {
     id?: number
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -41144,7 +41120,7 @@ export namespace Prisma {
   }
 
   export type MessageCreateWithoutCreatedByInput = {
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -41165,7 +41141,7 @@ export namespace Prisma {
 
   export type MessageUncheckedCreateWithoutCreatedByInput = {
     id?: number
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -41195,7 +41171,7 @@ export namespace Prisma {
   }
 
   export type MessageCreateWithoutUpdatedByInput = {
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -41216,7 +41192,7 @@ export namespace Prisma {
 
   export type MessageUncheckedCreateWithoutUpdatedByInput = {
     id?: number
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -41276,7 +41252,7 @@ export namespace Prisma {
   }
 
   export type ProjectCreateWithoutApprovedByInput = {
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -41292,7 +41268,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedCreateWithoutApprovedByInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -41317,7 +41293,7 @@ export namespace Prisma {
   }
 
   export type ProjectCreateWithoutCreatedByInput = {
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -41333,7 +41309,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedCreateWithoutCreatedByInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -41358,7 +41334,7 @@ export namespace Prisma {
   }
 
   export type ProjectCreateWithoutUpdatedByInput = {
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -41374,7 +41350,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedCreateWithoutUpdatedByInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -41528,7 +41504,7 @@ export namespace Prisma {
   }
 
   export type PodcastCreateWithoutApprovedByInput = {
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
@@ -41545,7 +41521,7 @@ export namespace Prisma {
 
   export type PodcastUncheckedCreateWithoutApprovedByInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
@@ -41571,7 +41547,7 @@ export namespace Prisma {
   }
 
   export type PodcastCreateWithoutCreatedByInput = {
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
@@ -41588,7 +41564,7 @@ export namespace Prisma {
 
   export type PodcastUncheckedCreateWithoutCreatedByInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
@@ -41614,7 +41590,7 @@ export namespace Prisma {
   }
 
   export type PodcastCreateWithoutUpdatedByInput = {
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
@@ -41631,7 +41607,7 @@ export namespace Prisma {
 
   export type PodcastUncheckedCreateWithoutUpdatedByInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
@@ -41658,7 +41634,7 @@ export namespace Prisma {
 
   export type EventCreateWithoutCreatedByInput = {
     slug: string
-    eventTitle: string
+    eventTitle: JsonNullValueInput | InputJsonValue
     eventDescription: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: string | null
@@ -41685,7 +41661,7 @@ export namespace Prisma {
   export type EventUncheckedCreateWithoutCreatedByInput = {
     id?: number
     slug: string
-    eventTitle: string
+    eventTitle: JsonNullValueInput | InputJsonValue
     eventDescription: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: string | null
@@ -41721,7 +41697,7 @@ export namespace Prisma {
 
   export type EventCreateWithoutUpdatedByInput = {
     slug: string
-    eventTitle: string
+    eventTitle: JsonNullValueInput | InputJsonValue
     eventDescription: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: string | null
@@ -41748,7 +41724,7 @@ export namespace Prisma {
   export type EventUncheckedCreateWithoutUpdatedByInput = {
     id?: number
     slug: string
-    eventTitle: string
+    eventTitle: JsonNullValueInput | InputJsonValue
     eventDescription: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: string | null
@@ -42390,7 +42366,7 @@ export namespace Prisma {
     OR?: MessageScalarWhereInput[]
     NOT?: MessageScalarWhereInput | MessageScalarWhereInput[]
     id?: IntFilter<"Message"> | number
-    title?: StringNullableFilter<"Message"> | string | null
+    title?: JsonNullableFilter<"Message">
     affiliated?: StringNullableFilter<"Message"> | string | null
     name?: StringNullableFilter<"Message"> | string | null
     content?: JsonFilter<"Message">
@@ -42478,7 +42454,7 @@ export namespace Prisma {
     OR?: ProjectScalarWhereInput[]
     NOT?: ProjectScalarWhereInput | ProjectScalarWhereInput[]
     id?: IntFilter<"Project"> | number
-    title?: StringFilter<"Project"> | string
+    title?: JsonFilter<"Project">
     slug?: StringFilter<"Project"> | string
     content?: JsonFilter<"Project">
     images?: StringNullableListFilter<"Project">
@@ -42592,7 +42568,7 @@ export namespace Prisma {
     OR?: PodcastScalarWhereInput[]
     NOT?: PodcastScalarWhereInput | PodcastScalarWhereInput[]
     id?: IntFilter<"Podcast"> | number
-    title?: StringFilter<"Podcast"> | string
+    title?: JsonFilter<"Podcast">
     slug?: StringFilter<"Podcast"> | string
     description?: JsonFilter<"Podcast">
     image?: StringNullableFilter<"Podcast"> | string | null
@@ -43943,7 +43919,7 @@ export namespace Prisma {
   }
 
   export type ProjectCreateWithoutEventsInput = {
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -43959,7 +43935,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedCreateWithoutEventsInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -44238,7 +44214,7 @@ export namespace Prisma {
   }
 
   export type ProjectUpdateWithoutEventsInput = {
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -44254,7 +44230,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedUpdateWithoutEventsInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -45130,7 +45106,7 @@ export namespace Prisma {
   }
 
   export type MessageCreateWithoutBeneficiaryInput = {
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -45151,7 +45127,7 @@ export namespace Prisma {
 
   export type MessageUncheckedCreateWithoutBeneficiaryInput = {
     id?: number
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -45943,7 +45919,7 @@ export namespace Prisma {
   }
 
   export type MessageCreateWithoutResponsesInput = {
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -45964,7 +45940,7 @@ export namespace Prisma {
 
   export type MessageUncheckedCreateWithoutResponsesInput = {
     id?: number
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -46144,7 +46120,7 @@ export namespace Prisma {
   }
 
   export type MessageUpdateWithoutResponsesInput = {
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -46165,7 +46141,7 @@ export namespace Prisma {
 
   export type MessageUncheckedUpdateWithoutResponsesInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -47379,7 +47355,7 @@ export namespace Prisma {
   export type EventCreateManyProjectInput = {
     id?: number
     slug: string
-    eventTitle: string
+    eventTitle: JsonNullValueInput | InputJsonValue
     eventDescription: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: string | null
@@ -47454,7 +47430,7 @@ export namespace Prisma {
 
   export type EventUpdateWithoutProjectInput = {
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47481,7 +47457,7 @@ export namespace Prisma {
   export type EventUncheckedUpdateWithoutProjectInput = {
     id?: IntFieldUpdateOperationsInput | number
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47508,7 +47484,7 @@ export namespace Prisma {
   export type EventUncheckedUpdateManyWithoutProjectInput = {
     id?: IntFieldUpdateOperationsInput | number
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47535,7 +47511,7 @@ export namespace Prisma {
   export type EventCreateManyReportInput = {
     id?: number
     slug: string
-    eventTitle: string
+    eventTitle: JsonNullValueInput | InputJsonValue
     eventDescription: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: string | null
@@ -47561,7 +47537,7 @@ export namespace Prisma {
 
   export type EventUpdateWithoutReportInput = {
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47588,7 +47564,7 @@ export namespace Prisma {
   export type EventUncheckedUpdateWithoutReportInput = {
     id?: IntFieldUpdateOperationsInput | number
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47615,7 +47591,7 @@ export namespace Prisma {
   export type EventUncheckedUpdateManyWithoutReportInput = {
     id?: IntFieldUpdateOperationsInput | number
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -47711,7 +47687,7 @@ export namespace Prisma {
 
   export type MessageCreateManyApproverInput = {
     id?: number
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -47731,7 +47707,7 @@ export namespace Prisma {
 
   export type MessageCreateManyCreatedByInput = {
     id?: number
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -47751,7 +47727,7 @@ export namespace Prisma {
 
   export type MessageCreateManyUpdatedByInput = {
     id?: number
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -47781,7 +47757,7 @@ export namespace Prisma {
 
   export type ProjectCreateManyApprovedByInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -47795,7 +47771,7 @@ export namespace Prisma {
 
   export type ProjectCreateManyCreatedByInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -47809,7 +47785,7 @@ export namespace Prisma {
 
   export type ProjectCreateManyUpdatedByInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     content: JsonNullValueInput | InputJsonValue
     images?: ProjectCreateimagesInput | string[]
@@ -47871,7 +47847,7 @@ export namespace Prisma {
 
   export type PodcastCreateManyApprovedByInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
@@ -47888,7 +47864,7 @@ export namespace Prisma {
 
   export type PodcastCreateManyCreatedByInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
@@ -47905,7 +47881,7 @@ export namespace Prisma {
 
   export type PodcastCreateManyUpdatedByInput = {
     id?: number
-    title: string
+    title: JsonNullValueInput | InputJsonValue
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
@@ -47923,7 +47899,7 @@ export namespace Prisma {
   export type EventCreateManyCreatedByInput = {
     id?: number
     slug: string
-    eventTitle: string
+    eventTitle: JsonNullValueInput | InputJsonValue
     eventDescription: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: string | null
@@ -47950,7 +47926,7 @@ export namespace Prisma {
   export type EventCreateManyUpdatedByInput = {
     id?: number
     slug: string
-    eventTitle: string
+    eventTitle: JsonNullValueInput | InputJsonValue
     eventDescription: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: string | null
@@ -48239,7 +48215,7 @@ export namespace Prisma {
   }
 
   export type MessageUpdateWithoutApproverInput = {
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -48260,7 +48236,7 @@ export namespace Prisma {
 
   export type MessageUncheckedUpdateWithoutApproverInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -48281,7 +48257,7 @@ export namespace Prisma {
 
   export type MessageUncheckedUpdateManyWithoutApproverInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -48300,7 +48276,7 @@ export namespace Prisma {
   }
 
   export type MessageUpdateWithoutCreatedByInput = {
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -48321,7 +48297,7 @@ export namespace Prisma {
 
   export type MessageUncheckedUpdateWithoutCreatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -48342,7 +48318,7 @@ export namespace Prisma {
 
   export type MessageUncheckedUpdateManyWithoutCreatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -48361,7 +48337,7 @@ export namespace Prisma {
   }
 
   export type MessageUpdateWithoutUpdatedByInput = {
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -48382,7 +48358,7 @@ export namespace Prisma {
 
   export type MessageUncheckedUpdateWithoutUpdatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -48403,7 +48379,7 @@ export namespace Prisma {
 
   export type MessageUncheckedUpdateManyWithoutUpdatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -48452,7 +48428,7 @@ export namespace Prisma {
   }
 
   export type ProjectUpdateWithoutApprovedByInput = {
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -48468,7 +48444,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedUpdateWithoutApprovedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -48484,7 +48460,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedUpdateManyWithoutApprovedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -48497,7 +48473,7 @@ export namespace Prisma {
   }
 
   export type ProjectUpdateWithoutCreatedByInput = {
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -48513,7 +48489,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedUpdateWithoutCreatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -48529,7 +48505,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedUpdateManyWithoutCreatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -48542,7 +48518,7 @@ export namespace Prisma {
   }
 
   export type ProjectUpdateWithoutUpdatedByInput = {
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -48558,7 +48534,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedUpdateWithoutUpdatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -48574,7 +48550,7 @@ export namespace Prisma {
 
   export type ProjectUncheckedUpdateManyWithoutUpdatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     content?: JsonNullValueInput | InputJsonValue
     images?: ProjectUpdateimagesInput | string[]
@@ -48734,7 +48710,7 @@ export namespace Prisma {
   }
 
   export type PodcastUpdateWithoutApprovedByInput = {
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
@@ -48751,7 +48727,7 @@ export namespace Prisma {
 
   export type PodcastUncheckedUpdateWithoutApprovedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
@@ -48768,7 +48744,7 @@ export namespace Prisma {
 
   export type PodcastUncheckedUpdateManyWithoutApprovedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
@@ -48784,7 +48760,7 @@ export namespace Prisma {
   }
 
   export type PodcastUpdateWithoutCreatedByInput = {
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
@@ -48801,7 +48777,7 @@ export namespace Prisma {
 
   export type PodcastUncheckedUpdateWithoutCreatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
@@ -48818,7 +48794,7 @@ export namespace Prisma {
 
   export type PodcastUncheckedUpdateManyWithoutCreatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
@@ -48834,7 +48810,7 @@ export namespace Prisma {
   }
 
   export type PodcastUpdateWithoutUpdatedByInput = {
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
@@ -48851,7 +48827,7 @@ export namespace Prisma {
 
   export type PodcastUncheckedUpdateWithoutUpdatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
@@ -48868,7 +48844,7 @@ export namespace Prisma {
 
   export type PodcastUncheckedUpdateManyWithoutUpdatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: StringFieldUpdateOperationsInput | string
+    title?: JsonNullValueInput | InputJsonValue
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
@@ -48885,7 +48861,7 @@ export namespace Prisma {
 
   export type EventUpdateWithoutCreatedByInput = {
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -48912,7 +48888,7 @@ export namespace Prisma {
   export type EventUncheckedUpdateWithoutCreatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -48939,7 +48915,7 @@ export namespace Prisma {
   export type EventUncheckedUpdateManyWithoutCreatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -48965,7 +48941,7 @@ export namespace Prisma {
 
   export type EventUpdateWithoutUpdatedByInput = {
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -48992,7 +48968,7 @@ export namespace Prisma {
   export type EventUncheckedUpdateWithoutUpdatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -49019,7 +48995,7 @@ export namespace Prisma {
   export type EventUncheckedUpdateManyWithoutUpdatedByInput = {
     id?: IntFieldUpdateOperationsInput | number
     slug?: StringFieldUpdateOperationsInput | string
-    eventTitle?: StringFieldUpdateOperationsInput | string
+    eventTitle?: JsonNullValueInput | InputJsonValue
     eventDescription?: JsonNullValueInput | InputJsonValue
     eventDetails?: NullableJsonNullValueInput | InputJsonValue
     eventLocation?: NullableStringFieldUpdateOperationsInput | string | null
@@ -49690,7 +49666,7 @@ export namespace Prisma {
 
   export type MessageCreateManyBeneficiaryInput = {
     id?: number
-    title?: string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: string | null
     name?: string | null
     content: JsonNullValueInput | InputJsonValue
@@ -49719,7 +49695,7 @@ export namespace Prisma {
   }
 
   export type MessageUpdateWithoutBeneficiaryInput = {
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -49740,7 +49716,7 @@ export namespace Prisma {
 
   export type MessageUncheckedUpdateWithoutBeneficiaryInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue
@@ -49761,7 +49737,7 @@ export namespace Prisma {
 
   export type MessageUncheckedUpdateManyWithoutBeneficiaryInput = {
     id?: IntFieldUpdateOperationsInput | number
-    title?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: NullableJsonNullValueInput | InputJsonValue
     affiliated?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     content?: JsonNullValueInput | InputJsonValue

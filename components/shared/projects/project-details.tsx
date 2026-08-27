@@ -5,6 +5,7 @@ import ImageSlider from "../images/image-slider";
 import LightGalleryGrid from "../images/light-gallery";
 import TiptapJsonViewer from "@/components/editor/tiptap-json-viewer";
 import TitleHeader from "../title/title";
+import { extractPlainText, normalizeTiptapDoc } from "@/lib/tiptap";
 
 interface ProjectDetailsProps {
   id: number;
@@ -33,6 +34,7 @@ export default function ProjectDetails({ id, onBack }: ProjectDetailsProps) {
   if (!project) return <div>Project not found.</div>;
 
   const images = project.images?.length ? project.images : ["/assets/images/projects/p2.png"];
+  const titleText = extractPlainText(project.title);
 
   // Make sure content is a JSON object
   let tiptapContent: object | null = null;
@@ -66,7 +68,7 @@ export default function ProjectDetails({ id, onBack }: ProjectDetailsProps) {
             <p>No images available</p>
           )} */}
         <TitleHeader
-          title={project.title}
+          title={titleText}
           authorName="Eva Yayi"
           postDate="Monday, June 16 2025"
           authorRole="Admin"
@@ -75,7 +77,9 @@ export default function ProjectDetails({ id, onBack }: ProjectDetailsProps) {
         <button onClick={onBack} className="text-sm text-blue-600 underline m-2">
           ← Back to Projects
         </button>
-        <h1 className="text-2xl font-bold mt-8">{project.title}</h1>
+        <div className="text-2xl font-bold mt-8">
+          <TiptapJsonViewer content={normalizeTiptapDoc(project.title)} className="[&_p]:m-0" />
+        </div>
         <div className="prose dark:prose-invert mt-6 max-w-none">
           {tiptapContent ? (
             <TiptapJsonViewer content={tiptapContent} className="prose dark:prose-invert" />
@@ -83,7 +87,7 @@ export default function ProjectDetails({ id, onBack }: ProjectDetailsProps) {
             <div className="text-red-500">Error displaying content.</div>
           )}
         </div>
-        <LightGalleryGrid images={images} title={project.title} />
+        <LightGalleryGrid images={images} title={titleText} />
       </div>
     </div>
   );

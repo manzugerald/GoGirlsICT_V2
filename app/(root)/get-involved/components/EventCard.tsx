@@ -18,40 +18,7 @@ import {
 import type { EventSummary } from '../data';
 
 import EventRegistrationForm from './EventRegistrationForm';
-
-function getTextFromRichDescription(
-  description: unknown
-): string {
-  if (!description) {
-    return '';
-  }
-
-  if (typeof description === 'string') {
-    return description;
-  }
-
-  const doc = description as {
-    content?: Array<{
-      content?: Array<{
-        text?: string;
-      }>;
-    }>;
-  };
-
-  if (!Array.isArray(doc.content)) {
-    return '';
-  }
-
-  return doc.content
-    .map((block) =>
-      (block.content ?? [])
-        .map((item) => item.text)
-        .filter(Boolean)
-        .join(' ')
-    )
-    .filter(Boolean)
-    .join(' ');
-}
+import { extractPlainText } from '@/lib/tiptap';
 
 function formatDateRange(
   start: Date | string,
@@ -125,10 +92,9 @@ export default function EventCard({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
-  const description =
-    getTextFromRichDescription(
-      event.eventDescription
-    );
+  const description = extractPlainText(
+    event.eventDescription
+  ).replace(/\s+/g, ' ').trim();
 
   const status =
     statusConfig[event.eventStatus] ??
@@ -188,7 +154,7 @@ export default function EventCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="truncate font-serif text-[length:calc(1rem*var(--font-scale))] font-semibold leading-tight text-gray-900 dark:text-white">
-              {event.eventTitle}
+              {extractPlainText(event.eventTitle)}
             </h3>
 
             <span
@@ -267,7 +233,7 @@ export default function EventCard({
                       event.eventBanner
                     }
                     alt={
-                      event.eventTitle
+                      extractPlainText(event.eventTitle)
                     }
                     fill
                     sizes="(min-width: 768px) 640px, 100vw"
@@ -307,7 +273,7 @@ export default function EventCard({
                   >
                     <FolderOpen className="h-3.5 w-3.5" />
                     Related project:{' '}
-                    {event.project.title}
+                    {extractPlainText(event.project.title)}
                   </Link>
                 )}
 
@@ -328,7 +294,7 @@ export default function EventCard({
               {requiresRegistration ? (
                 <EventRegistrationForm
                   eventTitle={
-                    event.eventTitle
+                    extractPlainText(event.eventTitle)
                   }
                   maxAttendees={
                     event.maxAttendees ??

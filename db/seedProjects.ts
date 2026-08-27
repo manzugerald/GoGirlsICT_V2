@@ -1,6 +1,7 @@
 // seedProjects.ts
 import prisma from './prisma';
 import { PrismaClient, Status, PublishStatus } from '@/lib/generated/prisma';
+import { extractPlainText, normalizeTiptapDoc } from '@/lib/tiptap';
 
 // const prisma = new PrismaClient();
 
@@ -398,7 +399,7 @@ async function seedProjects() {
     const created = await prisma.project.upsert({
       where: { slug },
       update: {
-        title: p.title,
+        title: normalizeTiptapDoc(p.title),
         content,
         images: p.images, // ✅ jpg paths as you confirmed
         projectStatus: p.projectStatus,
@@ -408,7 +409,7 @@ async function seedProjects() {
         updatedAt: new Date(),
       },
       create: {
-        title: p.title,
+        title: normalizeTiptapDoc(p.title),
         slug,
         content,
         images: p.images,
@@ -420,7 +421,7 @@ async function seedProjects() {
       },
     });
 
-    console.log(`✅ Project seeded: ${created.title} (${created.projectStatus})`);
+    console.log(`✅ Project seeded: ${extractPlainText(created.title)} (${created.projectStatus})`);
   }
 }
 

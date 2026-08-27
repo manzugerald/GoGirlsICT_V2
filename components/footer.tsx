@@ -235,7 +235,7 @@ const Footer = () => {
             {/* Admin Login */}
             <div className="text-sm">
               <Link
-                href="/api/auth/signin"
+                href="/admin"
                 className="text-gray-400 hover:text-[#9f004d] transition-colors duration-200 inline-flex items-center gap-1"
               >
                 <span>Admin Login</span>

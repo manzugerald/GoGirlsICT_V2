@@ -10,6 +10,7 @@ import {
 import { getReportBySlugOrId } from '../data';
 
 import ReportDetailViewer from '../components/ReportDetailViewer';
+import { extractPlainText } from '@/lib/tiptap';
 
 function getReportFile(
   files: unknown
@@ -105,7 +106,7 @@ export default async function ReportDetailPage({
             >
               <FolderOpen className="h-3.5 w-3.5" />
               Related project:{' '}
-              {report.project.title}
+              {extractPlainText(report.project.title)}
             </Link>
           )}
         </header>

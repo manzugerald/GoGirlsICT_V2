@@ -3,6 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Project } from "@/lib/generated/prisma";
 import { Button } from '@/components/ui/button';
+import { extractPlainText } from '@/lib/tiptap';
 
 type ProjectWithUser = Project & {
   createdBy: {
@@ -24,7 +25,9 @@ export function projectColumns({
       accessorKey: 'title',
       header: 'Title',
       cell: ({ row }) => (
-        <div className="whitespace-normal break-words max-w-xs">{row.getValue('title')}</div>
+        <div className="whitespace-normal break-words max-w-xs">
+          {extractPlainText(row.getValue('title'))}
+        </div>
       ),
     },
     {

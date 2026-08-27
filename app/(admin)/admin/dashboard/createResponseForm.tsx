@@ -2,6 +2,11 @@
 
 import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { EMPTY_TIPTAP_DOC, isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
+import '@/assets/styles/tiptap-editor.css';
+import { RichTextEditorProvider } from '@/components/editor/rich-text-context';
+import RichTextToolbar from '@/components/editor/rich-text-toolbar';
+import RichTextField from '@/components/editor/rich-text-field';
 
 type Props = {
   messageId: number | string;
@@ -19,12 +24,9 @@ export default function CreateResponseForm({
   onCancel,
 }: Props) {
   const { data: session } = useSession();
-  const [content, setContent] = useState<string>(() => {
-    if (initialData?.content && typeof initialData.content === 'string') return initialData.content;
-    if (initialData?.content && typeof initialData.content === 'object')
-      return JSON.stringify(initialData.content, null, 2);
-    return '';
-  });
+  const [content, setContent] = useState<object>(() =>
+    initialData?.content ? normalizeTiptapDoc(initialData.content) : EMPTY_TIPTAP_DOC
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,40 +39,26 @@ export default function CreateResponseForm({
       return;
     }
 
-    if (!content || !content.trim()) {
+    if (isTiptapDocEmpty(content)) {
       setError('Content cannot be empty.');
       return;
     }
 
     setLoading(true);
     try {
-      // Attempt to parse JSON content, otherwise send string
-      let parsedContent: unknown = content;
-      const trimmed = content.trim();
-      if (
-        (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
-        (trimmed.startsWith('[') && trimmed.endsWith(']'))
-      ) {
-        try {
-          parsedContent = JSON.parse(content);
-        } catch {
-          parsedContent = content;
-        }
-      }
-
       let res: Response;
       if (editId || initialData?.id) {
         const id = editId ?? initialData?.id;
         res = await fetch(`/api/responses/${id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: parsedContent }),
+          body: JSON.stringify({ content }),
         });
       } else {
         res = await fetch(`/api/responses`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messageId, content: parsedContent }),
+          body: JSON.stringify({ messageId, content }),
         });
       }
 
@@ -92,16 +80,19 @@ export default function CreateResponseForm({
 
   return (
     <form onSubmit={submit} className="w-full space-y-4">
-      <div>
-        <label className="block text-sm font-medium mb-1">Response</label>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={6}
-          className="w-full border border-input rounded-md p-2 text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200"
-          placeholder="Write your response (plain text or TipTap JSON)..."
-        />
-      </div>
+      <RichTextEditorProvider key={String(editId ?? initialData?.id ?? 'new-response')}>
+        <div className="tiptap-wrapper">
+          <RichTextToolbar showLinkUnlink />
+          <div className="space-y-2 p-3">
+            <label className="block text-sm font-medium mb-1">Response</label>
+            <RichTextField
+              content={content}
+              onChange={setContent}
+              placeholder="Write your response..."
+            />
+          </div>
+        </div>
+      </RichTextEditorProvider>
 
       {error && <div className="text-sm text-red-600">{error}</div>}
 

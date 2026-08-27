@@ -2,27 +2,23 @@
 
 import { useState, useEffect, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { computeWaveformPeaks } from "@/lib/audioWaveform";
+import { EMPTY_TIPTAP_DOC, isTiptapDocEmpty, normalizeTiptapDoc } from "@/lib/tiptap";
 import "@/assets/styles/tiptap-editor.css";
-
-const EditorClient = dynamic(() => import("@/components/editor/editor-client"), {
-  ssr: false,
-});
+import { RichTextEditorProvider } from "@/components/editor/rich-text-context";
+import RichTextToolbar from "@/components/editor/rich-text-toolbar";
+import RichTextField from "@/components/editor/rich-text-field";
 
 const publishOptions = ["draft", "published"] as const;
 type PublishStatus = (typeof publishOptions)[number];
 type Mode = "create" | "edit";
 
-// Tiptap JSON doc for an empty description, used as the editor's initial content.
-const EMPTY_DESCRIPTION: object = { type: "doc", content: [{ type: "paragraph" }] };
-
 interface PodcastData {
   id?: string;
-  title: string;
+  title: object; // Tiptap JSON doc
   description: object;
   image?: string | null;
   audioUrl?: string;
@@ -73,8 +69,8 @@ export default function CreatePodcastForm({
   const resolvedMode: Mode = mode ?? (initialValues?.id ? "edit" : "create");
 
   const [form, setForm] = useState({
-    title: initialValues?.title || "",
-    description: initialValues?.description || EMPTY_DESCRIPTION,
+    title: initialValues?.title ? normalizeTiptapDoc(initialValues.title) : EMPTY_TIPTAP_DOC,
+    description: initialValues?.description ? normalizeTiptapDoc(initialValues.description) : EMPTY_TIPTAP_DOC,
     publishedAt: toDateInputValue(initialValues?.publishedAt),
     publishStatus: (initialValues?.publishStatus as PublishStatus) || "draft",
   });
@@ -99,8 +95,8 @@ export default function CreatePodcastForm({
   useEffect(() => {
     if (resolvedMode === "edit" && initialValues) {
       setForm({
-        title: initialValues.title || "",
-        description: initialValues.description || EMPTY_DESCRIPTION,
+        title: initialValues.title ? normalizeTiptapDoc(initialValues.title) : EMPTY_TIPTAP_DOC,
+        description: initialValues.description ? normalizeTiptapDoc(initialValues.description) : EMPTY_TIPTAP_DOC,
         publishedAt: toDateInputValue(initialValues.publishedAt),
         publishStatus: (initialValues.publishStatus as PublishStatus) || "draft",
       });
@@ -116,6 +112,10 @@ export default function CreatePodcastForm({
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleTitleChange = (json: object) => {
+    setForm((prev) => ({ ...prev, title: json }));
   };
 
   const handleEditorChange = (json: object) => {
@@ -152,6 +152,11 @@ export default function CreatePodcastForm({
       return;
     }
 
+    if (isTiptapDocEmpty(form.title)) {
+      alert("Please give this podcast a title.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -159,7 +164,7 @@ export default function CreatePodcastForm({
       const audioPath = audioFile ? await uploadFile(audioFile) : existingAudio;
 
       const payload = {
-        title: form.title.trim(),
+        title: form.title,
         description: form.description,
         image: imagePath || null,
         audioUrl: audioPath,
@@ -217,20 +222,28 @@ export default function CreatePodcastForm({
         {resolvedMode === "edit" ? "Edit Podcast" : "Create New Podcast"}
       </h2>
 
-      <div className="space-y-2">
-        <Label htmlFor="title">Title</Label>
-        <Input id="title" name="title" value={form.title} onChange={handleChange} required />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <EditorClient
-          key={initialValues?.id ?? "new-podcast"}
-          content={form.description}
-          onChange={handleEditorChange}
-          showLinkUnlink
-        />
-      </div>
+      {/*
+        Shared toolbar sits on top of the form: it acts on whichever
+        rich-text field below (Title or Description) is currently (or
+        was last) focused.
+      */}
+      <RichTextEditorProvider key={initialValues?.id ?? "new-podcast"}>
+        <div className="tiptap-wrapper">
+          <RichTextToolbar showLinkUnlink />
+          <div className="space-y-2 p-3">
+            <Label htmlFor="title">Title</Label>
+            <RichTextField
+              content={form.title}
+              onChange={handleTitleChange}
+              placeholder="Podcast title..."
+            />
+          </div>
+          <div className="space-y-2 border-t border-gray-200 p-3 dark:border-gray-800">
+            <Label htmlFor="description">Description</Label>
+            <RichTextField content={form.description} onChange={handleEditorChange} />
+          </div>
+        </div>
+      </RichTextEditorProvider>
 
       <div className="space-y-2">
         <Label htmlFor="publishedAt">Date</Label>

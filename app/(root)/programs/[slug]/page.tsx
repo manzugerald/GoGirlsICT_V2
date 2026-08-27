@@ -19,6 +19,13 @@ import PageSection from '@/app/(root)/components/shared/page/PageSection';
 import StatusBadge from '@/app/(root)/components/shared/badges/StatusBadge';
 import ContentCard from '@/app/(root)/components/shared/cards/ContentCard';
 import GridSection from '@/app/(root)/components/shared/sections/GridSection';
+import { extractPlainText, isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
+// This is a Server Component — TiptapJsonViewer is a Client Component
+// ('use client' internally, `immediatelyRender: false`), so it's
+// imported directly rather than via next/dynamic(...,{ssr:false}),
+// which Next.js only allows from within a Client Component.
+import TiptapJsonViewer from '@/components/editor/tiptap-json-viewer';
+import '@/assets/styles/tiptap-editor.css';
 
 function formatDate(
   date?: Date | string | null
@@ -33,39 +40,6 @@ function formatDate(
       year: 'numeric',
     }
   );
-}
-
-function getPlainTextFromContent(
-  content: unknown
-): string {
-  if (!content) return '';
-
-  if (typeof content === 'string') {
-    return content;
-  }
-
-  if (
-    typeof content === 'object' &&
-    content !== null &&
-    'content' in content &&
-    Array.isArray(content.content)
-  ) {
-    return content.content
-      .map((block: any) => {
-        if (!Array.isArray(block?.content)) {
-          return '';
-        }
-
-        return block.content
-          .map((item: any) => item?.text)
-          .filter(Boolean)
-          .join(' ');
-      })
-      .filter(Boolean)
-      .join('\n\n');
-  }
-
-  return '';
 }
 
 export default async function ProgramDetailsPage({
@@ -83,8 +57,9 @@ export default async function ProgramDetailsPage({
   const relatedPrograms =
     await getRelatedPrograms(program.id);
 
-  const description =
-    getPlainTextFromContent(program.content);
+  const hasDescription = !isTiptapDocEmpty(
+    program.content
+  );
 
   const images = Array.isArray(program.images)
     ? program.images
@@ -153,9 +128,20 @@ export default async function ProgramDetailsPage({
 
           {/* Centered title */}
           <div className="flex flex-1 items-center justify-center py-7 text-center">
-            <h1 className="heading-1 max-w-5xl text-white">
-              {program.title}
-            </h1>
+            <style>{`
+              .program-hero-title .tiptap {
+                min-height: 0;
+                padding: 0;
+                color: inherit;
+                background: transparent;
+              }
+            `}</style>
+            <div className="program-hero-title heading-1 max-w-5xl text-white">
+              <TiptapJsonViewer
+                content={normalizeTiptapDoc(program.title)}
+                className="[&_p]:m-0"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -163,26 +149,31 @@ export default async function ProgramDetailsPage({
       {/* Main program content */}
       <PageSection className="pb-8 pt-10">
         <article className="mx-auto max-w-4xl">
-          {description ? (
-            <div className="space-y-7">
-              {description
-                .split('\n\n')
-                .filter(Boolean)
-                .map((paragraph, index) => (
-                  <p
-                    key={`${index}-${paragraph.slice(
-                      0,
-                      30
-                    )}`}
-                    className={`body-lg text-justify leading-relaxed text-site-secondary ${
-                      index === 0
-                        ? 'first-letter:mr-1 first-letter:text-5xl first-letter:font-bold first-letter:leading-none first-letter:text-[#9f004d] dark:first-letter:text-pink-400'
-                        : ''
-                    }`}
-                  >
-                    {paragraph}
-                  </p>
-                ))}
+          {hasDescription ? (
+            <div className="program-article-content">
+              <style>{`
+                .program-article-content .tiptap > *:first-child::first-letter {
+                  float: left;
+                  margin-right: 0.35rem;
+                  font-size: 3rem;
+                  font-weight: 700;
+                  line-height: 0.85;
+                  color: #9f004d;
+                }
+                :is(.dark) .program-article-content .tiptap > *:first-child::first-letter {
+                  color: #f472b6;
+                }
+                .program-article-content .tiptap p {
+                  text-align: justify;
+                }
+              `}</style>
+
+              <TiptapJsonViewer
+                content={normalizeTiptapDoc(
+                  program.content
+                )}
+                className="prose prose-lg dark:prose-invert max-w-none"
+              />
             </div>
           ) : (
             <div className="py-14 text-center">
@@ -232,10 +223,10 @@ export default async function ProgramDetailsPage({
           {program.events.map((event) => (
             <ContentCard
               key={event.id}
-              title={event.eventTitle}
+              title={extractPlainText(event.eventTitle)}
               href={`/events/${event.slug}`}
               image={event.eventBanner}
-              imageAlt={event.eventTitle}
+              imageAlt={extractPlainText(event.eventTitle)}
               meta={formatDate(
                 event.eventStartDate
               )}
@@ -256,12 +247,12 @@ export default async function ProgramDetailsPage({
           {relatedPrograms.map((related) => (
             <ContentCard
               key={related.id}
-              title={related.title}
+              title={extractPlainText(related.title)}
               href={`/programs/${
                 related.slug ?? related.id
               }`}
               image={related.images?.[0]}
-              imageAlt={related.title}
+              imageAlt={extractPlainText(related.title)}
               meta={formatDate(
                 related.createdAt
               )}

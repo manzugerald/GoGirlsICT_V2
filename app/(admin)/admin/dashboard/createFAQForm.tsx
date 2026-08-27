@@ -1,540 +1,224 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import DOMPurify from 'dompurify';
-import { Message } from '@/lib/generated/prisma';
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import "@/assets/styles/tiptap-editor.css";
+import { EMPTY_TIPTAP_DOC, normalizeTiptapDoc } from "@/lib/tiptap";
+import { RichTextEditorProvider } from "@/components/editor/rich-text-context";
+import RichTextToolbar from "@/components/editor/rich-text-toolbar";
+import RichTextField from "@/components/editor/rich-text-field";
 
-type MessageWithRelations = Message & {
-  beneficiary?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-  } | null;
-  createdBy?: {
-    id: string;
-    firstName?: string | null;
-    lastName?: string | null;
-    username?: string | null;
-    email?: string | null;
-  } | null;
-};
+const categoryOptions = [
+  "general",
+  "beneficiaries",
+  "institutions",
+  "projects",
+  "events",
+  "reports",
+  "technnology",
+  "other",
+] as const;
+type FAQCategory = (typeof categoryOptions)[number];
 
-/**
- * MessagesSection
- *
- * - Renders a list of messages.
- * - When a message is "viewed" it fetches the full message + responses and renders an inline full view
- *   inside this component (same pattern as EventsSection).
- * - Uses the same background / foreground color scheme and container styles as CreateFAQForm:
- *     bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-200
- *   with rounded-xl, shadow and p-6.
- *
- * Notes:
- * - This component renders inline detail view and DOES NOT trigger parent navigation to Responses.
- */
+const publishOptions = ["draft", "published"] as const;
+type PublishStatus = (typeof publishOptions)[number];
 
-export default function MessagesSection({
-  paginatedData,
-  page,
-  rowsPerPage,
-  handleEdit,
-  handleView, // optional analytics/navigation callback — will NOT be used to trigger parent navigation
-  handleDelete,
-  onRespond,
-  currentUserRole,
-  TableActions,
-  deleteId,
-  deleteLoading,
-  onToggleControls,
-}: {
-  paginatedData: MessageWithRelations[] | any[];
-  page: number;
-  rowsPerPage: number;
-  handleEdit: (record: any) => void;
-  handleView?: (record: any, source?: 'messages' | 'responses' | string) => void;
-  handleDelete: (id: string | number) => void;
-  onRespond?: (messageId: number | string) => void;
-  currentUserRole?: string;
-  TableActions?: React.FC<any>;
-  deleteId?: string | number | null;
-  deleteLoading?: boolean;
-  onToggleControls?: (hide: boolean) => void;
-}) {
-  const [viewingMessage, setViewingMessage] = useState<any | null>(null);
-  const [loadingView, setLoadingView] = useState(false);
+type Mode = "create" | "edit";
 
-  const ownerLabel = (m: MessageWithRelations) => {
-    if (m.name && `${m.name}`.trim().length > 0) return m.name;
-    if (m.beneficiary) return `${m.beneficiary.firstName} ${m.beneficiary.lastName}`;
-    return 'System';
-  };
+interface FAQData {
+  id?: string | number;
+  question?: unknown;
+  answer?: unknown;
+  category?: FAQCategory;
+  publishStatus?: PublishStatus;
+}
 
-  const createdByLabel = (m: MessageWithRelations) => {
-    if (m.createdBy) {
-      const parts = [m.createdBy.firstName, m.createdBy.lastName].filter(Boolean);
-      if (parts.length > 0) return parts.join(' ');
-      if (m.createdBy.username) return m.createdBy.username;
-      if (m.createdBy.email) return m.createdBy.email;
+interface CreateFAQFormProps {
+  mode?: Mode;
+  initialData?: FAQData;
+  currentUserId?: string;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+export default function CreateFAQForm({
+  mode,
+  initialData,
+  currentUserId,
+  onSuccess,
+  onCancel,
+}: CreateFAQFormProps) {
+  const resolvedMode: Mode = mode ?? (initialData?.id ? "edit" : "create");
+
+  const [question, setQuestion] = useState<object>(
+    () => (initialData?.question ? normalizeTiptapDoc(initialData.question) : EMPTY_TIPTAP_DOC)
+  );
+  const [answer, setAnswer] = useState<object>(
+    () => (initialData?.answer ? normalizeTiptapDoc(initialData.answer) : EMPTY_TIPTAP_DOC)
+  );
+  const [category, setCategory] = useState<FAQCategory>(initialData?.category ?? "general");
+  const [publishStatus, setPublishStatus] = useState<PublishStatus>(
+    initialData?.publishStatus ?? "draft"
+  );
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (resolvedMode === "edit" && initialData) {
+      setQuestion(initialData.question ? normalizeTiptapDoc(initialData.question) : EMPTY_TIPTAP_DOC);
+      setAnswer(initialData.answer ? normalizeTiptapDoc(initialData.answer) : EMPTY_TIPTAP_DOC);
+      setCategory(initialData.category ?? "general");
+      setPublishStatus(initialData.publishStatus ?? "draft");
     }
-    if (m.createdByName) return m.createdByName;
-    if (m.createdByUsername) return m.createdByUsername;
-    return 'System';
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolvedMode, initialData?.id]);
 
-  const isHtmlString = (s: string) => /<\/?[a-z][\s\S]*>/i.test(s);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
-  const tryParseJson = (s: string) => {
     try {
-      return JSON.parse(s);
-    } catch {
-      return null;
-    }
-  };
+      const payload = {
+        question,
+        answer,
+        category,
+        publishStatus,
+        createdById: currentUserId,
+        updatedById: currentUserId,
+        approvedById: currentUserId,
+      };
 
-  const stripHtmlTags = (html: string) => {
-    try {
-      const tmp = document.createElement('div');
-      tmp.innerHTML = html;
-      return tmp.textContent || tmp.innerText || '';
-    } catch {
-      return html.replace(/<\/?[^>]+(>|$)/g, '');
-    }
-  };
-
-  const getContentCandidate = (m: any) => {
-    if (!m) return null;
-
-    const candidates = ['content', 'body', 'messageContent', 'text', 'html', 'message'];
-    let c: any = null;
-    for (const key of candidates) {
-      if (Object.prototype.hasOwnProperty.call(m, key) && m[key] != null) {
-        c = m[key];
-        break;
-      }
-    }
-
-    if (!c && m.content && typeof m.content === 'object') c = m.content;
-
-    if (!c) return null;
-
-    if (typeof c === 'object') {
-      if (c.html) return { type: 'html', value: String(c.html) };
-      if (c.text) return { type: 'text', value: String(c.text) };
-      return { type: 'json', value: c };
-    }
-
-    if (typeof c === 'string') {
-      const maybeJson = tryParseJson(c);
-      if (maybeJson) {
-        if (maybeJson.html) return { type: 'html', value: String(maybeJson.html) };
-        if (maybeJson.text) return { type: 'text', value: String(maybeJson.text) };
-        return { type: 'json', value: maybeJson };
-      }
-      if (isHtmlString(c)) {
-        return { type: 'html', value: c };
-      }
-      return { type: 'text', value: c };
-    }
-
-    return null;
-  };
-
-  const PREVIEW_CHAR_LIMIT = 300;
-
-  const renderContent = (m: any, full = false) => {
-    const candidate = getContentCandidate(m);
-    if (!candidate) {
-      return <div className="text-sm text-gray-500 dark:text-gray-400">— No content —</div>;
-    }
-
-    if (candidate.type === 'html') {
-      const raw = String(candidate.value ?? '');
-      const clean = DOMPurify.sanitize(raw, {
-        ALLOWED_TAGS: [
-          'a',
-          'b',
-          'i',
-          'strong',
-          'em',
-          'p',
-          'br',
-          'ul',
-          'ol',
-          'li',
-          'span',
-          'div',
-          'pre',
-          'code',
-          'blockquote',
-          'img',
-          'h1',
-          'h2',
-          'h3',
-          'h4',
-        ],
-        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'style'],
-      });
-
-      if (!full) {
-        const textFallback = stripHtmlTags(clean).trim();
-        if (textFallback.length === 0) {
-          return (
-            <div
-              className="mt-2 text-sm prose max-w-none text-slate-900 dark:text-slate-200"
-              dangerouslySetInnerHTML={{ __html: clean }}
-            />
-          );
-        }
-        if (textFallback.length > PREVIEW_CHAR_LIMIT) {
-          const truncatedText = textFallback.slice(0, PREVIEW_CHAR_LIMIT) + '…';
-          return (
-            <div className="mt-2 text-sm text-slate-900 dark:text-slate-200">
-              <div className="mb-1" aria-hidden>
-                {truncatedText}
-              </div>
-            </div>
-          );
-        }
+      let res: Response;
+      if (resolvedMode === "edit" && initialData?.id) {
+        res = await fetch(`/api/faq/${initialData.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        res = await fetch("/api/faq", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
       }
 
-      return (
-        <div
-          className="mt-2 text-sm prose max-w-none text-slate-900 dark:text-slate-200"
-          dangerouslySetInnerHTML={{ __html: clean }}
-        />
-      );
-    }
-
-    if (candidate.type === 'text') {
-      const raw = String(candidate.value ?? '');
-      const trimmed = raw.trim();
-      if (!trimmed)
-        return <div className="text-sm text-gray-500 dark:text-gray-400">— No content —</div>;
-      if (!full) {
-        const preview =
-          trimmed.length > PREVIEW_CHAR_LIMIT
-            ? trimmed.slice(0, PREVIEW_CHAR_LIMIT) + '…'
-            : trimmed;
-        return (
-          <div className="mt-2 text-sm text-slate-900 dark:text-slate-200 whitespace-pre-wrap">
-            {preview}
-          </div>
-        );
-      }
-      return (
-        <div className="mt-2 text-sm text-slate-900 dark:text-slate-200 whitespace-pre-wrap">
-          {trimmed}
-        </div>
-      );
-    }
-
-    if (candidate.type === 'json') {
-      try {
-        const pretty = JSON.stringify(candidate.value, null, 2);
-        if (!full) {
-          const preview =
-            pretty.length > PREVIEW_CHAR_LIMIT ? pretty.slice(0, PREVIEW_CHAR_LIMIT) + '…' : pretty;
-          return (
-            <pre className="mt-2 text-sm text-slate-900 dark:text-slate-200 whitespace-pre-wrap max-h-48 overflow-auto">
-              {preview}
-            </pre>
-          );
-        }
-        return (
-          <pre className="mt-2 text-sm text-slate-900 dark:text-slate-200 whitespace-pre-wrap overflow-auto">
-            {pretty}
-          </pre>
-        );
-      } catch {
-        return (
-          <pre className="mt-2 text-sm text-slate-900 dark:text-slate-200 whitespace-pre-wrap">
-            {String(candidate.value)}
-          </pre>
-        );
-      }
-    }
-
-    return (
-      <div className="text-sm text-gray-500 dark:text-gray-400">— Unsupported content type —</div>
-    );
-  };
-
-  // When a message is selected for view, fetch full message and responses and render inside this component
-  const openMessage = async (record: any) => {
-    const id = record?.id ?? record;
-    if (!id) return;
-    setLoadingView(true);
-    if (typeof onToggleControls === 'function') onToggleControls(true);
-    try {
-      let msgData: any = null;
-      try {
-        const res = await fetch(`/api/messages/${id}`);
-        msgData = res.ok ? await res.json() : null;
-      } catch {
-        msgData = null;
-      }
-      const base = msgData ?? record;
-
-      let responses: any[] = [];
-      try {
-        const respRes = await fetch('/api/responses');
-        const respData = respRes.ok ? await respRes.json() : [];
-        const parentId = base?.id
-          ? typeof base.id === 'number'
-            ? base.id
-            : Number(base.id)
-          : Number(id);
-        if (Array.isArray(respData)) {
-          responses = respData.filter(
-            (r: any) =>
-              (r.message && (r.message.id === parentId || Number(r.message.id) === parentId)) ||
-              (r.messageId && Number(r.messageId) === parentId)
-          );
-        }
-      } catch {
-        responses = [];
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error || `Request failed (${res.status})`);
       }
 
-      // IMPORTANT: render inline (don't call parent handleView to avoid switching sections)
-      setViewingMessage({ ...base, responses: responses ?? [] });
+      if (onSuccess) onSuccess();
+    } catch (err: any) {
+      setError(err?.message || "Unexpected error saving FAQ");
     } finally {
-      setLoadingView(false);
+      setLoading(false);
     }
   };
-
-  const closeMessage = () => {
-    setViewingMessage(null);
-    if (typeof onToggleControls === 'function') onToggleControls(false);
-  };
-
-  // Full message renderer (inline)
-  const renderFullMessage = (m: any) => {
-    const category = m.messageCategory ?? m.category ?? 'System';
-    const title = m.title ?? m.subject ?? m.messageTitle ?? m.name ?? '-';
-    const createdAt = m.createdAt ? new Date(m.createdAt).toLocaleString() : '-';
-    const updatedAt = m.updatedAt ? new Date(m.updatedAt).toLocaleString() : null;
-    const showUpdated = updatedAt && updatedAt !== createdAt;
-    const createdBy =
-      String(category ?? '').toLowerCase() === 'system' ? 'System' : createdByLabel(m);
-
-    return (
-      <div className="w-full">
-        <div className="px-2">
-          <h2 className="text-xl font-semibold">{title}</h2>
-          <div className="text-sm text-slate-700 dark:text-slate-300 mt-1">
-            Category: <strong>{category}</strong> · Created: {createdAt}
-            {showUpdated ? <> · Updated: {updatedAt}</> : null} · Created by: {createdBy}
-          </div>
-        </div>
-
-        <div className="mt-4 px-2">
-          <div className="rounded p-4" style={{ background: 'transparent' }}>
-            {/* message content */}
-            <div className="mb-4">{renderContent(m, true)}</div>
-
-            {/* actions */}
-            <div className="flex flex-wrap gap-2 items-center">
-              <button
-                className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded"
-                onClick={() => closeMessage()}
-              >
-                ← Back
-              </button>
-
-              {/* Respond only for non-system and when allowResponses */}
-              {String(category).toLowerCase() !== 'system' && onRespond && m.allowResponses && (
-                <button
-                  className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                  onClick={() => {
-                    onRespond(m.id);
-                  }}
-                >
-                  Respond
-                </button>
-              )}
-
-              <button
-                className="px-3 py-2 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-700 dark:hover:bg-yellow-600 text-yellow-800 dark:text-white rounded"
-                onClick={() => handleEdit(m)}
-              >
-                Edit
-              </button>
-
-              <button
-                className="px-3 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-700 dark:hover:bg-red-600 text-red-800 dark:text-white rounded"
-                onClick={() => handleDelete(m.id)}
-                disabled={Boolean(deleteLoading && deleteId === m.id)}
-              >
-                {deleteLoading && deleteId === m.id ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-
-            {/* Responses */}
-            <div className="mt-6">
-              <h3 className="font-medium">
-                Responses ({Array.isArray(m.responses) ? m.responses.length : 0})
-              </h3>
-              <div className="space-y-3 mt-3">
-                {Array.isArray(m.responses) && m.responses.length > 0 ? (
-                  m.responses.map((r: any) => (
-                    <div
-                      key={r.id}
-                      className="p-3 rounded border"
-                      style={{ background: 'rgba(0,0,0,0.03)' }}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="text-sm font-medium">
-                            {r.name ?? r.createdByName ?? 'User'}
-                          </div>
-                          <div className="text-xs text-slate-600 dark:text-slate-400">
-                            {r.createdAt ? new Date(r.createdAt).toLocaleString() : '-'}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <button
-                            className="px-2 py-1 text-xs bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-700 dark:hover:bg-yellow-600 text-yellow-800 dark:text-white rounded"
-                            onClick={() => handleEdit(r)}
-                          >
-                            Edit
-                          </button>
-                        </div>
-                      </div>
-                      <div className="mt-2 text-sm">{renderContent(r, true)}</div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-sm text-slate-600 dark:text-slate-400">
-                    No responses yet.
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Outer container uses same colors/styles as CreateFAQForm
-  const outerClass =
-    'w-full max-w-4xl mx-auto mt-4 space-y-4 p-6 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-200 rounded-xl shadow';
 
   return (
-    <div className={outerClass}>
-      {/* When viewingMessage is set, render the full message view (inline). */}
-      {viewingMessage ? (
-        <div>{renderFullMessage(viewingMessage)}</div>
-      ) : (
-        <>
-          {(!Array.isArray(paginatedData) || paginatedData.length === 0) && (
-            <div className="text-center py-8 text-slate-600 dark:text-slate-300">
-              No messages found.
-            </div>
-          )}
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-3xl mx-auto space-y-6 p-6 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-200 rounded-xl shadow"
+    >
+      <h2 className="font-semibold text-xl mb-2">
+        {resolvedMode === "edit" ? "Edit FAQ" : "Create New FAQ"}
+      </h2>
 
-          {Array.isArray(paginatedData) &&
-            paginatedData.map((m: any) => {
-              const createdAt = m.createdAt ? new Date(m.createdAt) : null;
-              const updatedAt = m.updatedAt ? new Date(m.updatedAt) : null;
-              const showUpdated =
-                createdAt && updatedAt && createdAt.getTime() !== updatedAt.getTime();
+      {/*
+        One toolbar shared by both fields below: it acts on whichever of
+        Question / Answer was last focused, instead of each field carrying
+        its own separate toolbar.
+      */}
+      <RichTextEditorProvider key={initialData?.id ?? "new"}>
+        <div className="tiptap-wrapper">
+          <RichTextToolbar showLinkUnlink />
 
-              const category = (m.messageCategory ?? m.category ?? 'System') as string;
-              const title = m.title ?? m.subject ?? m.messageTitle ?? m.name ?? '-';
-              const isSystem = String(category ?? '').toLowerCase() === 'system';
-              const createdBy = isSystem ? 'System' : createdByLabel(m);
-
-              return (
-                <div
-                  key={m.id}
-                  className="p-4 border rounded-md"
-                  // keep background transparent to show outer container color
-                >
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                    <div
-                      className="flex-1 min-w-0 cursor-pointer"
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') openMessage(m);
-                      }}
-                      onClick={() => openMessage(m)}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-sm font-semibold">
-                            {category}
-                          </div>
-
-                          <div className="flex flex-col min-w-0">
-                            <div className="font-medium truncate text-ellipsis">{title}</div>
-                            <div className="text-xs text-slate-600 dark:text-slate-400">
-                              Created at: {createdAt ? createdAt.toLocaleString() : '-'}
-                              {showUpdated && (
-                                <> • Updated at: {updatedAt ? updatedAt.toLocaleString() : '-'}</>
-                              )}
-                            </div>
-                            <div className="text-xs text-slate-600 dark:text-slate-400">
-                              Created by: {createdBy}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => openMessage(m)}
-                        className="px-3 py-1 rounded text-sm bg-blue-50 hover:bg-blue-100 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-800 dark:text-white"
-                        aria-expanded={false}
-                        aria-controls={`message-body-${m.id}`}
-                      >
-                        View
-                      </button>
-
-                      {/* Respond button only for non-system messages and when allowResponses is true */}
-                      {!isSystem && onRespond && m.allowResponses && (
-                        <button
-                          type="button"
-                          className="px-3 py-1 rounded text-sm bg-green-600 text-white hover:bg-green-700"
-                          onClick={() => onRespond(m.id)}
-                        >
-                          Respond
-                        </button>
-                      )}
-
-                      <button
-                        type="button"
-                        className="px-3 py-1 rounded text-sm bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-700 dark:hover:bg-yellow-600 text-yellow-800 dark:text-white"
-                        onClick={() => handleEdit(m)}
-                      >
-                        Edit
-                      </button>
-
-                      <button
-                        type="button"
-                        className="px-3 py-1 rounded text-sm bg-red-50 hover:bg-red-100 dark:bg-red-700 dark:hover:bg-red-600 text-red-800 dark:text-white"
-                        onClick={() => handleDelete(m.id)}
-                        disabled={Boolean(deleteLoading && deleteId === m.id)}
-                      >
-                        {deleteLoading && deleteId === m.id ? 'Deleting...' : 'Delete'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-          {/* TableActions optional */}
-          <div>
-            {TableActions ? (
-              <TableActions data={paginatedData} columns={[]} tableRef={React.createRef()} />
-            ) : null}
+          <div className="space-y-2 p-3">
+            <Label htmlFor="faq-question">Question</Label>
+            <RichTextField
+              content={question}
+              onChange={setQuestion}
+              placeholder="Type the question..."
+            />
           </div>
-        </>
-      )}
-    </div>
+
+          <div className="space-y-2 border-t border-gray-200 p-3 dark:border-gray-800">
+            <Label htmlFor="faq-answer">Answer</Label>
+            <RichTextField
+              content={answer}
+              onChange={setAnswer}
+              placeholder="Type the answer..."
+            />
+          </div>
+        </div>
+      </RichTextEditorProvider>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="faq-category">Category</Label>
+          <select
+            id="faq-category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value as FAQCategory)}
+            className="w-full border border-input rounded-md p-2 text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200"
+          >
+            {categoryOptions.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="faq-status">Publish Status</Label>
+          <select
+            id="faq-status"
+            value={publishStatus}
+            onChange={(e) => setPublishStatus(e.target.value as PublishStatus)}
+            className="w-full border border-input rounded-md p-2 text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200"
+          >
+            {publishOptions.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {error && <div className="text-sm text-red-600">{error}</div>}
+
+      <div className="flex gap-3">
+        <Button
+          type="submit"
+          disabled={loading}
+          className="flex-1 bg-[#9f004d] hover:bg-[#7c003c] text-white"
+        >
+          {loading
+            ? resolvedMode === "edit"
+              ? "Updating..."
+              : "Creating..."
+            : resolvedMode === "edit"
+            ? "Update FAQ"
+            : "Create FAQ"}
+        </Button>
+        {onCancel && (
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1 border-[#9f004d] text-[#9f004d] hover:bg-[#f5e3ec]"
+            onClick={onCancel}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+        )}
+      </div>
+    </form>
   );
 }

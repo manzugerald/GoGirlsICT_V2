@@ -2,6 +2,7 @@
 // import { PrismaClient } from '@/lib/generated/prisma';
 import prisma from './prisma';
 import { PrismaClient } from '@/lib/generated/prisma';
+import { normalizeTiptapDoc } from '@/lib/tiptap';
 
 // const prisma = new PrismaClient();
 
@@ -28,7 +29,7 @@ async function main() {
 
     await prisma.message.create({
     data: {
-      title: 'Welcome Message',
+      title: normalizeTiptapDoc('Welcome Message'),
       affiliated: 'Co-Founder | Executive Director',
       name: 'Eva Yayi',
       content: 'Welcome to our vibrant and inclusive community! At the heart of our work is a belief that every individual, regardless of background, deserves the opportunity to thrive in a connected, digital world. We are thrilled to launch our new programs aimed at empowering youth, promoting innovation, and making lasting change in the communities we serve. Let us build a future of equal access and shared success.',

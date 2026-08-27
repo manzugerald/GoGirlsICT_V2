@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { EventStatus, PublishStatus, AttendanceType } from '@/lib/generated/prisma';
 import { slugify } from '@/lib/utils';
+import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
 import { saveUploadedFile, saveUploadedFiles } from '@/lib/uploadHelpers';
 
 function toEnum<T>(enumObject: T, value: string): T[keyof T] | undefined {
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
 
     // --- Parse fields ---
-    const eventTitle = formData.get('eventTitle')?.toString() || '';
+    const eventTitleRaw = formData.get('eventTitle')?.toString() || '';
     const eventDescriptionRaw = formData.get('eventDescription')?.toString() || '{}';
     const eventDetailsRaw = formData.get('eventDetails')?.toString() || '{}';
     const eventLocation = formData.get('eventLocation')?.toString() || '';
@@ -34,9 +35,15 @@ export async function POST(req: NextRequest) {
     const maxAttendeesRaw = formData.get('maxAttendees')?.toString() || '';
 
     // --- Parse JSON fields ---
+    let eventTitle;
     let eventDescription;
     let eventDetails;
     let eventTags: string[];
+    try {
+      eventTitle = eventTitleRaw ? JSON.parse(eventTitleRaw) : null;
+    } catch {
+      eventTitle = null;
+    }
     try {
       eventDescription = JSON.parse(eventDescriptionRaw);
     } catch {
@@ -55,7 +62,7 @@ export async function POST(req: NextRequest) {
     }
 
     // --- Validate required fields ---
-    if (!eventTitle || !eventDescription || !eventStartDateRaw || !eventEndDateRaw) {
+    if (isTiptapDocEmpty(eventTitle) || !eventDescription || !eventStartDateRaw || !eventEndDateRaw) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -74,7 +81,7 @@ export async function POST(req: NextRequest) {
     const maxAttendees = maxAttendeesRaw ? Number(maxAttendeesRaw) : null;
 
     // --- Slug ---
-    const slug = slugify(eventTitle.trim());
+    const slug = slugify(extractPlainText(eventTitle).trim());
 
     // --- Handle file uploads using updated helper ---
     // Banner (single file, required on create)

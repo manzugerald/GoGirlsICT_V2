@@ -1,5 +1,6 @@
 import prisma from './prisma';
 import { PrismaClient, EventStatus, AttendanceType, PublishStatus } from '@/lib/generated/prisma';
+import { extractPlainText, normalizeTiptapDoc } from '@/lib/tiptap';
 
 // const prisma = new PrismaClient();
 
@@ -23,7 +24,7 @@ async function seedEvents() {
   const events = [
     {
       slug: 'girls-digital-literacy-orientation',
-      eventTitle: 'Girls Digital Literacy Bootcamp – Orientation',
+      eventTitle: normalizeTiptapDoc('Girls Digital Literacy Bootcamp – Orientation'),
 
       eventDescription: {
         type: 'doc',
@@ -84,7 +85,7 @@ async function seedEvents() {
 
     {
       slug: 'women-in-tech-mentorship-circle',
-      eventTitle: 'Women in Technology Mentorship Circle',
+      eventTitle: normalizeTiptapDoc('Women in Technology Mentorship Circle'),
 
       eventDescription: {
         type: 'doc',
@@ -135,7 +136,7 @@ async function seedEvents() {
 
     {
       slug: 'community-digital-safety-training',
-      eventTitle: 'Community Digital Safety & Online Citizenship Training',
+      eventTitle: normalizeTiptapDoc('Community Digital Safety & Online Citizenship Training'),
 
       eventDescription: {
         type: 'doc',
@@ -203,7 +204,7 @@ async function seedEvents() {
       },
     });
 
-    console.log(`✅ Event seeded: ${created.eventTitle}`);
+    console.log(`✅ Event seeded: ${extractPlainText(created.eventTitle)}`);
   }
 }
 

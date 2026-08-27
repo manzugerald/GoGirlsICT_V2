@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { extractPlainText } from '@/lib/tiptap';
 
 import type { ReportSummary } from '../data';
 
@@ -151,8 +152,9 @@ export default function ReportCard({
     report.createdAt
   );
 
-  const meta = report.project?.title
-    ? `${report.project.title} · ${dateLabel}`
+  const projectTitle = extractPlainText(report.project?.title);
+  const meta = projectTitle
+    ? `${projectTitle} · ${dateLabel}`
     : dateLabel;
 
   return (
@@ -214,7 +216,7 @@ export default function ReportCard({
                   href={`/programs/${report.project.slug}`}
                   className="font-medium hover:text-[#9f004d] dark:hover:text-pink-400"
                 >
-                  {report.project.title}
+                  {projectTitle}
                 </Link>
                 {' · '}
                 {dateLabel}

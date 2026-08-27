@@ -40,7 +40,7 @@ type MessageWithRelations = Message & {
         lastName: string;
         createdById?: string | null;
       } | null;
-      message?: { id: number; title?: string | null };
+      message?: { id: number; title?: unknown }; // Tiptap JSON doc, optional
       responderRole?: 'USER' | 'BENEFICIARY' | 'AUTHOR' | 'SYSTEM';
     }
   >;

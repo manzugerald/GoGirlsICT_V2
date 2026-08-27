@@ -6,6 +6,7 @@ import {
 import type {
   ReportListItem as ReportListItemType,
 } from '../data';
+import { extractPlainText } from '@/lib/tiptap';
 
 function getReportFile(
   files: unknown
@@ -44,6 +45,8 @@ export default function ReportListItem({
     report.files
   );
 
+  const projectTitle = extractPlainText(report.project?.title);
+
   const content = (
     <>
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600 ring-1 ring-red-100 transition-colors group-hover:bg-red-600 group-hover:text-white dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20 dark:group-hover:bg-red-500 dark:group-hover:text-white">
@@ -56,10 +59,8 @@ export default function ReportListItem({
         </span>
 
         <span className="caption mt-1 block text-site-secondary">
-          {report.project?.title
-            ? `${
-                report.project.title
-              } · ${formatDate(
+          {projectTitle
+            ? `${projectTitle} · ${formatDate(
                 report.createdAt
               )}`
             : formatDate(

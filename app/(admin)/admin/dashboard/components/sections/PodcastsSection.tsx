@@ -3,17 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
+import { extractPlainText, normalizeTiptapDoc } from '@/lib/tiptap';
 import '@/assets/styles/tiptap-editor.css';
 
 const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-viewer'), {
   ssr: false,
 });
-
-const EMPTY_DESCRIPTION: object = { type: 'doc', content: [{ type: 'paragraph' }] };
-
-function asTiptapDoc(value: unknown): object {
-  return value && typeof value === 'object' ? (value as object) : EMPTY_DESCRIPTION;
-}
 
 export default function PodcastsSection({
   paginatedData,
@@ -80,13 +75,18 @@ export default function PodcastsSection({
             {viewing.image ? (
               <img
                 src={viewing.image}
-                alt={viewing.title}
+                alt={extractPlainText(viewing.title)}
                 className="h-24 w-24 rounded-lg object-cover border shrink-0"
               />
             ) : null}
 
             <div className="min-w-0">
-              <h1 className="text-2xl font-semibold">{viewing.title}</h1>
+              <div className="text-2xl font-semibold">
+                <TiptapJsonViewer
+                  content={normalizeTiptapDoc(viewing.title)}
+                  className="prose dark:prose-invert max-w-none [&_p]:m-0"
+                />
+              </div>
               <div className="text-sm text-gray-500 mt-1">
                 By: {authorLabel(viewing)} · Published: {formatDate(viewing.publishedAt)} · Plays:{' '}
                 {viewing.accessCount ?? 0}
@@ -96,7 +96,7 @@ export default function PodcastsSection({
 
           <div className="text-sm text-gray-700 dark:text-gray-300">
             <TiptapJsonViewer
-              content={asTiptapDoc(viewing.description)}
+              content={normalizeTiptapDoc(viewing.description)}
               className="prose prose-sm dark:prose-invert max-w-none"
             />
           </div>
@@ -153,14 +153,14 @@ export default function PodcastsSection({
                   {podcast.image ? (
                     <img
                       src={podcast.image}
-                      alt={podcast.title}
+                      alt={extractPlainText(podcast.title)}
                       className="h-12 w-12 rounded-lg object-cover border shrink-0"
                     />
                   ) : null}
 
                   <div className="min-w-0">
                     <h3 className="font-semibold text-lg truncate">
-                      {podcast.title || 'Untitled Podcast'}
+                      {extractPlainText(podcast.title).trim() || 'Untitled Podcast'}
                     </h3>
 
                     <div className="mt-1 text-sm text-gray-600 flex flex-col sm:flex-row sm:items-center sm:gap-4">

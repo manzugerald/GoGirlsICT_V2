@@ -17,22 +17,12 @@ import {
 } from 'lucide-react';
 
 import type { PodcastSummary } from '../data';
+import { extractPlainText, normalizeTiptapDoc } from '@/lib/tiptap';
 
 const TiptapJsonViewer = dynamic(
   () => import('@/components/editor/tiptap-json-viewer'),
   { ssr: false }
 );
-
-const EMPTY_DESCRIPTION: object = {
-  type: 'doc',
-  content: [{ type: 'paragraph' }],
-};
-
-function asTiptapDoc(value: unknown): object {
-  return value && typeof value === 'object'
-    ? (value as object)
-    : EMPTY_DESCRIPTION;
-}
 
 // Used when a podcast has no stored waveform yet (e.g. legacy rows
 // created before this feature) so the player still shows *something*
@@ -104,6 +94,8 @@ export default function PodcastCard({
   onPlay: () => void;
   onPause: () => void;
 }) {
+  const titleText = extractPlainText(podcast.title);
+
   const audioRef = useRef<HTMLAudioElement>(
     null
   );
@@ -325,8 +317,8 @@ export default function PodcastCard({
           onClick={togglePlay}
           aria-label={
             isPlaying
-              ? `Pause ${podcast.title}`
-              : `Play ${podcast.title}`
+              ? `Pause ${titleText}`
+              : `Play ${titleText}`
           }
           className="absolute inset-0 m-auto flex h-14 w-14 items-center justify-center rounded-full bg-white/90 text-[#9f004d] shadow-lg backdrop-blur transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:bg-gray-950/90 dark:text-pink-400"
         >
@@ -347,7 +339,7 @@ export default function PodcastCard({
             ref={waveformRef}
             role="slider"
             tabIndex={0}
-            aria-label={`Seek within ${podcast.title}`}
+            aria-label={`Seek within ${titleText}`}
             aria-valuemin={0}
             aria-valuemax={Math.round(duration)}
             aria-valuenow={Math.round(currentTime)}
@@ -435,7 +427,7 @@ export default function PodcastCard({
       {/* Title, description, meta */}
       <div className="flex flex-1 flex-col p-4">
         <h3 className="font-serif text-[length:calc(1rem*var(--font-scale))] font-semibold leading-tight text-gray-900 dark:text-white">
-          {podcast.title}
+          {titleText}
         </h3>
 
         <div
@@ -447,7 +439,7 @@ export default function PodcastCard({
           }}
         >
           <TiptapJsonViewer
-            content={asTiptapDoc(podcast.description)}
+            content={normalizeTiptapDoc(podcast.description)}
             className="prose prose-sm dark:prose-invert max-w-none"
           />
         </div>

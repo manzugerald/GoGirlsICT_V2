@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { redis } from '@/utils/redis';
 import { sendAccountDeletionRequestEmail } from '@/lib/email';
+import { isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
 
 export const runtime = 'nodejs';
 
@@ -110,7 +111,7 @@ export async function POST(req: Request) {
       allowResponses,
       meta, // used for logic, not storage!
     } = body as {
-      title?: string;
+      title?: unknown; // Tiptap JSON doc, optional
       affiliated?: string;
       name?: string;
       content?: unknown;
@@ -122,9 +123,11 @@ export async function POST(req: Request) {
       beneficiaryId?: string;
     };
 
-    if (!title) {
-      return NextResponse.json({ error: 'Missing required field: title' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
-    }
+    // title is optional (Message.title is nullable) — normalize whatever was
+    // sent (a real Tiptap doc from the admin form, or a plain string from an
+    // internal caller like the account-deletion-request flow) into a valid
+    // Tiptap doc, or drop it entirely if empty.
+    const normalizedTitle = title != null && !isTiptapDocEmpty(title) ? normalizeTiptapDoc(title) : null;
 
     if (messageCategory !== undefined && !isMessageCategory(messageCategory)) {
       return NextResponse.json({ error: 'Invalid messageCategory' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
@@ -177,7 +180,7 @@ export async function POST(req: Request) {
 
     // Construct Prisma message.create payload -- NO META FIELD!
     const data: any = {
-      title,
+      title: normalizedTitle,
       affiliated: affiliated ?? null,
       name: name ?? null,
       content: typeof content === 'string' ? content : JSON.stringify(content ?? ''),

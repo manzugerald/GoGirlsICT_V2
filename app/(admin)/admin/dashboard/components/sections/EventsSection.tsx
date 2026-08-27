@@ -3,6 +3,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
+import { isTiptapDocEmpty, normalizeTiptapDoc, tiptapExcerpt } from '@/lib/tiptap';
+import '@/assets/styles/tiptap-editor.css';
 
 // JSON / Tiptap viewer (no SSR)
 const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-viewer'), {
@@ -162,140 +164,6 @@ export default function EventsSection({
     }
   }
 
-  function extractTextFromTiptap(node: any): string {
-    if (!node) return '';
-    if (typeof node === 'string') return node;
-    let text = '';
-    if (Array.isArray(node)) {
-      for (const n of node) text += extractTextFromTiptap(n);
-      return text;
-    }
-    if (typeof node === 'object') {
-      if (typeof node.text === 'string') text += node.text;
-      if (Array.isArray(node.content))
-        for (const child of node.content) text += extractTextFromTiptap(child);
-      return text;
-    }
-    return '';
-  }
-
-  function buildPreview(content: any, maxChars = 120) {
-    if (content == null) return '';
-    let fullText = '';
-    if (typeof content === 'string') {
-      try {
-        const parsed = JSON.parse(content);
-        if (parsed && typeof parsed === 'object') fullText = extractTextFromTiptap(parsed);
-        else fullText = content;
-      } catch {
-        fullText = content;
-      }
-    } else if (typeof content === 'object') {
-      fullText = extractTextFromTiptap(content);
-    } else fullText = String(content);
-
-    fullText = fullText.replace(/\s+/g, ' ').trim();
-    if (fullText.length <= maxChars) return fullText;
-    return fullText.slice(0, maxChars).trim() + '...';
-  }
-
-  // detect tiptap-like doc loosely
-  function isTiptapDoc(obj: any): boolean {
-    if (!obj || typeof obj !== 'object') return false;
-    if (obj.type === 'doc') return true;
-    if (Array.isArray(obj.content)) return true;
-    if (typeof obj.content === 'object') return true;
-    return false;
-  }
-
-  // Render arbitrary JSON in a friendly way:
-  function humanizeKey(k: string) {
-    return String(k)
-      .replace(/[_\-]/g, ' ')
-      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-      .replace(/\b\w/g, (c) => c.toUpperCase());
-  }
-
-  function renderArbitraryJson(obj: any): React.ReactNode {
-    if (obj == null) return <div className="text-sm text-gray-500">—</div>;
-
-    if (Array.isArray(obj)) {
-      return (
-        <ul className="list-disc list-inside text-sm">
-          {obj.map((it, i) => (
-            <li key={i}>{typeof it === 'object' ? renderArbitraryJson(it) : String(it)}</li>
-          ))}
-        </ul>
-      );
-    }
-
-    if (typeof obj !== 'object') {
-      return <div className="whitespace-pre-line text-sm">{String(obj)}</div>;
-    }
-
-    const entries = Object.entries(obj);
-    return (
-      <div className="space-y-3">
-        {entries.map(([key, val]) => {
-          const label = humanizeKey(key);
-          if (val == null || val === '') {
-            return (
-              <div key={key}>
-                <div className="text-sm font-medium">{label}</div>
-                <div className="text-sm text-gray-500">—</div>
-              </div>
-            );
-          }
-
-          if (Array.isArray(val)) {
-            return (
-              <div key={key}>
-                <div className="text-sm font-medium">{label}</div>
-                <ul className="list-disc list-inside mt-1 text-sm">
-                  {val.map((it, i) => (
-                    <li key={i}>{typeof it === 'object' ? renderArbitraryJson(it) : String(it)}</li>
-                  ))}
-                </ul>
-              </div>
-            );
-          }
-
-          if (typeof val === 'object') {
-            return (
-              <div key={key}>
-                <div className="text-sm font-medium">{label}</div>
-                <div className="mt-1">{renderArbitraryJson(val)}</div>
-              </div>
-            );
-          }
-
-          return (
-            <div key={key}>
-              <div className="text-sm font-medium">{label}</div>
-              <div className="text-sm mt-1">{String(val)}</div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  // Log parsed data when viewingEvent changes (debug)
-  useEffect(() => {
-    if (!viewingEvent) return;
-    const parsedDetails = tryParseMaybeString(viewingEvent.eventDetails ?? null);
-    const parsedDescription = tryParseMaybeString(viewingEvent.eventDescription ?? null);
-
-    // eslint-disable-next-line no-console
-    console.debug('[EventsSection] viewing.eventDetails raw:', viewingEvent.eventDetails);
-    // eslint-disable-next-line no-console
-    console.debug('[EventsSection] viewing.parsedDetails:', parsedDetails);
-    // eslint-disable-next-line no-console
-    console.debug('[EventsSection] viewing.eventDescription raw:', viewingEvent.eventDescription);
-    // eslint-disable-next-line no-console
-    console.debug('[EventsSection] viewing.parsedDescription:', parsedDescription);
-  }, [viewingEvent]);
-
   // ---------- grid ----------
   function renderGrid() {
     if (!Array.isArray(data) || data.length === 0) {
@@ -305,7 +173,7 @@ export default function EventsSection({
     return (
       <div className="grid grid-cols-1 gap-4">
         {data.map((ev) => {
-          const title = ev.eventTitle ?? ev.title ?? 'Untitled Event';
+          const title = tiptapExcerpt(ev.eventTitle, 200) || 'Untitled Event';
 
           // use banner for card preview
           const bannerRaw = extractUrlFromCandidate(
@@ -313,7 +181,7 @@ export default function EventsSection({
           );
           const bannerSrc = toAbsoluteUrl(bannerRaw) ?? null;
 
-          const preview = buildPreview(ev.eventDescription ?? ev.eventDetails);
+          const preview = tiptapExcerpt(ev.eventDescription ?? ev.eventDetails, 120);
           const start = formatDate(ev.eventStartDate);
           const end = formatDate(ev.eventEndDate);
           const pdf = extractUrlFromCandidate(ev.eventFile ?? ev.file ?? null);
@@ -518,7 +386,8 @@ export default function EventsSection({
   function renderFullEvent(ev: any) {
     const bannerRaw = extractUrlFromCandidate(ev.eventBanner ?? ev.banner ?? ev.cover ?? null);
     const bannerSrc = toAbsoluteUrl(bannerRaw) ?? undefined;
-    const title = ev.eventTitle ?? ev.title ?? 'Event';
+    const title = ev.eventTitle;
+    const titleText = tiptapExcerpt(ev.eventTitle, 200) || 'Event';
     const createdBy =
       ev.createdBy && (ev.createdBy.firstName || ev.createdBy.lastName)
         ? `${ev.createdBy.firstName ?? ''} ${ev.createdBy.lastName ?? ''}`.trim()
@@ -529,22 +398,10 @@ export default function EventsSection({
     const pdfSrc = toAbsoluteUrl(pdfUrl) ?? undefined;
     const images = extractArrayFromCandidate(ev.eventImages ?? ev.images ?? null);
 
-    // parse description/details for JSON-like content (use JSON viewer for tiptap docs, renderArbitraryJson otherwise)
-    const parsedDescription = (() => {
-      const d = ev.eventDescription ?? null;
-      if (!d) return null;
-      const maybe = tryParseMaybeString(d);
-      if (maybe && typeof maybe === 'object') return maybe;
-      return null;
-    })();
-
-    const parsedDetails = (() => {
-      const d = ev.eventDetails ?? null;
-      if (!d) return null;
-      const maybe = tryParseMaybeString(d);
-      if (maybe && typeof maybe === 'object') return maybe;
-      return null;
-    })();
+    // eventDescription/eventDetails are Tiptap JSON docs; normalizeTiptapDoc
+    // guarantees a shape the viewer can render even for legacy/malformed data.
+    const hasDetails = !isTiptapDocEmpty(ev.eventDetails);
+    const hasDescription = !isTiptapDocEmpty(ev.eventDescription);
 
     // parse tags (array or JSON string or comma separated)
     const tags = extractArrayFromCandidate(ev.eventTags ?? ev.tags ?? null);
@@ -560,7 +417,12 @@ export default function EventsSection({
       <div className="w-full max-w-4xl mx-auto">
         {/* Title & meta (on top) */}
         <div className="px-2">
-          <h1 className="text-2xl font-semibold text-left">{title}</h1>
+          <div className="text-2xl font-semibold text-left">
+            <TiptapJsonViewer
+              content={normalizeTiptapDoc(title)}
+              className="prose dark:prose-invert max-w-none [&_p]:m-0"
+            />
+          </div>
           <div className="text-sm text-gray-500 mt-2">
             By: {createdBy} · Created: {createdAt}
             {updatedAt ? ` · Updated: ${updatedAt}` : null}
@@ -570,7 +432,7 @@ export default function EventsSection({
         {/* Banner (below title/meta) */}
         {bannerSrc && (
           <div className="w-full my-4">
-            <img src={bannerSrc} alt={title} className="w-full h-[320px] object-cover rounded-md" />
+            <img src={bannerSrc} alt={titleText} className="w-full h-[320px] object-cover rounded-md" />
           </div>
         )}
 
@@ -615,16 +477,8 @@ export default function EventsSection({
             {/* Event Details */}
             <div>
               <div className="text-sm font-medium mb-1">Event Details</div>
-              {parsedDetails ? (
-                isTiptapDoc(parsedDetails) ? (
-                  <div className="prose dark:prose-invert">
-                    <TiptapJsonViewer content={parsedDetails} />
-                  </div>
-                ) : (
-                  renderArbitraryJson(parsedDetails)
-                )
-              ) : ev.eventDetails ? (
-                <div className="whitespace-pre-line">{String(ev.eventDetails)}</div>
+              {hasDetails ? (
+                <TiptapJsonViewer content={normalizeTiptapDoc(ev.eventDetails)} />
               ) : (
                 <div className="text-sm text-gray-500">No event details</div>
               )}
@@ -633,16 +487,8 @@ export default function EventsSection({
             {/* Event Description */}
             <div>
               <div className="text-sm font-medium mb-1">Event Description</div>
-              {parsedDescription ? (
-                isTiptapDoc(parsedDescription) ? (
-                  <div className="prose dark:prose-invert">
-                    <TiptapJsonViewer content={parsedDescription} />
-                  </div>
-                ) : (
-                  renderArbitraryJson(parsedDescription)
-                )
-              ) : ev.eventDescription ? (
-                <div className="whitespace-pre-line">{String(ev.eventDescription)}</div>
+              {hasDescription ? (
+                <TiptapJsonViewer content={normalizeTiptapDoc(ev.eventDescription)} />
               ) : (
                 <div className="text-sm text-gray-500">No description</div>
               )}

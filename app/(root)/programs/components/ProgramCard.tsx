@@ -5,6 +5,7 @@ import {
 
 import ContentCard from '@/app/(root)/components/shared/cards/ContentCard';
 import StatusBadge from '@/app/(root)/components/shared/badges/StatusBadge';
+import { extractPlainText } from '@/lib/tiptap';
 
 function formatDate(
   date?: Date | string | null
@@ -59,14 +60,16 @@ export default function ProgramCard({
   const hasRelated =
     reportCount > 0 || eventCount > 0;
 
+  const titleText = extractPlainText(program.title);
+
   return (
     <ContentCard
-      title={truncateTitle(program.title)}
+      title={truncateTitle(titleText)}
       href={`/programs/${
         program.slug ?? program.id
       }`}
       image={program.images?.[0]}
-      imageAlt={program.title}
+      imageAlt={titleText}
       meta={formatDate(program.createdAt)}
       ctaLabel="View Program"
       badge={

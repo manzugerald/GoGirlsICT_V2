@@ -17,8 +17,18 @@ export default function AdminLoginPage() {
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Use provided callback query param if present, otherwise default to home dashboard
-  const callbackUrl = searchParams?.get('callbackUrl') || '/admin/dashboard?type=home';
+  /*
+   * Use the provided callback query param only if it's a genuine
+   * relative path into the admin area. Anything else — missing, a bare
+   * origin (e.g. "http://host:port" with no path, which NextAuth's own
+   * /api/auth/signin computes as a callbackUrl when nothing better is
+   * known — see the footer's login link), or a path outside /admin —
+   * falls back to the dashboard so a bad callbackUrl can never bounce
+   * a signed-in admin out to the public site.
+   */
+  const rawCallbackUrl = searchParams?.get('callbackUrl') || '';
+  const callbackUrl =
+    rawCallbackUrl.startsWith('/admin') ? rawCallbackUrl : '/admin/dashboard?type=home';
 
   /*
    * Guards against a real race: next-auth's own session cookie (and thus

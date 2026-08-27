@@ -5,12 +5,11 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import dynamic from "next/dynamic";
 import "@/assets/styles/tiptap-editor.css";
-
-const EditorClient = dynamic(() => import("@/components/editor/editor-client"), {
-  ssr: false,
-});
+import { EMPTY_TIPTAP_DOC, isTiptapDocEmpty, normalizeTiptapDoc } from "@/lib/tiptap";
+import { RichTextEditorProvider } from "@/components/editor/rich-text-context";
+import RichTextToolbar from "@/components/editor/rich-text-toolbar";
+import RichTextField from "@/components/editor/rich-text-field";
 
 const projectStatusOptions = ["active", "completed", "paused"] as const;
 const publishOptions = ["draft", "published"] as const;
@@ -22,7 +21,7 @@ type ProjectFormProps = {
   mode?: "create" | "edit";
   initialData?: {
     id?: string;
-    title: string;
+    title: object; // Tiptap JSON doc
     content: object;
     projectStatus: ProjectStatus;
     publishStatus: PublishStatus;
@@ -40,8 +39,8 @@ export default function CreateProjectForm({
 }: ProjectFormProps) {
   const router = useRouter();
   const [form, setForm] = useState({
-    title: "",
-    content: {},
+    title: EMPTY_TIPTAP_DOC as object,
+    content: EMPTY_TIPTAP_DOC as object,
     files: null as FileList | null,
     projectStatus: "active" as ProjectStatus,
     publishStatus: "draft" as PublishStatus,
@@ -55,8 +54,8 @@ export default function CreateProjectForm({
     if (initialData) {
       setForm((prev) => ({
         ...prev,
-        title: initialData.title || "",
-        content: initialData.content || {},
+        title: initialData.title ? normalizeTiptapDoc(initialData.title) : EMPTY_TIPTAP_DOC,
+        content: initialData.content ? normalizeTiptapDoc(initialData.content) : EMPTY_TIPTAP_DOC,
         projectStatus: initialData.projectStatus || "active",
         publishStatus: initialData.publishStatus || "draft",
         images: initialData.images || [],
@@ -73,6 +72,10 @@ export default function CreateProjectForm({
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
+  };
+
+  const handleTitleChange = (json: object) => {
+    setForm((prev) => ({ ...prev, title: json }));
   };
 
   const handleEditorChange = (json: object) => {
@@ -97,8 +100,14 @@ export default function CreateProjectForm({
       return;
     }
 
+    if (isTiptapDocEmpty(form.title)) {
+      alert("Please give this project a title.");
+      setLoading(false);
+      return;
+    }
+
     const formData = new FormData();
-    formData.append("title", form.title.trim());
+    formData.append("title", JSON.stringify(form.title));
     formData.append("content", JSON.stringify(form.content));
     formData.append("projectStatus", form.projectStatus);
     formData.append("publishStatus", form.publishStatus);
@@ -181,27 +190,28 @@ export default function CreateProjectForm({
       <div className="text-2xl font-bold mb-4 text-center">
         {mode === "edit" ? "Edit Project" : "Create New Project"}
       </div>
-      {/* Title */}
-      <div className="space-y-2">
-        <Label htmlFor="title">Title</Label>
-        <Input
-          id="title"
-          name="title"
-          value={form.title}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      {/* Content (Tiptap JSON) */}
-      <div className="space-y-2">
-        <Label htmlFor="content">Content</Label>
-        <EditorClient
-          key={form.title}
-          content={form.content}
-          onChange={handleEditorChange}
-          showLinkUnlink
-        />
-      </div>
+      {/*
+        Shared toolbar sits on top of the form: it acts on whichever
+        rich-text field below (Title or Content) is currently (or was
+        last) focused.
+      */}
+      <RichTextEditorProvider key={initialData?.id ?? "new-project"}>
+        <div className="tiptap-wrapper">
+          <RichTextToolbar showLinkUnlink />
+          <div className="space-y-2 p-3">
+            <Label htmlFor="title">Title</Label>
+            <RichTextField
+              content={form.title}
+              onChange={handleTitleChange}
+              placeholder="Project title..."
+            />
+          </div>
+          <div className="space-y-2 border-t border-gray-200 p-3 dark:border-gray-800">
+            <Label htmlFor="content">Content</Label>
+            <RichTextField content={form.content} onChange={handleEditorChange} />
+          </div>
+        </div>
+      </RichTextEditorProvider>
       {/* Existing Images (edit mode) */}
       {mode === "edit" && form.images && form.images.length > 0 && (
         <div className="space-y-2">

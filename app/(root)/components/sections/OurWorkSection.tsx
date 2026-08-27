@@ -12,6 +12,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import type { Project, Report } from '../../types/home';
+import { extractPlainText } from '@/lib/tiptap';
 
 import Section from '../shared/components/Section';
 import SectionHeader from '../shared/components/SectionHeader';
@@ -200,7 +201,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
           <>
             <img
               src={project.images[0]}
-              alt={project.title}
+              alt={extractPlainText(project.title)}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />
@@ -236,7 +237,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
 
       <div className="relative p-6">
         <h3 className="heading-3 text-site-primary mb-2 line-clamp-2 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors">
-          {project.title}
+          {extractPlainText(project.title)}
         </h3>
 
         {project.createdAt && (

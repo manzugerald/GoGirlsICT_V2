@@ -3,6 +3,7 @@
 
 
 import { slugify } from '@/lib/utils';
+import { normalizeTiptapDoc } from '@/lib/tiptap';
 
 
 import { PrismaClient } from '@/lib/generated/prisma';
@@ -26,7 +27,7 @@ async function main() {
 
   const project = await prisma.project.create({
     data: {
-      title: 'Community Outreach',
+      title: normalizeTiptapDoc('Community Outreach'),
       slug: slugify('Community Outreach'),
       content: ["Details about community outreach."],
       images: ['/assets/images/project/p1.jpg'],

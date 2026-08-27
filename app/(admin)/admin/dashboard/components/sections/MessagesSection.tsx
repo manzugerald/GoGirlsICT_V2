@@ -1,11 +1,17 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import DOMPurify from 'dompurify';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { Message } from '@/lib/generated/prisma';
 import CreateResponseForm from '@/app/(admin)/admin/dashboard/createResponseForm';
 import ConfirmModal from '@/app/(admin)/admin/dashboard/components/ui/ConfirmModal';
+import { isTiptapDocEmpty, normalizeTiptapDoc, tiptapExcerpt } from '@/lib/tiptap';
+import '@/assets/styles/tiptap-editor.css';
+
+const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-viewer'), {
+  ssr: false,
+});
 
 type MessageWithRelations = Message & {
   beneficiary?: {
@@ -170,179 +176,31 @@ export default function MessagesSection({
     );
   };
 
-  const isHtmlString = (s: string) => /<\/?[a-z][\s\S]*>/i.test(s);
-  const tryParseJson = (s: string) => {
-    try {
-      return JSON.parse(s);
-    } catch {
-      return null;
-    }
-  };
-  const stripHtmlTags = (html: string) => {
-    try {
-      const tmp = document.createElement('div');
-      tmp.innerHTML = html;
-      return tmp.textContent || tmp.innerText || '';
-    } catch {
-      return html.replace(/<\/?[^>]+(>|$)/g, '');
-    }
-  };
-  const PREVIEW_CHAR_LIMIT = 300;
-
-  const getContentCandidate = (m: any) => {
-    if (!m) return null;
-    const candidates = ['content', 'body', 'messageContent', 'text', 'html', 'message'];
-    let c: any = null;
-    for (const key of candidates) {
-      if (Object.prototype.hasOwnProperty.call(m, key) && m[key] != null) {
-        c = m[key];
-        break;
-      }
-    }
-    if (!c && m.content && typeof m.content === 'object') c = m.content;
-    if (!c) return null;
-    if (typeof c === 'object') {
-      if (c.html) return { type: 'html', value: String(c.html) };
-      if (c.text) return { type: 'text', value: String(c.text) };
-      return { type: 'json', value: c };
-    }
-    if (typeof c === 'string') {
-      const maybeJson = tryParseJson(c);
-      if (maybeJson) {
-        if (maybeJson.html) return { type: 'html', value: String(maybeJson.html) };
-        if (maybeJson.text) return { type: 'text', value: String(maybeJson.text) };
-        return { type: 'json', value: maybeJson };
-      }
-      if (isHtmlString(c)) return { type: 'html', value: c };
-      return { type: 'text', value: c };
-    }
-    return null;
-  };
-
-  function normalizeHtmlForDark(sanitizedHtml: string) {
-    if (typeof document === 'undefined') return sanitizedHtml;
-    const isDark = document.documentElement.classList.contains('dark');
-    if (!isDark) return sanitizedHtml;
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(sanitizedHtml, 'text/html');
-      const all = Array.from(doc.body.querySelectorAll<HTMLElement>('*'));
-      for (const el of all) {
-        const inlineColor = el.style?.getPropertyValue('color') || el.getAttribute('color');
-        if (inlineColor) {
-          const s = inlineColor.trim().toLowerCase();
-          if (s.includes('red') || s === '#b91c1c' || s === '#ff0000' || s.startsWith('rgb(255,')) {
-            el.setAttribute('data-preserve-red', 'true');
-          } else {
-            el.style.removeProperty('color');
-            if (el.hasAttribute('color')) el.removeAttribute('color');
-          }
-        }
-      }
-      return doc.body.innerHTML;
-    } catch {
-      return sanitizedHtml;
-    }
-  }
-
+  // `content` (Message/Response) is a Tiptap JSON doc. Legacy rows saved
+  // before this field used the rich editor may hold a plain string or an
+  // arbitrary object instead — normalizeTiptapDoc makes either safe to
+  // hand to the viewer, recovering whatever text it can find.
   const renderContent = (m: any, full = false) => {
-    const candidate = getContentCandidate(m);
-    if (!candidate)
+    if (m?.content == null) {
       return <div className="text-sm text-slate-600 dark:text-slate-300">— No content —</div>;
-
-    if (candidate.type === 'html') {
-      const raw = String(candidate.value ?? '');
-      const sanitized = DOMPurify.sanitize(raw, {
-        ALLOWED_TAGS: [
-          'a',
-          'b',
-          'i',
-          'strong',
-          'em',
-          'p',
-          'br',
-          'ul',
-          'ol',
-          'li',
-          'span',
-          'div',
-          'pre',
-          'code',
-          'blockquote',
-          'img',
-          'h1',
-          'h2',
-          'h3',
-          'h4',
-        ],
-        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'style'],
-      });
-      const processed = normalizeHtmlForDark(sanitized);
-      if (!full) {
-        const textFallback = stripHtmlTags(processed).trim();
-        if (!textFallback) {
-          return (
-            <div
-              className="mt-2 text-sm rich-content"
-              dangerouslySetInnerHTML={{ __html: processed }}
-            />
-          );
-        }
-        if (textFallback.length > PREVIEW_CHAR_LIMIT) {
-          return (
-            <div className="mt-2 text-sm rich-content">
-              {textFallback.slice(0, PREVIEW_CHAR_LIMIT) + '…'}
-            </div>
-          );
-        }
-      }
-      return (
-        <div
-          className="mt-2 text-sm rich-content"
-          dangerouslySetInnerHTML={{ __html: processed }}
-        />
-      );
     }
 
-    if (candidate.type === 'text') {
-      const raw = String(candidate.value ?? '');
-      const trimmed = raw.trim();
-      if (!trimmed)
+    if (!full) {
+      const excerpt = tiptapExcerpt(m.content, 300);
+      if (!excerpt) {
         return <div className="text-sm text-slate-600 dark:text-slate-300">— No content —</div>;
-      const preview =
-        !full && trimmed.length > PREVIEW_CHAR_LIMIT
-          ? trimmed.slice(0, PREVIEW_CHAR_LIMIT) + '…'
-          : trimmed;
+      }
       return (
         <div className="mt-2 text-sm text-slate-900 dark:text-slate-200 whitespace-pre-wrap">
-          {preview}
+          {excerpt}
         </div>
       );
     }
 
-    if (candidate.type === 'json') {
-      try {
-        const pretty = JSON.stringify(candidate.value, null, 2);
-        const preview =
-          !full && pretty.length > PREVIEW_CHAR_LIMIT
-            ? pretty.slice(0, PREVIEW_CHAR_LIMIT) + '…'
-            : pretty;
-        return (
-          <pre className="mt-2 text-sm message-pre whitespace-pre-wrap overflow-auto">
-            {preview}
-          </pre>
-        );
-      } catch {
-        return (
-          <pre className="mt-2 text-sm message-pre whitespace-pre-wrap">
-            {String(candidate.value)}
-          </pre>
-        );
-      }
-    }
-
     return (
-      <div className="text-sm text-slate-600 dark:text-slate-300">— Unsupported content type —</div>
+      <div className="mt-2 text-sm">
+        <TiptapJsonViewer content={normalizeTiptapDoc(m.content)} />
+      </div>
     );
   };
 
@@ -634,7 +492,9 @@ export default function MessagesSection({
 
   const renderFullMessage = (m: any) => {
     const category = m.messageCategory ?? m.category ?? 'System';
-    const title = m.title ?? m.subject ?? m.messageTitle ?? m.name ?? '-';
+    const hasTitle = m.title != null && !isTiptapDocEmpty(m.title);
+    const title = hasTitle ? m.title : null;
+    const titleText = tiptapExcerpt(m.title, 100) || m.subject || m.messageTitle || m.name || '-';
 
     const createdAtDate = m.createdAt ? new Date(m.createdAt) : null;
     const updatedAtDate = m.updatedAt ? new Date(m.updatedAt) : null;
@@ -649,7 +509,16 @@ export default function MessagesSection({
     return (
       <div className="w-full">
         <div className="px-2">
-          <h2 className="text-xl font-semibold">{title}</h2>
+          {title ? (
+            <div className="text-xl font-semibold">
+              <TiptapJsonViewer
+                content={normalizeTiptapDoc(title)}
+                className="prose dark:prose-invert max-w-none [&_p]:m-0"
+              />
+            </div>
+          ) : (
+            <h2 className="text-xl font-semibold">{titleText}</h2>
+          )}
           <div className="text-sm text-slate-700 dark:text-slate-300 mt-1">
             {createdByAt}
             {showUpdated ? <> · Updated: {updatedAtDate?.toLocaleString()}</> : null}
@@ -842,15 +711,6 @@ export default function MessagesSection({
   const outerClass =
     'w-full max-w-4xl mx-auto mt-6 p-6 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-200 rounded-xl shadow relative border border-gray-200 dark:border-slate-700';
   const injectedCss = `
-    .rich-content { color: inherit; }
-    .rich-content img { max-width:100%; height:auto; border-radius:6px; display:block; margin:8px 0; }
-    .rich-content code { background: rgba(0,0,0,0.04); padding:2px 6px; border-radius:4px; color: inherit; }
-    .message-pre { background: #f8fafc; color: #0f172a; padding:12px; border-radius:6px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace; overflow:auto; }
-    .dark .rich-content, .dark .rich-content * { color: #e6edf3 !important; background: transparent !important; }
-    .dark .message-pre { background: #0f172a !important; color: #e6edf3 !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02); }
-    .rich-content [data-preserve-red], .rich-content [data-preserve-red] * { color: #b91c1c !important; }
-    .dark .rich-content [data-preserve-red], .dark .rich-content [data-preserve-red] * { color: #b91c1c !important; }
-
     .tabs-top { position: absolute; left: 24px; top: 0; transform: translateY(calc(-100% - 1px)); display:flex; gap:0; z-index:20; }
     .tab-pill { padding:10px 16px; height:40px; display:inline-flex; align-items:center; justify-content:center; border:1px solid transparent; border-bottom: none; border-radius:0; cursor:pointer; background:transparent; color:inherit; font-weight:600; box-sizing: border-box; }
     .tab-pill + .tab-pill { margin-left: -1px; }
@@ -927,7 +787,8 @@ export default function MessagesSection({
                       const showUpdated =
                         createdAt && updatedAt && createdAt.getTime() !== updatedAt.getTime();
                       const category = (m.messageCategory ?? m.category ?? 'System') as string;
-                      const title = m.title ?? m.subject ?? m.messageTitle ?? m.name ?? '-';
+                      const title =
+                        tiptapExcerpt(m.title, 100) || m.subject || m.messageTitle || m.name || '-';
                       const isSystem = String(category ?? '').toLowerCase() === 'system';
                       const createdByAt = formatCreatedByAt(m);
                       const isEditableCategory = !['request', 'system'].includes(

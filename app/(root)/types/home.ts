@@ -15,7 +15,7 @@ export interface HomePageContent {
 
 export interface ExecutiveMessage {
   id: number;
-  title?: string | null;
+  title?: any | null; // Tiptap JSON doc
   name?: string | null;
   affiliated?: string | null;
   content: any; // JSON
@@ -32,7 +32,7 @@ export interface ExecutiveMessage {
 
 export interface Project {
   id: number;
-  title: string;
+  title: any; // Tiptap JSON doc
   slug: string;
   content: any; // JSON
   images: string[];
@@ -59,7 +59,7 @@ export interface Report {
 export interface Event {
   id: number;
   slug: string;
-  eventTitle: string;
+  eventTitle: any; // Tiptap JSON doc
   eventDescription: any; // JSON
   eventDetails?: any | null; // JSON
   eventLocation?: string | null;

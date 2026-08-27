@@ -3,6 +3,7 @@ import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { redis } from '@/utils/redis';
+import { isTiptapDocEmpty } from '@/lib/tiptap';
 
 const PROJECTS_CACHE_KEY = 'projects:all';
 const PROJECTS_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
@@ -91,7 +92,7 @@ export async function POST(req: Request) {
     const data = await req.json();
     const { title, slug, content, images, projectStatus, publishStatus } = data;
 
-    if (!title || !slug || !content) {
+    if (isTiptapDocEmpty(title) || !slug || !content) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 

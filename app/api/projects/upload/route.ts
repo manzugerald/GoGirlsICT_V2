@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/db/prisma';
 import { slugify } from '@/lib/utils';
+import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
 import { redis } from '@/utils/redis'; // <-- Include Redis
 
 export const POST = async (req: Request) => {
@@ -34,6 +35,16 @@ export const POST = async (req: Request) => {
     return NextResponse.json({ error: 'Invalid content format' }, { status: 400 });
   }
 
+  let parsedTitle;
+  try {
+    parsedTitle = JSON.parse(title);
+  } catch {
+    return NextResponse.json({ error: 'Invalid title format' }, { status: 400 });
+  }
+  if (isTiptapDocEmpty(parsedTitle)) {
+    return NextResponse.json({ error: 'Missing required field: title' }, { status: 400 });
+  }
+
   // Handle image uploads
   const allowedImageExts = ['.png', '.jpg', '.jpeg'];
   const uploadDir = '/public/assets/images/projects';
@@ -54,12 +65,12 @@ export const POST = async (req: Request) => {
     imagePaths.push(publicPath);
   }
 
-  const slug = slugify(title.trim());
+  const slug = slugify(extractPlainText(parsedTitle).trim());
   const userId = session.user.id;
 
   const project = await prisma.project.create({
     data: {
-      title: title.trim(),
+      title: parsedTitle,
       slug,
       content: parsedContent,
       images: imagePaths,

@@ -5,12 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import dynamic from 'next/dynamic';
 import '@/assets/styles/tiptap-editor.css';
-
-const EditorClient = dynamic(() => import('@/components/editor/editor-client'), {
-  ssr: false,
-});
+import { EMPTY_TIPTAP_DOC, isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
+import { RichTextEditorProvider } from '@/components/editor/rich-text-context';
+import RichTextToolbar from '@/components/editor/rich-text-toolbar';
+import RichTextField from '@/components/editor/rich-text-field';
 
 const eventStatusOptions = ['pending', 'ongoing', 'completed', 'paused'] as const;
 const publishOptions = ['draft', 'published'] as const;
@@ -24,7 +23,7 @@ type EventFormProps = {
   mode?: 'create' | 'edit';
   initialData?: {
     id?: string;
-    eventTitle: string;
+    eventTitle: object; // Tiptap JSON doc
     eventDescription: object;
     eventDetails?: object;
     eventLocation?: string;
@@ -54,9 +53,9 @@ export default function CreateEventForm({
   const router = useRouter();
 
   const [form, setForm] = useState({
-    eventTitle: '',
-    eventDescription: {},
-    eventDetails: {},
+    eventTitle: EMPTY_TIPTAP_DOC as object,
+    eventDescription: EMPTY_TIPTAP_DOC as object,
+    eventDetails: EMPTY_TIPTAP_DOC as object,
     eventLocation: '',
     eventBanner: '', // string (URL or empty)
     eventImages: [] as string[],
@@ -84,9 +83,9 @@ export default function CreateEventForm({
       const toDatetimeLocal = (s: string | undefined) =>
         s ? new Date(s).toISOString().slice(0, 16) : '';
       setForm({
-        eventTitle: initialData.eventTitle ?? '',
-        eventDescription: initialData.eventDescription ?? {},
-        eventDetails: initialData.eventDetails ?? {},
+        eventTitle: initialData.eventTitle ? normalizeTiptapDoc(initialData.eventTitle) : EMPTY_TIPTAP_DOC,
+        eventDescription: initialData.eventDescription ? normalizeTiptapDoc(initialData.eventDescription) : EMPTY_TIPTAP_DOC,
+        eventDetails: initialData.eventDetails ? normalizeTiptapDoc(initialData.eventDetails) : EMPTY_TIPTAP_DOC,
         eventLocation: initialData.eventLocation ?? '',
         eventBanner: initialData.eventBanner ?? '',
         eventImages: Array.isArray(initialData.eventImages) ? initialData.eventImages : [],
@@ -126,6 +125,10 @@ export default function CreateEventForm({
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
+  };
+
+  const handleTitleChange = (json: object) => {
+    setForm((prev) => ({ ...prev, eventTitle: json }));
   };
 
   const handleEditorChange = (json: object) => {
@@ -176,8 +179,14 @@ export default function CreateEventForm({
       return;
     }
 
+    if (isTiptapDocEmpty(form.eventTitle)) {
+      alert('Please give this event a title.');
+      setLoading(false);
+      return;
+    }
+
     const formData = new FormData();
-    formData.append('eventTitle', form.eventTitle.trim());
+    formData.append('eventTitle', JSON.stringify(form.eventTitle));
     formData.append('eventDescription', JSON.stringify(form.eventDescription));
     formData.append('eventDetails', JSON.stringify(form.eventDetails));
     formData.append('eventLocation', form.eventLocation);
@@ -282,37 +291,41 @@ export default function CreateEventForm({
       <div className="text-2xl font-bold mb-4 text-center">
         {mode === 'edit' ? 'Edit Event' : 'Create New Event'}
       </div>
-      {/* Event Title */}
-      <div className="space-y-2">
-        <Label htmlFor="eventTitle">Title</Label>
-        <Input
-          id="eventTitle"
-          name="eventTitle"
-          value={form.eventTitle}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      {/* Event Description (Tiptap JSON) */}
-      <div className="space-y-2">
-        <Label htmlFor="eventDescription">Description</Label>
-        <EditorClient
-          key={form.eventTitle + '_desc'}
-          content={form.eventDescription}
-          onChange={handleEditorChange}
-          showLinkUnlink
-        />
-      </div>
-      {/* Event Details (optional Tiptap JSON) */}
-      <div className="space-y-2">
-        <Label htmlFor="eventDetails">Additional Details</Label>
-        <EditorClient
-          key={form.eventTitle + '_details'}
-          content={form.eventDetails}
-          onChange={handleDetailsEditorChange}
-          showLinkUnlink
-        />
-      </div>
+      {/*
+        One toolbar shared by all three fields below: it acts on whichever
+        of Title / Description / Additional Details was last focused,
+        instead of each field carrying its own separate toolbar.
+      */}
+      <RichTextEditorProvider key={initialData?.id ?? 'new'}>
+        <div className="tiptap-wrapper">
+          <RichTextToolbar showLinkUnlink />
+
+          <div className="space-y-2 p-3">
+            <Label htmlFor="eventTitle">Title</Label>
+            <RichTextField
+              content={form.eventTitle}
+              onChange={handleTitleChange}
+              placeholder="Event title..."
+            />
+          </div>
+
+          <div className="space-y-2 border-t border-gray-200 p-3 dark:border-gray-800">
+            <Label htmlFor="eventDescription">Description</Label>
+            <RichTextField
+              content={form.eventDescription}
+              onChange={handleEditorChange}
+            />
+          </div>
+
+          <div className="space-y-2 border-t border-gray-200 p-3 dark:border-gray-800">
+            <Label htmlFor="eventDetails">Additional Details</Label>
+            <RichTextField
+              content={form.eventDetails}
+              onChange={handleDetailsEditorChange}
+            />
+          </div>
+        </div>
+      </RichTextEditorProvider>
       {/* Event Location */}
       <div className="space-y-2">
         <Label htmlFor="eventLocation">Location</Label>

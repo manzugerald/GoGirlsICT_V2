@@ -3,6 +3,7 @@ import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { slugify } from '@/lib/utils';
+import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -90,7 +91,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       formData = await req.formData();
     }
 
-    let title = '';
+    let title: any = null;
     let content = {};
     let projectStatus = 'active';
     let publishStatus = 'draft';
@@ -99,7 +100,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     let newImageUrls: string[] = [];
 
     if (formData) {
-      title = (formData.get('title') as string) || '';
+      const titleRaw = (formData.get('title') as string) || '';
+      try {
+        title = titleRaw ? JSON.parse(titleRaw) : null;
+      } catch {
+        return NextResponse.json({ error: 'Invalid title format' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
+      }
       content = JSON.parse((formData.get('content') as string) || '{}');
       projectStatus = (formData.get('projectStatus') as string) || 'active';
       publishStatus = (formData.get('publishStatus') as string) || 'draft';
@@ -142,11 +148,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       (img) => !imagesToRemove.includes(img)
     );
 
-    if (!title) {
+    if (isTiptapDocEmpty(title)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
-    const slug = slugify(title.trim());
+    const slug = slugify(extractPlainText(title).trim());
 
     const updatedProject = await prisma.project.update({
       where: { id: projectId },

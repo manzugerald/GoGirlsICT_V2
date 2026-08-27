@@ -3,6 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Event } from "@/lib/generated/prisma";
 import { Button } from "@/components/ui/button";
+import { extractPlainText } from "@/lib/tiptap";
 
 type EventWithUser = Event & {
     createdBy: {
@@ -25,7 +26,7 @@ export function eventColumns({
       header: "Title",
       cell: ({ row }) => (
         <div className="whitespace-normal break-words max-w-xs">
-          {row.getValue("eventTitle")}
+          {extractPlainText(row.getValue("eventTitle"))}
         </div>
       ),
     },

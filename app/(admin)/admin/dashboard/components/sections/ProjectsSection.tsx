@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import ImagesCarousel from '@/app/components/imagesCarousel'; // extracted reusable carousel
+import { extractPlainText, normalizeTiptapDoc } from '@/lib/tiptap';
+import '@/assets/styles/tiptap-editor.css';
 
 // Dynamically load the Tiptap JSON viewer (no SSR)
 const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-viewer'), {
@@ -56,25 +58,6 @@ export default function ProjectsSection({
     };
   }, [viewing, onToggleControls]);
 
-  // Extract plain text from tiptap JSON structure
-  function extractTextFromTiptap(node: any): string {
-    if (!node) return '';
-    if (typeof node === 'string') return node;
-    let text = '';
-    if (Array.isArray(node)) {
-      for (const n of node) text += extractTextFromTiptap(n);
-      return text;
-    }
-    if (typeof node === 'object') {
-      if (typeof node.text === 'string') text += node.text;
-      if (Array.isArray(node.content)) {
-        for (const child of node.content) text += extractTextFromTiptap(child);
-      }
-      return text;
-    }
-    return '';
-  }
-
   function escapeRegExp(str: string) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
@@ -82,22 +65,8 @@ export default function ProjectsSection({
   // Build preview string trimmed to max chars and omitting title if present
   function buildPreview(projectContent: any, max = 500, title?: string): string {
     if (projectContent == null) return '';
-    let fullText = '';
 
-    if (typeof projectContent === 'string') {
-      try {
-        const parsed = JSON.parse(projectContent);
-        if (parsed && typeof parsed === 'object') fullText = extractTextFromTiptap(parsed);
-        else fullText = projectContent;
-      } catch {
-        fullText = projectContent;
-      }
-    } else if (typeof projectContent === 'object') {
-      fullText = extractTextFromTiptap(projectContent);
-    } else fullText = String(projectContent);
-
-    // Normalize whitespace and trim
-    fullText = fullText.replace(/\s+/g, ' ').trim();
+    let fullText = extractPlainText(projectContent).replace(/\s+/g, ' ').trim();
 
     // Remove title occurrences from preview (case-insensitive), if title provided and non-empty
     if (title && typeof title === 'string' && title.trim().length > 0) {
@@ -161,7 +130,7 @@ export default function ProjectsSection({
       ? `${project.createdBy.firstName ?? ''} ${project.createdBy.lastName ?? ''}`.trim()
       : 'System';
     const createdAt = project.createdAt ? new Date(project.createdAt).toLocaleString() : '-';
-    const preview = buildPreview(project.content, maxChars, project.title);
+    const preview = buildPreview(project.content, maxChars, extractPlainText(project.title));
     const images = Array.isArray(project.images) ? project.images : [];
 
     return (
@@ -173,7 +142,7 @@ export default function ProjectsSection({
           {/* Title */}
           <div className="w-full">
             <h3 className="font-semibold text-base sm:text-lg break-words whitespace-normal m-0">
-              {project.title || 'Untitled Project'}
+              {extractPlainText(project.title).trim() || 'Untitled Project'}
             </h3>
           </div>
 
@@ -257,24 +226,17 @@ export default function ProjectsSection({
     const created = project.createdAt ? new Date(project.createdAt).toLocaleString() : '-';
     const updated = project.updatedAt ? new Date(project.updatedAt).toLocaleString() : '-';
 
-    // Determine tiptap content (object or parsed string)
-    let parsedContent: any = null;
-    if (project.content && typeof project.content === 'object') parsedContent = project.content;
-    else if (project.content && typeof project.content === 'string') {
-      try {
-        const maybe = JSON.parse(project.content);
-        if (maybe && typeof maybe === 'object') parsedContent = maybe;
-      } catch {
-        parsedContent = null;
-      }
-    }
-
     const images = Array.isArray(project.images) ? project.images : [];
 
     return (
       <div className="w-full max-w-4xl mx-auto p-4 space-y-4 overflow-hidden border rounded-md bg-white dark:bg-gray-900">
         <div>
-          <h1 className="text-2xl font-semibold">{project.title ?? 'Project'}</h1>
+          <div className="text-2xl font-semibold">
+            <TiptapJsonViewer
+              content={normalizeTiptapDoc(project.title)}
+              className="prose dark:prose-invert max-w-none [&_p]:m-0"
+            />
+          </div>
           <div className="text-sm text-gray-500 mt-1">
             By:{' '}
             {project.createdBy
@@ -291,16 +253,8 @@ export default function ProjectsSection({
 
         <div>
           <div className="text-sm text-gray-500">Content</div>
-          <div className="mt-2">
-            {parsedContent ? (
-              <div className="rounded border bg-white dark:bg-gray-900 p-3 overflow-auto">
-                <TiptapJsonViewer content={parsedContent} className="tiptap tiptap-view-only" />
-              </div>
-            ) : (
-              <div className="whitespace-pre-line break-words text-sm text-gray-700 dark:text-gray-300">
-                {buildPreview(project.content, Infinity, project.title)}
-              </div>
-            )}
+          <div className="mt-2 rounded border bg-white dark:bg-gray-900 p-3 overflow-auto">
+            <TiptapJsonViewer content={normalizeTiptapDoc(project.content)} />
           </div>
         </div>
 

@@ -3,6 +3,7 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
+import { extractPlainText, normalizeTiptapDoc } from '@/lib/tiptap';
 import '@/assets/styles/tiptap-editor.css';
 
 const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-viewer'), {
@@ -12,7 +13,7 @@ const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-v
 type EventType = {
   id?: number | string;
   slug?: string;
-  eventTitle?: string | null;
+  eventTitle?: unknown; // Tiptap JSON doc
   eventDescription?: unknown;
   eventDetails?: unknown;
   eventLocation?: string | null;
@@ -33,7 +34,7 @@ type EventType = {
     lastName?: string | null;
     username?: string | null;
   } | null;
-  project?: { id?: number; title?: string } | null;
+  project?: { id?: number; title?: unknown } | null;
   report?: { id?: number; title?: string } | null;
 };
 
@@ -74,7 +75,7 @@ export default function EventView({
         <div className="w-full rounded overflow-hidden border">
           <img
             src={data.eventBanner}
-            alt={data.eventTitle ?? 'Event banner'}
+            alt={extractPlainText(data.eventTitle) || 'Event banner'}
             className="w-full object-cover"
           />
         </div>
@@ -82,12 +83,19 @@ export default function EventView({
 
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold">{data.eventTitle}</h2>
+          <div className="text-xl font-semibold">
+            <TiptapJsonViewer
+              content={normalizeTiptapDoc(data.eventTitle)}
+              className="prose dark:prose-invert max-w-none [&_p]:m-0"
+            />
+          </div>
           <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
             {data.createdBy
               ? `${data.createdBy.firstName ?? ''} ${data.createdBy.lastName ?? ''}`
               : 'System'}
-            {data.project ? <span className="ml-3">· Project: {data.project.title}</span> : null}
+            {data.project ? (
+              <span className="ml-3">· Project: {extractPlainText(data.project.title)}</span>
+            ) : null}
             {data.report ? <span className="ml-3">· Report: {data.report.title}</span> : null}
           </div>
         </div>

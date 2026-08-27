@@ -4,6 +4,7 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
 import { Response } from '@/lib/generated/prisma';
+import { extractPlainText } from '@/lib/tiptap';
 import '@/assets/styles/tiptap-editor.css';
 
 // Lazy TipTap JSON viewer for rich text
@@ -27,7 +28,7 @@ type ResponseWithRelations = Response & {
   } | null;
   message?: {
     id?: number | string;
-    title?: string | null;
+    title?: unknown; // Tiptap JSON doc, optional
     // creator user (if the message was authored by a user account)
     createdById?: string | null;
     createdBy?: {
@@ -152,7 +153,9 @@ export default function ResponseView({
           </div>
           <div className="text-xs text-gray-500 mt-1">
             {data.createdAt ? new Date(data.createdAt).toLocaleString() : ''}
-            {data.message?.title ? <span className="ml-2">· in "{data.message.title}"</span> : null}
+            {extractPlainText(data.message?.title) ? (
+              <span className="ml-2">· in "{extractPlainText(data.message?.title)}"</span>
+            ) : null}
           </div>
         </div>
 

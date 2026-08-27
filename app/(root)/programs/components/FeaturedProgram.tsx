@@ -1,6 +1,7 @@
 import FeaturedCard from '@/app/(root)/components/shared/cards/FeaturedCard';
 import FeaturedSection from '@/app/(root)/components/shared/sections/FeaturedSection';
 import StatusBadge from '@/app/(root)/components/shared/badges/StatusBadge';
+import { extractPlainText } from '@/lib/tiptap';
 
 function formatDate(
   date?: Date | string | null
@@ -30,10 +31,10 @@ export default function FeaturedProgram({
       className="pb-7 pt-3"
     >
       <FeaturedCard
-        title={program.title}
+        title={extractPlainText(program.title)}
         href={`/programs/${program.slug ?? program.id}`}
         image={program.images?.[0]}
-        imageAlt={program.title}
+        imageAlt={extractPlainText(program.title)}
         meta={formatDate(program.createdAt)}
         eyebrow="Featured Program"
         ctaLabel="View Program"

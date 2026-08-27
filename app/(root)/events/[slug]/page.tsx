@@ -14,40 +14,13 @@ import {
 import EventRegistrationForm from '@/app/(root)/get-involved/components/EventRegistrationForm';
 
 import { getEventBySlugOrId } from '../data';
-
-function getTextFromRichDescription(
-  description: unknown
-): string {
-  if (!description) {
-    return '';
-  }
-
-  if (typeof description === 'string') {
-    return description;
-  }
-
-  const doc = description as {
-    content?: Array<{
-      content?: Array<{
-        text?: string;
-      }>;
-    }>;
-  };
-
-  if (!Array.isArray(doc.content)) {
-    return '';
-  }
-
-  return doc.content
-    .map((block) =>
-      (block.content ?? [])
-        .map((item) => item.text)
-        .filter(Boolean)
-        .join(' ')
-    )
-    .filter(Boolean)
-    .join('\n\n');
-}
+import { extractPlainText, isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
+// Server Component — TiptapJsonViewer is a Client Component internally
+// ('use client', `immediatelyRender: false`), so it's imported directly
+// rather than via next/dynamic(...,{ssr:false}), which only works from
+// inside a Client Component.
+import TiptapJsonViewer from '@/components/editor/tiptap-json-viewer';
+import '@/assets/styles/tiptap-editor.css';
 
 function formatDateRange(
   start: Date,
@@ -120,7 +93,7 @@ export async function generateMetadata({
 
   return {
     title: event
-      ? `${event.eventTitle} | GoGirls ICT Initiative`
+      ? `${extractPlainText(event.eventTitle)} | GoGirls ICT Initiative`
       : 'Event Not Found | GoGirls ICT Initiative',
 
     description:
@@ -142,10 +115,9 @@ export default async function EventDetailPage({
     notFound();
   }
 
-  const description =
-    getTextFromRichDescription(
-      event.eventDescription
-    );
+  const hasDescription = !isTiptapDocEmpty(
+    event.eventDescription
+  );
 
   const status =
     statusConfig[event.eventStatus] ??
@@ -170,7 +142,7 @@ export default async function EventDetailPage({
           <div className="relative mt-6 aspect-video w-full overflow-hidden rounded-2xl bg-gray-100 dark:bg-gray-800">
             <Image
               src={event.eventBanner}
-              alt={event.eventTitle}
+              alt={extractPlainText(event.eventTitle)}
               fill
               sizes="(min-width: 768px) 768px, 100vw"
               className="object-cover"
@@ -181,9 +153,20 @@ export default async function EventDetailPage({
 
         <header className="mt-6">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="font-serif text-2xl font-semibold leading-tight text-gray-900 dark:text-white sm:text-3xl">
-              {event.eventTitle}
-            </h1>
+            <style>{`
+              .event-title-viewer .tiptap {
+                min-height: 0;
+                padding: 0;
+                color: inherit;
+                background: transparent;
+              }
+            `}</style>
+            <div className="event-title-viewer font-serif text-2xl font-semibold leading-tight text-gray-900 dark:text-white sm:text-3xl">
+              <TiptapJsonViewer
+                content={normalizeTiptapDoc(event.eventTitle)}
+                className="[&_p]:m-0"
+              />
+            </div>
 
             <span
               className={`rounded-full px-2.5 py-1 text-xs font-semibold ${status.className}`}
@@ -199,7 +182,7 @@ export default async function EventDetailPage({
             >
               <FolderOpen className="h-3.5 w-3.5" />
               Related project:{' '}
-              {event.project.title}
+              {extractPlainText(event.project.title)}
             </Link>
           )}
 
@@ -229,19 +212,14 @@ export default async function EventDetailPage({
           </div>
         </header>
 
-        {description && (
-          <div className="mt-8 space-y-4">
-            {description
-              .split('\n\n')
-              .filter(Boolean)
-              .map((paragraph, index) => (
-                <p
-                  key={`${index}-${paragraph.slice(0, 30)}`}
-                  className="text-base leading-7 text-gray-700 dark:text-gray-200"
-                >
-                  {paragraph}
-                </p>
-              ))}
+        {hasDescription && (
+          <div className="mt-8">
+            <TiptapJsonViewer
+              content={normalizeTiptapDoc(
+                event.eventDescription
+              )}
+              className="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-200"
+            />
           </div>
         )}
 
@@ -249,7 +227,7 @@ export default async function EventDetailPage({
           {requiresRegistration ? (
             <EventRegistrationForm
               eventTitle={
-                event.eventTitle
+                extractPlainText(event.eventTitle)
               }
               maxAttendees={
                 event.maxAttendees ??

@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
+import { normalizeTiptapDoc, tiptapExcerpt } from '@/lib/tiptap';
+import '@/assets/styles/tiptap-editor.css';
 
-// JSON / Tiptap viewer (no SSR) — keep available if you want the rich renderer later
 const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-viewer'), {
   ssr: false,
 });
@@ -68,164 +69,15 @@ export default function FAQsSection({
     }
   }
 
-  // Helpers for parsing/rich rendering
-  function tryParseMaybeString(v: any) {
-    if (v == null) return null;
-    if (typeof v !== 'string') return v;
-    const s = v.trim();
-    if (!s) return null;
-    try {
-      return JSON.parse(s);
-    } catch {
-      return s;
-    }
-  }
-
-  function isTiptapDoc(obj: any): boolean {
-    if (!obj || typeof obj !== 'object') return false;
-    if (obj.type === 'doc') return true;
-    if (Array.isArray(obj.content)) return true;
-    if (typeof obj.content === 'object') return true;
-    return false;
-  }
-
-  function extractTextFromTiptap(node: any): string {
-    if (!node) return '';
-    if (typeof node === 'string') return node;
-    let text = '';
-    if (Array.isArray(node)) {
-      for (const n of node) text += extractTextFromTiptap(n);
-      return text;
-    }
-    if (typeof node === 'object') {
-      if (typeof node.text === 'string') text += node.text;
-      if (Array.isArray(node.content))
-        for (const child of node.content) text += extractTextFromTiptap(child);
-      return text;
-    }
-    return '';
-  }
-
-  function buildPreviewFromJson(json: any, maxChars = 120) {
-    const parsed = tryParseMaybeString(json);
-    if (!parsed) return '';
-    if (isTiptapDoc(parsed)) {
-      const txt = extractTextFromTiptap(parsed);
-      const cleaned = txt.replace(/\s+/g, ' ').trim();
-      return cleaned.slice(0, maxChars) + (cleaned.length > maxChars ? '...' : '');
-    }
-    if (typeof parsed === 'object') {
-      const possible =
-        parsed.text ??
-        parsed.title ??
-        parsed.question ??
-        parsed.content ??
-        (Array.isArray(parsed) ? parsed.join(' ') : undefined);
-      if (possible) {
-        if (typeof possible === 'object') {
-          const s = JSON.stringify(possible);
-          return s.slice(0, maxChars) + (s.length > maxChars ? '...' : '');
-        }
-        const s = String(possible);
-        return (
-          s.replace(/\s+/g, ' ').trim().slice(0, maxChars) + (s.length > maxChars ? '...' : '')
-        );
-      }
-      const s = JSON.stringify(parsed);
-      return s.slice(0, maxChars) + (s.length > maxChars ? '...' : '');
-    }
-    return String(parsed).slice(0, maxChars) + (String(parsed).length > maxChars ? '...' : '');
-  }
-
-  // Prefer plain text extraction for answers
-  function getPlainTextFromMaybeDoc(value: any): string | null {
-    const parsed = tryParseMaybeString(value);
-    if (parsed == null) return null;
-
-    if (isTiptapDoc(parsed)) {
-      const txt = extractTextFromTiptap(parsed);
-      return txt.replace(/\s+/g, ' ').trim();
-    }
-
-    if (typeof parsed === 'object') {
-      if (typeof parsed.text === 'string') return parsed.text.trim();
-      if (parsed.content) {
-        const txt = extractTextFromTiptap(parsed.content);
-        if (txt) return txt.replace(/\s+/g, ' ').trim();
-      }
-      if (typeof parsed.answer === 'string') return parsed.answer.trim();
-      if (typeof parsed.description === 'string') return parsed.description.trim();
-      if (typeof parsed.paragraph === 'string') return parsed.paragraph.trim();
-      try {
-        return JSON.stringify(parsed);
-      } catch {
-        return String(parsed);
-      }
-    }
-
-    if (typeof parsed === 'string') return parsed.trim();
-    return null;
-  }
-
-  function renderArbitraryJson(obj: any): React.ReactNode {
-    if (obj == null) return <div className="text-sm text-gray-500">—</div>;
-    if (Array.isArray(obj)) {
-      return (
-        <ul className="list-disc list-inside text-sm">
-          {obj.map((it, i) => (
-            <li key={i}>
-              {typeof it === 'object' ? (
-                <pre className="text-xs">{JSON.stringify(it, null, 2)}</pre>
-              ) : (
-                String(it)
-              )}
-            </li>
-          ))}
-        </ul>
-      );
-    }
-    if (typeof obj !== 'object') {
-      return <div className="whitespace-pre-line text-sm">{String(obj)}</div>;
-    }
+  // Render the answer area (shown when card expanded) — always the rich
+  // Tiptap viewer; normalizeTiptapDoc guarantees a shape ProseMirror can
+  // parse even for legacy/malformed data.
+  function renderAnswerArea(faq: FAQWithRelations) {
     return (
-      <div className="space-y-2 text-sm">
-        {Object.entries(obj).map(([k, v]) => (
-          <div key={k}>
-            <div className="text-xs font-medium text-gray-500">{k}</div>
-            <div className="mt-1">
-              {typeof v === 'object' ? (
-                <pre className="text-xs">{JSON.stringify(v, null, 2)}</pre>
-              ) : (
-                String(v)
-              )}
-            </div>
-          </div>
-        ))}
+      <div className="mt-2">
+        <TiptapJsonViewer content={normalizeTiptapDoc(faq.answer)} />
       </div>
     );
-  }
-
-  // Render the answer area (shown when card expanded) — ONLY the answer content
-  function renderAnswerArea(faq: FAQWithRelations) {
-    const plain = getPlainTextFromMaybeDoc(faq.answer);
-    if (plain) {
-      return <div className="mt-2 whitespace-pre-line text-sm text-foreground">{plain}</div>;
-    }
-
-    const parsedAnswer = tryParseMaybeString(faq.answer);
-    if (!parsedAnswer) {
-      return <div className="text-sm text-gray-500">No answer provided.</div>;
-    }
-
-    if (isTiptapDoc(parsedAnswer)) {
-      return (
-        <div className="prose dark:prose-invert mt-2">
-          <TiptapJsonViewer content={parsedAnswer} />
-        </div>
-      );
-    }
-
-    return <div className="mt-2">{renderArbitraryJson(parsedAnswer)}</div>;
   }
 
   return (
@@ -238,7 +90,7 @@ export default function FAQsSection({
         {Array.isArray(paginatedData) &&
           paginatedData.map((faq) => {
             const isExpanded = expandedId === faq.id;
-            const preview = buildPreviewFromJson(faq.question, 200) || 'Untitled FAQ';
+            const preview = tiptapExcerpt(faq.question, 200) || 'Untitled FAQ';
 
             return (
               <div

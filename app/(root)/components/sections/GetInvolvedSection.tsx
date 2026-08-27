@@ -4,26 +4,11 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Calendar, MapPin, Clock, Sparkles, ArrowRight } from 'lucide-react';
 import type { Event } from '../../types/home';
+import { extractPlainText } from '@/lib/tiptap';
 
 interface GetInvolvedSectionProps {
   events: Event[] | null;
 }
-
-const getTextFromRichDescription = (description: any) => {
-  if (!description) return '';
-  if (typeof description === 'string') return description;
-
-  if (description?.content && Array.isArray(description.content)) {
-    return description.content
-      .map((block: any) =>
-        block.content?.map((item: any) => item.text).filter(Boolean).join(' ')
-      )
-      .filter(Boolean)
-      .join(' ');
-  }
-
-  return '';
-};
 
 export default function GetInvolvedSection({ events }: GetInvolvedSectionProps) {
   const containerRef = useRef(null);
@@ -139,13 +124,10 @@ export default function GetInvolvedSection({ events }: GetInvolvedSectionProps) 
             className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
           >
             {events.slice(0, 3).map((event: any, idx) => {
-              const title = event.title ?? event.eventTitle ?? 'Untitled Event';
+              const title = extractPlainText(event.eventTitle) || 'Untitled Event';
               const startAt = event.startAt ?? event.startDate ?? event.eventStartDate;
               const location = event.location ?? event.eventLocation;
-              const description =
-                typeof event.description === 'string'
-                  ? event.description
-                  : getTextFromRichDescription(event.description ?? event.eventDescription);
+              const description = extractPlainText(event.description ?? event.eventDescription);
 
               return (
                 <motion.div

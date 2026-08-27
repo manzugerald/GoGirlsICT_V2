@@ -3,7 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { EMPTY_TIPTAP_DOC, isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
 import '@/assets/styles/tiptap-editor.css';
+import { RichTextEditorProvider } from '@/components/editor/rich-text-context';
+import RichTextToolbar from '@/components/editor/rich-text-toolbar';
+import RichTextField from '@/components/editor/rich-text-field';
 
 /**
  * CreateMessageForm
@@ -12,7 +16,7 @@ import '@/assets/styles/tiptap-editor.css';
  * create-response form pasted here by mistake).
  *
  * Model reference (important fields):
- * - title?: string
+ * - title?: Json (Tiptap doc, optional)
  * - affiliated?: string
  * - name?: string
  * - content: Json
@@ -61,15 +65,14 @@ export default function CreateMessageForm({
   const router = useRouter();
   const { data: session } = useSession();
 
-  const [title, setTitle] = useState<string>(initialData?.title ?? '');
+  const [title, setTitle] = useState<object>(() =>
+    initialData?.title ? normalizeTiptapDoc(initialData.title) : EMPTY_TIPTAP_DOC
+  );
   const [affiliated, setAffiliated] = useState<string>(initialData?.affiliated ?? '');
   const [name, setName] = useState<string>(initialData?.name ?? '');
-  const [content, setContent] = useState<string>(() => {
-    if (initialData?.content && typeof initialData.content === 'string') return initialData.content;
-    if (initialData?.content && typeof initialData.content === 'object')
-      return JSON.stringify(initialData.content, null, 2);
-    return initialData?.contentText ?? '';
-  });
+  const [content, setContent] = useState<object>(() =>
+    initialData?.content ? normalizeTiptapDoc(initialData.content) : EMPTY_TIPTAP_DOC
+  );
   const [nameImageUrl, setNameImageUrl] = useState<string>(initialData?.nameImageUrl ?? '');
   const [messageImageUrl, setMessageImageUrl] = useState<string>(
     initialData?.messageImageUrl ?? ''
@@ -104,16 +107,10 @@ export default function CreateMessageForm({
         const json = await res.json();
         if (aborted) return;
         // populate fields from fetched data
-        setTitle(json.title ?? '');
+        setTitle(json.title ? normalizeTiptapDoc(json.title) : EMPTY_TIPTAP_DOC);
         setAffiliated(json.affiliated ?? '');
         setName(json.name ?? '');
-        if (json.content && typeof json.content === 'object') {
-          setContent(JSON.stringify(json.content, null, 2));
-        } else if (typeof json.content === 'string') {
-          setContent(json.content);
-        } else {
-          setContent('');
-        }
+        setContent(json.content ? normalizeTiptapDoc(json.content) : EMPTY_TIPTAP_DOC);
         setNameImageUrl(json.nameImageUrl ?? '');
         setMessageImageUrl(json.messageImageUrl ?? '');
         setMessageCategory((json.messageCategory as MessageCategory) ?? 'external');
@@ -135,14 +132,10 @@ export default function CreateMessageForm({
       fetchMessage(initialData.id);
     } else if (initialData && initialData.id) {
       // populate from initialData
-      setTitle(initialData.title ?? '');
+      setTitle(initialData.title ? normalizeTiptapDoc(initialData.title) : EMPTY_TIPTAP_DOC);
       setAffiliated(initialData.affiliated ?? '');
       setName(initialData.name ?? '');
-      if (initialData.content && typeof initialData.content === 'object') {
-        setContent(JSON.stringify(initialData.content, null, 2));
-      } else if (typeof initialData.content === 'string') {
-        setContent(initialData.content);
-      }
+      setContent(initialData.content ? normalizeTiptapDoc(initialData.content) : EMPTY_TIPTAP_DOC);
       setNameImageUrl(initialData.nameImageUrl ?? '');
       setMessageImageUrl(initialData.messageImageUrl ?? '');
       setMessageCategory((initialData.messageCategory as MessageCategory) ?? 'external');
@@ -164,32 +157,18 @@ export default function CreateMessageForm({
     setError(null);
 
     // Basic validation: content required
-    if (!content || !content.trim()) {
+    if (isTiptapDocEmpty(content)) {
       setError('Content cannot be empty.');
       return;
     }
 
     setLoading(true);
     try {
-      // Try to parse content as JSON; if not valid, send as string
-      let parsedContent: unknown = content;
-      const trimmed = content.trim();
-      if (
-        (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
-        (trimmed.startsWith('[') && trimmed.endsWith(']'))
-      ) {
-        try {
-          parsedContent = JSON.parse(content);
-        } catch {
-          parsedContent = content;
-        }
-      }
-
       const payload: any = {
-        title: title?.trim() || undefined,
+        title: isTiptapDocEmpty(title) ? undefined : title,
         affiliated: affiliated?.trim() || undefined,
         name: name?.trim() || undefined,
-        content: parsedContent,
+        content,
         nameImageUrl: nameImageUrl?.trim() || undefined,
         messageImageUrl: messageImageUrl?.trim() || undefined,
         messageStatus: messageStatus ?? 'draft',
@@ -249,17 +228,29 @@ export default function CreateMessageForm({
         </div>
       ) : null}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Title</label>
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full border border-input rounded-md p-2 text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200"
-            placeholder="Optional title"
-          />
+      {/*
+        Shared toolbar sits on top of the form: it acts on whichever of
+        Title / Content is currently (or was last) focused.
+      */}
+      <RichTextEditorProvider key={String(initialData?.id ?? 'new-message')}>
+        <div className="tiptap-wrapper">
+          <RichTextToolbar showLinkUnlink />
+          <div className="space-y-2 p-3">
+            <label className="block text-sm font-medium mb-1">Title (optional)</label>
+            <RichTextField content={title} onChange={setTitle} placeholder="Optional title" />
+          </div>
+          <div className="space-y-2 border-t border-gray-200 p-3 dark:border-gray-800">
+            <label className="block text-sm font-medium mb-1">Content</label>
+            <RichTextField
+              content={content}
+              onChange={setContent}
+              placeholder="Write the message content..."
+            />
+          </div>
         </div>
+      </RichTextEditorProvider>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">Category</label>
           <select
@@ -309,21 +300,6 @@ export default function CreateMessageForm({
           className="w-full border border-input rounded-md p-2 text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200"
           placeholder="Person or sender name (optional)"
         />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">Content</label>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={10}
-          className="w-full border border-input rounded-md p-3 text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200"
-          placeholder="Paste TipTap JSON, HTML or plain text. JSON will be preserved."
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Content is stored as JSON. If you paste a JSON object/TipTap doc it will be used as-is;
-          otherwise plain text will be sent as the content value.
-        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

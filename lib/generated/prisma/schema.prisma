@@ -36,7 +36,7 @@ model HomePage {
 
 model Project {
   id            Int           @id @default(autoincrement())
-  title         String
+  title         Json // Tiptap JSON doc (edited/viewed via components/editor/*)
   slug          String        @unique
   content       Json
   images        String[]
@@ -78,7 +78,7 @@ model Report {
 
 model Podcast {
   id            Int           @id @default(autoincrement())
-  title         String
+  title         Json // Tiptap JSON doc (edited/viewed via components/editor/*)
   slug          String        @unique
   description   Json // Tiptap JSON doc (edited/viewed via components/editor/*)
   image         String? // illustration / cover artwork
@@ -108,7 +108,7 @@ enum MessageCategory {
 
 model Message {
   id              Int             @id @default(autoincrement())
-  title           String?
+  title           Json? // Tiptap JSON doc (edited/viewed via components/editor/*)
   affiliated      String?
   name            String?
   content         Json
@@ -299,7 +299,7 @@ enum PublishStatus {
 model Event {
   id               Int      @id @default(autoincrement())
   slug             String   @unique
-  eventTitle       String
+  eventTitle       Json // Tiptap JSON doc (edited/viewed via components/editor/*)
   eventDescription Json
   eventDetails     Json?
   eventLocation    String?

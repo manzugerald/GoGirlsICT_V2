@@ -3,6 +3,7 @@ import Image from 'next/image';
 import clsx from 'clsx';
 import { cardHoverClass } from '@/utils/styles/card-hover';
 import TiptapJsonViewer from '@/components/editor/tiptap-json-viewer';
+import { extractPlainText } from '@/lib/tiptap';
 
 export interface ProjectCardProps {
   id: number;
@@ -20,7 +21,7 @@ interface ProjectListProps {
 export function ProjectList({ projects = [], onProjectClick }: ProjectListProps) {
   const mappedProjects: ProjectCardProps[] = projects.map((project) => ({
     id: project.id,
-    title: project.title,
+    title: extractPlainText(project.title),
     status: project.projectStatus,
     images: project.images,
     content: project.content,

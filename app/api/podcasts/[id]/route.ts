@@ -3,6 +3,7 @@ import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { slugify } from '@/lib/utils';
+import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
 
 // GET single podcast -- PUBLIC
 export async function GET(req: Request, { params }: { params: { id: string } }) {
@@ -69,14 +70,14 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       accessCount = 0,
     } = data;
 
-    if (!title || !description || !audioUrl) {
+    if (isTiptapDocEmpty(title) || !description || !audioUrl) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
       );
     }
 
-    const slug = slugify(title.trim());
+    const slug = slugify(extractPlainText(title).trim());
 
     const updatedPodcast = await prisma.podcast.update({
       where: { id: podcastId },
