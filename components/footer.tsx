@@ -1,33 +1,54 @@
-import { APP_NAME } from '@/lib/constants';
 import Link from 'next/link';
-import { Facebook, Youtube, Mail, Phone, MapPin, Heart, ExternalLink } from 'lucide-react';
+import {
+  Facebook,
+  Youtube,
+  Mail,
+  MapPin,
+  Heart,
+  ArrowRight,
+  Info,
+  Users,
+  Building2,
+  BookMarked,
+  Calendar,
+  HeartHandshake,
+  MessageCircle,
+  Headphones,
+  FileText,
+  BarChart3,
+  Share2,
+  LogIn,
+  type LucideIcon,
+} from 'lucide-react';
+
+import { APP_NAME } from '@/lib/constants';
+
+type FooterLink = {
+  label: string;
+  href: string;
+  icon: LucideIcon;
+};
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
-  const footerLinks = {
+  const footerLinks: Record<string, FooterLink[]> = {
     organization: [
-      { label: 'About Us', href: '/#about' },
-      { label: 'Our Work', href: '/#our-work' },
-      { label: 'Impact', href: '/#impact' },
-      { label: 'Team', href: '/#team' }, // Changed from /#about
+      { label: 'Who We Are', href: '/about#about', icon: Info },
+      { label: 'Our Team', href: '/about#team', icon: Users },
+      { label: 'Our Partners', href: '/about#partners', icon: Building2 },
+      { label: 'Our Programs', href: '/programs', icon: BookMarked },
     ],
     getInvolved: [
-      { label: 'Donate', href: '/donate' },
-      { label: 'Volunteer', href: '/volunteer' },
-      { label: 'Partner With Us', href: '/partner' },
-      { label: 'Events', href: '/#events' }, // Changed from /#get-involved
+      { label: 'Upcoming Events', href: '/get-involved#events', icon: Calendar },
+      { label: 'Volunteer', href: '/get-involved#volunteer', icon: HeartHandshake },
+      { label: 'Contact Us', href: '/get-involved#contact', icon: MessageCircle },
     ],
     resources: [
-      { label: 'Projects', href: '/projects' },
-      { label: 'Reports', href: '/reports' },
-      { label: 'Gallery', href: '/gallery' },
-      { label: 'FAQs', href: '/faqs' },
-    ],
-    legal: [
-      { label: 'Privacy Policy', href: '/privacy' },
-      { label: 'Terms of Service', href: '/terms' },
-      { label: 'Cookie Policy', href: '/cookies' },
+      { label: 'Podcasts', href: '/reports', icon: Headphones },
+      { label: 'Published Reports', href: '/reports#reports', icon: FileText },
+      { label: 'Impact', href: '/impact', icon: BarChart3 },
+      { label: 'Social & News', href: '/sns', icon: Share2 },
     ],
   };
 
@@ -52,34 +73,27 @@ const Footer = () => {
     },
   ];
 
-  const contactInfo = [
-    { icon: Mail, text: 'info@gogirlsict.org', href: 'mailto:info@gogirlsict.org' },
-    { icon: Phone, text: '+211 XXX XXX XXX', href: 'tel:+211-xxx-xx-xxx' },
-    { icon: MapPin, text: 'Suk Melitia, Juba, South Sudan', href: '#' },
-  ];
-
   return (
     <footer className="relative bg-gradient-to-br from-gray-900 via-gray-950 to-black text-white">
       {/* Main Footer Content */}
       <div className="wrapper max-w-7xl mx-auto px-4 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 md:gap-12">
-          {/* Brand Column - Spans 4 columns on large screens */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-8 md:gap-12">
+          {/* Brand Column */}
           <div className="lg:col-span-4">
-            <div className="mb-6">
-              <Link href="/" className="inline-flex items-center gap-2 group">
-                <div className="w-10 h-10 bg-[#9f004d] rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <Heart className="w-6 h-6 text-white" fill="white" />
-                </div>
-                <span className="text-2xl font-bold">{APP_NAME}</span>
-              </Link>
-            </div>
-            <p className="text-gray-400 mb-6 leading-relaxed">
-              Empowering girls and young women through technology, digital literacy, and innovation.
+            <Link href="/" className="inline-flex items-center gap-2 group">
+              <div className="w-10 h-10 bg-[#9f004d] rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <Heart className="w-6 h-6 text-white" fill="white" />
+              </div>
+              <span className="text-2xl font-bold">{APP_NAME}</span>
+            </Link>
+
+            <p className="text-gray-400 mt-6 mb-6 leading-relaxed">
+              Empowering Communities and young women through technology, digital literacy, and innovation.
               Building a future where every girl can be a creator, leader, and decision-maker.
             </p>
 
             {/* Social Links */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 mb-6">
               {socialLinks.map((social) => {
                 const Icon = social.icon;
                 return (
@@ -96,25 +110,44 @@ const Footer = () => {
                 );
               })}
             </div>
+
+            {/* Direct contact */}
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a
+                  href="mailto:info@gogirlsict.org"
+                  className="text-gray-400 hover:text-white transition-colors duration-200 inline-flex items-center gap-2"
+                >
+                  <Mail className="w-4 h-4 shrink-0 text-[#9f004d]" />
+                  info@gogirlsict.org
+                </a>
+              </li>
+              <li className="flex items-center gap-2 text-gray-400">
+                <MapPin className="w-4 h-4 shrink-0 text-[#9f004d]" />
+                Juba, South Sudan
+              </li>
+            </ul>
           </div>
 
           {/* Organization Links */}
           <div className="lg:col-span-2">
             <h3 className="text-lg font-bold mb-4 text-white">Organization</h3>
             <ul className="space-y-3">
-              {footerLinks.organization.map((link) => (
-                <li key={link.label}>
-                  {' '}
-                  {/* Changed key to link.label for uniqueness */}
-                  <Link
-                    href={link.href}
-                    className="text-gray-400 hover:text-white transition-colors duration-200 text-sm inline-flex items-center gap-1 group"
-                  >
-                    <span>{link.label}</span>
-                    <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </Link>
-                </li>
-              ))}
+              {footerLinks.organization.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-gray-400 hover:text-white transition-colors duration-200 text-sm inline-flex items-center gap-1.5 group"
+                    >
+                      <Icon className="w-3.5 h-3.5 shrink-0 text-gray-500 group-hover:text-[#9f004d] transition-colors" />
+                      <span>{link.label}</span>
+                      <ArrowRight className="w-3 h-3 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
@@ -122,19 +155,21 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <h3 className="text-lg font-bold mb-4 text-white">Get Involved</h3>
             <ul className="space-y-3">
-              {footerLinks.getInvolved.map((link) => (
-                <li key={link.label}>
-                  {' '}
-                  {/* Changed key to link.label for uniqueness */}
-                  <Link
-                    href={link.href}
-                    className="text-gray-400 hover:text-white transition-colors duration-200 text-sm inline-flex items-center gap-1 group"
-                  >
-                    <span>{link.label}</span>
-                    <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </Link>
-                </li>
-              ))}
+              {footerLinks.getInvolved.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-gray-400 hover:text-white transition-colors duration-200 text-sm inline-flex items-center gap-1.5 group"
+                    >
+                      <Icon className="w-3.5 h-3.5 shrink-0 text-gray-500 group-hover:text-[#9f004d] transition-colors" />
+                      <span>{link.label}</span>
+                      <ArrowRight className="w-3 h-3 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
@@ -142,66 +177,22 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <h3 className="text-lg font-bold mb-4 text-white">Resources</h3>
             <ul className="space-y-3">
-              {footerLinks.resources.map((link) => (
-                <li key={link.label}>
-                  {' '}
-                  {/* Changed key to link.label for uniqueness */}
-                  <Link
-                    href={link.href}
-                    className="text-gray-400 hover:text-white transition-colors duration-200 text-sm inline-flex items-center gap-1 group"
-                  >
-                    <span>{link.label}</span>
-                    <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div className="lg:col-span-2">
-            <h3 className="text-lg font-bold mb-4 text-white">Contact</h3>
-            <ul className="space-y-3">
-              {contactInfo.map((contact, idx) => {
-                const Icon = contact.icon;
+              {footerLinks.resources.map((link) => {
+                const Icon = link.icon;
                 return (
-                  <li key={`contact-${idx}`}>
-                    {' '}
-                    {/* Added prefix to make keys unique */}
-                    <a
-                      href={contact.href}
-                      className="text-gray-400 hover:text-white transition-colors duration-200 text-sm flex items-start gap-2 group"
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-gray-400 hover:text-white transition-colors duration-200 text-sm inline-flex items-center gap-1.5 group"
                     >
-                      <Icon className="w-4 h-4 mt-0.5 flex-shrink-0 group-hover:text-[#9f004d]" />
-                      <span>{contact.text}</span>
-                    </a>
+                      <Icon className="w-3.5 h-3.5 shrink-0 text-gray-500 group-hover:text-[#9f004d] transition-colors" />
+                      <span>{link.label}</span>
+                      <ArrowRight className="w-3 h-3 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+                    </Link>
                   </li>
                 );
               })}
             </ul>
-          </div>
-        </div>
-
-        {/* Newsletter Signup (Optional) */}
-        <div className="mt-12 pt-8 border-t border-white/10">
-          <div className="max-w-2xl mx-auto text-center">
-            <h3 className="text-xl font-bold mb-3">Stay Updated</h3>
-            <p className="text-gray-400 mb-4 text-sm">
-              Subscribe to our newsletter for the latest news and updates
-            </p>
-            <form className="flex gap-2 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-[#9f004d] transition-colors text-sm"
-              />
-              <button
-                type="submit"
-                className="px-6 py-2 bg-[#9f004d] hover:bg-[#8a0042] rounded-lg font-semibold transition-colors text-sm whitespace-nowrap"
-              >
-                Subscribe
-              </button>
-            </form>
           </div>
         </div>
       </div>
@@ -215,41 +206,17 @@ const Footer = () => {
               © {currentYear} {APP_NAME}. All Rights Reserved.
             </div>
 
-            {/* Legal Links */}
-            <div className="flex flex-wrap items-center gap-6 text-sm">
-              {footerLinks.legal.map((link, idx) => (
-                <span key={`legal-${link.label}`} className="flex items-center gap-6">
-                  {' '}
-                  {/* Made key unique */}
-                  <Link
-                    href={link.href}
-                    className="text-gray-400 hover:text-white transition-colors duration-200"
-                  >
-                    {link.label}
-                  </Link>
-                  {idx < footerLinks.legal.length - 1 && <span className="text-gray-600">•</span>}
-                </span>
-              ))}
-            </div>
-
             {/* Admin Login */}
             <div className="text-sm">
               <Link
                 href="/admin"
-                className="text-gray-400 hover:text-[#9f004d] transition-colors duration-200 inline-flex items-center gap-1"
+                className="text-gray-400 hover:text-[#9f004d] transition-colors duration-200 inline-flex items-center gap-1.5 group"
               >
+                <LogIn className="w-3.5 h-3.5 shrink-0 text-gray-500 group-hover:text-[#9f004d] transition-colors" />
                 <span>Admin Login</span>
-                <ExternalLink className="w-3 h-3" />
+                <ArrowRight className="w-3 h-3 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
               </Link>
             </div>
-          </div>
-
-          {/* Made with love */}
-          <div className="text-center mt-6 pt-6 border-t border-white/5">
-            <p className="text-xs text-gray-500 flex items-center justify-center gap-1">
-              Made with <Heart className="w-3 h-3 text-[#9f004d] fill-current" /> for girls
-              everywhere
-            </p>
           </div>
         </div>
       </div>
