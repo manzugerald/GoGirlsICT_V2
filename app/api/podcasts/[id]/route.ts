@@ -5,24 +5,41 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { slugify } from '@/lib/utils';
 import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
 
+const NO_STORE = { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' };
+
+const includeShape = {
+  createdBy: { select: { firstName: true, lastName: true, image: true } },
+  approvedBy: { select: { firstName: true, lastName: true } },
+  updatedBy: { select: { firstName: true, lastName: true } },
+  project: { select: { id: true, title: true, slug: true } },
+  event: { select: { id: true, eventTitle: true, slug: true } },
+  report: { select: { id: true, title: true, slug: true } },
+  institution: { select: { id: true, name: true } },
+  talkshow: { select: { id: true, title: true } },
+  hostBeneficiary: { select: { id: true, firstName: true, lastName: true, image: true } },
+  hostUser: { select: { id: true, firstName: true, lastName: true, username: true } },
+  beneficiaries: {
+    include: { beneficiary: { select: { id: true, firstName: true, lastName: true, image: true } } },
+  },
+} as const;
+
+function cleanStringIdArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((v): v is string => typeof v === 'string' && v.trim().length > 0);
+}
+
 // GET single podcast -- PUBLIC
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
     const podcastId = Number(params.id);
     if (!podcastId || isNaN(podcastId)) {
-      return NextResponse.json(
-        { error: 'Invalid Podcast ID' },
-        { status: 400, headers: { 'Cache-Control': 'no-store' } }
-      );
+      return NextResponse.json({ error: 'Invalid Podcast ID' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
     }
 
-    const podcast = await prisma.podcast.findUnique({ where: { id: podcastId } });
+    const podcast = await prisma.podcast.findUnique({ where: { id: podcastId }, include: includeShape });
 
     if (!podcast) {
-      return NextResponse.json(
-        { error: 'Podcast not found' },
-        { status: 404, headers: { 'Cache-Control': 'no-store' } }
-      );
+      return NextResponse.json({ error: 'Podcast not found' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
     }
 
     return NextResponse.json(podcast, {
@@ -30,10 +47,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     });
   } catch (error) {
     console.error('Failed to fetch podcast:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500, headers: { 'Cache-Control': 'no-store' } }
-    );
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store' } });
   }
 }
 
@@ -43,19 +57,13 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: NO_STORE });
     }
     const userId = session.user.id;
 
     const podcastId = Number(params.id);
     if (!podcastId || isNaN(podcastId)) {
-      return NextResponse.json(
-        { error: 'Invalid Podcast ID' },
-        { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
-      );
+      return NextResponse.json({ error: 'Invalid Podcast ID' }, { status: 400, headers: NO_STORE });
     }
 
     const data = await req.json();
@@ -68,16 +76,29 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       publishedAt,
       publishStatus,
       accessCount = 0,
+      // Everything below is optional.
+      projectId = null,
+      eventId = null,
+      reportId = null,
+      institutionId = null,
+      talkshowId = null,
+      hostType = null,
+      hostBeneficiaryId = null,
+      hostUserId = null,
+      hostFirstName = null,
+      hostLastName = null,
+      beneficiaryIds = [],
     } = data;
 
     if (isTiptapDocEmpty(title) || !description || !audioUrl) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
-      );
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: NO_STORE });
     }
 
+    const validHostType =
+      hostType === 'beneficiary' || hostType === 'admin' || hostType === 'guest' ? hostType : null;
+
     const slug = slugify(extractPlainText(title).trim());
+    const participantIds = cleanStringIdArray(beneficiaryIds);
 
     const updatedPodcast = await prisma.podcast.update({
       where: { id: podcastId },
@@ -92,18 +113,38 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         publishStatus,
         updatedById: userId,
         accessCount,
+        projectId: projectId ? Number(projectId) : null,
+        eventId: eventId ? Number(eventId) : null,
+        reportId: reportId ? Number(reportId) : null,
+        institutionId: institutionId || null,
+        talkshowId: talkshowId ? Number(talkshowId) : null,
+        hostType: validHostType,
+        hostBeneficiaryId: validHostType === 'beneficiary' ? hostBeneficiaryId || null : null,
+        hostUserId: validHostType === 'admin' ? hostUserId || null : null,
+        hostFirstName: validHostType === 'guest' ? hostFirstName || null : null,
+        hostLastName: validHostType === 'guest' ? hostLastName || null : null,
       },
     });
 
-    return NextResponse.json(updatedPodcast, {
-      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
-    });
+    // Sync beneficiary participation to exactly the given set.
+    await prisma.beneficiaryPodcast.deleteMany(
+      participantIds.length
+        ? { where: { podcastId, beneficiaryId: { notIn: participantIds } } }
+        : { where: { podcastId } }
+    );
+    if (participantIds.length) {
+      await prisma.beneficiaryPodcast.createMany({
+        data: participantIds.map((beneficiaryId) => ({ podcastId, beneficiaryId })),
+        skipDuplicates: true,
+      });
+    }
+
+    const full = await prisma.podcast.findUniqueOrThrow({ where: { id: updatedPodcast.id }, include: includeShape });
+
+    return NextResponse.json(full, { headers: NO_STORE });
   } catch (error) {
     console.error('Failed to update podcast:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
-    );
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: NO_STORE });
   }
 }
 
@@ -113,37 +154,22 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized Action' },
-        { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
-      );
+      return NextResponse.json({ error: 'Unauthorized Action' }, { status: 401, headers: NO_STORE });
     }
 
     const podcastId = Number(params.id);
     if (!podcastId || isNaN(podcastId)) {
-      return NextResponse.json(
-        { error: 'Invalid Podcast Id' },
-        { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
-      );
+      return NextResponse.json({ error: 'Invalid Podcast Id' }, { status: 400, headers: NO_STORE });
     }
 
     await prisma.podcast.delete({ where: { id: podcastId } });
 
-    return NextResponse.json(
-      { success: true },
-      { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
-    );
+    return NextResponse.json({ success: true }, { headers: NO_STORE });
   } catch (error: any) {
     if (error.code === 'P2025') {
-      return NextResponse.json(
-        { error: 'Podcast not found' },
-        { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
-      );
+      return NextResponse.json({ error: 'Podcast not found' }, { status: 404, headers: NO_STORE });
     }
     console.error('Failed to delete podcast:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete podcast' },
-      { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
-    );
+    return NextResponse.json({ error: 'Failed to delete podcast' }, { status: 500, headers: NO_STORE });
   }
 }

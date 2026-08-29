@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
 import '@/assets/styles/tiptap-editor.css';
+import { extractPlainText, isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
 
 // Use the viewer for read-only rich text display (if any rich text fields)
 const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-viewer'), {
@@ -23,6 +24,18 @@ type BeneficiaryLike = {
   institution?: { name?: string | null } | null;
   createdAt?: string | null;
   updatedAt?: string | null;
+
+  // "Beneficiary Voice" — an optional Tiptap rich-text testimonial, shown
+  // publicly only when non-empty AND beneficiaryStatus is 'published'.
+  voice?: unknown;
+
+  // Participation links — which projects/events/reports this beneficiary
+  // took part in (e.g. "attended this event").
+  projects?: { project?: { id?: number; title?: unknown; slug?: string } | null }[] | null;
+  events?: { event?: { id?: number; eventTitle?: unknown; slug?: string } | null }[] | null;
+  reports?: { report?: { id?: number; title?: string; slug?: string } | null }[] | null;
+  podcasts?: { podcast?: { id?: number; title?: unknown; slug?: string } | null }[] | null;
+  talkshows?: { talkshow?: { id?: number; title?: string } | null }[] | null;
 
   // optional server-provided counts
   messageCount?: number | null;
@@ -218,6 +231,78 @@ export default function BeneficiaryView({
           )}
         </div>
       </div>
+
+      {isPrivileged && !isTiptapDocEmpty(data.voice) && (
+        <div className="mt-4">
+          <strong>Beneficiary Voice</strong>
+          {data.beneficiaryStatus !== 'published' && (
+            <span className="ml-2 text-xs text-amber-600">(not visible publicly — draft)</span>
+          )}
+          <div className="mt-2 rounded border bg-white dark:bg-gray-900 p-3">
+            <TiptapJsonViewer content={normalizeTiptapDoc(data.voice)} className="prose dark:prose-invert max-w-none" />
+          </div>
+        </div>
+      )}
+
+      {isPrivileged &&
+        ((data.projects?.length ?? 0) > 0 ||
+          (data.events?.length ?? 0) > 0 ||
+          (data.reports?.length ?? 0) > 0 ||
+          (data.podcasts?.length ?? 0) > 0 ||
+          (data.talkshows?.length ?? 0) > 0) && (
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {(data.projects?.length ?? 0) > 0 && (
+              <div>
+                <strong>Projects</strong>
+                <ul className="mt-1 list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                  {data.projects!.map((p, idx) => (
+                    <li key={p.project?.id ?? idx}>{extractPlainText(p.project?.title) || 'Untitled Project'}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {(data.events?.length ?? 0) > 0 && (
+              <div>
+                <strong>Events</strong>
+                <ul className="mt-1 list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                  {data.events!.map((e, idx) => (
+                    <li key={e.event?.id ?? idx}>{extractPlainText(e.event?.eventTitle) || 'Untitled Event'}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {(data.reports?.length ?? 0) > 0 && (
+              <div>
+                <strong>Reports</strong>
+                <ul className="mt-1 list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                  {data.reports!.map((r, idx) => (
+                    <li key={r.report?.id ?? idx}>{r.report?.title || 'Untitled Report'}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {(data.podcasts?.length ?? 0) > 0 && (
+              <div>
+                <strong>Podcasts</strong>
+                <ul className="mt-1 list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                  {data.podcasts!.map((p, idx) => (
+                    <li key={p.podcast?.id ?? idx}>{extractPlainText(p.podcast?.title) || 'Untitled Podcast'}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {(data.talkshows?.length ?? 0) > 0 && (
+              <div>
+                <strong>Radio Talkshows</strong>
+                <ul className="mt-1 list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                  {data.talkshows!.map((t, idx) => (
+                    <li key={t.talkshow?.id ?? idx}>{t.talkshow?.title || 'Untitled Talkshow'}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
 
       <div className="mt-4">
         {onClose && (

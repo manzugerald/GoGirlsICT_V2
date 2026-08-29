@@ -17,6 +17,11 @@ async function fetchProjectsFromDb() {
       approvedBy: { select: { username: true } },
       updatedBy: { select: { username: true } },
       reports: true,
+      beneficiaries: {
+        select: {
+          beneficiary: { select: { id: true, firstName: true, lastName: true, image: true } },
+        },
+      },
     },
   });
   return projects;

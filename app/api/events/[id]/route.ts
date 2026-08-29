@@ -165,6 +165,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         updatedBy: { select: { username: true } },
         project: { select: { title: true, id: true } },
         report: { select: { title: true, id: true } },
+        beneficiaries: {
+          select: {
+            beneficiary: { select: { id: true, firstName: true, lastName: true, image: true } },
+          },
+        },
       },
     });
 

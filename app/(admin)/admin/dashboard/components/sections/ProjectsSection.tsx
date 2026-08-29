@@ -228,6 +228,20 @@ export default function ProjectsSection({
 
     const images = Array.isArray(project.images) ? project.images : [];
 
+    // Beneficiaries linked to this project.
+    const beneficiaries: { id: string; name: string; image?: string | null }[] = Array.isArray(
+      project.beneficiaries
+    )
+      ? project.beneficiaries
+          .map((link: any) => link.beneficiary)
+          .filter(Boolean)
+          .map((b: any) => ({
+            id: b.id,
+            name: `${b.firstName ?? ''} ${b.lastName ?? ''}`.trim() || 'Unnamed beneficiary',
+            image: b.image,
+          }))
+      : [];
+
     return (
       <div className="w-full max-w-4xl mx-auto p-4 space-y-4 overflow-hidden border rounded-md bg-white dark:bg-gray-900">
         <div>
@@ -269,6 +283,29 @@ export default function ProjectsSection({
                   alt="project"
                   className="w-full h-28 object-cover rounded border"
                 />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {beneficiaries.length > 0 && (
+          <div>
+            <div className="text-sm text-gray-500 mb-2">
+              Beneficiaries ({beneficiaries.length})
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {beneficiaries.map((b) => (
+                <div
+                  key={b.id}
+                  className="flex items-center gap-2 rounded-full border bg-gray-50 dark:bg-gray-950 pl-1 pr-3 py-1"
+                >
+                  {b.image ? (
+                    <img src={b.image} alt={b.name} className="w-7 h-7 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-800" />
+                  )}
+                  <span className="text-sm">{b.name}</span>
+                </div>
               ))}
             </div>
           </div>

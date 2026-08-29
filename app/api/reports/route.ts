@@ -34,6 +34,11 @@ async function fetchReportsFromDb() {
       approvedBy: { select: { firstName: true, lastName: true } },
       updatedBy: { select: { firstName: true, lastName: true } },
       project: { select: { title: true, id: true } },
+      beneficiaries: {
+        select: {
+          beneficiary: { select: { id: true, firstName: true, lastName: true, image: true } },
+        },
+      },
     },
   });
 }

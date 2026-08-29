@@ -35,45 +35,51 @@ model HomePage {
 }
 
 model Project {
-  id            Int           @id @default(autoincrement())
+  id            Int                  @id @default(autoincrement())
   title         Json // Tiptap JSON doc (edited/viewed via components/editor/*)
-  slug          String        @unique
+  slug          String               @unique
   content       Json
   images        String[]
   projectStatus Status
-  publishStatus PublishStatus @default(draft)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  publishStatus PublishStatus        @default(draft)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
   createdById   String
   updatedById   String?
   approvedById  String?
-  approvedBy    User?         @relation("ProjectApprovedBy", fields: [approvedById], references: [id])
-  createdBy     User          @relation("ProjectCreatedBy", fields: [createdById], references: [id])
-  updatedBy     User?         @relation("ProjectUpdatedBy", fields: [updatedById], references: [id])
+  approvedBy    User?                @relation("ProjectApprovedBy", fields: [approvedById], references: [id])
+  createdBy     User                 @relation("ProjectCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User?                @relation("ProjectUpdatedBy", fields: [updatedById], references: [id])
   reports       Report[]
   events        Event[]
+  beneficiaries BeneficiaryProject[]
+  talkshows     RadioTalkshow[]
+  podcasts      Podcast[]
 }
 
 model Report {
-  id            Int           @id @default(autoincrement())
+  id            Int                 @id @default(autoincrement())
   title         String
-  slug          String        @unique
+  slug          String              @unique
   images        String[]
   files         String[]
-  publishStatus PublishStatus @default(draft)
-  accessCount   Int           @default(0)
-  downloadCount Int           @default(0)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  publishStatus PublishStatus       @default(draft)
+  accessCount   Int                 @default(0)
+  downloadCount Int                 @default(0)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
   createdById   String
   updatedById   String?
   approvedById  String?
   projectId     Int? // many-to-one with Project
-  approvedBy    User?         @relation("ReportApprovedBy", fields: [approvedById], references: [id])
-  createdBy     User          @relation("ReportCreatedBy", fields: [createdById], references: [id])
-  project       Project?      @relation(fields: [projectId], references: [id])
-  updatedBy     User?         @relation("ReportUpdatedBy", fields: [updatedById], references: [id])
+  approvedBy    User?               @relation("ReportApprovedBy", fields: [approvedById], references: [id])
+  createdBy     User                @relation("ReportCreatedBy", fields: [createdById], references: [id])
+  project       Project?            @relation(fields: [projectId], references: [id])
+  updatedBy     User?               @relation("ReportUpdatedBy", fields: [updatedById], references: [id])
   events        Event[]
+  beneficiaries BeneficiaryReport[]
+  talkshows     RadioTalkshow[]
+  podcasts      Podcast[]
 }
 
 model Podcast {
@@ -95,6 +101,36 @@ model Podcast {
   approvedBy    User?         @relation("PodcastApprovedBy", fields: [approvedById], references: [id])
   createdBy     User          @relation("PodcastCreatedBy", fields: [createdById], references: [id])
   updatedBy     User?         @relation("PodcastUpdatedBy", fields: [updatedById], references: [id])
+
+  // Beneficiaries who took part in / are featured on this podcast episode.
+  beneficiaries BeneficiaryPodcast[]
+
+  // "By": who hosted/appeared on this episode — see HostType above.
+  hostType          HostType?
+  hostBeneficiaryId String?
+  hostBeneficiary   Beneficiary? @relation("PodcastHostBeneficiary", fields: [hostBeneficiaryId], references: [id])
+  hostUserId        String?
+  hostUser          User?        @relation("PodcastHostUser", fields: [hostUserId], references: [id])
+  hostFirstName     String?
+  hostLastName      String?
+
+  // Optional single links to other content this podcast relates to.
+  projectId Int?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  eventId Int?
+  event   Event? @relation(fields: [eventId], references: [id])
+
+  reportId Int?
+  report   Report? @relation(fields: [reportId], references: [id])
+
+  institutionId String?
+  institution   Institution? @relation(fields: [institutionId], references: [id])
+
+  // Optional link to a Radio Talkshow this podcast episode is tied to (see
+  // RadioTalkshow.podcasts for the reverse side).
+  talkshowId Int?
+  talkshow   RadioTalkshow? @relation(fields: [talkshowId], references: [id])
 }
 
 enum MessageCategory {
@@ -217,6 +253,13 @@ model User {
   createdEvents Event[] @relation("EventCreatedBy")
   updatedEvents Event[] @relation("EventUpdatedBy")
 
+  // Radio Talkshows
+  createdTalkshows  RadioTalkshow[] @relation("RadioTalkshowCreatedBy")
+  updatedTalkshows  RadioTalkshow[] @relation("RadioTalkshowUpdatedBy")
+  approvedTalkshows RadioTalkshow[] @relation("RadioTalkshowApprovedBy")
+  hostedTalkshows   RadioTalkshow[] @relation("TalkshowHostUser")
+  hostedPodcasts    Podcast[]       @relation("PodcastHostUser")
+
   // Beneficiaries
   createdBeneficiaries  Beneficiary[] @relation("BeneficiaryCreatedBy")
   updatedBeneficiaries  Beneficiary[] @relation("BeneficiaryUpdatedBy")
@@ -332,8 +375,11 @@ model Event {
   projectId Int?
   project   Project? @relation(fields: [projectId], references: [id])
 
-  reportId Int?
-  report   Report? @relation(fields: [reportId], references: [id])
+  reportId      Int?
+  report        Report?            @relation(fields: [reportId], references: [id])
+  beneficiaries BeneficiaryEvent[]
+  talkshows     RadioTalkshow[]
+  podcasts      Podcast[]
 }
 
 enum EventStatus {
@@ -397,6 +443,8 @@ model Institution {
   updatedAt           DateTime            @updatedAt
   locations           Location[]
   beneficiaries       Beneficiary[]
+  talkshows           RadioTalkshow[]
+  podcasts            Podcast[]
 
   createdById  String
   updatedById  String?
@@ -429,20 +477,41 @@ model Beneficiary {
   lastName          String
   image             String?
   images            String[]
-  gender            GenderType
+  gender            GenderType?
   email             String?       @unique
   phone             String?       @unique
-  dateOfBirth       DateTime
+  dateOfBirth       DateTime?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   beneficiaryStatus PublishStatus @default(draft)
+
+  // Tiptap JSON doc: an optional first-person testimonial ("Beneficiary
+  // Voice"). Shown publicly only when non-empty AND beneficiaryStatus is
+  // 'published' — there is no separate publish flag for the voice itself,
+  // it reuses the record's own beneficiaryStatus.
+  voice Json?
 
   // unified messages and responses
   messages  Message[]  @relation("BeneficiaryMessages")
   responses Response[] @relation("BeneficiaryResponses")
 
+  // A beneficiary belongs to at most one institution, or none at all.
   institutionId String?
   institution   Institution? @relation(fields: [institutionId], references: [id])
+
+  // A beneficiary can be linked to any number of projects/events/reports
+  // (e.g. "beneficiaries who attended this event").
+  projects  BeneficiaryProject[]
+  events    BeneficiaryEvent[]
+  reports   BeneficiaryReport[]
+  podcasts  BeneficiaryPodcast[]
+  talkshows BeneficiaryTalkshow[]
+
+  // Radio talkshows / podcasts this beneficiary hosted (the "By" field, when
+  // hostType = beneficiary) — distinct from `talkshows`/`podcasts` above,
+  // which are the "participants" lists.
+  hostedTalkshows RadioTalkshow[] @relation("TalkshowHostBeneficiary")
+  hostedPodcasts  Podcast[]       @relation("PodcastHostBeneficiary")
 
   createdById  String
   updatedById  String?
@@ -451,6 +520,125 @@ model Beneficiary {
   createdBy  User  @relation("BeneficiaryCreatedBy", fields: [createdById], references: [id])
   updatedBy  User? @relation("BeneficiaryUpdatedBy", fields: [updatedById], references: [id])
   approvedBy User? @relation("BeneficiaryApprovedBy", fields: [approvedById], references: [id])
+}
+
+// Join models linking a Beneficiary to the Project/Event/Report they took
+// part in. Kept as explicit models (rather than implicit many-to-many) so a
+// participation record can carry its own metadata later (e.g. a role or
+// attendance date) without another migration.
+model BeneficiaryProject {
+  id            String      @id @default(cuid())
+  beneficiaryId String
+  beneficiary   Beneficiary @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  projectId     Int
+  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([beneficiaryId, projectId])
+}
+
+model BeneficiaryEvent {
+  id            String      @id @default(cuid())
+  beneficiaryId String
+  beneficiary   Beneficiary @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  eventId       Int
+  event         Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([beneficiaryId, eventId])
+}
+
+model BeneficiaryReport {
+  id            String      @id @default(cuid())
+  beneficiaryId String
+  beneficiary   Beneficiary @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  reportId      Int
+  report        Report      @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([beneficiaryId, reportId])
+}
+
+model BeneficiaryPodcast {
+  id            String      @id @default(cuid())
+  beneficiaryId String
+  beneficiary   Beneficiary @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  podcastId     Int
+  podcast       Podcast     @relation(fields: [podcastId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([beneficiaryId, podcastId])
+}
+
+model BeneficiaryTalkshow {
+  id            String        @id @default(cuid())
+  beneficiaryId String
+  beneficiary   Beneficiary   @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  talkshowId    Int
+  talkshow      RadioTalkshow @relation(fields: [talkshowId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+
+  @@unique([beneficiaryId, talkshowId])
+}
+
+// "By" — who hosted/appeared on a talkshow or podcast: an existing
+// beneficiary, an admin (an app User), or a free-text guest name. Exactly
+// one of the corresponding fields is expected to be set, matching hostType
+// — enforced at the application level, same approach as Response.responderType
+// above.
+enum HostType {
+  beneficiary
+  admin
+  guest
+}
+
+model RadioTalkshow {
+  id            Int           @id @default(autoincrement())
+  title         String
+  date          DateTime
+  poster        String?
+  publishStatus PublishStatus @default(draft)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdById  String
+  updatedById  String?
+  approvedById String?
+
+  createdBy  User  @relation("RadioTalkshowCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User? @relation("RadioTalkshowUpdatedBy", fields: [updatedById], references: [id])
+  approvedBy User? @relation("RadioTalkshowApprovedBy", fields: [approvedById], references: [id])
+
+  // Optional single links to other content this talkshow relates to.
+  projectId Int?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  eventId Int?
+  event   Event? @relation(fields: [eventId], references: [id])
+
+  reportId Int?
+  report   Report? @relation(fields: [reportId], references: [id])
+
+  institutionId String?
+  institution   Institution? @relation(fields: [institutionId], references: [id])
+
+  // "By": who hosted/appeared — see HostType above.
+  hostType          HostType?
+  hostBeneficiaryId String?
+  hostBeneficiary   Beneficiary? @relation("TalkshowHostBeneficiary", fields: [hostBeneficiaryId], references: [id])
+  hostUserId        String?
+  hostUser          User?        @relation("TalkshowHostUser", fields: [hostUserId], references: [id])
+  hostFirstName     String?
+  hostLastName      String?
+
+  // Beneficiaries who took part as participants.
+  participants BeneficiaryTalkshow[]
+
+  // Podcasts linked to this talkshow (reverse of Podcast.talkshowId — a
+  // podcast episode points at one talkshow; a talkshow can be referenced by
+  // many podcast episodes). Editable from either side.
+  podcasts Podcast[]
 }
 
 /**

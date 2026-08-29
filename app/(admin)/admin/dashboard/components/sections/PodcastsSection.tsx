@@ -60,8 +60,29 @@ export default function PodcastsSection({
     return `${a.firstName ?? ''} ${a.lastName ?? ''}`.trim() || 'System';
   }
 
+  function hostLabel(podcast: any) {
+    if (!podcast?.hostType) return null;
+    if (podcast.hostType === 'beneficiary') {
+      const b = podcast.hostBeneficiary;
+      if (!b) return null;
+      return `${b.firstName ?? ''} ${b.lastName ?? ''}`.trim() || null;
+    }
+    if (podcast.hostType === 'admin') {
+      const u = podcast.hostUser;
+      if (!u) return null;
+      return `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim() || u.username || null;
+    }
+    if (podcast.hostType === 'guest') {
+      return `${podcast.hostFirstName ?? ''} ${podcast.hostLastName ?? ''}`.trim() || null;
+    }
+    return null;
+  }
+
   // If a podcast is selected, render the full view inline
   if (viewing) {
+    const host = hostLabel(viewing);
+    const participants: any[] = Array.isArray(viewing.beneficiaries) ? viewing.beneficiaries : [];
+
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-2">
@@ -88,9 +109,10 @@ export default function PodcastsSection({
                 />
               </div>
               <div className="text-sm text-gray-500 mt-1">
-                By: {authorLabel(viewing)} · Published: {formatDate(viewing.publishedAt)} · Plays:{' '}
+                Added by: {authorLabel(viewing)} · Published: {formatDate(viewing.publishedAt)} · Plays:{' '}
                 {viewing.accessCount ?? 0}
               </div>
+              {host && <div className="text-sm text-gray-500 mt-1">By: {host}</div>}
             </div>
           </div>
 
@@ -103,6 +125,33 @@ export default function PodcastsSection({
 
           {viewing.audioUrl && (
             <audio controls src={viewing.audioUrl} className="w-full" />
+          )}
+
+          {(viewing.project || viewing.event || viewing.report || viewing.institution || viewing.talkshow) && (
+            <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+              {viewing.project && (
+                <div>Project: {extractPlainText(viewing.project.title) || `#${viewing.project.id}`}</div>
+              )}
+              {viewing.event && (
+                <div>Event: {extractPlainText(viewing.event.eventTitle) || `#${viewing.event.id}`}</div>
+              )}
+              {viewing.report && <div>Report: {viewing.report.title ?? `#${viewing.report.id}`}</div>}
+              {viewing.institution && <div>Institution: {viewing.institution.name}</div>}
+              {viewing.talkshow && <div>Radio Talkshow: {viewing.talkshow.title ?? `#${viewing.talkshow.id}`}</div>}
+            </div>
+          )}
+
+          {participants.length > 0 && (
+            <div>
+              <strong className="text-sm">Participants</strong>
+              <ul className="mt-1 list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                {participants.map((p, idx) => (
+                  <li key={p.beneficiary?.id ?? idx}>
+                    {`${p.beneficiary?.firstName ?? ''} ${p.beneficiary?.lastName ?? ''}`.trim() || 'Unknown'}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
 
           <div className="flex items-center gap-2">
@@ -164,7 +213,10 @@ export default function PodcastsSection({
                     </h3>
 
                     <div className="mt-1 text-sm text-gray-600 flex flex-col sm:flex-row sm:items-center sm:gap-4">
-                      <div className="whitespace-nowrap">By: {authorLabel(podcast)}</div>
+                      <div className="whitespace-nowrap">Added by: {authorLabel(podcast)}</div>
+                      {hostLabel(podcast) && (
+                        <div className="whitespace-nowrap">By: {hostLabel(podcast)}</div>
+                      )}
                       <div className="whitespace-nowrap">
                         Published: {formatDate(podcast.publishedAt)}
                       </div>

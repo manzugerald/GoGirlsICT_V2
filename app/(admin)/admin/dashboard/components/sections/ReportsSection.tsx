@@ -163,6 +163,20 @@ export default function ReportsSection({
     const firstImage =
       Array.isArray(report.images) && report.images.length > 0 ? report.images[0] : null;
 
+    // Beneficiaries linked to this report.
+    const beneficiaries: { id: string; name: string; image?: string | null }[] = Array.isArray(
+      report.beneficiaries
+    )
+      ? report.beneficiaries
+          .map((link: any) => link.beneficiary)
+          .filter(Boolean)
+          .map((b: any) => ({
+            id: b.id,
+            name: `${b.firstName ?? ''} ${b.lastName ?? ''}`.trim() || 'Unnamed beneficiary',
+            image: b.image,
+          }))
+      : [];
+
     return (
       <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
         {/* Left-aligned title + meta */}
@@ -253,6 +267,29 @@ export default function ReportsSection({
               alt="report image"
               className="max-h-60 w-auto object-cover rounded border"
             />
+          </div>
+        )}
+
+        {beneficiaries.length > 0 && (
+          <div>
+            <div className="text-sm text-gray-500 mb-2">
+              Beneficiaries ({beneficiaries.length})
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {beneficiaries.map((b) => (
+                <div
+                  key={b.id}
+                  className="flex items-center gap-2 rounded-full border bg-gray-50 dark:bg-gray-950 pl-1 pr-3 py-1"
+                >
+                  {b.image ? (
+                    <img src={b.image} alt={b.name} className="w-7 h-7 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-800" />
+                  )}
+                  <span className="text-sm">{b.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

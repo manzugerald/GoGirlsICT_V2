@@ -89,8 +89,8 @@ const Footer = () => {
             </Link>
 
             <p className="text-gray-400 mt-6 mb-6 leading-relaxed">
-              Empowering Communities and young women through technology, digital literacy, and innovation.
-              Building a future where every girl can be a creator, leader, and decision-maker.
+              Empowering Communities and young people through technology, digital literacy, and innovation.
+              Building a future where every person can be a creator, leader, and decision-maker.
             </p>
 
             {/* Social Links */}

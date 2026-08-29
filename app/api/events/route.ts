@@ -29,6 +29,11 @@ async function fetchEventsFromDb() {
       updatedBy: { select: { username: true } },
       project: { select: { title: true, id: true } },
       report: { select: { title: true, id: true } },
+      beneficiaries: {
+        select: {
+          beneficiary: { select: { id: true, firstName: true, lastName: true, image: true } },
+        },
+      },
     },
   });
 }

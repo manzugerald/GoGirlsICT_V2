@@ -413,6 +413,20 @@ export default function EventsSection({
     const status = ev.eventStatus ?? ev.status ?? '';
     const publishStatus = ev.publishStatus ?? '';
 
+    // Beneficiaries linked to this event (e.g. "who attended").
+    const attendees: { id: string; name: string; image?: string | null }[] = Array.isArray(
+      ev.beneficiaries
+    )
+      ? ev.beneficiaries
+          .map((link: any) => link.beneficiary)
+          .filter(Boolean)
+          .map((b: any) => ({
+            id: b.id,
+            name: `${b.firstName ?? ''} ${b.lastName ?? ''}`.trim() || 'Unnamed beneficiary',
+            image: b.image,
+          }))
+      : [];
+
     return (
       <div className="w-full max-w-4xl mx-auto">
         {/* Title & meta (on top) */}
@@ -549,6 +563,28 @@ export default function EventsSection({
           <h3 className="text-lg font-medium mb-2">Event Images</h3>
           <EventImagesSlider images={images} />
         </div>
+
+        {/* Beneficiaries who attended */}
+        {attendees.length > 0 && (
+          <div className="px-2 mt-6">
+            <h3 className="text-lg font-medium mb-2">Beneficiaries who attended ({attendees.length})</h3>
+            <div className="flex flex-wrap gap-3">
+              {attendees.map((b) => (
+                <div
+                  key={b.id}
+                  className="flex items-center gap-2 rounded-full border bg-gray-50 dark:bg-gray-900 pl-1 pr-3 py-1"
+                >
+                  {b.image ? (
+                    <img src={b.image} alt={b.name} className="w-7 h-7 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-800" />
+                  )}
+                  <span className="text-sm">{b.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

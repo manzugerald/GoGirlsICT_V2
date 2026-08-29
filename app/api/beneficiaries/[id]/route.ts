@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { redis } from '@/utils/redis';
+import { isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
 
 export const runtime = 'nodejs';
 
@@ -15,10 +16,58 @@ const SINGLE_BENEFICIARY_CACHE_PREFIX = 'beneficiaries:'; // + id
 const BENEFICIARIES_OWN_PREFIX = 'beneficiaries:own:'; // + encodeURIComponent(first)|encodeURIComponent(last)
 const SINGLE_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
 
+const fullInclude = {
+  createdBy: { select: { username: true, firstName: true, lastName: true, image: true } },
+  approvedBy: { select: { username: true } },
+  updatedBy: { select: { username: true } },
+  institution: { select: { id: true, name: true } },
+  projects: { include: { project: { select: { id: true, title: true, slug: true } } } },
+  events: { include: { event: { select: { id: true, eventTitle: true, slug: true } } } },
+  reports: { include: { report: { select: { id: true, title: true, slug: true } } } },
+  podcasts: { include: { podcast: { select: { id: true, title: true, slug: true } } } },
+  talkshows: { include: { talkshow: { select: { id: true, title: true } } } },
+} as const;
+
 function ownCacheKey(firstName: string, lastName: string) {
   return `${BENEFICIARIES_OWN_PREFIX}${encodeURIComponent(firstName)}|${encodeURIComponent(
     lastName
   )}`;
+}
+
+// Parses a JSON-encoded array of ids (sent as a form field) into a clean
+// array of positive integers, discarding anything malformed.
+function parseIdArray(formData: FormData, field: string): number[] {
+  const raw = formData.get(field);
+  if (!raw || typeof raw !== 'string') return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((v) => Number(v)).filter((n) => Number.isFinite(n));
+  } catch {
+    return [];
+  }
+}
+
+// Replaces a beneficiary's links to one relation (project/event/report) with
+// exactly the given set of ids: deletes links no longer present, creates
+// links that are new, and leaves unchanged ones alone.
+async function syncParticipation(
+  delegate: { deleteMany: Function; createMany: Function },
+  beneficiaryId: string,
+  foreignKeyField: 'projectId' | 'eventId' | 'reportId' | 'podcastId' | 'talkshowId',
+  desiredIds: number[]
+) {
+  await delegate.deleteMany(
+    desiredIds.length
+      ? { where: { beneficiaryId, [foreignKeyField]: { notIn: desiredIds } } }
+      : { where: { beneficiaryId } }
+  );
+  if (desiredIds.length) {
+    await delegate.createMany({
+      data: desiredIds.map((id) => ({ beneficiaryId, [foreignKeyField]: id })),
+      skipDuplicates: true,
+    });
+  }
 }
 
 // Helper to save uploaded images (profile/message)
@@ -66,13 +115,7 @@ export async function GET(_req: Request, context: { params: any }) {
 
     const beneficiary = await prisma.beneficiary.findUnique({
       where: { id: Number(id) || id },
-      include: {
-        createdBy: { select: { username: true, firstName: true, lastName: true, image: true } },
-        approvedBy: { select: { username: true } },
-        updatedBy: { select: { username: true } },
-        institution: { select: { id: true, name: true } },
-        _count: { select: { messages: true, responses: true } },
-      },
+      include: { ...fullInclude, _count: { select: { messages: true, responses: true } } },
     });
 
     if (!beneficiary) {
@@ -161,13 +204,34 @@ export async function PATCH(_req: Request, context: { params: any }) {
     // Required/primary fields
     const firstName = ((formData.get('firstName') as string) || '').trim();
     const lastName = ((formData.get('lastName') as string) || '').trim();
-    const gender = (formData.get('gender') as string) || undefined;
-    const dateOfBirth = (formData.get('dateOfBirth') as string) || '';
+    // Everything below is optional — only the name is required.
+    const genderRaw = formData.get('gender') as string | null;
+    const gender = genderRaw === 'male' || genderRaw === 'female' ? genderRaw : undefined;
+    const dateOfBirthRaw = (formData.get('dateOfBirth') as string) || '';
     const institutionId = (formData.get('institutionId') as string) || undefined;
 
     // Optional fields
     const email = (formData.get('email') as string) || undefined;
     const phone = (formData.get('phone') as string) || undefined;
+
+    const beneficiaryStatusRaw = (formData.get('beneficiaryStatus') as string) || 'draft';
+    const beneficiaryStatus = beneficiaryStatusRaw === 'published' ? 'published' : 'draft';
+
+    // "Beneficiary Voice" — an optional Tiptap rich-text testimonial. See the
+    // matching comment in the POST handler for why emptiness is checked
+    // after normalizing rather than on the raw JSON-encoded string.
+    const voiceRaw = formData.get('voice');
+    let voice: object | null = null;
+    if (voiceRaw && typeof voiceRaw === 'string') {
+      const normalizedVoice = normalizeTiptapDoc(voiceRaw);
+      voice = isTiptapDocEmpty(normalizedVoice) ? null : normalizedVoice;
+    }
+
+    const projectIds = parseIdArray(formData, 'projectIds');
+    const eventIds = parseIdArray(formData, 'eventIds');
+    const reportIds = parseIdArray(formData, 'reportIds');
+    const podcastIds = parseIdArray(formData, 'podcastIds');
+    const talkshowIds = parseIdArray(formData, 'talkshowIds');
 
     // Existing images (JSON array string)
     let existingImages: string[] = [];
@@ -201,29 +265,46 @@ export async function PATCH(_req: Request, context: { params: any }) {
     );
     const image = images.length > 0 ? images[0] : null;
 
-    if (!firstName || !lastName || !gender || !dateOfBirth) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!firstName || !lastName) {
+      return NextResponse.json({ error: 'First and last name are required' }, { status: 400 });
+    }
+
+    const dateOfBirth = dateOfBirthRaw ? new Date(dateOfBirthRaw) : undefined;
+    if (dateOfBirth && Number.isNaN(dateOfBirth.getTime())) {
+      return NextResponse.json({ error: 'Invalid date of birth' }, { status: 400 });
     }
 
     // Update beneficiary
-    const updated = await prisma.beneficiary.update({
+    await prisma.beneficiary.update({
       where: { id: Number(id) || id },
       data: {
         firstName,
         lastName,
         gender,
-        dateOfBirth: new Date(dateOfBirth),
+        dateOfBirth,
         images,
         image,
         email,
         phone,
         institutionId: institutionId || null,
+        beneficiaryStatus,
+        voice,
         updatedById: userId,
       },
-      include: {
-        institution: { select: { id: true, name: true } },
-        _count: { select: { messages: true, responses: true } },
-      },
+    });
+
+    // Sync project/event/report/podcast/talkshow participation to exactly the given sets.
+    await Promise.all([
+      syncParticipation(prisma.beneficiaryProject, id, 'projectId', projectIds),
+      syncParticipation(prisma.beneficiaryEvent, id, 'eventId', eventIds),
+      syncParticipation(prisma.beneficiaryReport, id, 'reportId', reportIds),
+      syncParticipation(prisma.beneficiaryPodcast, id, 'podcastId', podcastIds),
+      syncParticipation(prisma.beneficiaryTalkshow, id, 'talkshowId', talkshowIds),
+    ]);
+
+    const updated = await prisma.beneficiary.findUniqueOrThrow({
+      where: { id: Number(id) || id },
+      include: { ...fullInclude, _count: { select: { messages: true, responses: true } } },
     });
 
     // Invalidate caches: single, all, and name-scoped for old and new names

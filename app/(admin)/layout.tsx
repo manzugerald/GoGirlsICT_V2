@@ -7,11 +7,12 @@ import Footer from '@/components/footer';
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      {/* min-h-screen keeps layout at least full viewport; main gets top/bottom padding to account for fixed header/footer */}
+      {/* min-h-screen keeps layout at least full viewport; main gets top padding to account for the fixed header */}
       <div className="min-h-screen flex flex-col">
         <AdminHeader />
-        {/* Reserve space for fixed header (h-14) and fixed footer (h-14) so content isn't covered */}
-        <main className="flex-1 pt-14 pb-14">{children}</main>
+        {/* Reserve space for the fixed header (h-14). The footer below is a normal,
+            non-fixed element now, so no bottom padding is needed to make room for it. */}
+        <main className="flex-1 pt-14">{children}</main>
 
         <Footer />
       </div>

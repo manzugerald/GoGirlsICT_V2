@@ -27,6 +27,7 @@ declare module 'next-auth' {
       firstName: string;
       lastName: string;
       image?: string;
+      role: string;
     };
   }
 
@@ -36,6 +37,7 @@ declare module 'next-auth' {
     firstName: string;
     lastName: string;
     image?: string;
+    role: string;
   }
 }
 
@@ -46,6 +48,7 @@ declare module 'next-auth/jwt' {
     firstName: string;
     lastName: string;
     image?: string;
+    role: string;
   }
 }
 
@@ -55,6 +58,7 @@ type UserPayload = {
   firstName?: string | null;
   lastName?: string | null;
   image?: string | null;
+  role: string;
 };
 
 export const authOptions: NextAuthOptions = {
@@ -84,6 +88,7 @@ export const authOptions: NextAuthOptions = {
             lastName: true,
             image: true,
             password: true,
+            role: true,
             // do not perform session creation or side-effects here
             failedLoginCount: true,
             lockedUntil: true,
@@ -112,6 +117,7 @@ export const authOptions: NextAuthOptions = {
           firstName: user.firstName,
           lastName: user.lastName,
           image: user.image,
+          role: user.role,
         };
       },
     }),
@@ -124,6 +130,7 @@ export const authOptions: NextAuthOptions = {
         token.firstName = (user as any).firstName;
         token.lastName = (user as any).lastName;
         token.image = (user as any).image;
+        token.role = (user as any).role;
       }
       return token;
     },
@@ -134,6 +141,7 @@ export const authOptions: NextAuthOptions = {
         session.user.firstName = token.firstName as string;
         session.user.lastName = token.lastName as string;
         session.user.image = token.image as string;
+        session.user.role = token.role as string;
       }
       return session;
     },

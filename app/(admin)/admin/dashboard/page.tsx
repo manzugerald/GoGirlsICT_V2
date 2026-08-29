@@ -27,6 +27,7 @@ import {
   FaFacebook,
   FaYoutube,
   FaPodcast,
+  FaMicrophone,
   FaUserCircle,
   FaCog,
   FaSignOutAlt,
@@ -43,6 +44,7 @@ import ProjectsSection from './components/sections/ProjectsSection';
 import EventsSection from './components/sections/EventsSection';
 import ReportsSection from './components/sections/ReportsSection';
 import PodcastsSection from './components/sections/PodcastsSection';
+import RadioTalkshowsSection from './components/sections/RadioTalkshowsSection';
 import InstitutionsSection from './components/sections/InstitutionsSection';
 import FAQsSection from './components/sections/FAQsSection';
 import FacebookSection from './components/sections/FacebookSection';
@@ -62,6 +64,7 @@ import CreateUserForm from './createUserForm';
 import CreateProjectForm from './createProjectForm';
 import CreateReportForm from './createReportForm';
 import CreatePodcastForm from './createPodcastForm';
+import CreateTalkshowForm from './createTalkshowForm';
 import CreateEventForm from './createEventForm';
 import CreateInstitutionForm from './createInstitutionForm';
 import CreateFAQForm from './createFAQForm';
@@ -154,6 +157,7 @@ const sections = [
   'events',
   'reports',
   'podcasts',
+  'talkshows',
   'institutions',
   'faqs',
   'beneficiaries',
@@ -176,6 +180,7 @@ const sectionFeatures: Record<Section, { apiRoute?: string }> = {
   events: { apiRoute: '/api/events' },
   reports: { apiRoute: '/api/reports' },
   podcasts: { apiRoute: '/api/podcasts' },
+  talkshows: { apiRoute: '/api/talkshows' },
   institutions: { apiRoute: '/api/institutions' },
   faqs: { apiRoute: '/api/faq' },
   beneficiaries: { apiRoute: '/api/beneficiaries' },
@@ -197,6 +202,7 @@ const sectionIcons: Record<Section, React.ReactNode> = {
   events: <FaCalendarAlt className="text-green-600 dark:text-green-400" />,
   reports: <FaFilePdf className="text-red-600 dark:text-red-400" />,
   podcasts: <FaPodcast className="text-purple-600 dark:text-purple-400" />,
+  talkshows: <FaMicrophone className="text-rose-600 dark:text-rose-400" />,
   institutions: <FaUniversity className="text-blue-600 dark:text-blue-400" />,
   faqs: <FaLightbulb className="text-yellow-600 dark:text-yellow-400" />,
   beneficiaries: <FaUsers className="text-indigo-600 dark:text-indigo-400" />,
@@ -218,6 +224,7 @@ const sectionLabels: Record<Section, string> = {
   events: 'Events',
   reports: 'Reports',
   podcasts: 'Podcasts',
+  talkshows: 'Radio Talkshows',
   institutions: 'Institutions',
   faqs: 'FAQs',
   beneficiaries: 'Beneficiaries',
@@ -239,6 +246,7 @@ const singularLabels: Record<Section, string> = {
   events: 'Event',
   reports: 'Report',
   podcasts: 'Podcast',
+  talkshows: 'Radio Talkshow',
   institutions: 'Institution',
   faqs: 'FAQ',
   beneficiaries: 'Beneficiary',
@@ -641,6 +649,15 @@ export default function AdminDashboardPage() {
               onCancel={handleCancelEdit}
             />
           );
+        case 'talkshows':
+          return (
+            <CreateTalkshowForm
+              mode={editRecord?.id ? 'edit' : 'create'}
+              initialValues={editRecord?.id ? editRecord : undefined}
+              onSuccess={handleSaveEdit}
+              onCancel={handleCancelEdit}
+            />
+          );
         case 'events':
           return (
             <CreateEventForm
@@ -803,6 +820,20 @@ export default function AdminDashboardPage() {
             onToggleControls={(hide: boolean) => setHideControls(hide)}
           />
         );
+      case 'talkshows':
+        return (
+          <RadioTalkshowsSection
+            paginatedData={paginatedData}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            handleEdit={handleEdit}
+            handleDelete={handleDelete}
+            TableActions={() => null}
+            deleteId={deleteId}
+            deleteLoading={deleteLoading}
+            onToggleControls={(hide: boolean) => setHideControls(hide)}
+          />
+        );
       case 'institutions':
         return (
           <InstitutionsSection
@@ -940,10 +971,18 @@ export default function AdminDashboardPage() {
   const sidebarWidth = sidebarCollapsed ? collapsedWidth : expandedWidth;
 
   return (
-    <div className="flex flex-1 min-h-0 bg-gray-50 dark:bg-gray-900 transition-colors">
+    // A bounded app-shell: exactly viewport height minus the fixed 56px admin
+    // header, with its own overflow. Previously this row had no height limit
+    // and the sidebar was `fixed` to the viewport, so scrolling the outer page
+    // (e.g. past a tall section, or down to the site footer) left the sidebar
+    // pinned on screen, visually overlapping the footer beneath it. Bounding
+    // this row and letting the sidebar scroll away with it — instead of being
+    // fixed independently of page scroll — means the sidebar can never sit on
+    // top of content that isn't part of the dashboard.
+    <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden bg-gray-50 dark:bg-gray-900 transition-colors">
       <aside
         style={{ width: sidebarWidth }}
-        className={`fixed left-0 top-14 bottom-14 bg-white dark:bg-gray-950 border-r dark:border-gray-800 shadow-sm flex flex-col z-30 transition-width duration-300`}
+        className="h-full shrink-0 bg-white dark:bg-gray-950 border-r dark:border-gray-800 shadow-sm flex flex-col transition-[width] duration-300 ease-in-out"
       >
         <div className="flex items-center justify-between px-2 py-4 border-b dark:border-gray-800">
           <span className="text-xl font-bold text-pink-600 dark:text-pink-400 hidden sm:block">
@@ -1019,6 +1058,12 @@ export default function AdminDashboardPage() {
                   subtitle: 'Manage podcasts',
                   icon: sectionIcons.podcasts,
                 },
+                {
+                  key: 'talkshows',
+                  label: 'Radio Talkshows',
+                  subtitle: 'Manage radio talkshows',
+                  icon: sectionIcons.talkshows,
+                },
               ]}
               activeKey={activeSection}
               onNavigate={(k) => handleMenuClick(k as Section)}
@@ -1039,6 +1084,7 @@ export default function AdminDashboardPage() {
               section === 'events' ||
               section === 'reports' ||
               section === 'podcasts' ||
+              section === 'talkshows' ||
               section === 'beneficiaries' ||
               section === 'institutions' ||
               section === 'team' ||
@@ -1162,8 +1208,7 @@ export default function AdminDashboardPage() {
       </aside>
 
       <main
-        className="flex-1 min-w-0 overflow-y-auto p-4 bg-white dark:bg-gray-900 transition-colors"
-        style={{ marginLeft: sidebarWidth }}
+        className="flex-1 min-w-0 h-full overflow-y-auto p-4 bg-white dark:bg-gray-900 transition-colors"
       >
         <div className="mb-4">
           <div className="flex items-center gap-3">

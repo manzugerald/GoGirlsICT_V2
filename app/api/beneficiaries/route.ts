@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { redis } from '@/utils/redis';
+import { isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
 
 export const runtime = 'nodejs';
 
@@ -18,7 +19,27 @@ const includeShape = {
   approvedBy: { select: { username: true } },
   updatedBy: { select: { username: true } },
   institution: { select: { id: true, name: true } },
+  projects: { include: { project: { select: { id: true, title: true, slug: true } } } },
+  events: { include: { event: { select: { id: true, eventTitle: true, slug: true } } } },
+  reports: { include: { report: { select: { id: true, title: true, slug: true } } } },
+  podcasts: { include: { podcast: { select: { id: true, title: true, slug: true } } } },
+  talkshows: { include: { talkshow: { select: { id: true, title: true } } } },
 } as const;
+
+// Parses a JSON-encoded array of ids (sent as a form field, e.g.
+// `formData.append('eventIds', JSON.stringify([1, 2]))`) into a clean
+// array of positive integers, discarding anything malformed.
+function parseIdArray(formData: FormData, field: string): number[] {
+  const raw = formData.get(field);
+  if (!raw || typeof raw !== 'string') return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((v) => Number(v)).filter((n) => Number.isFinite(n));
+  } catch {
+    return [];
+  }
+}
 
 function roleFrom(session: any): string {
   return session?.user?.role ?? 'guest';
@@ -159,15 +180,43 @@ export async function POST(req: Request) {
 
     const firstName = ((formData.get('firstName') as string) || '').trim();
     const lastName = ((formData.get('lastName') as string) || '').trim();
-    const gender = formData.get('gender') as 'male' | 'female' | null;
-    const dateOfBirth = (formData.get('dateOfBirth') as string) || '';
+    // Everything below is optional — only the name is required.
+    const genderRaw = formData.get('gender') as string | null;
+    const gender = genderRaw === 'male' || genderRaw === 'female' ? genderRaw : undefined;
+    const dateOfBirthRaw = (formData.get('dateOfBirth') as string) || '';
     const institutionId = (formData.get('institutionId') as string) || undefined;
 
     const email = (formData.get('email') as string) || undefined;
     const phone = (formData.get('phone') as string) || undefined;
 
-    if (!firstName || !lastName || !gender || !dateOfBirth) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    const beneficiaryStatusRaw = (formData.get('beneficiaryStatus') as string) || 'draft';
+    const beneficiaryStatus = beneficiaryStatusRaw === 'published' ? 'published' : 'draft';
+
+    // "Beneficiary Voice" — an optional Tiptap rich-text testimonial.
+    // Empty is stored as null rather than an empty doc. normalizeTiptapDoc
+    // parses the JSON-encoded string the form sends before we can check
+    // emptiness — checking the raw string directly would never see it as
+    // empty, since a bare "no visible text" doc still contains characters.
+    const voiceRaw = formData.get('voice');
+    let voice: object | null = null;
+    if (voiceRaw && typeof voiceRaw === 'string') {
+      const normalizedVoice = normalizeTiptapDoc(voiceRaw);
+      voice = isTiptapDocEmpty(normalizedVoice) ? null : normalizedVoice;
+    }
+
+    const projectIds = parseIdArray(formData, 'projectIds');
+    const eventIds = parseIdArray(formData, 'eventIds');
+    const reportIds = parseIdArray(formData, 'reportIds');
+    const podcastIds = parseIdArray(formData, 'podcastIds');
+    const talkshowIds = parseIdArray(formData, 'talkshowIds');
+
+    if (!firstName || !lastName) {
+      return NextResponse.json({ error: 'First and last name are required' }, { status: 400 });
+    }
+
+    const dateOfBirth = dateOfBirthRaw ? new Date(dateOfBirthRaw) : undefined;
+    if (dateOfBirth && Number.isNaN(dateOfBirth.getTime())) {
+      return NextResponse.json({ error: 'Invalid date of birth' }, { status: 400 });
     }
 
     const destDir = path.join(process.cwd(), 'public', 'assets', 'images', 'beneficiaries');
@@ -175,25 +224,43 @@ export async function POST(req: Request) {
     const images = imageFileNames.map((file) => `/assets/images/beneficiaries/${file}`);
     const image = images[0] ?? null;
 
-    const beneficiary = await prisma.beneficiary.create({
+    const created = await prisma.beneficiary.create({
       data: {
         firstName,
         lastName,
         gender,
-        dateOfBirth: new Date(dateOfBirth),
+        dateOfBirth,
         images,
         image,
         email,
         phone,
         institutionId: institutionId || null,
+        beneficiaryStatus,
+        voice,
         createdById: userId,
         updatedById: userId,
         approvedById: userId,
+        ...(projectIds.length && {
+          projects: { create: projectIds.map((projectId) => ({ projectId })) },
+        }),
+        ...(eventIds.length && {
+          events: { create: eventIds.map((eventId) => ({ eventId })) },
+        }),
+        ...(reportIds.length && {
+          reports: { create: reportIds.map((reportId) => ({ reportId })) },
+        }),
+        ...(podcastIds.length && {
+          podcasts: { create: podcastIds.map((podcastId) => ({ podcastId })) },
+        }),
+        ...(talkshowIds.length && {
+          talkshows: { create: talkshowIds.map((talkshowId) => ({ talkshowId })) },
+        }),
       },
-      include: {
-        institution: { select: { id: true, name: true } },
-        _count: { select: { messages: true, responses: true } },
-      },
+    });
+
+    const beneficiary = await prisma.beneficiary.findUniqueOrThrow({
+      where: { id: created.id },
+      include: { ...includeShape, _count: { select: { messages: true, responses: true } } },
     });
 
     // Invalidate caches

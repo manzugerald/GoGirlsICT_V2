@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../lib/generated/prisma"
+  provider   = "prisma-client-js"
+  output     = "../lib/generated/prisma"
   engineType = "library"
 }
 
@@ -8,17 +8,17 @@ datasource db {
   provider = "postgresql"
 }
 
-/*
-  Consolidated messaging schema:
-  - Replaced BeneficiaryMessage, BeneficiaryRequest, BeneficiaryRequestResponse
-    with Message and Response.
-  - Message.messageKind tags origin/intent: beneficiary, request, system, external,
-    go_girls_ict_team, testimonial.
-    External = visitor; visitors can create Message but (for now) cannot create Responses.
-  - Response is used for replies and is authored by a User, a Beneficiary, or the System.
-  - Message.allowResponses toggles whether replies are allowed per-message (useful for external messages).
-  - Message.senderEmail / senderIp store visitor metadata when messageKind = external.
-*/
+/**
+ * Consolidated messaging schema:
+ * - Replaced BeneficiaryMessage, BeneficiaryRequest, BeneficiaryRequestResponse
+ * with Message and Response.
+ * - Message.messageKind tags origin/intent: beneficiary, request, system, external,
+ * go_girls_ict_team, testimonial.
+ * External = visitor; visitors can create Message but (for now) cannot create Responses.
+ * - Response is used for replies and is authored by a User, a Beneficiary, or the System.
+ * - Message.allowResponses toggles whether replies are allowed per-message (useful for external messages).
+ * - Message.senderEmail / senderIp store visitor metadata when messageKind = external.
+ */
 model HomePage {
   id         Int      @id @default(autoincrement())
   heroVideo  String
@@ -26,54 +26,60 @@ model HomePage {
   mission    String
   focus      String
   coreValues String
-  about      String?  // new
-  logo       String?   // new
-  banner     String?   // new
-  siteName   String?   // new
+  about      String? // new
+  logo       String? // new
+  banner     String? // new
+  siteName   String? // new
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
 
 model Project {
-  id            Int           @id @default(autoincrement())
+  id            Int                  @id @default(autoincrement())
   title         Json // Tiptap JSON doc (edited/viewed via components/editor/*)
-  slug          String        @unique
+  slug          String               @unique
   content       Json
   images        String[]
   projectStatus Status
-  publishStatus PublishStatus @default(draft)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  publishStatus PublishStatus        @default(draft)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
   createdById   String
   updatedById   String?
   approvedById  String?
-  approvedBy    User?         @relation("ProjectApprovedBy", fields: [approvedById], references: [id])
-  createdBy     User          @relation("ProjectCreatedBy", fields: [createdById], references: [id])
-  updatedBy     User?         @relation("ProjectUpdatedBy", fields: [updatedById], references: [id])
+  approvedBy    User?                @relation("ProjectApprovedBy", fields: [approvedById], references: [id])
+  createdBy     User                 @relation("ProjectCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User?                @relation("ProjectUpdatedBy", fields: [updatedById], references: [id])
   reports       Report[]
   events        Event[]
+  beneficiaries BeneficiaryProject[]
+  talkshows     RadioTalkshow[]
+  podcasts      Podcast[]
 }
 
 model Report {
-  id            Int           @id @default(autoincrement())
+  id            Int                 @id @default(autoincrement())
   title         String
-  slug          String        @unique
+  slug          String              @unique
   images        String[]
   files         String[]
-  publishStatus PublishStatus @default(draft)
-  accessCount   Int @default(0)
-  downloadCount Int @default(0)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  publishStatus PublishStatus       @default(draft)
+  accessCount   Int                 @default(0)
+  downloadCount Int                 @default(0)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
   createdById   String
   updatedById   String?
   approvedById  String?
   projectId     Int? // many-to-one with Project
-  approvedBy    User?         @relation("ReportApprovedBy", fields: [approvedById], references: [id])
-  createdBy     User          @relation("ReportCreatedBy", fields: [createdById], references: [id])
-  project       Project?      @relation(fields: [projectId], references: [id])
-  updatedBy     User?         @relation("ReportUpdatedBy", fields: [updatedById], references: [id])
+  approvedBy    User?               @relation("ReportApprovedBy", fields: [approvedById], references: [id])
+  createdBy     User                @relation("ReportCreatedBy", fields: [createdById], references: [id])
+  project       Project?            @relation(fields: [projectId], references: [id])
+  updatedBy     User?               @relation("ReportUpdatedBy", fields: [updatedById], references: [id])
   events        Event[]
+  beneficiaries BeneficiaryReport[]
+  talkshows     RadioTalkshow[]
+  podcasts      Podcast[]
 }
 
 model Podcast {
@@ -95,9 +101,37 @@ model Podcast {
   approvedBy    User?         @relation("PodcastApprovedBy", fields: [approvedById], references: [id])
   createdBy     User          @relation("PodcastCreatedBy", fields: [createdById], references: [id])
   updatedBy     User?         @relation("PodcastUpdatedBy", fields: [updatedById], references: [id])
+
+  // Beneficiaries who took part in / are featured on this podcast episode.
+  beneficiaries BeneficiaryPodcast[]
+
+  // "By": who hosted/appeared on this episode — see HostType above.
+  hostType          HostType?
+  hostBeneficiaryId String?
+  hostBeneficiary   Beneficiary? @relation("PodcastHostBeneficiary", fields: [hostBeneficiaryId], references: [id])
+  hostUserId        String?
+  hostUser          User?        @relation("PodcastHostUser", fields: [hostUserId], references: [id])
+  hostFirstName     String?
+  hostLastName      String?
+
+  // Optional single links to other content this podcast relates to.
+  projectId Int?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  eventId Int?
+  event   Event? @relation(fields: [eventId], references: [id])
+
+  reportId Int?
+  report   Report? @relation(fields: [reportId], references: [id])
+
+  institutionId String?
+  institution   Institution? @relation(fields: [institutionId], references: [id])
+
+  // Optional link to a Radio Talkshow this podcast episode is tied to (see
+  // RadioTalkshow.podcasts for the reverse side).
+  talkshowId Int?
+  talkshow   RadioTalkshow? @relation(fields: [talkshowId], references: [id])
 }
-
-
 
 enum MessageCategory {
   beneficiary
@@ -109,46 +143,44 @@ enum MessageCategory {
 }
 
 model Message {
-  id               Int           @id @default(autoincrement())
-  title            Json? // Tiptap JSON doc (edited/viewed via components/editor/*)
-  affiliated       String?
-  name             String?
-  content          Json
-  nameImageUrl     String?
-  messageImageUrl  String?
-  messageStatus    PublishStatus @default(draft)
-  messageCategory  MessageCategory @default(external)
+  id              Int             @id @default(autoincrement())
+  title           Json? // Tiptap JSON doc (edited/viewed via components/editor/*)
+  affiliated      String?
+  name            String?
+  content         Json
+  nameImageUrl    String?
+  messageImageUrl String?
+  messageStatus   PublishStatus   @default(draft)
+  messageCategory MessageCategory @default(external)
 
   // Visitor metadata (useful when messageCategory = external)
-  senderEmail      String?
-  senderIp         String?
+  senderEmail String?
+  senderIp    String?
 
   // Toggle whether replies are allowed for this message (default true).
-  allowResponses   Boolean       @default(true)
+  allowResponses Boolean @default(true)
 
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Optional relations: messages can be created/updated/approved by a User (or be system/external)
-  createdById      String?
-  updatedById      String?
-  approvedById     String?
+  createdById  String?
+  updatedById  String?
+  approvedById String?
 
-  createdBy        User?         @relation("MessageCreatedBy", fields: [createdById], references: [id])
-  updatedBy        User?         @relation("MessageUpdatedBy", fields: [updatedById], references: [id])
-  approver         User?         @relation("MessageApprovedBy", fields: [approvedById], references: [id])
+  createdBy User? @relation("MessageCreatedBy", fields: [createdById], references: [id])
+  updatedBy User? @relation("MessageUpdatedBy", fields: [updatedById], references: [id])
+  approver  User? @relation("MessageApprovedBy", fields: [approvedById], references: [id])
 
   // if this message is tied to a Beneficiary (testimonial, request), point to them
-  beneficiaryId    String?
-  beneficiary      Beneficiary?  @relation("BeneficiaryMessages", fields: [beneficiaryId], references: [id])
+  beneficiaryId String?
+  beneficiary   Beneficiary? @relation("BeneficiaryMessages", fields: [beneficiaryId], references: [id])
 
   // replies to this message
-  responses        Response[]
+  responses Response[]
 
   @@map("Message")
 }
-
-
 
 // Prisma schema: User + user-related models (PasswordHistory, PasswordChangeLog,
 // FailedLoginAttempt, Session) — with relation fields re-introduced on User model.
@@ -167,24 +199,24 @@ enum LoginStatus {
 }
 
 model User {
-  id               String    @id @default(cuid())
-  firstName        String?
-  lastName         String?
-  username         String    @unique
-  password         String
-  email            String?   @unique
-  image            String?
-  role             Role      @default(guest)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  firstName String?
+  lastName  String?
+  username  String   @unique
+  password  String
+  email     String?  @unique
+  image     String?
+  role      Role     @default(guest)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // New profile & login fields
-  about            String?              // brief biography
-  lastLogin        DateTime?            // last successful login time
-  loginStatus      LoginStatus @default(inactive) // active | inactive
+  about       String? // brief biography
+  lastLogin   DateTime? // last successful login time
+  loginStatus LoginStatus @default(inactive) // active | inactive
 
   // Rate limit / lockout helpers
-  failedLoginCount Int      @default(0)
+  failedLoginCount Int       @default(0)
   lockedUntil      DateTime?
 
   // User-centric auth/session/history relations
@@ -200,7 +232,7 @@ model User {
   updatedMessages  Message[] @relation("MessageUpdatedBy")
 
   // Responses authored by Users
-  responses        Response[] @relation("UserResponses")
+  responses Response[] @relation("UserResponses")
 
   // Projects
   approvedProjects Project[] @relation("ProjectApprovedBy")
@@ -208,9 +240,9 @@ model User {
   updatedProjects  Project[] @relation("ProjectUpdatedBy")
 
   // Reports
-  approvedReports  Report[]  @relation("ReportApprovedBy")
-  createdReports   Report[]  @relation("ReportCreatedBy")
-  updatedReports   Report[]  @relation("ReportUpdatedBy")
+  approvedReports Report[] @relation("ReportApprovedBy")
+  createdReports  Report[] @relation("ReportCreatedBy")
+  updatedReports  Report[] @relation("ReportUpdatedBy")
 
   // Podcasts
   approvedPodcasts Podcast[] @relation("PodcastApprovedBy")
@@ -218,17 +250,24 @@ model User {
   updatedPodcasts  Podcast[] @relation("PodcastUpdatedBy")
 
   // Events
-  createdEvents Event[]        @relation("EventCreatedBy")
-  updatedEvents Event[]        @relation("EventUpdatedBy")
+  createdEvents Event[] @relation("EventCreatedBy")
+  updatedEvents Event[] @relation("EventUpdatedBy")
+
+  // Radio Talkshows
+  createdTalkshows  RadioTalkshow[] @relation("RadioTalkshowCreatedBy")
+  updatedTalkshows  RadioTalkshow[] @relation("RadioTalkshowUpdatedBy")
+  approvedTalkshows RadioTalkshow[] @relation("RadioTalkshowApprovedBy")
+  hostedTalkshows   RadioTalkshow[] @relation("TalkshowHostUser")
+  hostedPodcasts    Podcast[]       @relation("PodcastHostUser")
 
   // Beneficiaries
-  createdBeneficiaries Beneficiary[] @relation("BeneficiaryCreatedBy")
-  updatedBeneficiaries Beneficiary[] @relation("BeneficiaryUpdatedBy")
+  createdBeneficiaries  Beneficiary[] @relation("BeneficiaryCreatedBy")
+  updatedBeneficiaries  Beneficiary[] @relation("BeneficiaryUpdatedBy")
   approvedBeneficiaries Beneficiary[] @relation("BeneficiaryApprovedBy")
 
   // Institutions
-  createdInstitutions Institution[] @relation("InstitutionCreatedBy")
-  updatedInstitutions Institution[] @relation("InstitutionUpdatedBy")
+  createdInstitutions  Institution[] @relation("InstitutionCreatedBy")
+  updatedInstitutions  Institution[] @relation("InstitutionUpdatedBy")
   approvedInstitutions Institution[] @relation("InstitutionApprovedBy")
 
   // FAQs
@@ -252,13 +291,13 @@ model PasswordHistory {
 }
 
 model PasswordChangeLog {
-  id         String   @id @default(cuid())
-  user       User     @relation(fields: [userId], references: [id])
-  userId     String
-  changedBy  String?  // userId of admin / null if self
-  ip         String?
-  userAgent  String?
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  changedBy String? // userId of admin / null if self
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
 
   @@index([userId, createdAt])
 }
@@ -275,15 +314,15 @@ model FailedLoginAttempt {
 }
 
 model Session {
-  id         String   @id @default(cuid())
-  user       User     @relation(fields: [userId], references: [id])
+  id         String    @id @default(cuid())
+  user       User      @relation(fields: [userId], references: [id])
   userId     String
-  startedAt  DateTime @default(now())
-  lastSeenAt DateTime @default(now())
+  startedAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
   endedAt    DateTime?
   ip         String?
   userAgent  String?
-  active     Boolean  @default(true)
+  active     Boolean   @default(true)
 
   @@index([userId, startedAt])
   @@index([active])
@@ -300,21 +339,19 @@ enum PublishStatus {
   published
 }
 
-
-
 model Event {
-  id              Int            @id @default(autoincrement())
-  slug            String         @unique
-  eventTitle      Json // Tiptap JSON doc (edited/viewed via components/editor/*)
+  id               Int      @id @default(autoincrement())
+  slug             String   @unique
+  eventTitle       Json // Tiptap JSON doc (edited/viewed via components/editor/*)
   eventDescription Json
-  eventDetails    Json?
-  eventLocation   String?
-  eventBanner     String
-  eventImages     String[]
-  eventFile       String
+  eventDetails     Json?
+  eventLocation    String?
+  eventBanner      String
+  eventImages      String[]
+  eventFile        String
 
-  eventStartDate  DateTime
-  eventEndDate    DateTime
+  eventStartDate DateTime
+  eventEndDate   DateTime
 
   eventTags       String[]
   eventStatus     EventStatus    @default(pending)
@@ -322,24 +359,27 @@ model Event {
   eventAttendance AttendanceType @default(public)
   maxAttendees    Int?
 
-  accessCount     Int            @default(0)
-  downloadCount   Int            @default(0)
+  accessCount   Int @default(0)
+  downloadCount Int @default(0)
 
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  deletedAt       DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
-  createdById     String
-  updatedById     String
+  createdById String
+  updatedById String
 
-  createdBy       User           @relation("EventCreatedBy", fields: [createdById], references: [id])
-  updatedBy       User           @relation("EventUpdatedBy", fields: [updatedById], references: [id])
+  createdBy User @relation("EventCreatedBy", fields: [createdById], references: [id])
+  updatedBy User @relation("EventUpdatedBy", fields: [updatedById], references: [id])
 
-  projectId       Int?
-  project         Project?       @relation(fields: [projectId], references: [id])
+  projectId Int?
+  project   Project? @relation(fields: [projectId], references: [id])
 
-  reportId        Int?
-  report          Report?        @relation(fields: [reportId], references: [id])
+  reportId      Int?
+  report        Report?            @relation(fields: [reportId], references: [id])
+  beneficiaries BeneficiaryEvent[]
+  talkshows     RadioTalkshow[]
+  podcasts      Podcast[]
 }
 
 enum EventStatus {
@@ -348,6 +388,7 @@ enum EventStatus {
   completed
   paused
 }
+
 enum AttendanceType {
   public
   registration_required
@@ -355,15 +396,15 @@ enum AttendanceType {
 
 // YouTube Videos
 model Youtube {
-  id            String   @id           // YouTube video ID
-  title         String
-  description   String
-  thumbnail     String
-  publishedAt   DateTime
-  viewCount     Int?
-  likeCount     Int?
-  duration      String
-  fetchedAt     DateTime @default(now()) // When this video was last fetched from YouTube
+  id          String   @id // YouTube video ID
+  title       String
+  description String
+  thumbnail   String
+  publishedAt DateTime
+  viewCount   Int?
+  likeCount   Int?
+  duration    String
+  fetchedAt   DateTime @default(now()) // When this video was last fetched from YouTube
 }
 
 model YouTubeCacheMeta {
@@ -389,37 +430,39 @@ enum InstitutionCategory {
 }
 
 model Institution {
-  id                String        @id @default(cuid())
-  name              String
-  email             String?        @unique
-  phone             String?       @unique
-  logo              String?
-  institutionImages String[]
-  headName          String?
-  institutionType   InstitutionType
+  id                  String              @id @default(cuid())
+  name                String
+  email               String?             @unique
+  phone               String?             @unique
+  logo                String?
+  institutionImages   String[]
+  headName            String?
+  institutionType     InstitutionType
   institutionCategory InstitutionCategory @default(implementing)
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  locations         Location[]
-  beneficiaries     Beneficiary[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  locations           Location[]
+  beneficiaries       Beneficiary[]
+  talkshows           RadioTalkshow[]
+  podcasts            Podcast[]
 
-  createdById               String
-  updatedById               String?
-  approvedById              String?
+  createdById  String
+  updatedById  String?
+  approvedById String?
 
-  createdBy                 User           @relation("InstitutionCreatedBy", fields: [createdById], references: [id])
-  updatedBy                 User?          @relation("InstitutionUpdatedBy", fields: [updatedById], references: [id])
-  approvedBy                User?          @relation("InstitutionApprovedBy", fields: [approvedById], references: [id])
+  createdBy  User  @relation("InstitutionCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User? @relation("InstitutionUpdatedBy", fields: [updatedById], references: [id])
+  approvedBy User? @relation("InstitutionApprovedBy", fields: [approvedById], references: [id])
 }
 
 // Model for representing a location (name, lat, lng)
 model Location {
-  id             String      @id @default(cuid())
-  locationName           String?
-  latitude       Float?
-  longitude      Float?
-  institutionId  String
-  institution    Institution @relation(fields: [institutionId], references: [id])
+  id            String      @id @default(cuid())
+  locationName  String?
+  latitude      Float?
+  longitude     Float?
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id])
 }
 
 // Beneficiary model
@@ -427,40 +470,181 @@ enum GenderType {
   male
   female
 }
+
 model Beneficiary {
-  id                        String         @id @default(cuid())
-  firstName                 String
-  lastName                  String
-  image                     String?
-  images                    String[]
-  gender                    GenderType
-  email                     String?        @unique
-  phone                     String?        @unique
-  dateOfBirth               DateTime
-  createdAt                 DateTime       @default(now())
-  updatedAt                 DateTime       @updatedAt
-  beneficiaryStatus         PublishStatus  @default(draft)
+  id                String        @id @default(cuid())
+  firstName         String
+  lastName          String
+  image             String?
+  images            String[]
+  gender            GenderType?
+  email             String?       @unique
+  phone             String?       @unique
+  dateOfBirth       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  beneficiaryStatus PublishStatus @default(draft)
+
+  // Tiptap JSON doc: an optional first-person testimonial ("Beneficiary
+  // Voice"). Shown publicly only when non-empty AND beneficiaryStatus is
+  // 'published' — there is no separate publish flag for the voice itself,
+  // it reuses the record's own beneficiaryStatus.
+  voice Json?
 
   // unified messages and responses
-  messages                  Message[]       @relation("BeneficiaryMessages")
-  responses                 Response[]      @relation("BeneficiaryResponses")
+  messages  Message[]  @relation("BeneficiaryMessages")
+  responses Response[] @relation("BeneficiaryResponses")
 
-  institutionId             String?
-  institution               Institution?   @relation(fields: [institutionId], references: [id])
+  // A beneficiary belongs to at most one institution, or none at all.
+  institutionId String?
+  institution   Institution? @relation(fields: [institutionId], references: [id])
 
-  createdById               String
-  updatedById               String?
-  approvedById              String?
+  // A beneficiary can be linked to any number of projects/events/reports
+  // (e.g. "beneficiaries who attended this event").
+  projects  BeneficiaryProject[]
+  events    BeneficiaryEvent[]
+  reports   BeneficiaryReport[]
+  podcasts  BeneficiaryPodcast[]
+  talkshows BeneficiaryTalkshow[]
 
-  createdBy                 User           @relation("BeneficiaryCreatedBy", fields: [createdById], references: [id])
-  updatedBy                 User?          @relation("BeneficiaryUpdatedBy", fields: [updatedById], references: [id])
-  approvedBy                User?          @relation("BeneficiaryApprovedBy", fields: [approvedById], references: [id])
+  // Radio talkshows / podcasts this beneficiary hosted (the "By" field, when
+  // hostType = beneficiary) — distinct from `talkshows`/`podcasts` above,
+  // which are the "participants" lists.
+  hostedTalkshows RadioTalkshow[] @relation("TalkshowHostBeneficiary")
+  hostedPodcasts  Podcast[]       @relation("PodcastHostBeneficiary")
+
+  createdById  String
+  updatedById  String?
+  approvedById String?
+
+  createdBy  User  @relation("BeneficiaryCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User? @relation("BeneficiaryUpdatedBy", fields: [updatedById], references: [id])
+  approvedBy User? @relation("BeneficiaryApprovedBy", fields: [approvedById], references: [id])
 }
 
-/*
-  ResponderType: external removed so visitors cannot author Responses.
-  Use application-level checks to ensure only users/beneficiaries/system create responses.
-*/
+// Join models linking a Beneficiary to the Project/Event/Report they took
+// part in. Kept as explicit models (rather than implicit many-to-many) so a
+// participation record can carry its own metadata later (e.g. a role or
+// attendance date) without another migration.
+model BeneficiaryProject {
+  id            String      @id @default(cuid())
+  beneficiaryId String
+  beneficiary   Beneficiary @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  projectId     Int
+  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([beneficiaryId, projectId])
+}
+
+model BeneficiaryEvent {
+  id            String      @id @default(cuid())
+  beneficiaryId String
+  beneficiary   Beneficiary @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  eventId       Int
+  event         Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([beneficiaryId, eventId])
+}
+
+model BeneficiaryReport {
+  id            String      @id @default(cuid())
+  beneficiaryId String
+  beneficiary   Beneficiary @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  reportId      Int
+  report        Report      @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([beneficiaryId, reportId])
+}
+
+model BeneficiaryPodcast {
+  id            String      @id @default(cuid())
+  beneficiaryId String
+  beneficiary   Beneficiary @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  podcastId     Int
+  podcast       Podcast     @relation(fields: [podcastId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([beneficiaryId, podcastId])
+}
+
+model BeneficiaryTalkshow {
+  id            String        @id @default(cuid())
+  beneficiaryId String
+  beneficiary   Beneficiary   @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  talkshowId    Int
+  talkshow      RadioTalkshow @relation(fields: [talkshowId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+
+  @@unique([beneficiaryId, talkshowId])
+}
+
+// "By" — who hosted/appeared on a talkshow or podcast: an existing
+// beneficiary, an admin (an app User), or a free-text guest name. Exactly
+// one of the corresponding fields is expected to be set, matching hostType
+// — enforced at the application level, same approach as Response.responderType
+// above.
+enum HostType {
+  beneficiary
+  admin
+  guest
+}
+
+model RadioTalkshow {
+  id            Int           @id @default(autoincrement())
+  title         String
+  date          DateTime
+  poster        String?
+  publishStatus PublishStatus @default(draft)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdById  String
+  updatedById  String?
+  approvedById String?
+
+  createdBy  User  @relation("RadioTalkshowCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User? @relation("RadioTalkshowUpdatedBy", fields: [updatedById], references: [id])
+  approvedBy User? @relation("RadioTalkshowApprovedBy", fields: [approvedById], references: [id])
+
+  // Optional single links to other content this talkshow relates to.
+  projectId Int?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  eventId Int?
+  event   Event? @relation(fields: [eventId], references: [id])
+
+  reportId Int?
+  report   Report? @relation(fields: [reportId], references: [id])
+
+  institutionId String?
+  institution   Institution? @relation(fields: [institutionId], references: [id])
+
+  // "By": who hosted/appeared — see HostType above.
+  hostType          HostType?
+  hostBeneficiaryId String?
+  hostBeneficiary   Beneficiary? @relation("TalkshowHostBeneficiary", fields: [hostBeneficiaryId], references: [id])
+  hostUserId        String?
+  hostUser          User?        @relation("TalkshowHostUser", fields: [hostUserId], references: [id])
+  hostFirstName     String?
+  hostLastName      String?
+
+  // Beneficiaries who took part as participants.
+  participants BeneficiaryTalkshow[]
+
+  // Podcasts linked to this talkshow (reverse of Podcast.talkshowId — a
+  // podcast episode points at one talkshow; a talkshow can be referenced by
+  // many podcast episodes). Editable from either side.
+  podcasts Podcast[]
+}
+
+/**
+ * ResponderType: external removed so visitors cannot author Responses.
+ * Use application-level checks to ensure only users/beneficiaries/system create responses.
+ */
 enum ResponderType {
   user
   beneficiary
@@ -468,23 +652,23 @@ enum ResponderType {
 }
 
 model Response {
-  id                      String         @id @default(cuid())
-  messageId               Int
-  responderType           ResponderType  @default(user)
+  id            String        @id @default(cuid())
+  messageId     Int
+  responderType ResponderType @default(user)
 
   // polymorphic responder fields (only one should be set; enforce at application level)
-  responderUserId         String?
-  responderBeneficiaryId  String?
+  responderUserId        String?
+  responderBeneficiaryId String?
 
-  content                 Json
+  content Json
 
-  createdAt               DateTime       @default(now())
-  updatedAt               DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // relations
-  message                 Message        @relation(fields: [messageId], references: [id])
-  responderUser           User?          @relation("UserResponses", fields: [responderUserId], references: [id])
-  responderBeneficiary    Beneficiary?   @relation("BeneficiaryResponses", fields: [responderBeneficiaryId], references: [id])
+  message              Message      @relation(fields: [messageId], references: [id])
+  responderUser        User?        @relation("UserResponses", fields: [responderUserId], references: [id])
+  responderBeneficiary Beneficiary? @relation("BeneficiaryResponses", fields: [responderBeneficiaryId], references: [id])
 }
 
 model FAQ {
@@ -492,17 +676,17 @@ model FAQ {
   question      Json
   answer        Json
   category      FAQCategory   @default(general)
-  publishStatus PublishStatus  @default(draft)
+  publishStatus PublishStatus @default(draft)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  createdById   String
-  updatedById   String
-  approvedById  String
+  createdById  String
+  updatedById  String
+  approvedById String
 
-  createdBy     User          @relation("FAQCreatedBy",   fields: [createdById],  references: [id])
-  updatedBy     User          @relation("FAQUpdatedBy",   fields: [updatedById],  references: [id])
-  approvedBy    User          @relation("FAQApprovedBy",  fields: [approvedById], references: [id])
+  createdBy  User @relation("FAQCreatedBy", fields: [createdById], references: [id])
+  updatedBy  User @relation("FAQUpdatedBy", fields: [updatedById], references: [id])
+  approvedBy User @relation("FAQApprovedBy", fields: [approvedById], references: [id])
 }
 
 enum FAQCategory {
@@ -518,20 +702,18 @@ enum FAQCategory {
 
 // #Facebook Posts
 model FacebookPost {
-  id            String   @id            // Facebook post ID
-  message       String?
-  createdTime   DateTime
-  permalinkUrl  String
-  fullPicture   String
-  fetchedAt     DateTime @default(now())
+  id           String   @id // Facebook post ID
+  message      String?
+  createdTime  DateTime
+  permalinkUrl String
+  fullPicture  String
+  fetchedAt    DateTime @default(now())
 }
 
 model FacebookCacheMeta {
   id          Int      @id @default(1)
   lastFetched DateTime
 }
-
-
 
 enum TeamRole {
   founder
@@ -552,9 +734,8 @@ enum TeamRole {
   other
 }
 
-
 model Team {
-  id           Int       @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   firstName    String
   lastName     String
@@ -562,24 +743,23 @@ model Team {
   about        String?
 
   // contact & social
-  email        String?   @unique
-  phone        String?   @unique
-  linkedInUrl  String?
-  facebookUrl  String?
-  xUrl         String?
-  websiteUrl   String?
+  email       String? @unique
+  phone       String? @unique
+  linkedInUrl String?
+  facebookUrl String?
+  xUrl        String?
+  websiteUrl  String?
 
   // status
-  isActive     Boolean   @default(true)
+  isActive Boolean @default(true)
 
   // audit
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  createdById  String
-  updatedById  String?
+  createdById String
+  updatedById String?
 
-  createdBy    User     @relation("TeamCreatedBy", fields: [createdById], references: [id])
-  updatedBy    User?    @relation("TeamUpdatedBy", fields: [updatedById], references: [id])
+  createdBy User  @relation("TeamCreatedBy", fields: [createdById], references: [id])
+  updatedBy User? @relation("TeamUpdatedBy", fields: [updatedById], references: [id])
 }
-
