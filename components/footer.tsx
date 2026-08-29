@@ -1,10 +1,10 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Facebook,
   Youtube,
   Mail,
   MapPin,
-  Heart,
   ArrowRight,
   Info,
   Users,
@@ -57,19 +57,16 @@ const Footer = () => {
       icon: Facebook,
       href: 'https://facebook.com/GoGirlsICTInitiative',
       label: 'Facebook',
-      color: 'hover:text-blue-400',
     },
     {
       icon: Youtube,
       href: 'https://youtube.com/@GoGirlsICT',
       label: 'YouTube',
-      color: 'hover:text-red-400',
     },
     {
       icon: Mail,
       href: 'mailto:info@gogirlsict.org',
       label: 'Email',
-      color: 'hover:text-green-400',
     },
   ];
 
@@ -81,9 +78,13 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="lg:col-span-4">
             <Link href="/" className="inline-flex items-center gap-2 group">
-              <div className="w-10 h-10 bg-[#9f004d] rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <Heart className="w-6 h-6 text-white" fill="white" />
-              </div>
+              <Image
+                src="/assets/images/system/goGirlsLogoV2.svg"
+                alt={`${APP_NAME} logo`}
+                height={40}
+                width={40}
+                className="h-auto transition-transform duration-300 group-hover:scale-110"
+              />
               <span className="text-2xl font-bold">{APP_NAME}</span>
             </Link>
 
@@ -103,7 +104,7 @@ const Footer = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.label}
-                    className={`p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-300 ${social.color} hover:scale-110`}
+                    className="p-3 bg-white/5 hover:bg-white/10 rounded-lg text-[#9f004d] transition-all duration-300 hover:text-pink-300 hover:scale-110"
                   >
                     <Icon className="w-5 h-5" />
                   </a>
@@ -141,7 +142,7 @@ const Footer = () => {
                       href={link.href}
                       className="text-gray-400 hover:text-white transition-colors duration-200 text-sm inline-flex items-center gap-1.5 group"
                     >
-                      <Icon className="w-3.5 h-3.5 shrink-0 text-gray-500 group-hover:text-[#9f004d] transition-colors" />
+                      <Icon className="w-3.5 h-3.5 shrink-0 text-[#9f004d] group-hover:text-pink-300 transition-colors" />
                       <span>{link.label}</span>
                       <ArrowRight className="w-3 h-3 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
                     </Link>
@@ -163,7 +164,7 @@ const Footer = () => {
                       href={link.href}
                       className="text-gray-400 hover:text-white transition-colors duration-200 text-sm inline-flex items-center gap-1.5 group"
                     >
-                      <Icon className="w-3.5 h-3.5 shrink-0 text-gray-500 group-hover:text-[#9f004d] transition-colors" />
+                      <Icon className="w-3.5 h-3.5 shrink-0 text-[#9f004d] group-hover:text-pink-300 transition-colors" />
                       <span>{link.label}</span>
                       <ArrowRight className="w-3 h-3 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
                     </Link>
@@ -185,7 +186,7 @@ const Footer = () => {
                       href={link.href}
                       className="text-gray-400 hover:text-white transition-colors duration-200 text-sm inline-flex items-center gap-1.5 group"
                     >
-                      <Icon className="w-3.5 h-3.5 shrink-0 text-gray-500 group-hover:text-[#9f004d] transition-colors" />
+                      <Icon className="w-3.5 h-3.5 shrink-0 text-[#9f004d] group-hover:text-pink-300 transition-colors" />
                       <span>{link.label}</span>
                       <ArrowRight className="w-3 h-3 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
                     </Link>
@@ -212,7 +213,7 @@ const Footer = () => {
                 href="/admin"
                 className="text-gray-400 hover:text-[#9f004d] transition-colors duration-200 inline-flex items-center gap-1.5 group"
               >
-                <LogIn className="w-3.5 h-3.5 shrink-0 text-gray-500 group-hover:text-[#9f004d] transition-colors" />
+                <LogIn className="w-3.5 h-3.5 shrink-0 text-[#9f004d] group-hover:text-pink-300 transition-colors" />
                 <span>Admin Login</span>
                 <ArrowRight className="w-3 h-3 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
               </Link>
