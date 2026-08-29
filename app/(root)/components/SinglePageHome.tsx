@@ -11,31 +11,27 @@ import PartnersSection from './sections/PartnersSection';
 import SectionSkeleton from './skeletons/SectionSkeleton';
 import ExploreSection from './sections/ExploreSection';
 
-import type {
-  HomePageContent,
-  ExecutiveMessage,
-  Project,
-  Report,
-  Event,
-  TeamMember,
-  Partner,
-  Beneficiary,
-} from '../types/home';
+import type { HomePageContent, Partner } from '../types/home';
+
+type ImpactCounts = {
+  projects: number;
+  reports: number;
+  events: number;
+  users: number;
+  institutions: number;
+  beneficiaries: number;
+};
 
 interface SinglePageHomeProps {
   ssrContent: HomePageContent | null;
-  ssrMessages: ExecutiveMessage[];
-  ssrProjects: Project[];
-  ssrReports: Report[];
-  ssrEvents: Event[];
-  ssrTeam: TeamMember[];
   ssrPartners: Partner[];
-  ssrBeneficiaries: Beneficiary[];
+  impactCounts: ImpactCounts;
 }
 
 export default function SinglePageHome({
   ssrContent,
   ssrPartners,
+  impactCounts,
 }: SinglePageHomeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -77,7 +73,7 @@ export default function SinglePageHome({
       {/* 3. Impact */}
       <section id="impact" className="relative z-10">
         <Suspense fallback={<SectionSkeleton variant="stats" />}>
-          <ImpactSection />
+          <ImpactSection counts={impactCounts} />
         </Suspense>
       </section>
 

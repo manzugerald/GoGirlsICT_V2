@@ -4,6 +4,8 @@ import bcrypt from 'bcrypt';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 // import { redis } from '@/utils/redis'; // Redis kept commented per request
 
 const USERS_CACHE_KEY = 'users:all';
@@ -11,12 +13,23 @@ const USERS_CACHE_KEY = 'users:all';
 
 /**
  * GET /api/users
- * - Default: return list of users (sanitized)
+ * - Default: return list of users (sanitized) — privileged only, since it
+ *   includes every user's email; every current caller is inside the
+ *   authenticated admin dashboard.
  * - ?checkAvailable=1&username=... -> { available: true|false }
  * - ?checkExact=1&userId=...&username=... -> { valid: true|false }
  */
 export async function GET(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    const role = (session?.user as any)?.role ?? 'guest';
+    if (!session?.user?.id || !['super', 'admin', 'moderator'].includes(role)) {
+      return NextResponse.json(
+        { error: 'Forbidden' },
+        { status: 403, headers: { 'Cache-Control': 'no-store' } }
+      );
+    }
+
     const url = new URL(req.url);
     const searchParams = url.searchParams;
 

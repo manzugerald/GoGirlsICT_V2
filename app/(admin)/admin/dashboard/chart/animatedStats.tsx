@@ -23,28 +23,37 @@ const ANIMATION_DURATION = 10; // seconds
 const CIRCLE_DELAY_STEP = 0.32;
 const STAT_LABEL_FONT_SIZE = 15;
 
-export default function AnimatedStats() {
+type Counts = {
+  projects: number;
+  reports: number;
+  events: number;
+  users: number;
+  institutions: number;
+  beneficiaries: number;
+};
+
+export default function AnimatedStats({ counts: countsProp }: { counts?: Counts } = {}) {
   const pathname = usePathname();
   const showUsers = pathname === '/admin' || pathname.startsWith('/admin/');
 
-  const [counts, setCounts] = useState<{
-    projects: number;
-    reports: number;
-    events: number;
-    users: number;
-    institutions: number;
-    beneficiaries: number;
-  }>({
-    projects: 0,
-    reports: 0,
-    events: 0,
-    users: 0,
-    institutions: 0,
-    beneficiaries: 0,
-  });
-  const [loading, setLoading] = useState(true);
+  const [counts, setCounts] = useState<Counts>(
+    countsProp ?? {
+      projects: 0,
+      reports: 0,
+      events: 0,
+      users: 0,
+      institutions: 0,
+      beneficiaries: 0,
+    }
+  );
+  // When `counts` is supplied by the caller (public pages now pass real
+  // counts computed server-side), there's nothing to fetch — skip the six
+  // client-side requests entirely instead of firing them and overwriting
+  // the prop with an identical result a moment later.
+  const [loading, setLoading] = useState(!countsProp);
 
   useEffect(() => {
+    if (countsProp) return;
     async function fetchCounts() {
       setLoading(true);
       try {

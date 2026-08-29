@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "RadioTalkshow" ADD COLUMN     "audioUrl" TEXT,
+ADD COLUMN     "waveform" DOUBLE PRECISION[] DEFAULT ARRAY[]::DOUBLE PRECISION[];

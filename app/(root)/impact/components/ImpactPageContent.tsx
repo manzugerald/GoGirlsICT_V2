@@ -15,9 +15,18 @@ import {
 import DashboardChart from '@/app/(admin)/admin/dashboard/chart/dashboardChart';
 import AnimatedStats from '@/app/(admin)/admin/dashboard/chart/animatedStats';
 
-import Section from '../shared/components/Section';
-import SectionHeader from '../shared/components/SectionHeader';
-import SectionBackground from '../shared/components/SectionBackground';
+import Section from '@/app/(root)/components/shared/components/Section';
+import SectionHeader from '@/app/(root)/components/shared/components/SectionHeader';
+import SectionBackground from '@/app/(root)/components/shared/components/SectionBackground';
+
+type ImpactCounts = {
+  projects: number;
+  reports: number;
+  events: number;
+  users: number;
+  institutions: number;
+  beneficiaries: number;
+};
 
 const insights = [
   {
@@ -43,16 +52,7 @@ const insights = [
   },
 ];
 
-type ImpactCounts = {
-  projects: number;
-  reports: number;
-  events: number;
-  users: number;
-  institutions: number;
-  beneficiaries: number;
-};
-
-export default function ImpactSection({ counts }: { counts: ImpactCounts }) {
+export default function ImpactPageContent({ counts }: { counts: ImpactCounts }) {
   const [isChartExpanded, setIsChartExpanded] = useState(false);
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, margin: '-100px' });
@@ -222,33 +222,32 @@ export default function ImpactSection({ counts }: { counts: ImpactCounts }) {
         </motion.div>
 
         {/* CTA */}
-        {/* CTA */}
-<motion.div
-  initial={{ opacity: 0, y: 20 }}
-  animate={isInView ? { opacity: 1, y: 0 } : {}}
-  transition={{ delay: 0.65, duration: 0.5 }}
-  className="mt-8 flex justify-center relative z-10"
->
-  <motion.a
-    href="/impact"
-    whileHover={{ scale: 1.03, x: 3 }}
-    whileTap={{ scale: 0.97 }}
-    className="group inline-flex items-center gap-2 rounded-full border border-pink-200 dark:border-pink-800 bg-pink-50 dark:bg-pink-900/10 hover:bg-pink-100 dark:hover:bg-pink-900/20 px-6 py-3 shadow-lg transition-all"
-  >
-    <Sparkles className="w-5 h-5 text-pink-600 dark:text-pink-400" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.65, duration: 0.5 }}
+          className="mt-8 flex justify-center relative z-10"
+        >
+          <motion.a
+            href="/impact"
+            whileHover={{ scale: 1.03, x: 3 }}
+            whileTap={{ scale: 0.97 }}
+            className="group inline-flex items-center gap-2 rounded-full border border-pink-200 dark:border-pink-800 bg-pink-50 dark:bg-pink-900/10 hover:bg-pink-100 dark:hover:bg-pink-900/20 px-6 py-3 shadow-lg transition-all"
+          >
+            <Sparkles className="w-5 h-5 text-pink-600 dark:text-pink-400" />
 
-    <span className="body font-semibold text-pink-600 dark:text-pink-400">
-      Explore the work behind these numbers
-    </span>
+            <span className="body font-semibold text-pink-600 dark:text-pink-400">
+              Explore the work behind these numbers
+            </span>
 
-    <motion.div
-      animate={{ x: [0, 5, 0] }}
-      transition={{ duration: 1.5, repeat: Infinity }}
-    >
-      <ArrowBigRight className="w-5 h-5 text-pink-600 dark:text-pink-400" />
-    </motion.div>
-  </motion.a>
-</motion.div>
+            <motion.div
+              animate={{ x: [0, 5, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              <ArrowBigRight className="w-5 h-5 text-pink-600 dark:text-pink-400" />
+            </motion.div>
+          </motion.a>
+        </motion.div>
       </div>
     </Section>
   );

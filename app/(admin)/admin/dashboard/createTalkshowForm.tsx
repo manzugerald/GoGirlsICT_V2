@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { extractPlainText } from '@/lib/tiptap';
+import { computeWaveformPeaks } from '@/lib/audioWaveform';
 
 const publishOptions = ['draft', 'published'] as const;
 type PublishStatus = (typeof publishOptions)[number];
@@ -21,6 +22,8 @@ interface TalkshowData {
   title: string;
   date?: string | null;
   poster?: string | null;
+  audioUrl?: string | null;
+  waveform?: number[];
   publishStatus: PublishStatus;
   projectId?: number | null;
   eventId?: number | null;
@@ -73,6 +76,13 @@ export default function CreateTalkshowForm({
 
   const [existingPoster, setExistingPoster] = useState<string | null>(initialValues?.poster || null);
   const [posterFile, setPosterFile] = useState<File | null>(null);
+
+  const [existingAudio, setExistingAudio] = useState<string | null>(initialValues?.audioUrl || null);
+  const [existingWaveform, setExistingWaveform] = useState<number[]>(initialValues?.waveform || []);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [waveform, setWaveform] = useState<number[]>([]);
+  const [analyzingAudio, setAnalyzingAudio] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
   // Link/host pickers' option lists.
@@ -120,6 +130,9 @@ export default function CreateTalkshowForm({
     });
     setExistingPoster(initialValues.poster || null);
     setPosterFile(null);
+    setExistingAudio(initialValues.audioUrl || null);
+    setExistingWaveform(initialValues.waveform || []);
+    setAudioFile(null);
     setSelectedParticipantIds(
       initialValues.participants
         ?.map((p) => p.beneficiaryId ?? p.beneficiary?.id)
@@ -211,6 +224,22 @@ export default function CreateTalkshowForm({
     if (e.target.files?.[0]) setPosterFile(e.target.files[0]);
   };
 
+  const handleAudioChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAudioFile(file);
+    setWaveform([]);
+    setAnalyzingAudio(true);
+
+    try {
+      const peaks = await computeWaveformPeaks(file);
+      setWaveform(peaks);
+    } finally {
+      setAnalyzingAudio(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!form.title.trim() || !form.date) {
@@ -250,6 +279,13 @@ export default function CreateTalkshowForm({
         formData.append('poster', posterFile);
       } else if (resolvedMode === 'edit' && !existingPoster) {
         formData.append('removePoster', '1');
+      }
+
+      if (audioFile) {
+        formData.append('audio', audioFile);
+        formData.append('waveform', JSON.stringify(waveform));
+      } else if (resolvedMode === 'edit' && !existingAudio) {
+        formData.append('removeAudio', '1');
       }
 
       let res;
@@ -326,6 +362,36 @@ export default function CreateTalkshowForm({
         <Label htmlFor="poster">Poster (PNG, JPG, JPEG) — optional</Label>
         <Input id="poster" name="poster" type="file" accept=".png,.jpg,.jpeg" onChange={handlePosterChange} />
         <div className="text-xs text-muted-foreground">{posterFile?.name}</div>
+      </div>
+
+      {existingAudio && (
+        <div className="space-y-2">
+          <Label>Current Audio</Label>
+          <div className="flex items-center gap-2">
+            <audio controls src={existingAudio} className="h-9 max-w-full" />
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              className="text-xs"
+              onClick={() => setExistingAudio(null)}
+            >
+              Remove
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <Label htmlFor="audio">Audio File (MP3) — optional</Label>
+        <Input id="audio" name="audio" type="file" accept=".mp3" onChange={handleAudioChange} />
+        <div className="text-xs text-muted-foreground">
+          {analyzingAudio
+            ? 'Analyzing waveform...'
+            : audioFile
+            ? `${audioFile.name}${waveform.length ? ' — waveform ready' : ''}`
+            : null}
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -583,10 +649,12 @@ export default function CreateTalkshowForm({
       <div className="flex gap-3">
         <Button
           type="submit"
-          disabled={loading}
+          disabled={loading || analyzingAudio}
           className="flex-1 bg-[#9f004d] hover:bg-[#7c003c] text-white"
         >
-          {loading
+          {analyzingAudio
+            ? 'Analyzing waveform...'
+            : loading
             ? resolvedMode === 'edit'
               ? 'Updating...'
               : 'Creating...'
@@ -600,7 +668,7 @@ export default function CreateTalkshowForm({
             variant="outline"
             className="flex-1 border-[#9f004d] text-[#9f004d] hover:bg-[#f5e3ec]"
             onClick={onCancel}
-            disabled={loading}
+            disabled={loading || analyzingAudio}
           >
             Cancel
           </Button>

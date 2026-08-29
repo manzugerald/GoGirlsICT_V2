@@ -104,6 +104,8 @@ export default function RadioTalkshowsSection({
             </div>
           </div>
 
+          {viewing.audioUrl && <audio controls src={viewing.audioUrl} className="w-full" />}
+
           {(viewing.project || viewing.event || viewing.report || viewing.institution) && (
             <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
               {viewing.project && (

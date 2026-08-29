@@ -74,6 +74,35 @@ async function savePoster(formData: FormData): Promise<string | null> {
   return `/assets/images/talkshows/${filename}`;
 }
 
+async function saveAudio(formData: FormData): Promise<string | null> {
+  const file = formData.get('audio') as File | null;
+  if (!file || typeof file === 'string') return null;
+
+  const destDir = path.join(process.cwd(), 'public', 'assets', 'audio', 'talkshows');
+  await fs.mkdir(destDir, { recursive: true });
+
+  const ext = (file.name.split('.').pop() || 'mp3').toLowerCase();
+  const filename = `${uuidv4()}.${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+  await fs.writeFile(path.join(destDir, filename), buffer);
+
+  return `/assets/audio/talkshows/${filename}`;
+}
+
+// Parses the JSON-encoded array of waveform peaks (0..1) computed client-side
+// (see lib/audioWaveform's computeWaveformPeaks) — mirrors Podcast.waveform.
+function parseWaveform(formData: FormData): number[] {
+  const raw = formData.get('waveform');
+  if (!raw || typeof raw !== 'string') return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((v) => Number(v)).filter((n) => Number.isFinite(n));
+  } catch {
+    return [];
+  }
+}
+
 // ---------- GET ----------
 // Consumed by the admin dashboard's own listing AND as a live options source
 // for the Beneficiary/Podcast/Talkshow forms' "linked talkshow" pickers — a
@@ -165,12 +194,16 @@ export async function POST(req: Request) {
     const podcastIds = parseNumberIdArray(formData, 'podcastIds');
 
     const poster = await savePoster(formData);
+    const audioUrl = await saveAudio(formData);
+    const waveform = parseWaveform(formData);
 
     const created = await prisma.radioTalkshow.create({
       data: {
         title,
         date,
         poster,
+        audioUrl,
+        waveform,
         publishStatus,
         projectId,
         eventId,

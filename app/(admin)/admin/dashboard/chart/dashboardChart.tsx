@@ -62,17 +62,22 @@ async function fetchDashboardCounts(): Promise<CountData> {
   };
 }
 
-export default function DashboardChart() {
+export default function DashboardChart({ counts: countsProp }: { counts?: CountData } = {}) {
   const pathname = usePathname();
   const isAdmin = pathname === '/admin/dashboard';
 
-  // Use the hybrid cache with a unique key and a 30min stale time
+  // When `counts` is supplied by the caller (public pages now pass real
+  // counts computed server-side — see app/(root)/page.tsx), skip the hook's
+  // localStorage/network path entirely (`enabled: false`) instead of
+  // sharing its cache key with the admin dashboard's own live-fetched copy.
   const {
     data: counts,
     isLoading,
     refresh,
   } = useHybridCachedData<CountData>('dashboard-counts-v1', fetchDashboardCounts, {
+    initialData: countsProp,
     staleTime: 1000 * 60 * 30,
+    enabled: !countsProp,
   });
 
   const [loop, setLoop] = useState(0);
@@ -226,7 +231,9 @@ export default function DashboardChart() {
                   </div>
                 </div>
               </div>
-              {/* Optional: Add a refresh button */}
+              {/* Refresh re-fetches live counts — not meaningful when counts
+                  came from the server as a prop, so hide it there. */}
+              {!countsProp && (
               <div className="flex justify-center">
                 <button
                   className="px-3 py-1 text-xs rounded bg-violet-700 text-white hover:bg-violet-800"
@@ -235,6 +242,7 @@ export default function DashboardChart() {
                   Refresh Data
                 </button>
               </div>
+              )}
             </div>
           )}
         </CardContent>

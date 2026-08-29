@@ -4,61 +4,23 @@ import { prisma } from '@/db/prisma';
 import SinglePageHome from './components/SinglePageHome';
 
 export default async function HomePage() {
-  // Fetch all data needed for single-page design in parallel
+  // Fetch everything this single-page design actually renders, in parallel.
+  // Note: only ssrContent (hero/vision copy) and the partner list feed real
+  // sections; the "Impact" numbers below are plain counts, not full records
+  // — using count() instead of findMany() avoids pulling entire tables (with
+  // relations, in beneficiaries' case) just to display a number.
   const [
     ssrContent,
-    ssrMessages,
-    ssrProjects,
-    ssrReports,
-    ssrEvents,
-    ssrTeam,
     ssrInstitutions,
-    ssrBeneficiaries,
+    projectsCount,
+    reportsCount,
+    eventsCount,
+    institutionsCount,
+    beneficiariesCount,
   ] = await Promise.all([
     // HomePage content
     prisma.homePage.findFirst({
       orderBy: { createdAt: 'desc' },
-    }),
-
-    // Messages (executive messages) - published only
-    prisma.message.findMany({
-      where: {
-        messageStatus: 'published',
-        messageCategory: 'go_girls_ict_team',
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 4,
-    }),
-
-    // Projects - published only
-    prisma.project.findMany({
-      where: { publishStatus: 'published' },
-      orderBy: { createdAt: 'desc' },
-      take: 6,
-    }),
-
-    // Reports - published only
-    prisma.report.findMany({
-      where: { publishStatus: 'published' },
-      orderBy: { createdAt: 'desc' },
-      take: 6,
-    }),
-
-    // Events - published and upcoming/ongoing
-    prisma.event.findMany({
-      where: {
-        publishStatus: 'published',
-        eventStatus: { in: ['pending', 'ongoing'] },
-      },
-      orderBy: { eventStartDate: 'desc' },
-      take: 6,
-    }),
-
-    // Team members - active only
-    prisma.team.findMany({
-      where: { isActive: true },
-      orderBy: { createdAt: 'desc' },
-      take: 8,
     }),
 
     // Institutions (partners)
@@ -77,32 +39,26 @@ export default async function HomePage() {
       take: 3,
     }),
 
-    // Beneficiaries - published only
-    prisma.beneficiary.findMany({
-      where: { beneficiaryStatus: 'published' },
-      orderBy: { createdAt: 'desc' },
-      take: 12,
-    }),
+    // Impact section counts — published/public content only.
+    prisma.project.count({ where: { publishStatus: 'published' } }),
+    prisma.report.count({ where: { publishStatus: 'published' } }),
+    prisma.event.count({ where: { publishStatus: 'published' } }),
+    prisma.institution.count(),
+    prisma.beneficiary.count({ where: { beneficiaryStatus: 'published' } }),
   ]);
-
-  // Debug logging (remove after testing)
-  console.log('=== SERVER: HomePage Data ===');
-  console.log('ssrContent:', ssrContent);
-  console.log('heroVideo:', ssrContent?.heroVideo);
-  console.log('Messages count:', ssrMessages?.length);
-  console.log('Projects count:', ssrProjects?.length);
-  console.log('=============================');
 
   return (
     <SinglePageHome
       ssrContent={ssrContent}
-      ssrMessages={ssrMessages}
-      ssrProjects={ssrProjects}
-      ssrReports={ssrReports}
-      ssrEvents={ssrEvents}
-      ssrTeam={ssrTeam}
       ssrPartners={ssrInstitutions}
-      ssrBeneficiaries={ssrBeneficiaries}
+      impactCounts={{
+        projects: projectsCount,
+        reports: reportsCount,
+        events: eventsCount,
+        institutions: institutionsCount,
+        beneficiaries: beneficiariesCount,
+        users: 0, // not shown on the public page (admin-only column)
+      }}
     />
   );
 }

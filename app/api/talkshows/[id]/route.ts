@@ -71,6 +71,34 @@ async function savePoster(formData: FormData): Promise<string | null> {
   return `/assets/images/talkshows/${filename}`;
 }
 
+async function saveAudio(formData: FormData): Promise<string | null> {
+  const file = formData.get('audio') as File | null;
+  if (!file || typeof file === 'string') return null;
+
+  const destDir = path.join(process.cwd(), 'public', 'assets', 'audio', 'talkshows');
+  await fs.mkdir(destDir, { recursive: true });
+
+  const ext = (file.name.split('.').pop() || 'mp3').toLowerCase();
+  const filename = `${uuidv4()}.${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+  await fs.writeFile(path.join(destDir, filename), buffer);
+
+  return `/assets/audio/talkshows/${filename}`;
+}
+
+// Parses the JSON-encoded array of waveform peaks (0..1) computed client-side.
+function parseWaveform(formData: FormData): number[] | null {
+  const raw = formData.get('waveform');
+  if (!raw || typeof raw !== 'string') return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    return parsed.map((v) => Number(v)).filter((n) => Number.isFinite(n));
+  } catch {
+    return null;
+  }
+}
+
 // GET single talkshow — PUBLIC
 export async function GET(_req: Request, context: { params: any }) {
   try {
@@ -162,7 +190,10 @@ export async function PATCH(req: Request, context: { params: any }) {
     const participantIds = parseStringIdArray(formData, 'participantIds');
     const podcastIds = parseNumberIdArray(formData, 'podcastIds');
 
-    const existing = await prisma.radioTalkshow.findUnique({ where: { id }, select: { poster: true } });
+    const existing = await prisma.radioTalkshow.findUnique({
+      where: { id },
+      select: { poster: true, audioUrl: true, waveform: true },
+    });
     if (!existing) {
       return NextResponse.json({ error: 'Talkshow not found' }, { status: 404, headers: NO_STORE });
     }
@@ -170,6 +201,16 @@ export async function PATCH(req: Request, context: { params: any }) {
     const removePoster = formData.get('removePoster') === '1';
     const uploadedPoster = await savePoster(formData);
     const poster = uploadedPoster ?? (removePoster ? null : existing.poster);
+
+    const removeAudio = formData.get('removeAudio') === '1';
+    const uploadedAudio = await saveAudio(formData);
+    const audioUrl = uploadedAudio ?? (removeAudio ? null : existing.audioUrl);
+    const submittedWaveform = parseWaveform(formData);
+    const waveform = uploadedAudio
+      ? submittedWaveform ?? []
+      : removeAudio
+      ? []
+      : existing.waveform;
 
     // Clear the fields belonging to whichever host type is NOT selected, so
     // switching from e.g. "guest" to "beneficiary" doesn't leave stale
@@ -180,6 +221,8 @@ export async function PATCH(req: Request, context: { params: any }) {
         title,
         date,
         poster,
+        audioUrl,
+        waveform,
         publishStatus,
         projectId: projectIdRaw ? Number(projectIdRaw) : null,
         eventId: eventIdRaw ? Number(eventIdRaw) : null,

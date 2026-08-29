@@ -30599,6 +30599,7 @@ export namespace Prisma {
 
   export type RadioTalkshowAvgAggregateOutputType = {
     id: number | null
+    waveform: number | null
     projectId: number | null
     eventId: number | null
     reportId: number | null
@@ -30606,6 +30607,7 @@ export namespace Prisma {
 
   export type RadioTalkshowSumAggregateOutputType = {
     id: number | null
+    waveform: number[]
     projectId: number | null
     eventId: number | null
     reportId: number | null
@@ -30616,6 +30618,7 @@ export namespace Prisma {
     title: string | null
     date: Date | null
     poster: string | null
+    audioUrl: string | null
     publishStatus: $Enums.PublishStatus | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -30638,6 +30641,7 @@ export namespace Prisma {
     title: string | null
     date: Date | null
     poster: string | null
+    audioUrl: string | null
     publishStatus: $Enums.PublishStatus | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -30660,6 +30664,8 @@ export namespace Prisma {
     title: number
     date: number
     poster: number
+    audioUrl: number
+    waveform: number
     publishStatus: number
     createdAt: number
     updatedAt: number
@@ -30681,6 +30687,7 @@ export namespace Prisma {
 
   export type RadioTalkshowAvgAggregateInputType = {
     id?: true
+    waveform?: true
     projectId?: true
     eventId?: true
     reportId?: true
@@ -30688,6 +30695,7 @@ export namespace Prisma {
 
   export type RadioTalkshowSumAggregateInputType = {
     id?: true
+    waveform?: true
     projectId?: true
     eventId?: true
     reportId?: true
@@ -30698,6 +30706,7 @@ export namespace Prisma {
     title?: true
     date?: true
     poster?: true
+    audioUrl?: true
     publishStatus?: true
     createdAt?: true
     updatedAt?: true
@@ -30720,6 +30729,7 @@ export namespace Prisma {
     title?: true
     date?: true
     poster?: true
+    audioUrl?: true
     publishStatus?: true
     createdAt?: true
     updatedAt?: true
@@ -30742,6 +30752,8 @@ export namespace Prisma {
     title?: true
     date?: true
     poster?: true
+    audioUrl?: true
+    waveform?: true
     publishStatus?: true
     createdAt?: true
     updatedAt?: true
@@ -30851,6 +30863,8 @@ export namespace Prisma {
     title: string
     date: Date
     poster: string | null
+    audioUrl: string | null
+    waveform: number[]
     publishStatus: $Enums.PublishStatus
     createdAt: Date
     updatedAt: Date
@@ -30892,6 +30906,8 @@ export namespace Prisma {
     title?: boolean
     date?: boolean
     poster?: boolean
+    audioUrl?: boolean
+    waveform?: boolean
     publishStatus?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -30926,6 +30942,8 @@ export namespace Prisma {
     title?: boolean
     date?: boolean
     poster?: boolean
+    audioUrl?: boolean
+    waveform?: boolean
     publishStatus?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -30957,6 +30975,8 @@ export namespace Prisma {
     title?: boolean
     date?: boolean
     poster?: boolean
+    audioUrl?: boolean
+    waveform?: boolean
     publishStatus?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -30988,6 +31008,8 @@ export namespace Prisma {
     title?: boolean
     date?: boolean
     poster?: boolean
+    audioUrl?: boolean
+    waveform?: boolean
     publishStatus?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -31005,7 +31027,7 @@ export namespace Prisma {
     hostLastName?: boolean
   }
 
-  export type RadioTalkshowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "date" | "poster" | "publishStatus" | "createdAt" | "updatedAt" | "createdById" | "updatedById" | "approvedById" | "projectId" | "eventId" | "reportId" | "institutionId" | "hostType" | "hostBeneficiaryId" | "hostUserId" | "hostFirstName" | "hostLastName", ExtArgs["result"]["radioTalkshow"]>
+  export type RadioTalkshowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "date" | "poster" | "audioUrl" | "waveform" | "publishStatus" | "createdAt" | "updatedAt" | "createdById" | "updatedById" | "approvedById" | "projectId" | "eventId" | "reportId" | "institutionId" | "hostType" | "hostBeneficiaryId" | "hostUserId" | "hostFirstName" | "hostLastName", ExtArgs["result"]["radioTalkshow"]>
   export type RadioTalkshowInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
     updatedBy?: boolean | RadioTalkshow$updatedByArgs<ExtArgs>
@@ -31063,6 +31085,8 @@ export namespace Prisma {
       title: string
       date: Date
       poster: string | null
+      audioUrl: string | null
+      waveform: number[]
       publishStatus: $Enums.PublishStatus
       createdAt: Date
       updatedAt: Date
@@ -31516,6 +31540,8 @@ export namespace Prisma {
     readonly title: FieldRef<"RadioTalkshow", 'String'>
     readonly date: FieldRef<"RadioTalkshow", 'DateTime'>
     readonly poster: FieldRef<"RadioTalkshow", 'String'>
+    readonly audioUrl: FieldRef<"RadioTalkshow", 'String'>
+    readonly waveform: FieldRef<"RadioTalkshow", 'Float[]'>
     readonly publishStatus: FieldRef<"RadioTalkshow", 'PublishStatus'>
     readonly createdAt: FieldRef<"RadioTalkshow", 'DateTime'>
     readonly updatedAt: FieldRef<"RadioTalkshow", 'DateTime'>
@@ -38106,6 +38132,8 @@ export namespace Prisma {
     title: 'title',
     date: 'date',
     poster: 'poster',
+    audioUrl: 'audioUrl',
+    waveform: 'waveform',
     publishStatus: 'publishStatus',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
@@ -40500,6 +40528,8 @@ export namespace Prisma {
     title?: StringFilter<"RadioTalkshow"> | string
     date?: DateTimeFilter<"RadioTalkshow"> | Date | string
     poster?: StringNullableFilter<"RadioTalkshow"> | string | null
+    audioUrl?: StringNullableFilter<"RadioTalkshow"> | string | null
+    waveform?: FloatNullableListFilter<"RadioTalkshow">
     publishStatus?: EnumPublishStatusFilter<"RadioTalkshow"> | $Enums.PublishStatus
     createdAt?: DateTimeFilter<"RadioTalkshow"> | Date | string
     updatedAt?: DateTimeFilter<"RadioTalkshow"> | Date | string
@@ -40533,6 +40563,8 @@ export namespace Prisma {
     title?: SortOrder
     date?: SortOrder
     poster?: SortOrderInput | SortOrder
+    audioUrl?: SortOrderInput | SortOrder
+    waveform?: SortOrder
     publishStatus?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -40569,6 +40601,8 @@ export namespace Prisma {
     title?: StringFilter<"RadioTalkshow"> | string
     date?: DateTimeFilter<"RadioTalkshow"> | Date | string
     poster?: StringNullableFilter<"RadioTalkshow"> | string | null
+    audioUrl?: StringNullableFilter<"RadioTalkshow"> | string | null
+    waveform?: FloatNullableListFilter<"RadioTalkshow">
     publishStatus?: EnumPublishStatusFilter<"RadioTalkshow"> | $Enums.PublishStatus
     createdAt?: DateTimeFilter<"RadioTalkshow"> | Date | string
     updatedAt?: DateTimeFilter<"RadioTalkshow"> | Date | string
@@ -40602,6 +40636,8 @@ export namespace Prisma {
     title?: SortOrder
     date?: SortOrder
     poster?: SortOrderInput | SortOrder
+    audioUrl?: SortOrderInput | SortOrder
+    waveform?: SortOrder
     publishStatus?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -40632,6 +40668,8 @@ export namespace Prisma {
     title?: StringWithAggregatesFilter<"RadioTalkshow"> | string
     date?: DateTimeWithAggregatesFilter<"RadioTalkshow"> | Date | string
     poster?: StringNullableWithAggregatesFilter<"RadioTalkshow"> | string | null
+    audioUrl?: StringNullableWithAggregatesFilter<"RadioTalkshow"> | string | null
+    waveform?: FloatNullableListFilter<"RadioTalkshow">
     publishStatus?: EnumPublishStatusWithAggregatesFilter<"RadioTalkshow"> | $Enums.PublishStatus
     createdAt?: DateTimeWithAggregatesFilter<"RadioTalkshow"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"RadioTalkshow"> | Date | string
@@ -43124,6 +43162,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -43148,6 +43188,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -43171,6 +43213,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43195,6 +43239,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43219,6 +43265,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -43240,6 +43288,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43253,6 +43303,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45421,6 +45473,8 @@ export namespace Prisma {
     title?: SortOrder
     date?: SortOrder
     poster?: SortOrder
+    audioUrl?: SortOrder
+    waveform?: SortOrder
     publishStatus?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -45440,6 +45494,7 @@ export namespace Prisma {
 
   export type RadioTalkshowAvgOrderByAggregateInput = {
     id?: SortOrder
+    waveform?: SortOrder
     projectId?: SortOrder
     eventId?: SortOrder
     reportId?: SortOrder
@@ -45450,6 +45505,7 @@ export namespace Prisma {
     title?: SortOrder
     date?: SortOrder
     poster?: SortOrder
+    audioUrl?: SortOrder
     publishStatus?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -45472,6 +45528,7 @@ export namespace Prisma {
     title?: SortOrder
     date?: SortOrder
     poster?: SortOrder
+    audioUrl?: SortOrder
     publishStatus?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -45491,6 +45548,7 @@ export namespace Prisma {
 
   export type RadioTalkshowSumOrderByAggregateInput = {
     id?: SortOrder
+    waveform?: SortOrder
     projectId?: SortOrder
     eventId?: SortOrder
     reportId?: SortOrder
@@ -49206,6 +49264,10 @@ export namespace Prisma {
     update?: XOR<XOR<RadioTalkshowUpdateToOneWithWhereWithoutParticipantsInput, RadioTalkshowUpdateWithoutParticipantsInput>, RadioTalkshowUncheckedUpdateWithoutParticipantsInput>
   }
 
+  export type RadioTalkshowCreatewaveformInput = {
+    set: number[]
+  }
+
   export type UserCreateNestedOneWithoutCreatedTalkshowsInput = {
     create?: XOR<UserCreateWithoutCreatedTalkshowsInput, UserUncheckedCreateWithoutCreatedTalkshowsInput>
     connectOrCreate?: UserCreateOrConnectWithoutCreatedTalkshowsInput
@@ -49286,6 +49348,11 @@ export namespace Prisma {
     connectOrCreate?: PodcastCreateOrConnectWithoutTalkshowInput | PodcastCreateOrConnectWithoutTalkshowInput[]
     createMany?: PodcastCreateManyTalkshowInputEnvelope
     connect?: PodcastWhereUniqueInput | PodcastWhereUniqueInput[]
+  }
+
+  export type RadioTalkshowUpdatewaveformInput = {
+    set?: number[]
+    push?: number | number[]
   }
 
   export type UserUpdateOneRequiredWithoutCreatedTalkshowsNestedInput = {
@@ -50513,6 +50580,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -50536,6 +50605,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51107,6 +51178,8 @@ export namespace Prisma {
     title?: StringFilter<"RadioTalkshow"> | string
     date?: DateTimeFilter<"RadioTalkshow"> | Date | string
     poster?: StringNullableFilter<"RadioTalkshow"> | string | null
+    audioUrl?: StringNullableFilter<"RadioTalkshow"> | string | null
+    waveform?: FloatNullableListFilter<"RadioTalkshow">
     publishStatus?: EnumPublishStatusFilter<"RadioTalkshow"> | $Enums.PublishStatus
     createdAt?: DateTimeFilter<"RadioTalkshow"> | Date | string
     updatedAt?: DateTimeFilter<"RadioTalkshow"> | Date | string
@@ -51635,6 +51708,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -51658,6 +51733,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -52936,6 +53013,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -52959,6 +53038,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -53769,6 +53850,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53792,6 +53875,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -55578,6 +55663,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -55601,6 +55688,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -55633,6 +55722,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -55656,6 +55747,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -55688,6 +55781,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -55711,6 +55806,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -55743,6 +55840,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -55766,6 +55865,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -58351,6 +58452,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -58374,6 +58477,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -58947,6 +59052,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -58970,6 +59077,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -60146,6 +60255,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -60169,6 +60280,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -62160,6 +62273,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -62183,6 +62298,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -62288,6 +62405,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -62311,6 +62430,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65510,6 +65631,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -65716,6 +65839,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65739,6 +65864,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65762,6 +65889,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65898,6 +66027,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -66049,6 +66180,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66072,6 +66205,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66095,6 +66230,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66587,6 +66724,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -66608,6 +66747,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -66629,6 +66770,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -66650,6 +66793,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -67913,6 +68058,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67936,6 +68083,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67959,6 +68108,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67979,6 +68130,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68002,6 +68155,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68025,6 +68180,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68045,6 +68202,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68068,6 +68227,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68091,6 +68252,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68111,6 +68274,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68134,6 +68299,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68157,6 +68324,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68870,6 +69039,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -68935,6 +69106,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68958,6 +69131,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68981,6 +69156,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69110,6 +69287,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -69253,6 +69432,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69276,6 +69457,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69299,6 +69482,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69462,6 +69647,8 @@ export namespace Prisma {
     title: string
     date: Date | string
     poster?: string | null
+    audioUrl?: string | null
+    waveform?: RadioTalkshowCreatewaveformInput | number[]
     publishStatus?: $Enums.PublishStatus
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -69690,6 +69877,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69713,6 +69902,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69736,6 +69927,8 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     poster?: NullableStringFieldUpdateOperationsInput | string | null
+    audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    waveform?: RadioTalkshowUpdatewaveformInput | number[]
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

@@ -597,6 +597,8 @@ model RadioTalkshow {
   title         String
   date          DateTime
   poster        String?
+  audioUrl      String? // mp3 path under public/assets/audio/talkshow
+  waveform      Float[]       @default([]) // precomputed amplitude peaks (0..1) for the waveform UI
   publishStatus PublishStatus @default(draft)
 
   createdAt DateTime @default(now())
