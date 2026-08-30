@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import { slugify } from '@/lib/utils';
+import { revalidatePath } from 'next/cache';
 
 // Make Redis usage optional (can be disabled with DISABLE_REDIS=1)
 let redis: any = null;
 if (process.env.DISABLE_REDIS !== '1') {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+     
     redis = require('@/utils/redis').redis;
   } catch (e) {
     // If import fails, continue without redis
@@ -165,6 +166,9 @@ export async function POST(req: Request) {
         console.warn('[/api/reports] failed to delete cache after create', cacheErr);
       }
     }
+
+    revalidatePath('/');
+    revalidatePath('/impact');
 
     return NextResponse.json(report, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },

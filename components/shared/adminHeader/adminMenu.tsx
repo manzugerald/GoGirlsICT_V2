@@ -129,7 +129,7 @@ const AdminMenu: React.FC<AdminMenuProps> = ({ isAuthenticated, user }) => {
         setElapsedText(formatElapsed(Date.now() - start));
       }, 1000);
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [isAuthenticated]);
 
   const handleLogout = async () => {

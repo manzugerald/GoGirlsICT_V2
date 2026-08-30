@@ -2,12 +2,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { redis } from '@/utils/redis';
 import { isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
+import { revalidatePath } from 'next/cache';
 
 export const runtime = 'nodejs';
 
@@ -52,7 +53,10 @@ function parseIdArray(formData: FormData, field: string): number[] {
 // exactly the given set of ids: deletes links no longer present, creates
 // links that are new, and leaves unchanged ones alone.
 async function syncParticipation(
-  delegate: { deleteMany: Function; createMany: Function },
+  delegate: {
+    deleteMany: (args: { where: Record<string, unknown> }) => Promise<unknown>;
+    createMany: (args: { data: unknown[]; skipDuplicates?: boolean }) => Promise<unknown>;
+  },
   beneficiaryId: string,
   foreignKeyField: 'projectId' | 'eventId' | 'reportId' | 'podcastId' | 'talkshowId',
   desiredIds: number[]
@@ -99,7 +103,7 @@ export async function OPTIONS() {
 }
 
 // GET: Fetch single beneficiary details (include basic relations and counts)
-export async function GET(_req: Request, context: { params: any }) {
+export async function GET(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
     const id = params.id;
@@ -163,7 +167,7 @@ export async function GET(_req: Request, context: { params: any }) {
 }
 
 // PATCH: Update beneficiary (beneficiary owner OR super/admin can update)
-export async function PATCH(_req: Request, context: { params: any }) {
+export async function PATCH(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
     const id = params.id;
@@ -324,6 +328,9 @@ export async function PATCH(_req: Request, context: { params: any }) {
       console.warn('Failed to invalidate beneficiary caches after update', err);
     }
 
+    revalidatePath('/');
+    revalidatePath('/impact');
+
     // attach convenience counts
     const messageCount =
       typeof updated._count?.messages === 'number'
@@ -347,7 +354,7 @@ export async function PATCH(_req: Request, context: { params: any }) {
 }
 
 // DELETE: Only super/admin can delete beneficiary (also delete messages/responses)
-export async function DELETE(_req: Request, context: { params: any }) {
+export async function DELETE(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
     const id = params.id;
@@ -396,11 +403,14 @@ export async function DELETE(_req: Request, context: { params: any }) {
       console.warn('Failed to invalidate beneficiary caches after delete', err);
     }
 
+    revalidatePath('/');
+    revalidatePath('/impact');
+
     return NextResponse.json({ message: 'Beneficiary deleted', beneficiary: deleted }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
-  } catch (error: any) {
-    if (error?.code === 'P2025') {
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       return NextResponse.json({ error: 'Beneficiary not found' }, { 
         status: 404,
         headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },

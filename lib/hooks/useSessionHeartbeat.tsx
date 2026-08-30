@@ -23,7 +23,7 @@ export default function useSessionHeartbeat() {
         method: 'POST',
         credentials: 'include',
       });
-    } catch (e) {
+    } catch {
       // silently ignore network errors
     }
   }

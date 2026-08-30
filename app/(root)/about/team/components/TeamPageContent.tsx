@@ -1,8 +1,8 @@
 'use client';
 
-import PageHero from '../../../components/shared/components/PageHero';
-import PageHeader from '../../../components/shared/components/PageHeader';
-import PageSection from '../../../components/shared/components/PageSection';
+import PageHero from '../../../components/shared/page/PageHero';
+import PageHeader from '../../../components/shared/page/PageHeader';
+import PageSection from '../../../components/shared/page/PageSection';
 
 import { useTeamMembers } from '../../../hooks/useTeamMembers';
 
@@ -22,12 +22,12 @@ export default function TeamPageContent() {
   return (
     <main className="min-h-screen overflow-hidden">
       <PageHero
-        eyebrow={teamPageData.hero.eyebrow}
+        badge={teamPageData.hero.eyebrow}
         title={teamPageData.hero.title}
         description={
           teamPageData.hero.description
         }
-        image={teamPageData.hero.image}
+        backgroundImage={teamPageData.hero.image}
       />
 
       <PageSection>

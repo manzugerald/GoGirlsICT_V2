@@ -2,12 +2,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { redis } from '@/utils/redis';
 import { isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
+import { revalidatePath } from 'next/cache';
 
 export const runtime = 'nodejs';
 
@@ -267,6 +268,9 @@ export async function POST(req: Request) {
     await redis.del(`${BASE_CACHE_KEY}:all`);
     // also invalidate potential name-scoped cache for the created beneficiary
     await redis.del(ownCacheKey(firstName, lastName));
+
+    revalidatePath('/');
+    revalidatePath('/impact');
 
     // add convenience counts on response
     const messageCount =

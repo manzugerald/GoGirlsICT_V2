@@ -11,6 +11,13 @@ const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-v
   ssr: false,
 });
 
+// This section renders Event records defensively across several legacy/
+// alternate field-name variants (eventBanner|banner|cover, eventStatus|status,
+// etc.) rather than one fixed shape — hence one deliberate loose alias here
+// instead of scattering `any` throughout the file.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type EventRecord = any;
+
 /**
  * EventsSection
  *
@@ -25,31 +32,28 @@ const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-v
 
 export default function EventsSection({
   paginatedData,
-  page,
-  rowsPerPage,
   handleEdit,
   handleView, // optional callback
   handleDelete,
-  currentUserRole,
   TableActions,
   deleteId,
   deleteLoading,
   onToggleControls,
 }: {
-  paginatedData: any[];
+  paginatedData: EventRecord[];
   page: number;
   rowsPerPage: number;
-  handleEdit: (record: any) => void;
-  handleView?: (r: any) => void;
+  handleEdit: (record: EventRecord) => void;
+  handleView?: (r: EventRecord) => void;
   handleDelete: (id: string | number) => void;
   currentUserRole?: string;
-  TableActions?: React.FC<any>;
+  TableActions?: React.ElementType;
   deleteId?: string | number | null;
   deleteLoading?: boolean;
   onToggleControls?: (hide: boolean) => void;
 }) {
-  const [data, setData] = useState<any[]>(paginatedData ?? []);
-  const [viewingEvent, setViewingEvent] = useState<any | null>(null);
+  const [data, setData] = useState<EventRecord[]>(paginatedData ?? []);
+  const [viewingEvent, setViewingEvent] = useState<EventRecord | null>(null);
 
   useEffect(() => setData(paginatedData ?? []), [paginatedData]);
 
@@ -61,7 +65,7 @@ export default function EventsSection({
   }, [viewingEvent, onToggleControls]);
 
   // ---------- helpers ----------
-  function tryParseMaybeString(v: any) {
+  function tryParseMaybeString(v: unknown) {
     if (v == null) return null;
     if (typeof v !== 'string') return v;
     const s = v.trim();
@@ -76,7 +80,7 @@ export default function EventsSection({
     return s;
   }
 
-  function extractUrlFromCandidate(candidate: any): string | null {
+  function extractUrlFromCandidate(candidate: unknown): string | null {
     if (!candidate) return null;
     const value = tryParseMaybeString(candidate);
     if (!value) return null;
@@ -85,19 +89,22 @@ export default function EventsSection({
       for (const it of value) {
         if (typeof it === 'string' && it.trim()) return it.trim();
         if (it && typeof it === 'object') {
-          const maybe = (it as any).url ?? (it as any).src ?? (it as any).path;
+          const maybe = (it as Record<string, unknown>).url ?? (it as Record<string, unknown>).src ?? (it as Record<string, unknown>).path;
           if (maybe && typeof maybe === 'string' && maybe.trim()) return maybe.trim();
         }
       }
       return null;
     }
     if (typeof value === 'object') {
-      return (value as any).url ?? (value as any).src ?? (value as any).path ?? null;
+      return ((value as Record<string, unknown>).url ??
+        (value as Record<string, unknown>).src ??
+        (value as Record<string, unknown>).path ??
+        null) as string | null;
     }
     return null;
   }
 
-  function extractArrayFromCandidate(candidate: any): string[] {
+  function extractArrayFromCandidate(candidate: unknown): string[] {
     const out: string[] = [];
     if (candidate == null) return out;
     const value = tryParseMaybeString(candidate);
@@ -108,7 +115,7 @@ export default function EventsSection({
         if (!it) continue;
         if (typeof it === 'string' && it.trim()) out.push(it.trim());
         else if (typeof it === 'object') {
-          const maybe = (it as any).url ?? (it as any).src ?? (it as any).path;
+          const maybe = (it as Record<string, unknown>).url ?? (it as Record<string, unknown>).src ?? (it as Record<string, unknown>).path;
           if (maybe && typeof maybe === 'string' && maybe.trim()) out.push(maybe.trim());
         }
       }
@@ -130,7 +137,7 @@ export default function EventsSection({
     }
 
     if (typeof value === 'object') {
-      const maybe = (value as any).url ?? (value as any).src ?? (value as any).path;
+      const maybe = (value as Record<string, unknown>).url ?? (value as Record<string, unknown>).src ?? (value as Record<string, unknown>).path;
       if (maybe && typeof maybe === 'string' && maybe.trim()) out.push(maybe.trim());
       return out;
     }
@@ -155,7 +162,7 @@ export default function EventsSection({
     return s;
   }
 
-  function formatDate(d: any) {
+  function formatDate(d: string | number | Date | null | undefined) {
     if (!d) return '-';
     try {
       return new Date(d).toLocaleString();
@@ -383,7 +390,7 @@ export default function EventsSection({
   }
 
   // ---------- full event renderer ----------
-  function renderFullEvent(ev: any) {
+  function renderFullEvent(ev: EventRecord) {
     const bannerRaw = extractUrlFromCandidate(ev.eventBanner ?? ev.banner ?? ev.cover ?? null);
     const bannerSrc = toAbsoluteUrl(bannerRaw) ?? undefined;
     const title = ev.eventTitle;
@@ -418,9 +425,9 @@ export default function EventsSection({
       ev.beneficiaries
     )
       ? ev.beneficiaries
-          .map((link: any) => link.beneficiary)
+          .map((link: EventRecord) => link.beneficiary)
           .filter(Boolean)
-          .map((b: any) => ({
+          .map((b: EventRecord) => ({
             id: b.id,
             name: `${b.firstName ?? ''} ${b.lastName ?? ''}`.trim() || 'Unnamed beneficiary',
             image: b.image,

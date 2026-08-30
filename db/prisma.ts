@@ -10,7 +10,7 @@ const globalForPrisma = globalThis as unknown as {
 
 // Warn early if DATABASE_URL missing (helps debugging)
 if (!process.env.DATABASE_URL) {
-  // eslint-disable-next-line no-console
+   
   console.warn('Warning: DATABASE_URL is not set. Prisma will not be able to connect.');
 }
 
@@ -35,7 +35,7 @@ try {
     // Fallback if adapter expects an options object
     pgAdapter = new (PrismaPg as any)({ pool });
   } catch (err2) {
-    // eslint-disable-next-line no-console
+     
     console.error(
       'Failed to instantiate PrismaPg adapter. Tried new PrismaPg(pool) and new PrismaPg({ pool }).'
     );

@@ -10,10 +10,15 @@ const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-v
   ssr: false,
 });
 
+// This section renders Podcast records defensively (polymorphic host —
+// beneficiary/admin/guest — plus loosely-typed linked beneficiaries) rather
+// than one fixed shape — hence one deliberate loose alias here instead of
+// scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type PodcastRecord = any;
+
 export default function PodcastsSection({
   paginatedData,
-  page,
-  rowsPerPage,
   handleEdit,
   handleDelete,
   TableActions,
@@ -21,18 +26,18 @@ export default function PodcastsSection({
   deleteLoading,
   onToggleControls,
 }: {
-  paginatedData: any[];
+  paginatedData: PodcastRecord[];
   page: number;
   rowsPerPage: number;
-  handleEdit: (record: any) => void;
+  handleEdit: (record: PodcastRecord) => void;
   handleDelete: (id: string | number) => void;
-  TableActions?: React.FC<any>;
+  TableActions?: React.ElementType;
   deleteId?: string | number | null;
   deleteLoading?: boolean;
   onToggleControls?: (hide: boolean) => void;
 }) {
-  const [viewing, setViewing] = useState<any | null>(null);
-  const [data, setData] = useState<any[]>(paginatedData ?? []);
+  const [viewing, setViewing] = useState<PodcastRecord | null>(null);
+  const [data, setData] = useState<PodcastRecord[]>(paginatedData ?? []);
 
   useEffect(() => {
     setData(paginatedData ?? []);
@@ -45,7 +50,7 @@ export default function PodcastsSection({
     };
   }, [viewing, onToggleControls]);
 
-  function formatDate(d: any) {
+  function formatDate(d: string | number | Date | null | undefined) {
     if (!d) return '-';
     try {
       return new Date(d).toLocaleDateString();
@@ -54,13 +59,13 @@ export default function PodcastsSection({
     }
   }
 
-  function authorLabel(podcast: any) {
+  function authorLabel(podcast: PodcastRecord) {
     const a = podcast?.createdBy;
     if (!a) return 'System';
     return `${a.firstName ?? ''} ${a.lastName ?? ''}`.trim() || 'System';
   }
 
-  function hostLabel(podcast: any) {
+  function hostLabel(podcast: PodcastRecord) {
     if (!podcast?.hostType) return null;
     if (podcast.hostType === 'beneficiary') {
       const b = podcast.hostBeneficiary;
@@ -81,7 +86,7 @@ export default function PodcastsSection({
   // If a podcast is selected, render the full view inline
   if (viewing) {
     const host = hostLabel(viewing);
-    const participants: any[] = Array.isArray(viewing.beneficiaries) ? viewing.beneficiaries : [];
+    const participants: PodcastRecord[] = Array.isArray(viewing.beneficiaries) ? viewing.beneficiaries : [];
 
     return (
       <div className="space-y-4">

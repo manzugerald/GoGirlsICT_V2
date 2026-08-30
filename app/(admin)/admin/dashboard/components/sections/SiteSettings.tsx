@@ -3,8 +3,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Star, Target, Search, Gem } from 'lucide-react';
-
 const ENDPOINT_BASE = '/api/homepage';
 
 function ordinal(n: number) {
@@ -83,7 +81,7 @@ export default function SiteSettings() {
     }
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   async function fetchHomeContent() {
@@ -111,8 +109,8 @@ export default function SiteSettings() {
           updatedAt: json?.updatedAt ?? null,
         });
       }
-    } catch (err: any) {
-      setHomeError(err?.message || 'Failed to load homepage content');
+    } catch (err) {
+      setHomeError(err instanceof Error ? err.message : 'Failed to load homepage content');
     } finally {
       setHomeLoading(false);
     }
@@ -153,7 +151,7 @@ export default function SiteSettings() {
     }
 
     try {
-      const payload: Record<string, any> = {};
+      const payload: Record<string, unknown> = {};
       payload[targetField] = url;
 
       const res = await fetch(`${ENDPOINT_BASE}/${homeData.id}`, {
@@ -172,8 +170,8 @@ export default function SiteSettings() {
       setHomeData((prev) => ({ ...(prev ?? {}), ...(updated ?? {}) }));
       setHomeSuccess('Upload saved to database');
       setTimeout(() => setHomeSuccess(null), 2000);
-    } catch (err: any) {
-      setUploadError(err?.message || 'Failed to persist uploaded file');
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Failed to persist uploaded file');
       setHomeData((d) => ({ ...(d ?? {}), [targetField]: url }));
     }
   }
@@ -208,11 +206,12 @@ export default function SiteSettings() {
 
       if (json?.url && !json?.id) {
         const returnedUrl: string = json.url;
-        const field = target === 'logo' ? 'logo' : target === 'banner' ? 'banner' : 'heroVideo';
+        const field: 'heroVideo' | 'banner' | 'logo' =
+          target === 'logo' ? 'logo' : target === 'banner' ? 'banner' : 'heroVideo';
         setHomeData((prev) => ({ ...(prev ?? {}), [field]: returnedUrl }));
 
         if (homeData?.id) {
-          await persistUploadedFieldToDB(field as any, returnedUrl);
+          await persistUploadedFieldToDB(field, returnedUrl);
         } else {
           setHomeError(
             'Uploaded file is previewed locally. Create the homepage to persist the file.'
@@ -243,8 +242,8 @@ export default function SiteSettings() {
       const url = await uploadFileToServer(file, 'hero');
       if (url && homeData?.id) await persistUploadedFieldToDB('heroVideo', url);
       setHomeData((d) => ({ ...(d ?? {}), heroVideo: url }));
-    } catch (err: any) {
-      setUploadError(err?.message || 'Upload failed');
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
       try {
         (e.target as HTMLInputElement).value = '';
@@ -259,8 +258,8 @@ export default function SiteSettings() {
       const url = await uploadFileToServer(file, 'banner');
       if (url && homeData?.id) await persistUploadedFieldToDB('banner', url);
       setHomeData((d) => ({ ...(d ?? {}), banner: url }));
-    } catch (err: any) {
-      setUploadError(err?.message || 'Upload failed');
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
       try {
         (e.target as HTMLInputElement).value = '';
@@ -275,8 +274,8 @@ export default function SiteSettings() {
       const url = await uploadFileToServer(file, 'logo');
       if (url && homeData?.id) await persistUploadedFieldToDB('logo', url);
       setHomeData((d) => ({ ...(d ?? {}), logo: url }));
-    } catch (err: any) {
-      setUploadError(err?.message || 'Upload failed');
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
       try {
         (e.target as HTMLInputElement).value = '';
@@ -347,7 +346,7 @@ export default function SiteSettings() {
         return;
       }
 
-      const payload: Record<string, any> = {};
+      const payload: Record<string, unknown> = {};
 
       switch (editSection) {
         case 'hero':
@@ -411,8 +410,8 @@ export default function SiteSettings() {
         setHomeModalOpen(false);
         setEditSection(null);
       }, 700);
-    } catch (err: any) {
-      setHomeError(err?.message || 'Failed to save section');
+    } catch (err) {
+      setHomeError(err instanceof Error ? err.message : 'Failed to save section');
     } finally {
       setHomeSaving(false);
     }
@@ -477,7 +476,7 @@ export default function SiteSettings() {
   useEffect(() => {
     if (!homeModalOpen || !editSection) return;
     const t = setTimeout(() => {
-      const map: Record<string, any> = {
+      const map: Record<string, HTMLElement | null> = {
         hero: heroUrlRef.current,
         banner: bannerFileRef.current,
         logo: logoFileRef.current,

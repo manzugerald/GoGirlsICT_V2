@@ -42,9 +42,9 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     }
 
     return NextResponse.json(member, { status: 200, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
-  } catch (err: any) {
+  } catch (err) {
     console.error('GET /api/teams/:id error', err);
-    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Server error' }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
   }
 }
 
@@ -96,7 +96,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
 
     // Prepare update data
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (typeof firstName !== 'undefined') updateData.firstName = firstName;
     if (typeof lastName !== 'undefined') updateData.lastName = lastName;
     if (typeof about !== 'undefined') updateData.about = about;
@@ -110,13 +110,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (typeof updatedById !== 'undefined') updateData.updatedById = String(updatedById);
 
     // Handle profile image upload (if present)
-    if (profileImageFile && (profileImageFile as any).size > 0) {
+    if (profileImageFile && profileImageFile.size > 0) {
       // delete old image if provided (and exists)
       if (oldImageUrl) {
         try {
           const oldPath = path.join(process.cwd(), 'public', oldImageUrl.replace(/^\//, ''));
           await fs.unlink(oldPath);
-        } catch (e) {
+        } catch {
           // ignore if file not present
         }
       } else if (existing.profileImage) {
@@ -127,7 +127,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
             existing.profileImage.replace(/^\//, '')
           );
           await fs.unlink(oldPath);
-        } catch (e) {
+        } catch {
           // ignore
         }
       }
@@ -194,9 +194,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     });
 
     return NextResponse.json({ message: 'Team member updated', team: updated }, { status: 200, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
-  } catch (err: any) {
+  } catch (err) {
     console.error('PATCH /api/teams/:id error', err);
-    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Server error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }
 
@@ -216,7 +216,7 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
       try {
         const filePath = path.join(process.cwd(), 'public', member.profileImage.replace(/^\//, ''));
         await fs.unlink(filePath);
-      } catch (e) {
+      } catch {
         // ignore missing file
       }
     }
@@ -224,9 +224,9 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
     await prisma.team.delete({ where: { id: Number(teamId) } });
 
     return NextResponse.json({ message: 'Team member deleted' }, { status: 200, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
-  } catch (err: any) {
+  } catch (err) {
     console.error('DELETE /api/teams/:id error', err);
-    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Server error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }
 

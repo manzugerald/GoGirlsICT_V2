@@ -10,8 +10,7 @@ import { computeWaveformPeaks } from '@/lib/audioWaveform';
 
 const publishOptions = ['draft', 'published'] as const;
 type PublishStatus = (typeof publishOptions)[number];
-const hostTypeOptions = ['beneficiary', 'admin', 'guest'] as const;
-type HostType = (typeof hostTypeOptions)[number];
+type HostType = 'beneficiary' | 'admin' | 'guest';
 type Mode = 'create' | 'edit';
 
 type PickerOption = { id: number; label: string };
@@ -37,6 +36,12 @@ interface TalkshowData {
   participants?: { beneficiaryId?: string; beneficiary?: { id?: string; firstName?: string; lastName?: string } }[];
   podcasts?: { id?: number; title?: unknown }[];
 }
+
+// The seven fetches below hydrate simple {id,label} picker lists from
+// different API endpoints/models — genuinely dynamic, hence one deliberate
+// loose alias here instead of scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ApiListItem = any;
 
 function toDateInputValue(value?: string | Date | null) {
   if (!value) return '';
@@ -78,7 +83,7 @@ export default function CreateTalkshowForm({
   const [posterFile, setPosterFile] = useState<File | null>(null);
 
   const [existingAudio, setExistingAudio] = useState<string | null>(initialValues?.audioUrl || null);
-  const [existingWaveform, setExistingWaveform] = useState<number[]>(initialValues?.waveform || []);
+  const [, setExistingWaveform] = useState<number[]>(initialValues?.waveform || []);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [waveform, setWaveform] = useState<number[]>([]);
   const [analyzingAudio, setAnalyzingAudio] = useState(false);
@@ -165,27 +170,27 @@ export default function CreateTalkshowForm({
         const podcastsArr = Array.isArray(podcasts) ? podcasts : [];
 
         setProjectOptions(
-          projectsArr.map((p: any) => ({ id: p.id, label: extractPlainText(p.title) || `Project #${p.id}` }))
+          projectsArr.map((p: ApiListItem) => ({ id: p.id, label: extractPlainText(p.title) || `Project #${p.id}` }))
         );
         setEventOptions(
-          eventsArr.map((e: any) => ({ id: e.id, label: extractPlainText(e.eventTitle) || `Event #${e.id}` }))
+          eventsArr.map((e: ApiListItem) => ({ id: e.id, label: extractPlainText(e.eventTitle) || `Event #${e.id}` }))
         );
-        setReportOptions(reportsArr.map((r: any) => ({ id: r.id, label: r.title || `Report #${r.id}` })));
-        setInstitutionOptions(institutionsArr.map((i: any) => ({ id: i.id, label: i.name })));
+        setReportOptions(reportsArr.map((r: ApiListItem) => ({ id: r.id, label: r.title || `Report #${r.id}` })));
+        setInstitutionOptions(institutionsArr.map((i: ApiListItem) => ({ id: i.id, label: i.name })));
         setBeneficiaryOptions(
-          beneficiariesArr.map((b: any) => ({
+          beneficiariesArr.map((b: ApiListItem) => ({
             id: b.id,
             label: `${b.firstName ?? ''} ${b.lastName ?? ''}`.trim() || `Beneficiary #${b.id}`,
           }))
         );
         setUserOptions(
-          usersArr.map((u: any) => ({
+          usersArr.map((u: ApiListItem) => ({
             id: u.id,
             label: `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim() || u.username || `User #${u.id}`,
           }))
         );
         setPodcastOptions(
-          podcastsArr.map((p: any) => ({ id: p.id, label: extractPlainText(p.title) || `Podcast #${p.id}` }))
+          podcastsArr.map((p: ApiListItem) => ({ id: p.id, label: extractPlainText(p.title) || `Podcast #${p.id}` }))
         );
       })
       .finally(() => setOptionsLoading(false));

@@ -41,9 +41,9 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     }
 
     return NextResponse.json(user, { status: 200, headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' } });
-  } catch (err: any) {
+  } catch (err) {
     console.error('GET /api/users/:id error', err);
-    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500, headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' } });
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Server error' }, { status: 500, headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' } });
   }
 }
 
@@ -189,7 +189,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
 
     // Standard profile update flow
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     if (firstName) updateData.firstName = firstName;
     if (lastName) updateData.lastName = lastName;
@@ -205,7 +205,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       updateData.username = newUsername;
     }
 
-    if (imageFile && (imageFile as any).size > 0) {
+    if (imageFile && imageFile.size > 0) {
       if (oldImageUrl) {
         try {
           const filePath = path.join(process.cwd(), 'public', oldImageUrl);
@@ -261,9 +261,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ message: 'User updated', user: updatedUser }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error('PATCH /api/users/:id error', err);
-    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Server error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }
 
@@ -279,7 +279,7 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
       try {
         const filePath = path.join(process.cwd(), 'public', user.image);
         await fs.unlink(filePath);
-      } catch (e) {
+      } catch {
         // It's ok if the file doesn't exist
       }
     }
@@ -289,9 +289,9 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
     return NextResponse.json({ message: 'User deleted' }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error('DELETE /api/users/:id error', err);
-    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Server error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }
 

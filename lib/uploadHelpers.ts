@@ -70,12 +70,12 @@ export async function saveUploadedFile(
 
   // Basic server-side validation for video
   if (type === 'video') {
-    const size = (file as any).size ?? 0;
+    const size = file.size ?? 0;
     const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50MB
     if (size > MAX_FILE_BYTES) {
       throw new Error('File too large (max 50MB)');
     }
-    const name = (file as any).name ?? '';
+    const name = file.name ?? '';
     const ext = path.extname(name).toLowerCase();
     const allowed = ['.mov', '.mp4', '.gif'];
     if (!allowed.includes(ext)) {

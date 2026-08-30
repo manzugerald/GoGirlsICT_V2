@@ -1,6 +1,16 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type {
+  HomePageContent,
+  ExecutiveMessage,
+  Project,
+  Report,
+  Event,
+  TeamMember,
+  Partner,
+  Beneficiary,
+} from '@/app/(root)/types/home';
 
 // Generic fetch function with error handling
 async function fetchData<T>(url: string): Promise<T> {
@@ -23,12 +33,10 @@ async function fetchData<T>(url: string): Promise<T> {
 }
 
 // Home page content hook with selective refetching
-export function useHomePageContent(initialData?: any) {
-  const queryClient = useQueryClient();
-
+export function useHomePageContent(initialData?: HomePageContent) {
   return useQuery({
     queryKey: ['homepage-content'],
-    queryFn: () => fetchData<any>('/api/homepage-content'),
+    queryFn: () => fetchData<HomePageContent>('/api/homepage-content'),
     initialData,
     staleTime: 1000 * 60 * 10, // 10 minutes
     gcTime: 1000 * 60 * 60 * 24, // 24 hours
@@ -60,10 +68,10 @@ export function useInvalidateHomeContent() {
 }
 
 // Executive messages hook
-export function useExecutiveMessages(initialData?: any[]) {
+export function useExecutiveMessages(initialData?: ExecutiveMessage[]) {
   return useQuery({
     queryKey: ['executive-messages'],
-    queryFn: () => fetchData<any[]>('/api/executive-messages'),
+    queryFn: () => fetchData<ExecutiveMessage[]>('/api/executive-messages'),
     initialData: initialData || [],
     staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 60 * 24,
@@ -74,10 +82,10 @@ export function useExecutiveMessages(initialData?: any[]) {
 }
 
 // Projects hook
-export function useProjects(initialData?: any[]) {
+export function useProjects(initialData?: Project[]) {
   return useQuery({
     queryKey: ['projects'],
-    queryFn: () => fetchData<any[]>('/api/projects'),
+    queryFn: () => fetchData<Project[]>('/api/projects'),
     initialData: initialData || [],
     staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 60 * 24,
@@ -88,10 +96,10 @@ export function useProjects(initialData?: any[]) {
 }
 
 // Reports hook
-export function useReports(initialData?: any[]) {
+export function useReports(initialData?: Report[]) {
   return useQuery({
     queryKey: ['reports'],
-    queryFn: () => fetchData<any[]>('/api/reports'),
+    queryFn: () => fetchData<Report[]>('/api/reports'),
     initialData: initialData || [],
     staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 60 * 24,
@@ -102,10 +110,10 @@ export function useReports(initialData?: any[]) {
 }
 
 // Events hook
-export function useEvents(initialData?: any[]) {
+export function useEvents(initialData?: Event[]) {
   return useQuery({
     queryKey: ['events'],
-    queryFn: () => fetchData<any[]>('/api/events'),
+    queryFn: () => fetchData<Event[]>('/api/events'),
     initialData: initialData || [],
     staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 60 * 24,
@@ -116,10 +124,10 @@ export function useEvents(initialData?: any[]) {
 }
 
 // Team members hook
-export function useTeamMembers(initialData?: any[]) {
+export function useTeamMembers(initialData?: TeamMember[]) {
   return useQuery({
     queryKey: ['team-members'],
-    queryFn: () => fetchData<any[]>('/api/team-members'),
+    queryFn: () => fetchData<TeamMember[]>('/api/team-members'),
     initialData: initialData || [],
     staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 60 * 24,
@@ -130,10 +138,10 @@ export function useTeamMembers(initialData?: any[]) {
 }
 
 // Partners hook
-export function usePartners(initialData?: any[]) {
+export function usePartners(initialData?: Partner[]) {
   return useQuery({
     queryKey: ['partners'],
-    queryFn: () => fetchData<any[]>('/api/partners'),
+    queryFn: () => fetchData<Partner[]>('/api/partners'),
     initialData: initialData || [],
     staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 60 * 24,
@@ -144,10 +152,10 @@ export function usePartners(initialData?: any[]) {
 }
 
 // Beneficiaries hook
-export function useBeneficiaries(initialData?: any[]) {
+export function useBeneficiaries(initialData?: Beneficiary[]) {
   return useQuery({
     queryKey: ['beneficiaries'],
-    queryFn: () => fetchData<any[]>('/api/beneficiaries'),
+    queryFn: () => fetchData<Beneficiary[]>('/api/beneficiaries'),
     initialData: initialData || [],
     staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 60 * 24,

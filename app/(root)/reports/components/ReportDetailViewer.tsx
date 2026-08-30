@@ -64,7 +64,7 @@ export default function ReportDetailViewer({
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [reportId]);
 
   function handleDownload() {

@@ -5,11 +5,17 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { generateBrowserPassword } from '@/lib/admin-password-change/browserPassword';
 
+// The full /api/users/:id record this form edits — genuinely dynamic (extra
+// profile fields vary), hence one deliberate loose alias here instead of
+// scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type UserRecord = any;
+
 type Props = {
   mode?: 'create' | 'edit';
   userId?: string;
-  initialData?: any;
-  onSuccess?: (updatedUser?: any) => void;
+  initialData?: UserRecord;
+  onSuccess?: (updatedUser?: UserRecord) => void;
   onCancel?: () => void;
   onDelete?: (userId: string) => void;
   hideUsernameField?: boolean;
@@ -48,7 +54,7 @@ export default function CreateUserForm({
   showDeleteAccount = false,
 }: Props) {
   const isEdit = mode === 'edit' || !!userId || !!initialData;
-  const initialRef = useRef<any>(initialData ?? null);
+  const initialRef = useRef<UserRecord>(initialData ?? null);
 
   useEffect(() => {
     if (initialData) initialRef.current = initialData;
@@ -83,7 +89,7 @@ export default function CreateUserForm({
 
   const router = useRouter();
   const { data: session } = useSession();
-  const sessionUserId = (session as any)?.user?.id ?? null;
+  const sessionUserId = session?.user?.id ?? null;
 
   useEffect(() => {
     if (initialData) {
@@ -182,7 +188,7 @@ export default function CreateUserForm({
 
       try {
         // Call admin-force-change-password endpoint (PATCH)
-        const payload: any = {
+        const payload: Record<string, unknown> = {
           newPassword: pwdToUse,
           userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
         };
@@ -210,8 +216,8 @@ export default function CreateUserForm({
 
         setSuccess('Password updated.');
         if (onSuccess) onSuccess(data?.user ?? undefined);
-      } catch (err: any) {
-        setError(err?.message || 'Failed to update password');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to update password');
       } finally {
         setIsSubmitting(false);
         setCurrentPassword('');
@@ -273,8 +279,8 @@ export default function CreateUserForm({
           router.push('/');
         }, 800);
       }
-    } catch (err: any) {
-      setError(err?.message || 'Something went wrong');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setIsSubmitting(false);
       setForm((f) => ({ ...f, password: '', confirmPassword: '' }));

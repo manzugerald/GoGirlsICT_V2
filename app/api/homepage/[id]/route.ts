@@ -3,11 +3,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import { redis } from '@/utils/redis';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { revalidatePath } from 'next/cache';
 
 const HOMEPAGE_CACHE_KEY = 'homepage:latest';
 const SINGLE_HOMEPAGE_CACHE_PREFIX = 'homepage:'; // homepage:[id]
@@ -47,7 +48,7 @@ async function saveUploadedFileLocal(
   if (kind === 'video' && size > VIDEO_MAX_BYTES)
     throw new Error(`Video too large. Max ${VIDEO_MAX_BYTES / 1024 / 1024}MB`);
 
-  const filenameRaw = String((file as any).name ?? '');
+  const filenameRaw = String(file.name ?? '');
   const extGuess = (filenameRaw.split('.').pop() || '').toLowerCase();
   const ext = extGuess || (kind === 'image' ? 'png' : 'mp4');
 
@@ -116,7 +117,7 @@ async function saveUploadedFileLocal(
 /**
  * GET: Fetch single homepage by id (with cache)
  */
-export async function GET(req: Request, context: { params: any }) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
     const singleCacheKey = SINGLE_HOMEPAGE_CACHE_PREFIX + id;
@@ -161,7 +162,7 @@ export async function GET(req: Request, context: { params: any }) {
 /**
  * PATCH: Partial update (auth required).
  */
-export async function PATCH(req: Request, context: { params: any }) {
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
     const idNum = Number(id);
@@ -188,7 +189,7 @@ export async function PATCH(req: Request, context: { params: any }) {
 
     const contentType = String(req.headers.get('content-type') ?? '').toLowerCase();
 
-    const updates: Record<string, any> = {};
+    const updates: Record<string, unknown> = {};
 
     if (contentType.includes('multipart/form-data')) {
       const form = await req.formData();
@@ -326,14 +327,17 @@ export async function PATCH(req: Request, context: { params: any }) {
       console.warn('Failed to invalidate homepage caches:', err);
     }
 
+    revalidatePath('/');
+
     return NextResponse.json(updated, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
-  } catch (err: any) {
+  } catch (err) {
+    const e = err as { message?: string; statusCode?: number; cause?: unknown; code?: string };
     if (
-      err?.message?.includes?.('Body exceeded') ||
-      err?.statusCode === 413 ||
-      (err?.cause && String(err.cause).includes('Body exceeded'))
+      e?.message?.includes?.('Body exceeded') ||
+      e?.statusCode === 413 ||
+      (e?.cause && String(e.cause).includes('Body exceeded'))
     ) {
       console.error('Request body too large:', err);
       return NextResponse.json(
@@ -348,7 +352,7 @@ export async function PATCH(req: Request, context: { params: any }) {
       );
     }
 
-    if (err?.code === 'P2025') {
+    if (e?.code === 'P2025') {
       return NextResponse.json(
         { error: 'HomePage not found' },
         {
@@ -359,7 +363,7 @@ export async function PATCH(req: Request, context: { params: any }) {
     }
     console.error('Failed to update homepage:', err);
     return NextResponse.json(
-      { error: err?.message || 'Internal Server Error' },
+      { error: e?.message || 'Internal Server Error' },
       {
         status: 500,
         headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
@@ -371,7 +375,7 @@ export async function PATCH(req: Request, context: { params: any }) {
 /**
  * DELETE: Delete homepage content (auth required)
  */
-export async function DELETE(req: Request, context: { params: any }) {
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
     const idNum = Number(id);
@@ -409,14 +413,16 @@ export async function DELETE(req: Request, context: { params: any }) {
       console.warn('Failed to invalidate homepage caches:', err);
     }
 
+    revalidatePath('/');
+
     return NextResponse.json(
       { message: 'HomePage deleted', homepage: deleted },
       {
         headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
       }
     );
-  } catch (error: any) {
-    if (error?.code === 'P2025') {
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       return NextResponse.json(
         { error: 'HomePage not found' },
         {

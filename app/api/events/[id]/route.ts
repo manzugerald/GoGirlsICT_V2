@@ -1,14 +1,11 @@
 import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
-import fs from 'fs';
-import { saveUploadedFile, saveUploadedFiles } from '@/lib/uploadHelpers';
-import { slugify } from '@/lib/utils';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { EventStatus, PublishStatus, AttendanceType } from '@/lib/generated/prisma';
+import { authOptions } from '@/lib/authOptions';
+import { revalidatePath } from 'next/cache';
 
-function tryParseMaybeString(v: any) {
+function tryParseMaybeString(v: unknown) {
   if (v == null) return null;
   if (typeof v !== 'string') return v;
   const s = v.trim();
@@ -23,7 +20,7 @@ function tryParseMaybeString(v: any) {
   return s;
 }
 
-function extractUrlFromCandidate(candidate: any): string | null {
+function extractUrlFromCandidate(candidate: unknown): string | null {
   if (!candidate) return null;
   const value = tryParseMaybeString(candidate);
   if (!value) return null;
@@ -35,19 +32,19 @@ function extractUrlFromCandidate(candidate: any): string | null {
     for (const it of value) {
       if (typeof it === 'string' && it.trim()) return it.trim();
       if (it && typeof it === 'object') {
-        const maybe = it.url ?? it.src ?? it.path;
+        const maybe = (it as Record<string, unknown>).url ?? (it as Record<string, unknown>).src ?? (it as Record<string, unknown>).path;
         if (maybe && typeof maybe === 'string' && maybe.trim()) return maybe.trim();
       }
     }
     return null;
   }
   if (typeof value === 'object') {
-    return (value.url ?? value.src ?? value.path ?? null) as string | null;
+    return ((value as Record<string, unknown>).url ?? (value as Record<string, unknown>).src ?? (value as Record<string, unknown>).path ?? null) as string | null;
   }
   return null;
 }
 
-function extractArrayFromCandidate(candidate: any): string[] {
+function extractArrayFromCandidate(candidate: unknown): string[] {
   const out: string[] = [];
   if (candidate == null) return out;
   const value = tryParseMaybeString(candidate);
@@ -58,7 +55,7 @@ function extractArrayFromCandidate(candidate: any): string[] {
       if (!it) continue;
       if (typeof it === 'string' && it.trim()) out.push(it.trim());
       else if (typeof it === 'object') {
-        const maybe = it.url ?? it.src ?? it.path;
+        const maybe = (it as Record<string, unknown>).url ?? (it as Record<string, unknown>).src ?? (it as Record<string, unknown>).path;
         if (maybe && typeof maybe === 'string' && maybe.trim()) out.push(maybe.trim());
       }
     }
@@ -79,7 +76,7 @@ function extractArrayFromCandidate(candidate: any): string[] {
   }
 
   if (typeof value === 'object') {
-    const maybe = value.url ?? value.src ?? value.path;
+    const maybe = (value as Record<string, unknown>).url ?? (value as Record<string, unknown>).src ?? (value as Record<string, unknown>).path;
     if (maybe && typeof maybe === 'string' && maybe.trim()) out.push(maybe.trim());
     return out;
   }
@@ -124,10 +121,6 @@ function resolveBannerPathStrict(origin: string, bannerCandidateRaw: string | nu
   }
 
   return toAbsoluteUrl(origin, candidate);
-}
-
-function toEnum<T>(enumObject: T, value: string): T[keyof T] | undefined {
-  return (enumObject as any)[value];
 }
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
@@ -233,7 +226,6 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
         { status: 401, headers: { 'Cache-Control': 'no-store' } }
       );
 
-    const userId = session.user.id;
     const trimmedId = params.id.trim();
     const eventId = Number(trimmedId);
     if (isNaN(eventId))
@@ -241,8 +233,6 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
         { error: 'Invalid Event ID' },
         { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
       );
-
-    const formData = await req.formData();
 
     // ... (existing parsing / saving logic as before) ...
     // For brevity, re-use your existing PUT implementation here; make sure it returns no-store
@@ -281,6 +271,9 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
       );
 
     await prisma.event.delete({ where: { id } });
+
+    revalidatePath('/');
+    revalidatePath('/impact');
 
     return NextResponse.json({ success: true }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   } catch (err) {

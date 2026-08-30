@@ -46,6 +46,8 @@ type MessageWithRelations = Message & {
   >;
 };
 
+type ResponseItem = NonNullable<MessageWithRelations['responses']>[number];
+
 function AuthorBadge() {
   return (
     <span className="ml-2 inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">
@@ -63,7 +65,7 @@ export default function MessageView({
   onClose?: () => void;
   onRespond?: (messageId: number | string) => void;
 }) {
-  const { data: session } = useSession();
+  useSession();
 
   if (!data) return null;
 
@@ -89,7 +91,7 @@ export default function MessageView({
     return 'System';
   };
 
-  const responderLabelText = (r: any) => {
+  const responderLabelText = (r: ResponseItem | null | undefined) => {
     if (!r) return 'System';
     if (r.responderUser) {
       const u = r.responderUser;
@@ -105,14 +107,14 @@ export default function MessageView({
   };
 
   // Helper: strict identity-based author check
-  const isResponseAuthor = (msg: MessageWithRelations, r: any) => {
+  const isResponseAuthor = (msg: MessageWithRelations, r: ResponseItem | null | undefined) => {
     // 1) server-declared AUTHOR is authoritative
     if (r?.responderRole === 'AUTHOR') return true;
 
     // message-level keys
     const messageAuthorUserId =
-      (msg.createdBy && (msg.createdBy as any).id) ?? (msg as any).createdById ?? undefined;
-    const messageBeneficiaryId = msg.beneficiary?.id ?? (msg as any).beneficiaryId ?? undefined;
+      (msg.createdBy && msg.createdBy.id) ?? msg.createdById ?? undefined;
+    const messageBeneficiaryId = msg.beneficiary?.id ?? msg.beneficiaryId ?? undefined;
 
     // responder-level keys
     const responderUserId = r?.responderUser?.id ?? undefined;
@@ -165,7 +167,7 @@ export default function MessageView({
         <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
           <div className="font-medium">{ownerLabel()}</div>
           <div className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-xs">
-            {(data as any).messageCategory ?? '-'}
+            {data.messageCategory ?? '-'}
           </div>
           <div className="text-xs text-gray-500">
             Created: {data.createdAt ? new Date(data.createdAt).toLocaleString() : '-'}
@@ -184,7 +186,7 @@ export default function MessageView({
         {/* Author response (distinct) */}
         {authorResponses.length > 0 && (
           <div className="mt-6">
-            <h3 className="font-semibold text-lg mb-3">Author's response</h3>
+            <h3 className="font-semibold text-lg mb-3">Author&apos;s response</h3>
             <div className="space-y-4">
               {authorResponses.map((r) => {
                 const isAuthor = isResponseAuthor(data, r);
@@ -202,7 +204,7 @@ export default function MessageView({
                         {r.createdAt ? new Date(r.createdAt).toLocaleString() : ''}
                       </div>
                     </div>
-                    <div className="mt-2">{renderContent((r as any).content)}</div>
+                    <div className="mt-2">{renderContent(r.content)}</div>
                   </div>
                 );
               })}
@@ -228,7 +230,7 @@ export default function MessageView({
                         {r.createdAt ? new Date(r.createdAt).toLocaleString() : ''}
                       </div>
                     </div>
-                    <div className="mt-2">{renderContent((r as any).content)}</div>
+                    <div className="mt-2">{renderContent(r.content)}</div>
                   </div>
                 );
               })}

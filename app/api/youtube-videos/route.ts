@@ -1,14 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import dayjs from 'dayjs';
 
 const FETCH_MINUTES_TTL = 10; // minutes to consider DB fresh for YouTube videos (testing)
 const MAX_RESULTS = 50; // how many videos to request/store
 
-function makeResult(videos: any[], lastFetched: Date | null) {
+// Raw item shape from the YouTube Data API (search/videos endpoints) —
+// genuinely external/dynamic, hence one deliberate loose alias here instead
+// of scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type YouTubeApiItem = any;
+
+function makeResult(videos: unknown[], lastFetched: Date | null) {
   return { data: videos, lastFetched: lastFetched ?? null };
 }
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   // lazy-import prisma so the Next build does not try to bundle Node-only modules (pg, dns, etc.)
   const { prisma } = await import('@/db/prisma');
 
@@ -24,7 +30,7 @@ export async function GET(_req: NextRequest) {
   }
 
   // 1) Prefer DB: return cached videos if present
-  let videosInDb: any[] = [];
+  let videosInDb: unknown[] = [];
   let metaLastFetched: Date | null = null;
   try {
     videosInDb = await prisma.youtube.findMany({
@@ -82,7 +88,7 @@ export async function GET(_req: NextRequest) {
     const items = Array.isArray(searchJson.items) ? searchJson.items : [];
 
     const videoIds = items
-      .map((it: any) => it?.id?.videoId)
+      .map((it: { id?: { videoId?: string } }) => it?.id?.videoId)
       .filter(Boolean)
       .slice(0, MAX_RESULTS) as string[];
 
@@ -113,7 +119,7 @@ export async function GET(_req: NextRequest) {
 
     // 4) Normalize and persist videos into DB (model name: Youtube)
     const now = new Date();
-    const toSave = videoItems.map((item: any) => {
+    const toSave = videoItems.map((item: YouTubeApiItem) => {
       const id = String(item.id);
       const snippet = item.snippet ?? {};
       const statistics = item.statistics ?? {};
@@ -185,7 +191,7 @@ export async function GET(_req: NextRequest) {
         headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600' },
       });
     }
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error fetching YouTube videos:', err);
 
     // Fallback: serve existing DB videos if any
@@ -207,7 +213,7 @@ export async function GET(_req: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Failed to fetch YouTube videos: ' + (err?.message ?? String(err)) },
+      { error: 'Failed to fetch YouTube videos: ' + (err instanceof Error ? err.message : String(err)) },
       { status: 500,
         headers: { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600' },
       }

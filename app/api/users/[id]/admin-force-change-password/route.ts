@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import bcrypt from 'bcrypt';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import { isPwned } from '@/lib/hibp';
 import sendAdminForceChangePassword from '@/lib/admin-force-change-password/sendAdminForceChangePassword';
 import { getIpFromRequest } from '@/lib/getIp';
@@ -29,12 +29,12 @@ function escapeHtml(str: string | null | undefined) {
  */
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions as any);
+    const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
-    const callerId = (session.user as any)?.id ?? null;
-    const callerRole = (session.user as any)?.role ?? null;
+    const callerId = session.user?.id ?? null;
+    const callerRole = session.user?.role ?? null;
 
     const userId = params?.id;
     if (!userId) return NextResponse.json({ error: 'Missing user id' }, { status: 400 });

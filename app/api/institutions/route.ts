@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { InstitutionCategory, InstitutionType } from '@/lib/generated/prisma';
+import { revalidatePath } from 'next/cache';
 
 async function saveInstitutionFiles(formData: FormData, destDir: string): Promise<string[]> {
   const files = formData.getAll('files') as File[];
@@ -231,6 +232,9 @@ export async function POST(req: Request) {
         locations: true,
       },
     });
+
+    revalidatePath('/');
+    revalidatePath('/impact');
 
     return NextResponse.json(institution, {
       headers: {

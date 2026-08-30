@@ -3,6 +3,13 @@
 import { prisma } from '@/db/prisma';
 import SinglePageHome from './components/SinglePageHome';
 
+// ISR: this page only changes when an admin publishes/edits homepage
+// content, a project, report, event, institution, or beneficiary — not
+// every request. Serve the cached render and let revalidatePath() calls in
+// those admin API routes invalidate it the moment something actually
+// changes; 3600s is just the safety-net upper bound if one is ever missed.
+export const revalidate = 3600;
+
 export default async function HomePage() {
   // Fetch everything this single-page design actually renders, in parallel.
   // Note: only ssrContent (hero/vision copy) and the partner list feed real

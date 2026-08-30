@@ -2,23 +2,23 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import type { Session } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
+import { Prisma } from '@/lib/generated/prisma';
 
 export const runtime = 'nodejs';
 
-const CACHE_KEY = 'responses:all';
-
 // Role helpers
 type Role = 'super' | 'admin' | 'moderator' | 'beneficiary' | 'user' | 'guest';
-const asRole = (r: any): Role => (r ?? 'guest') as Role;
+const asRole = (r: unknown): Role => (r ?? 'guest') as Role;
 
-function getNames(session: any) {
+function getNames(session: Session | null) {
   const firstName = (session?.user?.firstName ?? '').trim();
   const lastName = (session?.user?.lastName ?? '').trim();
   return { firstName, lastName };
 }
 
-async function getOwnBeneficiaryIdFromSession(session: any): Promise<string | null> {
+async function getOwnBeneficiaryIdFromSession(session: Session | null): Promise<string | null> {
   const role = asRole(session?.user?.role);
   if (role !== 'beneficiary') return null;
   const { firstName, lastName } = getNames(session);
@@ -54,7 +54,7 @@ export async function GET() {
     const session = await getServerSession(authOptions);
     const role = asRole(session?.user?.role);
 
-    let where: any | undefined = undefined;
+    let where: Prisma.ResponseWhereInput | undefined = undefined;
 
     if (role === 'beneficiary') {
       const { firstName, lastName } = getNames(session);
@@ -97,10 +97,10 @@ export async function GET() {
     return NextResponse.json(responses, {
       headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('GET /api/responses error:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error', message: error?.message ?? '' },
+      { error: 'Internal Server Error', message: error instanceof Error ? error.message : '' },
       { status: 500, headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' } }
     );
   }
@@ -152,7 +152,7 @@ export async function POST(req: Request) {
 
     // Ensure parent message exists and allows responses and fetch its creator
     const msg = await prisma.message.findUnique({
-      where: { id: messageId as any },
+      where: { id: messageId as number },
       select: { id: true, allowResponses: true, beneficiaryId: true, createdById: true },
     });
     if (!msg) return NextResponse.json({ error: 'Parent message not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
@@ -219,7 +219,7 @@ export async function POST(req: Request) {
     try {
       const created = await prisma.response.create({
         data: {
-          messageId: messageId as any,
+          messageId: messageId as number,
           responderType,
           responderUserId: responderUserId ?? undefined,
           responderBeneficiaryId: responderBeneficiaryId ?? undefined,
@@ -242,9 +242,9 @@ export async function POST(req: Request) {
       return NextResponse.json(created, {
         headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
       });
-    } catch (err: any) {
+    } catch (err) {
       // fallback when responderRole does not exist in the Prisma model / DB
-      const msgErr = String(err?.message ?? err);
+      const msgErr = err instanceof Error ? err.message : String(err);
       if (
         msgErr.includes('Unknown argument `responderRole`') ||
         msgErr.includes('Unknown arg `responderRole`')
@@ -252,7 +252,7 @@ export async function POST(req: Request) {
         console.warn('responderRole not present in Prisma model — retrying create without it');
         const created = await prisma.response.create({
           data: {
-            messageId: messageId as any,
+            messageId: messageId as number,
             responderType,
             responderUserId: responderUserId ?? undefined,
             responderBeneficiaryId: responderBeneficiaryId ?? undefined,
@@ -279,10 +279,10 @@ export async function POST(req: Request) {
       // rethrow to outer catch
       throw err;
     }
-  } catch (error: any) {
+  } catch (error) {
     // Log and return the error message to help debugging (remove message in production)
     console.error('POST /api/responses error:', error);
-    const msg = error?.message ?? String(error);
+    const msg = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ error: 'Internal Server Error', message: msg }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }
 }

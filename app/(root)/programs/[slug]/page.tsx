@@ -27,6 +27,11 @@ import { extractPlainText, isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/ti
 import TiptapJsonViewer from '@/components/editor/tiptap-json-viewer';
 import '@/assets/styles/tiptap-editor.css';
 
+// ISR: see app/(root)/programs/page.tsx — same trigger, this specific
+// slug's path gets targeted directly by revalidatePath() when its project
+// is edited.
+export const revalidate = 3600;
+
 function formatDate(
   date?: Date | string | null
 ) {
@@ -45,10 +50,11 @@ function formatDate(
 export default async function ProgramDetailsPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+  const { slug } = await params;
   const program =
-    await getProgramBySlugOrId(params.slug);
+    await getProgramBySlugOrId(slug);
 
   if (!program) {
     notFound();

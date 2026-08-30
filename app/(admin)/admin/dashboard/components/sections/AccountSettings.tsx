@@ -4,6 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { User } from 'lucide-react';
+import CreateUserForm from '@/app/(admin)/admin/dashboard/createUserForm';
+
+// currentUser is the full /api/users/:id payload merged with (and falling
+// back to) the NextAuth session user — two differently-shaped sources — so
+// one deliberate loose alias here instead of scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AccountUserRecord = any;
 
 export default function AccountSettings({
   currentUserId,
@@ -11,14 +18,13 @@ export default function AccountSettings({
   currentUserId?: string | number | null;
 }) {
   const { data: session, status } = useSession();
-  const sessionUser = (session?.user as any) ?? null;
+  const sessionUser = session?.user ?? null;
   const sessionUserId = sessionUser?.id ?? null;
   const userRole = sessionUser?.role ?? '';
 
   const id = currentUserId ?? sessionUserId;
   const loading = status === 'loading';
-  const canEdit = !!sessionUser?.id;
-  const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [currentUser, setCurrentUser] = useState<AccountUserRecord | null>(null);
   const displayUser = currentUser ?? sessionUser ?? null;
 
   // Modal User Edit/Profile/Password
@@ -104,14 +110,14 @@ export default function AccountSettings({
         throw new Error(txt || 'Failed to submit deletion request');
       }
       setDeleteAccountSuccess('Deletion request submitted. Administrators have been notified.');
-    } catch (err: any) {
-      setDeleteAccountError(err?.message || 'Failed to process request');
+    } catch (err) {
+      setDeleteAccountError(err instanceof Error ? err.message : 'Failed to process request');
     } finally {
       setDeleteAccountLoading(false);
     }
   }
 
-  const renderAvatar = (user: any) => {
+  const renderAvatar = (user: AccountUserRecord) => {
     const img = user?.image;
     const first = user?.firstName ?? user?.name?.split(' ')?.[0] ?? '';
     const last = user?.lastName ?? (user?.name ? user.name.split(' ').slice(1).join(' ') : '');
@@ -189,49 +195,43 @@ export default function AccountSettings({
         )}
       </section>
 
-      {/* Modal for profile/password uses dynamic require to avoid loading form in build if not needed */}
       {openEditModal !== null && id && (
         <div>
-          {require('@/app/(admin)/admin/dashboard/createUserForm').default ? (
-            React.createElement(
-              require('@/app/(admin)/admin/dashboard/createUserForm').default,
-              openEditModal === 'profile'
-                ? {
-                    mode: 'edit',
-                    userId: String(id),
-                    hideUsernameField: true,
-                    hidePasswordFields: true,
-                    hideRoleField: true,
-                    onSuccess: async () => {
-                      setOpenEditModal(null);
-                      try {
-                        const r = await fetch(`/api/users/${id}`, { credentials: 'same-origin' });
-                        if (r.ok) setCurrentUser(await r.json());
-                      } catch {}
-                    },
-                    onCancel: () => setOpenEditModal(null),
-                  }
-                : {
-                    mode: 'edit',
-                    userId: String(id),
-                    onlyPasswordFields: true,
-                    requireCurrentPassword: userRole !== 'super',
-                    showDeleteAccount: true,
-                    onSuccess: async () => {
-                      setOpenEditModal(null);
-                      try {
-                        const r = await fetch(`/api/users/${id}`, { credentials: 'same-origin' });
-                        if (r.ok) setCurrentUser(await r.json());
-                      } catch {}
-                    },
-                    onCancel: () => setOpenEditModal(null),
-                    onDelete: async () => {
-                      await handleDeleteAccount();
-                    },
-                  }
-            )
+          {openEditModal === 'profile' ? (
+            <CreateUserForm
+              mode="edit"
+              userId={String(id)}
+              hideUsernameField
+              hidePasswordFields
+              hideRoleField
+              onSuccess={async () => {
+                setOpenEditModal(null);
+                try {
+                  const r = await fetch(`/api/users/${id}`, { credentials: 'same-origin' });
+                  if (r.ok) setCurrentUser(await r.json());
+                } catch {}
+              }}
+              onCancel={() => setOpenEditModal(null)}
+            />
           ) : (
-            <div className="text-sm text-red-500">CreateUserForm not available</div>
+            <CreateUserForm
+              mode="edit"
+              userId={String(id)}
+              onlyPasswordFields
+              requireCurrentPassword={userRole !== 'super'}
+              showDeleteAccount
+              onSuccess={async () => {
+                setOpenEditModal(null);
+                try {
+                  const r = await fetch(`/api/users/${id}`, { credentials: 'same-origin' });
+                  if (r.ok) setCurrentUser(await r.json());
+                } catch {}
+              }}
+              onCancel={() => setOpenEditModal(null)}
+              onDelete={async () => {
+                await handleDeleteAccount();
+              }}
+            />
           )}
         </div>
       )}

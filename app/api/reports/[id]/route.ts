@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import { slugify } from '@/lib/utils';
 import { redis } from '@/utils/redis';
+import { revalidatePath } from 'next/cache';
 
 const ALL_REPORTS_CACHE_KEY = 'reports:all';
 const SINGLE_REPORT_CACHE_PREFIX = 'reports:'; // e.g., reports:123
@@ -99,6 +100,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       redis.del(ALL_REPORTS_CACHE_KEY),
     ]);
 
+    revalidatePath('/');
+    revalidatePath('/impact');
+
     return NextResponse.json(updatedReport, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
@@ -131,6 +135,9 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
       redis.del(SINGLE_REPORT_CACHE_PREFIX + reportId),
       redis.del(ALL_REPORTS_CACHE_KEY),
     ]);
+
+    revalidatePath('/');
+    revalidatePath('/impact');
 
     return NextResponse.json({ success: true }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },

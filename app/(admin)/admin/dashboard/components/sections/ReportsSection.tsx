@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 
@@ -9,31 +9,35 @@ const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-v
   ssr: false,
 });
 
+// This section renders Report records defensively (legacy field-name
+// fallbacks like files/file/pdf, optional beneficiary links, etc.) rather
+// than one fixed shape — hence one deliberate loose alias here instead of
+// scattering `any` throughout the file.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ReportRecord = any;
+
 export default function ReportsSection({
   paginatedData,
-  page,
-  rowsPerPage,
   handleEdit,
   handleDelete,
-  currentUserRole,
   TableActions,
   deleteId,
   deleteLoading,
   onToggleControls,
 }: {
-  paginatedData: any[];
+  paginatedData: ReportRecord[];
   page: number;
   rowsPerPage: number;
-  handleEdit: (record: any) => void;
+  handleEdit: (record: ReportRecord) => void;
   handleDelete: (id: string | number) => void;
   currentUserRole?: string;
-  TableActions?: React.FC<any>;
+  TableActions?: React.ElementType;
   deleteId?: string | number | null;
   deleteLoading?: boolean;
   onToggleControls?: (hide: boolean) => void;
 }) {
-  const [viewing, setViewing] = useState<any | null>(null);
-  const [data, setData] = useState<any[]>(paginatedData ?? []);
+  const [viewing, setViewing] = useState<ReportRecord | null>(null);
+  const [data, setData] = useState<ReportRecord[]>(paginatedData ?? []);
 
   useEffect(() => {
     setData(paginatedData ?? []);
@@ -59,7 +63,7 @@ export default function ReportsSection({
   }, [paginatedData]);
 
   // Helpers
-  function formatDate(d: any) {
+  function formatDate(d: string | number | Date | null | undefined) {
     if (!d) return '-';
     try {
       return new Date(d).toLocaleString();
@@ -68,13 +72,13 @@ export default function ReportsSection({
     }
   }
 
-  function authorLabel(report: any) {
+  function authorLabel(report: ReportRecord) {
     const a = report?.createdBy;
     if (!a) return 'System';
     return `${a.firstName ?? ''} ${a.lastName ?? ''}`.trim() || (a.username ?? 'System');
   }
 
-  function getPdfUrl(report: any): string | null {
+  function getPdfUrl(report: ReportRecord): string | null {
     if (Array.isArray(report.files) && report.files.length > 0) {
       const pdfFile = report.files.find(
         (f: string) => typeof f === 'string' && f.toLowerCase().endsWith('.pdf')
@@ -88,66 +92,15 @@ export default function ReportsSection({
     return null;
   }
 
-  // Extract plain text from tiptap JSON structure
-  function extractTextFromTiptap(node: any): string {
-    if (!node) return '';
-    if (typeof node === 'string') return node;
-    let text = '';
-    if (Array.isArray(node)) {
-      for (const n of node) text += extractTextFromTiptap(n);
-      return text;
-    }
-    if (typeof node === 'object') {
-      if (typeof node.text === 'string') {
-        text += node.text;
-      }
-      if (Array.isArray(node.content)) {
-        for (const child of node.content) {
-          text += extractTextFromTiptap(child);
-        }
-      }
-      return text;
-    }
-    return '';
-  }
-
-  // build a preview text (~120 chars -> about 60 chars per line x 2 lines)
-  function buildPreview(content: any): string {
-    if (content == null) return '';
-    let fullText = '';
-
-    if (typeof content === 'string') {
-      try {
-        const parsed = JSON.parse(content);
-        if (parsed && typeof parsed === 'object') {
-          fullText = extractTextFromTiptap(parsed);
-        } else {
-          fullText = content;
-        }
-      } catch {
-        fullText = content;
-      }
-    } else if (typeof content === 'object') {
-      fullText = extractTextFromTiptap(content);
-    } else {
-      fullText = String(content);
-    }
-
-    fullText = fullText.replace(/\s+/g, ' ').trim();
-    const maxChars = 120;
-    if (fullText.length <= maxChars) return fullText;
-    return fullText.slice(0, maxChars).trim() + '...';
-  }
-
   // When viewing a report inline, render title + content + pdf + image at the bottom
-  function renderFullReport(report: any) {
+  function renderFullReport(report: ReportRecord) {
     const created = formatDate(report.createdAt);
     const updated = formatDate(report.updatedAt);
 
     const pdfUrl = getPdfUrl(report);
 
     // Determine tiptap content (object or parsed string)
-    let parsedContent: any = null;
+    let parsedContent: ReportRecord = null;
     if (report.content && typeof report.content === 'object') {
       parsedContent = report.content;
     } else if (report.content && typeof report.content === 'string') {
@@ -168,9 +121,9 @@ export default function ReportsSection({
       report.beneficiaries
     )
       ? report.beneficiaries
-          .map((link: any) => link.beneficiary)
+          .map((link: ReportRecord) => link.beneficiary)
           .filter(Boolean)
-          .map((b: any) => ({
+          .map((b: ReportRecord) => ({
             id: b.id,
             name: `${b.firstName ?? ''} ${b.lastName ?? ''}`.trim() || 'Unnamed beneficiary',
             image: b.image,

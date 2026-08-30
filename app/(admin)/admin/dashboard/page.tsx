@@ -8,6 +8,18 @@ import { extractPlainText, isTiptapDoc } from '@/lib/tiptap';
 import DownloadColumnsModal, { ColumnOption } from './components/downloadColumnsModal';
 import { handleDownloadPDF } from './components/handleDownloadPDF';
 
+/**
+ * This dashboard page is a generic dispatcher across ~15 different Prisma
+ * models (messages, responses, projects, events, beneficiaries, users, ...);
+ * which shape applies depends on the runtime `activeSection`, and each
+ * concrete shape is resolved/typed properly inside its own section
+ * component. Keeping the record type here as `any` (rather than a fake
+ * union that nothing actually narrows on) is the honest choice — hence the
+ * single, deliberate suppression below instead of ~25 scattered ones.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DashRecord = any;
+
 import {
   FaUsers,
   FaUserCog,
@@ -22,7 +34,6 @@ import {
   FaAngleLeft,
   FaAngleRight,
   FaAngleDown,
-  FaQuestionCircle,
   FaLightbulb,
   FaFacebook,
   FaYoutube,
@@ -74,9 +85,7 @@ import CreateTeamForm from './createTeamForm'; // <-- CreateTeamForm import
 import BeneficiaryView from './components/views/beneficiaryView';
 import MessageView from './components/views/messageView';
 import ResponseView from './components/views/responseView';
-import EventView from './components/views/eventView';
 import InstitutionView from './components/views/institutionView';
-import ReportView from './components/views/reportView';
 
 // Table controls component for search/filter/add/export
 function TableControls({
@@ -266,14 +275,14 @@ export default function AdminDashboardPage() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<Section>('beneficiaries');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [data, setData] = useState<any[]>([]);
-  const [editRecord, setEditRecord] = useState<any | null>(null);
-  const [viewRecord, setViewRecord] = useState<any | null>(null);
+  const [data, setData] = useState<DashRecord[]>([]);
+  const [editRecord, setEditRecord] = useState<DashRecord | null>(null);
+  const [viewRecord, setViewRecord] = useState<DashRecord | null>(null);
   const [deleteId, setDeleteId] = useState<string | number | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+  const [sortBy] = useState('createdAt');
+  const [sortOrder] = useState<'asc' | 'desc'>('desc');
+  const [rowsPerPage] = useState<number>(10);
   const [page, setPage] = useState<number>(1);
   const [search, setSearch] = useState('');
   const sectionRef = useRef<Section>('beneficiaries');
@@ -283,7 +292,7 @@ export default function AdminDashboardPage() {
 
   const [downloadModalOpen, setDownloadModalOpen] = useState(false);
   const [downloadColumns, setDownloadColumns] = useState<ColumnOption[]>([]);
-  const [pendingDownloadData, setPendingDownloadData] = useState<any[]>([]);
+  const [pendingDownloadData, setPendingDownloadData] = useState<DashRecord[]>([]);
 
   const [hideControls, setHideControls] = useState(false);
 
@@ -338,14 +347,9 @@ export default function AdminDashboardPage() {
     }
   }
 
-  function getSortedData(
-    data: any[],
-    sortBy: string,
-    sortOrder: 'asc' | 'desc',
-    activeSection: Section
-  ) {
+  function getSortedData(data: DashRecord[], sortBy: string, sortOrder: 'asc' | 'desc') {
     if (!Array.isArray(data)) return [];
-    let sorted = [...data];
+    const sorted = [...data];
     sorted.sort((a, b) => {
       let valA = a[sortBy];
       let valB = b[sortBy];
@@ -360,7 +364,7 @@ export default function AdminDashboardPage() {
     return sorted;
   }
 
-  function getFilteredData(sortedData: any[], search: string) {
+  function getFilteredData(sortedData: DashRecord[], search: string) {
     if (!Array.isArray(sortedData)) return [];
     if (!search.trim()) return sortedData;
     const lower = search.toLowerCase();
@@ -375,17 +379,17 @@ export default function AdminDashboardPage() {
     );
   }
 
-  function getPaginatedData(filteredData: any[], page: number, rowsPerPage: number) {
+  function getPaginatedData(filteredData: DashRecord[], page: number, rowsPerPage: number) {
     if (!Array.isArray(filteredData)) return [];
     return (filteredData ?? []).slice((page - 1) * rowsPerPage, page * rowsPerPage);
   }
 
-  const sortedData = getSortedData(data, sortBy, sortOrder, activeSection);
+  const sortedData = getSortedData(data, sortBy, sortOrder);
   const filteredData = getFilteredData(sortedData, search);
   const pageCount = Math.max(1, Math.ceil((filteredData?.length ?? 0) / rowsPerPage));
   const paginatedData = getPaginatedData(filteredData, page, rowsPerPage);
 
-  function handleEdit(record: any) {
+  function handleEdit(record: DashRecord) {
     setHideControls(true);
     setEditRecord(record);
   }
@@ -406,7 +410,7 @@ export default function AdminDashboardPage() {
     setViewRecord(null);
   }
 
-  async function handleView(record: any, source?: Section) {
+  async function handleView(record: DashRecord, source?: Section) {
     setHideControls(true);
 
     if (!record) {
@@ -426,7 +430,7 @@ export default function AdminDashboardPage() {
         const parentId = typeof msgData.id === 'number' ? msgData.id : Number(msgData.id);
         const linkedResponses = Array.isArray(respData)
           ? respData.filter(
-              (r: any) =>
+              (r: DashRecord) =>
                 (r.message && (r.message.id === parentId || Number(r.message.id) === parentId)) ||
                 (r.messageId && Number(r.messageId) === parentId)
             )
@@ -505,7 +509,7 @@ export default function AdminDashboardPage() {
         if (Array.isArray(item.responses)) {
           return {
             ...item,
-            responses: item.responses.filter((r: any) => String(r.id) !== String(id)),
+            responses: item.responses.filter((r: DashRecord) => String(r.id) !== String(id)),
           };
         }
         return item;
@@ -519,7 +523,7 @@ export default function AdminDashboardPage() {
     if (viewRecord && Array.isArray(viewRecord.responses)) {
       setViewRecord({
         ...viewRecord,
-        responses: viewRecord.responses.filter((r: any) => String(r.id) !== String(id)),
+        responses: viewRecord.responses.filter((r: DashRecord) => String(r.id) !== String(id)),
       });
     }
 
@@ -529,12 +533,12 @@ export default function AdminDashboardPage() {
     }
   }
 
-  function handlePasswordEdit(record: any) {
+  function handlePasswordEdit(record: DashRecord) {
     setHideControls(true);
     setEditRecord({ ...record, _passwordOnly: true });
   }
 
-  function getCurrentColumns(): any[] {
+  function getCurrentColumns(): DashRecord[] {
     return [];
   }
   const handleExportExcel = () => {
@@ -575,13 +579,6 @@ export default function AdminDashboardPage() {
     setViewRecord(null);
   }
 
-  const Placeholder = ({ title }: { title: string }) => (
-    <div className="p-8 text-center">
-      <h2 className="text-xl font-semibold mb-4">{title}</h2>
-      <p className="text-sm text-slate-600 dark:text-slate-300">This section is coming soon.</p>
-    </div>
-  );
-
   function renderSection() {
     if (viewRecord) {
       switch (activeSection) {
@@ -604,7 +601,7 @@ export default function AdminDashboardPage() {
               page={page}
               rowsPerPage={rowsPerPage}
               handleEdit={handleEdit}
-              handleView={(r: any) => handleView(r, 'projects')}
+              handleView={(r: DashRecord) => handleView(r, 'projects')}
               handleDelete={handleDelete}
               TableActions={() => null}
               deleteId={deleteId}
@@ -617,7 +614,7 @@ export default function AdminDashboardPage() {
         case 'home':
           return <ChartSection />;
         case 'settings':
-          return <SettingsSection currentUserId={(session?.user as any)?.id} />;
+          return <SettingsSection currentUserId={session?.user?.id} />;
         default:
           return null;
       }
@@ -719,7 +716,7 @@ export default function AdminDashboardPage() {
             <CreateFAQForm
               mode={editRecord?.id ? 'edit' : 'create'}
               initialData={editRecord?.id ? editRecord : undefined}
-              currentUserId={(session?.user as any)?.id}
+              currentUserId={session?.user?.id}
               onSuccess={handleSaveEdit}
               onCancel={handleCancelEdit}
             />
@@ -753,7 +750,7 @@ export default function AdminDashboardPage() {
             page={page}
             rowsPerPage={rowsPerPage}
             handleEdit={handleEdit}
-            handleView={(r: any) => handleView(r, 'projects')}
+            handleView={(r: DashRecord) => handleView(r, 'projects')}
             handleDelete={handleDelete}
             TableActions={() => null}
             deleteId={deleteId}
@@ -768,7 +765,7 @@ export default function AdminDashboardPage() {
             page={page}
             rowsPerPage={rowsPerPage}
             handleEdit={handleEdit}
-            handleView={(r: any) => handleView(r, 'team')}
+            handleView={(r: DashRecord) => handleView(r, 'team')}
             handleDelete={handleDelete}
             TableActions={() => null}
             deleteId={deleteId}
@@ -783,7 +780,7 @@ export default function AdminDashboardPage() {
             page={page}
             rowsPerPage={rowsPerPage}
             handleEdit={handleEdit}
-            handleView={(r: any) => handleView(r, 'events')}
+            handleView={(r: DashRecord) => handleView(r, 'events')}
             handleDelete={handleDelete}
             TableActions={() => null}
             deleteId={deleteId}
@@ -799,7 +796,7 @@ export default function AdminDashboardPage() {
             rowsPerPage={rowsPerPage}
             handleEdit={handleEdit}
             handleDelete={handleDelete}
-            currentUserRole={(session?.user as any)?.role ?? ''}
+            currentUserRole={session?.user?.role ?? ''}
             TableActions={() => null}
             deleteId={deleteId}
             deleteLoading={deleteLoading}
@@ -841,7 +838,7 @@ export default function AdminDashboardPage() {
             page={page}
             rowsPerPage={rowsPerPage}
             handleEdit={handleEdit}
-            handleView={(r: any) => handleView(r, 'institutions')}
+            handleView={(r: DashRecord) => handleView(r, 'institutions')}
             handleDelete={handleDelete}
             TableActions={() => null}
             deleteId={deleteId}
@@ -867,11 +864,11 @@ export default function AdminDashboardPage() {
             page={page}
             rowsPerPage={rowsPerPage}
             handleEdit={handleEdit}
-            handleView={(r: any) => handleView(r, 'beneficiaries')}
+            handleView={(r: DashRecord) => handleView(r, 'beneficiaries')}
             handleDelete={handleDelete}
             messagesCountMap={{}}
             requestsCountMap={{}}
-            currentUserRole={(session?.user as any)?.role ?? ''}
+            currentUserRole={session?.user?.role ?? ''}
             TableActions={() => null}
             onAddMessage={(id: string) => {
               setHideControls(true);
@@ -889,11 +886,11 @@ export default function AdminDashboardPage() {
             page={page}
             rowsPerPage={rowsPerPage}
             handleEdit={handleEdit}
-            handleView={(r: any) => handleView(r, 'messages')}
+            handleView={(r: DashRecord) => handleView(r, 'messages')}
             handleDeleteMessage={handleDeleteMessage}
             handleDeleteResponse={handleDeleteResponse}
             onRespond={handleRespondToMessage}
-            currentUserRole={(session?.user as any)?.role ?? ''}
+            currentUserRole={session?.user?.role ?? ''}
             TableActions={() => null}
             deleteId={deleteId}
             deleteLoading={deleteLoading}
@@ -907,7 +904,7 @@ export default function AdminDashboardPage() {
             page={page}
             rowsPerPage={rowsPerPage}
             handleEdit={handleEdit}
-            handleView={(r: any) => handleView(r, 'responses')}
+            handleView={(r: DashRecord) => handleView(r, 'responses')}
             handleDelete={handleDeleteResponse}
             TableActions={() => null}
             deleteId={deleteId}
@@ -920,7 +917,7 @@ export default function AdminDashboardPage() {
       case 'youtube_videos':
         return <YouTubeSection />;
       case 'account_settings':
-        return <AccountSettings currentUserId={(session?.user as any)?.id} />;
+        return <AccountSettings currentUserId={session?.user?.id} />;
       case 'site_settings':
         return <SiteSettings />;
       case 'logout':
@@ -952,7 +949,7 @@ export default function AdminDashboardPage() {
           />
         );
       case 'settings':
-        return <SettingsSection currentUserId={(session?.user as any)?.id} />;
+        return <SettingsSection currentUserId={session?.user?.id} />;
       default:
         return null;
     }

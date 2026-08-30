@@ -115,7 +115,7 @@ export default function FacebookPostsCard() {
             >
               {Array.from({ length: totalPages }).map((_, idx) => {
                 const start = idx * POSTS_PER_PAGE;
-                let cards = allPosts.slice(start, start + POSTS_PER_PAGE);
+                const cards = allPosts.slice(start, start + POSTS_PER_PAGE);
                 if (cards.length < POSTS_PER_PAGE && allPosts.length > 0) {
                   while (cards.length < POSTS_PER_PAGE) {
                     cards.push(allPosts[0]);
@@ -228,7 +228,7 @@ function Pagination({
 
   const renderPageNumbers = () => {
     let start = Math.max(1, currentPage - 2);
-    let end = Math.min(totalPages, start + 4);
+    const end = Math.min(totalPages, start + 4);
     if (end - start < 4) start = Math.max(1, end - 4);
 
     const pages = [];

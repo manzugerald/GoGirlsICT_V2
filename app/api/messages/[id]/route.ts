@@ -2,14 +2,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 
 export const runtime = 'nodejs';
 
 type Role = 'super' | 'admin' | 'moderator' | 'beneficiary' | 'user' | 'guest';
 const KNOWN_ROLES = ['super', 'admin', 'moderator', 'beneficiary', 'user', 'guest'];
 
-const normalizeRole = (r: any): Role => {
+const normalizeRole = (r: unknown): Role => {
   const normalized = String(r ?? 'guest')
     .trim()
     .toLowerCase();
@@ -17,33 +17,11 @@ const normalizeRole = (r: any): Role => {
   return 'guest';
 };
 
-function getNames(session: any) {
-  const firstName = (session?.user?.firstName ?? '').trim();
-  const lastName = (session?.user?.lastName ?? '').trim();
-  return { firstName, lastName };
-}
-
-async function getOwnBeneficiaryIdFromSession(session: any): Promise<string | null> {
-  const role = normalizeRole(session?.user?.role);
-  if (role !== 'beneficiary') return null;
-  const { firstName, lastName } = getNames(session);
-  if (!firstName || !lastName) return null;
-
-  const match = await prisma.beneficiary.findFirst({
-    where: {
-      firstName: { equals: firstName, mode: 'insensitive' },
-      lastName: { equals: lastName, mode: 'insensitive' },
-    },
-    select: { id: true },
-  });
-  return match?.id ?? null;
-}
-
 // Only super and admin can delete any message
 const canAdminDelete = (role: Role) => role === 'super' || role === 'admin';
 
 // GET: fetch a single message (include responses)
-export async function GET(_req: Request, context: { params: any }) {
+export async function GET(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
     const idRaw = params?.id;
@@ -77,7 +55,7 @@ export async function GET(_req: Request, context: { params: any }) {
 }
 
 // DELETE: delete a message and its responses
-export async function DELETE(_req: Request, context: { params: any }) {
+export async function DELETE(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
     const idRaw = params?.id;
@@ -144,8 +122,8 @@ export async function DELETE(_req: Request, context: { params: any }) {
     return NextResponse.json({ message: 'Deleted' }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
-  } catch (error: any) {
-    if (error?.code === 'P2025') {
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       return NextResponse.json({ error: 'Not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
     console.error('DELETE /api/messages/[id] error:', error);

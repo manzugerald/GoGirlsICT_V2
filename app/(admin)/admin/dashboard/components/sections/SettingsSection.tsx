@@ -5,18 +5,16 @@ import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Home, User, Star, Target, Search, Gem } from 'lucide-react';
+import CreateUserForm from '@/app/(admin)/admin/dashboard/createUserForm';
 
-const ROLE_OPTIONS = [
-  { value: 'super', label: 'Super' },
-  { value: 'admin', label: 'Admin' },
-  { value: 'moderator', label: 'Moderator' },
-  { value: 'beneficiary', label: 'Beneficiary' },
-  { value: 'guest', label: 'Guest' },
-] as const;
+// currentUser is the full /api/users/:id payload merged with (and falling
+// back to) the NextAuth session user — two differently-shaped sources — so
+// one deliberate loose alias here instead of scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SettingsUserRecord = any;
 
 export default function SettingsSection({
   currentUserId,
-  onOpenEdit,
 }: {
   currentUserId?: string | number | null;
   onOpenEdit?: (payload: {
@@ -26,14 +24,14 @@ export default function SettingsSection({
   }) => void;
 }) {
   const { data: session, status } = useSession();
-  const sessionUser = (session?.user as any) ?? null;
+  const sessionUser = session?.user ?? null;
   const sessionUserId = sessionUser?.id ?? null;
   const userRole = sessionUser?.role ?? '';
 
   const id = currentUserId ?? sessionUserId;
   const loading = status === 'loading';
   const canEdit = !!sessionUser?.id;
-  const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [currentUser, setCurrentUser] = useState<SettingsUserRecord | null>(null);
   const displayUser = currentUser ?? sessionUser ?? null;
 
   // Modal User Edit/Profile/Password
@@ -111,8 +109,8 @@ export default function SettingsSection({
           coreValues: json?.coreValues ?? '',
         });
       }
-    } catch (err: any) {
-      setHomeError(err?.message || 'Failed to load homepage content');
+    } catch (err) {
+      setHomeError(err instanceof Error ? err.message : 'Failed to load homepage content');
     } finally {
       setHomeLoading(false);
     }
@@ -166,7 +164,7 @@ export default function SettingsSection({
         setUploadProgress(null);
         const status = xhr.status;
         const respText = xhr.responseText ?? '';
-        let json: any = null;
+        let json: SettingsUserRecord = null;
         try {
           json = respText ? JSON.parse(respText) : null;
         } catch {
@@ -208,8 +206,8 @@ export default function SettingsSection({
       const videoUrl = await uploadHeroVideoFile(file);
       setHomeData((d) => ({ ...(d ?? {}), heroVideo: videoUrl }));
       setUploadError(null);
-    } catch (err: any) {
-      setUploadError(err?.message || 'Upload failed');
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
       try {
         (e.target as HTMLInputElement).value = '';
@@ -257,7 +255,7 @@ export default function SettingsSection({
           body: JSON.stringify(dataToSend),
         });
       const text = await res.text().catch(() => '');
-      let payload: any = null;
+      let payload: SettingsUserRecord = null;
       try {
         payload = text ? JSON.parse(text) : null;
       } catch {
@@ -278,8 +276,8 @@ export default function SettingsSection({
         setHomeSuccess(null);
         setHomeModalOpen(false);
       }, 900);
-    } catch (err: any) {
-      setHomeError(err?.message || 'Failed to save homepage content');
+    } catch (err) {
+      setHomeError(err instanceof Error ? err.message : 'Failed to save homepage content');
       try {
         fetchHomeContent();
       } catch {}
@@ -306,8 +304,8 @@ export default function SettingsSection({
         setHomeSuccess(null);
         setHomeModalOpen(false);
       }, 900);
-    } catch (err: any) {
-      setHomeError(err?.message || 'Failed to delete homepage content');
+    } catch (err) {
+      setHomeError(err instanceof Error ? err.message : 'Failed to delete homepage content');
       try {
         fetchHomeContent();
       } catch {}
@@ -367,8 +365,8 @@ export default function SettingsSection({
         throw new Error(txt || 'Failed to submit deletion request');
       }
       setDeleteAccountSuccess('Deletion request submitted. Administrators have been notified.');
-    } catch (err: any) {
-      setDeleteAccountError(err?.message || 'Failed to process request');
+    } catch (err) {
+      setDeleteAccountError(err instanceof Error ? err.message : 'Failed to process request');
     } finally {
       setDeleteAccountLoading(false);
     }
@@ -430,7 +428,7 @@ export default function SettingsSection({
       <div className="text-sm mt-2">{renderRich(value)}</div>
     </div>
   );
-  const renderAvatar = (user: any) => {
+  const renderAvatar = (user: SettingsUserRecord) => {
     const img = user?.image;
     const first = user?.firstName ?? user?.name?.split(' ')?.[0] ?? '';
     const last = user?.lastName ?? (user?.name ? user.name.split(' ').slice(1).join(' ') : '');
@@ -466,8 +464,8 @@ export default function SettingsSection({
           <h2 className="font-semibold text-xl m-0">Home Page Content</h2>
         </div>
         <p className="text-sm text-muted-foreground mb-3">
-          Preview homepage content. Click "Edit homepage content" to upload a hero video or modify
-          fields.
+          Preview homepage content. Click &quot;Edit homepage content&quot; to upload a hero video
+          or modify fields.
         </p>
         {homeLoading ? (
           <div className="text-sm text-muted-foreground">Loading homepage content…</div>
@@ -602,50 +600,45 @@ export default function SettingsSection({
           </DialogHeader>
           <div className="p-4 overflow-y-auto max-h-[72vh] space-y-4">
             {id &&
-              (require('@/app/(admin)/admin/dashboard/createUserForm').default ? (
-                React.createElement(
-                  require('@/app/(admin)/admin/dashboard/createUserForm').default,
-                  openEditModal === 'profile'
-                    ? {
-                        mode: 'edit',
-                        userId: String(id),
-                        hideUsernameField: true,
-                        hidePasswordFields: true,
-                        hideRoleField: true,
-                        onSuccess: async () => {
-                          setOpenEditModal(null);
-                          try {
-                            const r = await fetch(`/api/users/${id}`, {
-                              credentials: 'same-origin',
-                            });
-                            if (r.ok) setCurrentUser(await r.json());
-                          } catch {}
-                        },
-                        onCancel: () => setOpenEditModal(null),
-                      }
-                    : {
-                        mode: 'edit',
-                        userId: String(id),
-                        onlyPasswordFields: true,
-                        requireCurrentPassword: userRole !== 'super',
-                        showDeleteAccount: true,
-                        onSuccess: async () => {
-                          setOpenEditModal(null);
-                          try {
-                            const r = await fetch(`/api/users/${id}`, {
-                              credentials: 'same-origin',
-                            });
-                            if (r.ok) setCurrentUser(await r.json());
-                          } catch {}
-                        },
-                        onCancel: () => setOpenEditModal(null),
-                        onDelete: async () => {
-                          await handleDeleteAccount();
-                        },
-                      }
-                )
+              (openEditModal === 'profile' ? (
+                <CreateUserForm
+                  mode="edit"
+                  userId={String(id)}
+                  hideUsernameField
+                  hidePasswordFields
+                  hideRoleField
+                  onSuccess={async () => {
+                    setOpenEditModal(null);
+                    try {
+                      const r = await fetch(`/api/users/${id}`, {
+                        credentials: 'same-origin',
+                      });
+                      if (r.ok) setCurrentUser(await r.json());
+                    } catch {}
+                  }}
+                  onCancel={() => setOpenEditModal(null)}
+                />
               ) : (
-                <div className="text-sm text-red-500">CreateUserForm not available</div>
+                <CreateUserForm
+                  mode="edit"
+                  userId={String(id)}
+                  onlyPasswordFields
+                  requireCurrentPassword={userRole !== 'super'}
+                  showDeleteAccount
+                  onSuccess={async () => {
+                    setOpenEditModal(null);
+                    try {
+                      const r = await fetch(`/api/users/${id}`, {
+                        credentials: 'same-origin',
+                      });
+                      if (r.ok) setCurrentUser(await r.json());
+                    } catch {}
+                  }}
+                  onCancel={() => setOpenEditModal(null)}
+                  onDelete={async () => {
+                    await handleDeleteAccount();
+                  }}
+                />
               ))}
           </div>
         </DialogContent>

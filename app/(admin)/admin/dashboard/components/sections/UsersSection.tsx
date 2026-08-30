@@ -4,21 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSession } from 'next-auth/react';
-import { generateBrowserPassword } from '@/lib/admin-password-change/browserPassword';
 
-/**
- * Client-side password validation according to policy.
- * Returns { valid, reasons[] }.
- */
-function validatePassword(password: string) {
-  const reasons: string[] = [];
-  if (!password || password.length < 8) reasons.push('At least 8 characters');
-  if (!/[A-Z]/.test(password)) reasons.push('At least one uppercase letter');
-  if (!/[a-z]/.test(password)) reasons.push('At least one lowercase letter');
-  if (!/[0-9]/.test(password)) reasons.push('At least one number');
-  if (!/[^A-Za-z0-9]/.test(password)) reasons.push('At least one special character');
-  return { valid: reasons.length === 0, reasons };
-}
+// This section renders User records defensively (extra profile fields are
+// listed generically via Object.entries below) rather than one fixed shape
+// — hence one deliberate loose alias here instead of scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type UserRecord = any;
 
 export default function UsersSection({
   paginatedData,
@@ -26,23 +17,16 @@ export default function UsersSection({
   handlePasswordEdit,
   handleDelete,
 }: {
-  paginatedData: any[];
-  handleEdit: (record: any) => void;
-  handlePasswordEdit: (record: any) => void;
+  paginatedData: UserRecord[];
+  handleEdit: (record: UserRecord) => void;
+  handlePasswordEdit: (record: UserRecord) => void;
   handleDelete: (id: string | number) => void;
 }) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [generatedPwd, setGeneratedPwd] = useState<string | null>(null);
-  const [manualPwd, setManualPwd] = useState<string>('');
-  const [currentPwd, setCurrentPwd] = useState<string>(''); // used when changing own password
-  const [pwdMessage, setPwdMessage] = useState<string | null>(null);
-  const [applying, setApplying] = useState(false);
   const [editingChoiceId, setEditingChoiceId] = useState<number | null>(null);
   const [editingChoiceValue, setEditingChoiceValue] = useState<'details' | 'password'>('details');
 
   const { data: session, status } = useSession();
-  const sessionUserId = (session as any)?.user?.id ?? null;
-  const isSuper = String((session as any)?.user?.role ?? '').toLowerCase() === 'super';
 
   useEffect(() => {
     console.log('UsersSection session:', session, 'status:', status);
@@ -51,11 +35,6 @@ export default function UsersSection({
   function toggleExpand(id: number) {
     setExpandedId((prev) => (prev === id ? null : id));
     if (expandedId === id) {
-      setGeneratedPwd(null);
-      setManualPwd('');
-      setCurrentPwd('');
-      setPwdMessage(null);
-      setApplying(false);
       setEditingChoiceId(null);
       setEditingChoiceValue('details');
     }
@@ -76,67 +55,6 @@ export default function UsersSection({
     }
   }
 
-  function handleGenerate(userId: number) {
-    // Use secure browser generator only (no Node crypto)
-    const candidate = generateBrowserPassword(12);
-    setGeneratedPwd(candidate);
-    setManualPwd('');
-    setPwdMessage('Password generated — review and click Apply password to set it.');
-  }
-
-  async function applyPassword(userId: number, password: string) {
-    setPwdMessage(null);
-    const { valid, reasons } = validatePassword(password);
-    if (!valid) {
-      setPwdMessage(`Password does not meet requirements: ${reasons.join(', ')}`);
-      return;
-    }
-
-    setApplying(true);
-    try {
-      const payload: any = {
-        newPassword: password,
-        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
-      };
-      if (String(sessionUserId) === String(userId)) {
-        // changing own password: require current password
-        if (!currentPwd) {
-          setPwdMessage('Current password is required when changing your own password.');
-          setApplying(false);
-          return;
-        }
-        payload.currentPassword = currentPwd;
-      } else {
-        // admin forced change: include actorId so server can audit
-        if (sessionUserId) payload.actorId = String(sessionUserId);
-      }
-
-      // NOTE: This call intentionally targets the admin-force-change-password route.
-      const res = await fetch(
-        `/api/users/${encodeURIComponent(String(userId))}/admin-force-change-password`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        }
-      );
-      const data = await res.json().catch(() => null);
-      if (!res.ok) {
-        const msg = data?.error || data?.message || `HTTP ${res.status}`;
-        setPwdMessage(`Failed to update password: ${msg}`);
-      } else {
-        setPwdMessage('Password updated successfully.');
-        setGeneratedPwd(null);
-        setManualPwd('');
-        setCurrentPwd('');
-      }
-    } catch (err: any) {
-      setPwdMessage(err?.message || 'Network error while updating password.');
-    } finally {
-      setApplying(false);
-    }
-  }
-
   return (
     <div className="space-y-4">
       {(!Array.isArray(paginatedData) || paginatedData.length === 0) && (
@@ -151,8 +69,6 @@ export default function UsersSection({
             `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim()
               ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim()
               : user.username;
-
-          const isSelf = String(sessionUserId) === String(user.id);
 
           // Make the card allow visible overflow when its dropdown is open so the menu isn't clipped.
           const cardOverflowClass =

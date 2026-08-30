@@ -15,10 +15,10 @@ export interface HomePageContent {
 
 export interface ExecutiveMessage {
   id: number;
-  title?: any | null; // Tiptap JSON doc
+  title?: unknown | null; // Tiptap JSON doc
   name?: string | null;
   affiliated?: string | null;
-  content: any; // JSON
+  content: unknown; // JSON
   nameImageUrl?: string | null;
   messageImageUrl?: string | null;
   messageStatus: string;
@@ -32,9 +32,9 @@ export interface ExecutiveMessage {
 
 export interface Project {
   id: number;
-  title: any; // Tiptap JSON doc
+  title: unknown; // Tiptap JSON doc
   slug: string;
-  content: any; // JSON
+  content: unknown; // JSON
   images: string[];
   projectStatus: string; // Status enum
   publishStatus: string; // PublishStatus enum
@@ -59,9 +59,9 @@ export interface Report {
 export interface Event {
   id: number;
   slug: string;
-  eventTitle: any; // Tiptap JSON doc
-  eventDescription: any; // JSON
-  eventDetails?: any | null; // JSON
+  eventTitle: unknown; // Tiptap JSON doc
+  eventDescription: unknown; // JSON
+  eventDetails?: unknown | null; // JSON
   eventLocation?: string | null;
   eventBanner: string;
   eventImages: string[];

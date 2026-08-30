@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import { slugify } from '@/lib/utils';
 import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { redis } from '@/utils/redis';
+import { revalidatePath } from 'next/cache';
 
 const ALL_PROJECTS_CACHE_KEY = 'projects:all';
 const SINGLE_PROJECT_CACHE_PREFIX = 'projects:'; // projects:[id]
@@ -173,6 +174,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       redis.del(ALL_PROJECTS_CACHE_KEY),
     ]);
 
+    revalidatePath('/');
+    revalidatePath('/impact');
+    revalidatePath('/programs');
+    revalidatePath(`/programs/${updatedProject.slug}`);
+
     return NextResponse.json(updatedProject, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
@@ -199,6 +205,11 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
       redis.del(SINGLE_PROJECT_CACHE_PREFIX + projectId),
       redis.del(ALL_PROJECTS_CACHE_KEY),
     ]);
+
+    revalidatePath('/');
+    revalidatePath('/impact');
+    revalidatePath('/programs');
+    revalidatePath(`/programs/${deleted.slug}`);
 
     return NextResponse.json({ message: 'Project deleted', project: deleted }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },

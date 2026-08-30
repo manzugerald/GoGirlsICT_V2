@@ -2,14 +2,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import type { Session } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
 
 export const runtime = 'nodejs';
 
 type Role = 'super' | 'admin' | 'moderator' | 'beneficiary' | 'user' | 'guest';
 
 const KNOWN_ROLES = ['super', 'admin', 'moderator', 'beneficiary', 'user', 'guest'] as const;
-function normalizeRole(r: any): Role {
+function normalizeRole(r: unknown): Role {
   const v = String(r ?? 'guest')
     .trim()
     .toLowerCase();
@@ -17,9 +18,9 @@ function normalizeRole(r: any): Role {
   return 'guest';
 }
 
-async function resolveDbUser(session: any) {
+async function resolveDbUser(session: Session | null) {
   if (!session?.user) return null;
-  const email = session.user?.email;
+  const email = (session.user as { email?: string } | undefined)?.email;
   if (email) {
     try {
       const byEmail = await prisma.user.findUnique({ where: { email } });
@@ -36,7 +37,7 @@ async function resolveDbUser(session: any) {
   try {
     const idStr = String(session.user?.id ?? '').trim();
     if (idStr) {
-      const byId = await prisma.user.findUnique({ where: { id: idStr as any } });
+      const byId = await prisma.user.findUnique({ where: { id: idStr } });
       if (byId) {
         console.debug('resolveDbUser: found by id', { id: idStr });
         return byId;
@@ -55,7 +56,7 @@ async function resolveDbUser(session: any) {
   return null;
 }
 
-async function getOwnBeneficiaryIdFromSession(session: any): Promise<string | null> {
+async function getOwnBeneficiaryIdFromSession(session: Session | null): Promise<string | null> {
   const role = normalizeRole(session?.user?.role);
   if (role !== 'beneficiary') return null;
   const firstName = (session?.user?.firstName ?? '').trim();
@@ -84,7 +85,7 @@ export async function OPTIONS() {
 }
 
 // GET: fetch a single response
-export async function GET(_req: Request, context: { params: any }) {
+export async function GET(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
     const id = String(params?.id ?? '').trim();
@@ -124,7 +125,7 @@ export async function GET(_req: Request, context: { params: any }) {
 }
 
 // PATCH: update a response's content
-export async function PATCH(req: Request, context: { params: any }) {
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
     const id = String(params?.id ?? '').trim();
@@ -141,7 +142,7 @@ export async function PATCH(req: Request, context: { params: any }) {
     const resolvedRole = normalizeRole(dbUser?.role ?? session.user?.role);
     console.debug('PATCH /api/responses/[id] - session:', {
       sessionUserId: session.user?.id,
-      sessionUserEmail: session.user?.email,
+      sessionUserEmail: (session.user as { email?: string } | undefined)?.email,
       dbUserId: dbUser?.id,
       resolvedRole,
     });
@@ -222,7 +223,7 @@ export async function PATCH(req: Request, context: { params: any }) {
 }
 
 // DELETE: delete a response (responder, message creator, or super/admin)
-export async function DELETE(_req: Request, context: { params: any }) {
+export async function DELETE(_req: Request, context: { params: Promise<{ id: string }> }) {
   const debugContext: Record<string, unknown> = {};
   try {
     const params = await context.params;
@@ -244,7 +245,7 @@ export async function DELETE(_req: Request, context: { params: any }) {
 
     const sessionSummary = {
       sessionUserId: session.user?.id,
-      sessionUserEmail: session.user?.email,
+      sessionUserEmail: (session.user as { email?: string } | undefined)?.email,
       sessionUserRole: session.user?.role,
       sessionFirstName: session.user?.firstName,
       sessionLastName: session.user?.lastName,
@@ -275,8 +276,8 @@ export async function DELETE(_req: Request, context: { params: any }) {
     } catch (e) {
       console.error('DELETE prisma.findUnique threw', {
         id,
-        error: (e as any)?.message ?? e,
-        stack: (e as any)?.stack,
+        error: (e as Error)?.message ?? e,
+        stack: (e as Error)?.stack,
       });
       return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
@@ -334,7 +335,7 @@ export async function DELETE(_req: Request, context: { params: any }) {
       await prisma.response.delete({ where: { id: existing.id } });
       console.debug('DELETE /api/responses/[id] - deleted:', { id: existing.id });
     } catch (e) {
-      const err = e as any;
+      const err = e as Error & { code?: string; meta?: unknown };
       console.error('DELETE prisma.delete failed', {
         id: existing.id,
         errorMessage: err?.message ?? err,
@@ -354,8 +355,8 @@ export async function DELETE(_req: Request, context: { params: any }) {
       } catch (e2) {
         console.error('DELETE fallback deleteMany also failed', {
           id: existing.id,
-          errorMessage: (e2 as any)?.message ?? e2,
-          stack: (e2 as any)?.stack ?? null,
+          errorMessage: (e2 as Error)?.message ?? e2,
+          stack: (e2 as Error)?.stack ?? null,
         });
       }
 

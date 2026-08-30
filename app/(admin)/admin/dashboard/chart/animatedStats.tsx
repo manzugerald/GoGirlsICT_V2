@@ -150,7 +150,7 @@ function StatCard({ stat, index }: { stat: Stat; index: number }) {
 
   useEffect(() => {
     if (!ref.current) return;
-    let start = 0;
+    const start = 0;
     const end = stat.value;
     if (end === 0) {
       ref.current.textContent = '0';

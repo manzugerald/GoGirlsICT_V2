@@ -6,7 +6,7 @@ function deleteCookie(name: string) {
   try {
     document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
     document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=None;`;
-  } catch (e) {
+  } catch {
     // ignore
   }
 }
@@ -40,8 +40,8 @@ export async function loginAndSync({
   if (!next) {
     return { ok: false, error: 'Sign-in failed' };
   }
-  if ((next as any).error) {
-    return { ok: false, error: (next as any).error };
+  if (next.error) {
+    return { ok: false, error: next.error };
   }
 
   // 2) Create server-side session/cookie
@@ -71,7 +71,7 @@ export async function loginAndSync({
         if (start) {
           try {
             sessionStorage.setItem('loginStartedAt', String(start));
-          } catch (e) {
+          } catch {
             // ignore
           }
         } else {
@@ -85,16 +85,16 @@ export async function loginAndSync({
           sessionStorage.setItem('loginStartedAt', String(Date.now()));
         } catch {}
       }
-    } catch (e) {
+    } catch {
       try {
         sessionStorage.setItem('loginStartedAt', String(Date.now()));
       } catch {}
     }
 
     // Determine redirect: next-auth returned url > provided callbackUrl > default
-    const redirectUrl = (next as any).url ?? callbackUrl ?? DEFAULT_POST_LOGIN;
+    const redirectUrl = next.url ?? callbackUrl ?? DEFAULT_POST_LOGIN;
     return { ok: true, redirectUrl };
-  } catch (err: any) {
+  } catch {
     // On network error, clear NextAuth session
     try {
       await signOut({ redirect: false });
@@ -119,7 +119,7 @@ export async function logoutAndSync(): Promise<{ ok: boolean; error?: string }> 
     try {
       localStorage.setItem('lastLogoutAt', String(Date.now()));
       sessionStorage.removeItem('loginStartedAt');
-    } catch (e) {
+    } catch {
       // ignore if storage not available
     }
 
@@ -133,7 +133,7 @@ export async function logoutAndSync(): Promise<{ ok: boolean; error?: string }> 
     await signOut({ callbackUrl: '/admin' });
 
     return { ok: true };
-  } catch (err: any) {
+  } catch {
     return { ok: false, error: 'Logout failed' };
   }
 }

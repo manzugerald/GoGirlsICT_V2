@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import { redis } from '@/utils/redis';
 import { isTiptapDocEmpty } from '@/lib/tiptap';
+import { revalidatePath } from 'next/cache';
 
 const PROJECTS_CACHE_KEY = 'projects:all';
 const PROJECTS_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
@@ -124,6 +125,13 @@ export async function POST(req: Request) {
     } catch (cacheErr) {
       console.warn('[/api/projects] failed to delete cache after create', cacheErr);
     }
+
+    // Invalidate the ISR cache on every public page this project feeds —
+    // its count on home/impact, and its own listing/detail page.
+    revalidatePath('/');
+    revalidatePath('/impact');
+    revalidatePath('/programs');
+    revalidatePath(`/programs/${project.slug}`);
 
     return NextResponse.json(project, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },

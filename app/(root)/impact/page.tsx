@@ -1,6 +1,9 @@
 import { prisma } from '@/db/prisma';
 import ImpactPageContent from './components/ImpactPageContent';
 
+// ISR: see app/(root)/page.tsx — same counts, same invalidation triggers.
+export const revalidate = 3600;
+
 export default async function ImpactPage() {
   // Same counts as the homepage's Impact section — computed here (not
   // fetched client-side) so this page doesn't repeat the six live API

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { Message } from '@/lib/generated/prisma';
+import { Message, Response } from '@/lib/generated/prisma';
 import CreateResponseForm from '@/app/(admin)/admin/dashboard/createResponseForm';
 import ConfirmModal from '@/app/(admin)/admin/dashboard/components/ui/ConfirmModal';
 import { isTiptapDocEmpty, normalizeTiptapDoc, tiptapExcerpt } from '@/lib/tiptap';
@@ -13,8 +13,12 @@ const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-v
   ssr: false,
 });
 
-type ResponseWithRelations = any; // keep loose shape; server returns varied shapes
-type MessageWithRelations = Message & {
+// This component treats every field defensively (optional chaining / `??`
+// fallbacks throughout), including legacy fields that aren't part of the
+// current Prisma models — so these types are intentionally loose: only
+// `id` is guaranteed, everything else is `Partial`.
+type MessageRecord = Omit<Partial<Message>, 'id'> & {
+  id: number | string;
   beneficiary?: { id: string; firstName: string; lastName: string } | null;
   createdBy?: {
     id: string;
@@ -23,7 +27,33 @@ type MessageWithRelations = Message & {
     username?: string | null;
     email?: string | null;
   } | null;
+  createdByName?: string | null;
+  createdByUsername?: string | null;
+  category?: string | null;
+  subject?: string | null;
+  messageTitle?: string | null;
+  responses?: ResponseWithRelations[];
+  createdById?: string | null;
 };
+
+type ResponseWithRelations = Omit<Partial<Response>, 'id'> & {
+  id: number | string;
+  message?: { id: number; createdById?: string | null } | null;
+  responderUser?: {
+    id?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+  } | null;
+  responderBeneficiary?: { firstName?: string | null; lastName?: string | null } | null;
+  name?: string | null;
+  subject?: string | null;
+  title?: string | null;
+  createdByName?: string | null;
+  createdByUsername?: string | null;
+  parent?: MessageRecord | null;
+};
+
+type AnyRecord = MessageRecord | ResponseWithRelations;
 
 /**
  * ResponsesSection
@@ -41,41 +71,38 @@ type MessageWithRelations = Message & {
 
 export default function ResponsesSection({
   paginatedData,
-  page,
-  rowsPerPage,
   handleEdit,
-  handleView,
   handleDeleteResponse,
   handleDeleteMessage,
-  onRespond,
-  currentUserRole,
   TableActions,
-  deleteId,
-  deleteLoading,
   onToggleControls,
 }: {
-  paginatedData: ResponseWithRelations[] | any[]; // responses list for the "Responses" tab
+  paginatedData: ResponseWithRelations[]; // responses list for the "Responses" tab
   page: number;
   rowsPerPage: number;
-  handleEdit: (record: any) => void;
-  handleView?: (record: any, source?: 'responses' | 'responded' | string) => void;
+  handleEdit: (record: AnyRecord) => void;
+  handleView?: (record: AnyRecord, source?: 'responses' | 'responded' | string) => void;
   handleDeleteResponse?: (id: string | number) => void;
   handleDeleteMessage?: (id: string | number) => void;
   onRespond?: (messageId: number | string) => void;
   currentUserRole?: string;
-  TableActions?: React.FC<any>;
+  TableActions?: React.ElementType;
   deleteId?: string | number | null;
   deleteLoading?: boolean;
   onToggleControls?: (hide: boolean) => void;
 }) {
   const router = useRouter();
 
+  type ViewingItem =
+    | { type: 'message'; payload: MessageRecord }
+    | { type: 'response'; payload: ResponseWithRelations };
+
   const [activeTab, setActiveTab] = useState<'responses' | 'responded'>('responses');
-  const [viewingItem, setViewingItem] = useState<any | null>(null); // { type: 'response'|'message', payload }
-  const [loadingView, setLoadingView] = useState(false);
+  const [viewingItem, setViewingItem] = useState<ViewingItem | null>(null);
+  const [, setLoadingView] = useState(false);
 
   // For "Responded" tab we fetch messages and responses to compute messages with responses.
-  const [respondedMessages, setRespondedMessages] = useState<MessageWithRelations[] | null>(null);
+  const [respondedMessages, setRespondedMessages] = useState<MessageRecord[] | null>(null);
   const [loadingResponded, setLoadingResponded] = useState(false);
 
   // Inline composer control (when responding)
@@ -92,7 +119,7 @@ export default function ResponsesSection({
   );
 
   // Helpers for responder/author labels (copied and adapted)
-  const createdByLabel = (m: any) => {
+  const createdByLabel = (m: MessageRecord) => {
     if (m.createdBy) {
       const parts = [m.createdBy.firstName, m.createdBy.lastName].filter(Boolean);
       if (parts.length > 0) return parts.join(' ');
@@ -105,7 +132,7 @@ export default function ResponsesSection({
     return 'System';
   };
 
-  const responderLabel = (r: any) => {
+  const responderLabel = (r: ResponseWithRelations) => {
     if (r.name) return r.name;
     if (r.responderUser) {
       const parts = [r.responderUser.firstName, r.responderUser.lastName].filter(Boolean);
@@ -139,13 +166,13 @@ export default function ResponsesSection({
     return `${time} ${month} ${day} ${year}`;
   };
 
-  const formatCreatedByAt = (m: any) => {
+  const formatCreatedByAt = (m: MessageRecord) => {
     const name = createdByLabel(m);
     const createdAt = formatDateForDisplay(m?.createdAt);
     return createdAt ? `${name}, at ${createdAt}` : name;
   };
 
-  const renderResponderAt = (r: any, messageCreatorId?: string | number | null) => {
+  const renderResponderAt = (r: ResponseWithRelations, messageCreatorId?: string | number | null) => {
     const name = responderLabel(r);
     const responderUserId = r?.responderUser?.id ?? r?.responderUserId ?? null;
     const createdAt = formatDateForDisplay(r?.createdAt);
@@ -173,7 +200,7 @@ export default function ResponsesSection({
 
   // `content` (Response/Message) is a Tiptap JSON doc; normalizeTiptapDoc
   // keeps legacy/malformed rows from crashing the viewer.
-  const renderContent = (m: any, full = false) => {
+  const renderContent = (m: AnyRecord, full = false) => {
     if (m?.content == null) {
       return <div className="text-sm text-slate-600 dark:text-slate-300">— No content —</div>;
     }
@@ -223,7 +250,7 @@ export default function ResponsesSection({
               if (mid != null) respondedIds.add(String(mid));
             }
           }
-          const filtered = msgs.filter((m: any) => respondedIds.has(String(m.id)));
+          const filtered = msgs.filter((m: MessageRecord) => respondedIds.has(String(m.id)));
           setRespondedMessages(Array.isArray(filtered) ? filtered : []);
         } catch {
           if (mounted) setRespondedMessages([]);
@@ -238,13 +265,13 @@ export default function ResponsesSection({
   }, [activeTab, respondedMessages]);
 
   // open a message inline (fetch full + its responses)
-  const openMessage = async (record: any) => {
+  const openMessage = async (record: MessageRecord) => {
     const id = record?.id ?? record;
     if (!id) return;
     setLoadingView(true);
     if (typeof onToggleControls === 'function') onToggleControls(true);
     try {
-      let msgData: any = null;
+      let msgData: MessageRecord | null = null;
       try {
         const res = await fetch(`/api/messages/${encodeURIComponent(String(id))}`);
         msgData = res.ok ? await res.json() : null;
@@ -253,14 +280,14 @@ export default function ResponsesSection({
       }
       const base = msgData ?? record;
 
-      let respList: any[] = [];
+      let respList: ResponseWithRelations[] = [];
       try {
         const respRes = await fetch('/api/responses');
         const respData = respRes.ok ? await respRes.json() : [];
         const parentId = base?.id ? String(base.id) : String(id);
         if (Array.isArray(respData)) {
           respList = respData.filter(
-            (r: any) =>
+            (r: ResponseWithRelations) =>
               (r.message && String(r.message.id) === parentId) ||
               (r.messageId && String(r.messageId) === parentId)
           );
@@ -276,13 +303,13 @@ export default function ResponsesSection({
   };
 
   // open a response inline (fetch response + optionally its parent message)
-  const openResponse = async (record: any) => {
+  const openResponse = async (record: ResponseWithRelations) => {
     const id = record?.id ?? record;
     if (!id) return;
     setLoadingView(true);
     if (typeof onToggleControls === 'function') onToggleControls(true);
     try {
-      let resData: any = null;
+      let resData: ResponseWithRelations | null = null;
       try {
         const res = await fetch(`/api/responses/${encodeURIComponent(String(id))}`);
         resData = res.ok ? await res.json() : null;
@@ -299,7 +326,7 @@ export default function ResponsesSection({
       } catch {
         parent = null;
       }
-      setViewingItem({ type: 'response', payload: { ...resData, parent } });
+      setViewingItem({ type: 'response', payload: { id, ...resData, parent } });
     } finally {
       setLoadingView(false);
     }
@@ -312,7 +339,7 @@ export default function ResponsesSection({
   };
 
   // When a response is created successfully: mirror MessagesSection behavior
-  const handleResponseCreated = (created: any) => {
+  const handleResponseCreated = (created: ResponseWithRelations) => {
     const parentId = created?.message?.id ?? created?.messageId ?? null;
     if (!parentId) {
       // if no parent, add to top of responses list (paginatedData is prop; local update only)
@@ -339,7 +366,7 @@ export default function ResponsesSection({
         const respData = respRes.ok ? await respRes.json() : [];
         const list = Array.isArray(respData)
           ? respData.filter(
-              (r: any) =>
+              (r: ResponseWithRelations) =>
                 (r.message && String(r.message.id) === String(parentId)) ||
                 (r.messageId && String(r.messageId) === String(parentId))
             )
@@ -357,7 +384,6 @@ export default function ResponsesSection({
   };
 
   const openComposerForMessage = async (messageId: number | string) => {
-    const msg = []; // we don't need to open from list state necessarily
     await openMessage({ id: messageId });
     setReplyingToMessageId(messageId);
   };
@@ -427,7 +453,7 @@ export default function ResponsesSection({
       if (viewingItem && viewingItem.type === 'message') {
         const msgPayload = viewingItem.payload;
         if (Array.isArray(msgPayload.responses)) {
-          const idx = msgPayload.responses.findIndex((r: any) => String(r.id) === String(id));
+          const idx = msgPayload.responses.findIndex((r: ResponseWithRelations) => String(r.id) === String(id));
           if (idx !== -1) {
             msgPayload.responses.splice(idx, 1);
             setViewingItem({ ...viewingItem });
@@ -455,14 +481,14 @@ export default function ResponsesSection({
     }
   }
 
-  const handleDeleteClick = (item: any, type: 'message' | 'response') => {
+  const handleDeleteClick = (item: AnyRecord, type: 'message' | 'response') => {
     const id = item?.id ?? item;
     if (type === 'message') return promptDeleteMessage(id);
     return deleteResponse(id);
   };
 
   // Renderers for response and message (adapted from MessagesSection)
-  const renderFullResponse = (r: any) => {
+  const renderFullResponse = (r: ResponseWithRelations) => {
     const title = r.subject ?? r.title ?? `Response to ${r.messageId ?? ''}`;
     const parentCreatorId = r?.parent?.createdById ?? r?.message?.createdById ?? null;
     return (
@@ -520,7 +546,7 @@ export default function ResponsesSection({
     );
   };
 
-  const renderFullMessage = (m: any) => {
+  const renderFullMessage = (m: MessageRecord) => {
     const category = m.messageCategory ?? m.category ?? 'System';
     const hasTitle = m.title != null && !isTiptapDocEmpty(m.title);
     const title = hasTitle ? m.title : null;
@@ -621,7 +647,7 @@ export default function ResponsesSection({
               </h3>
               <div className="space-y-3 mt-3">
                 {Array.isArray(m.responses) && m.responses.length > 0 ? (
-                  m.responses.map((r: any) => (
+                  m.responses.map((r: ResponseWithRelations) => (
                     <div
                       key={r.id}
                       className="p-3 rounded border"
@@ -755,7 +781,7 @@ export default function ResponsesSection({
 
                 <div className="messages-list">
                   {Array.isArray(paginatedData) &&
-                    paginatedData.map((r: any) => {
+                    paginatedData.map((r: ResponseWithRelations) => {
                       const responderAt = (() => {
                         const name = responderLabel(r);
                         const createdAt = formatDateForDisplay(r?.createdAt);
@@ -855,7 +881,7 @@ export default function ResponsesSection({
                 <div className="messages-list">
                   {!loadingResponded &&
                     Array.isArray(respondedMessages) &&
-                    respondedMessages.map((m: any) => {
+                    respondedMessages.map((m: MessageRecord) => {
                       const createdAt = m.createdAt ? new Date(m.createdAt) : null;
                       const updatedAt = m.updatedAt ? new Date(m.updatedAt) : null;
                       const showUpdated =

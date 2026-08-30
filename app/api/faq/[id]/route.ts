@@ -11,7 +11,7 @@ import prisma from '@/db/prisma';
  * `params` is already resolved or is a Promise.
  */
 
-export async function GET(_req: Request, { params }: { params: any }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const faq = await prisma.FAQ.findUnique({
@@ -28,16 +28,16 @@ export async function GET(_req: Request, { params }: { params: any }) {
     return NextResponse.json(faq, {
       headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error('GET /api/faq/[id] error:', err);
-    return NextResponse.json({ error: err?.message || 'Server error' }, { 
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Server error' }, { 
       status: 500,
       headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
     });
   }
 }
 
-export async function PUT(req: Request, { params }: { params: any }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await req.json();
@@ -56,10 +56,10 @@ export async function PUT(req: Request, { params }: { params: any }) {
     return NextResponse.json(updated, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error('PUT /api/faq/[id] error:', err);
     // If record not found prisma will throw; return 404 for that case
-    const msg = err?.message || 'Server error';
+    const msg = err instanceof Error ? err.message : 'Server error';
     const status = /Record to update not found/i.test(msg) ? 404 : 500;
     return NextResponse.json({ error: msg }, { 
       status,
@@ -68,7 +68,7 @@ export async function PUT(req: Request, { params }: { params: any }) {
   }
 }
 
-export async function DELETE(_req: Request, { params }: { params: any }) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     await prisma.FAQ.delete({
@@ -78,9 +78,9 @@ export async function DELETE(_req: Request, { params }: { params: any }) {
     return NextResponse.json({ success: true }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error('DELETE /api/faq/[id] error:', err);
-    const msg = err?.message || 'Server error';
+    const msg = err instanceof Error ? err.message : 'Server error';
     const status = /Record to delete does not exist/i.test(msg) ? 404 : 500;
     return NextResponse.json({ error: msg }, { 
       status,

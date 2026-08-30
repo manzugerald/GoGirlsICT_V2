@@ -53,7 +53,7 @@ export default function AnimatedPieceBarChart({
       if (stopped) return;
       if (start === null) start = ts;
       const elapsed = ts - start;
-      let pct = Math.min(elapsed / animationDuration, 1);
+      const pct = Math.min(elapsed / animationDuration, 1);
       setProgress(pct);
 
       if (pct < 1) {

@@ -12,30 +12,34 @@ const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-v
   ssr: false,
 });
 
+// This section renders Project records defensively (optional beneficiary
+// links, legacy content shapes handled via extractPlainText, etc.) rather
+// than one fixed shape — hence one deliberate loose alias here instead of
+// scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ProjectRecord = any;
+
 export default function ProjectsSection({
   paginatedData,
-  page,
-  rowsPerPage,
   handleEdit,
   handleDelete,
-  currentUserRole,
   TableActions,
   deleteId,
   deleteLoading,
   onToggleControls,
 }: {
-  paginatedData: any[];
+  paginatedData: ProjectRecord[];
   page: number;
   rowsPerPage: number;
-  handleEdit: (record: any) => void;
+  handleEdit: (record: ProjectRecord) => void;
   handleDelete: (id: string | number) => void;
   currentUserRole?: string;
-  TableActions?: React.FC<any>;
+  TableActions?: React.ElementType;
   deleteId?: string | number | null;
   deleteLoading?: boolean;
   onToggleControls?: (hide: boolean) => void;
 }) {
-  const [viewing, setViewing] = useState<any | null>(null);
+  const [viewing, setViewing] = useState<ProjectRecord | null>(null);
 
   // responsive maxChars (limits preview length)
   const [maxChars, setMaxChars] = useState<number>(500);
@@ -63,7 +67,7 @@ export default function ProjectsSection({
   }
 
   // Build preview string trimmed to max chars and omitting title if present
-  function buildPreview(projectContent: any, max = 500, title?: string): string {
+  function buildPreview(projectContent: ProjectRecord, max = 500, title?: string): string {
     if (projectContent == null) return '';
 
     let fullText = extractPlainText(projectContent).replace(/\s+/g, ' ').trim();
@@ -85,7 +89,7 @@ export default function ProjectsSection({
   }
 
   // Project card component
-  function ProjectCard({ project }: { project: any }) {
+  function ProjectCard({ project }: { project: ProjectRecord }) {
     const cardRef = useRef<HTMLDivElement | null>(null);
     const [lineClamp, setLineClamp] = useState<number>(6);
 
@@ -222,7 +226,7 @@ export default function ProjectsSection({
   }
 
   // Full inline view: show title + carousel + content + bottom buttons (same layout as card but expanded)
-  function renderFullProject(project: any) {
+  function renderFullProject(project: ProjectRecord) {
     const created = project.createdAt ? new Date(project.createdAt).toLocaleString() : '-';
     const updated = project.updatedAt ? new Date(project.updatedAt).toLocaleString() : '-';
 
@@ -233,9 +237,9 @@ export default function ProjectsSection({
       project.beneficiaries
     )
       ? project.beneficiaries
-          .map((link: any) => link.beneficiary)
+          .map((link: ProjectRecord) => link.beneficiary)
           .filter(Boolean)
-          .map((b: any) => ({
+          .map((b: ProjectRecord) => ({
             id: b.id,
             name: `${b.firstName ?? ''} ${b.lastName ?? ''}`.trim() || 'Unnamed beneficiary',
             image: b.image,

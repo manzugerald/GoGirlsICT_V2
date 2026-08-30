@@ -6,7 +6,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 
 const TEAM_IMAGES_DIR = '/assets/images/team';
 
@@ -65,11 +65,11 @@ export async function GET(_req: Request) {
 export async function POST(req: Request) {
   try {
     // Require authenticated user so we can set createdById automatically
-    const session = await getServerSession(authOptions as any);
-    if (!session || !(session.user as any)?.id) {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.id) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
-    const createdById = String((session.user as any).id);
+    const createdById = String(session.user.id);
 
     const contentType = req.headers.get('content-type') ?? '';
     if (!contentType.includes('form-data')) {
@@ -111,7 +111,7 @@ export async function POST(req: Request) {
 
     // Handle profile image upload
     let profileImage: string | undefined = undefined;
-    if (profileImageFile && (profileImageFile as any).size > 0) {
+    if (profileImageFile && profileImageFile.size > 0) {
       const ext = profileImageFile.name.split('.').pop() || 'jpg';
       const filename = `${randomUUID()}.${ext}`;
       const uploadDir = path.join(process.cwd(), 'public', TEAM_IMAGES_DIR.replace(/^\//, ''));

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import path from 'path';
 import fs from 'fs';
+import { revalidatePath } from 'next/cache';
 
 async function fetchEventsFromDb() {
   return prisma.event.findMany({
@@ -225,6 +226,9 @@ export async function POST(req: Request) {
 
     // Minimal validation omitted for brevity; original POST logic can be re-added here
     const event = await prisma.event.create({ data });
+
+    revalidatePath('/');
+    revalidatePath('/impact');
 
     return NextResponse.json(event, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   } catch (err) {

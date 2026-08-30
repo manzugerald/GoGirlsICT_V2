@@ -51,6 +51,12 @@ interface BeneficiaryData {
 
 type PickerOption = { id: number; label: string };
 
+// The picker-list fetches below hydrate simple {id,label} lists from
+// several different API endpoints/models — genuinely dynamic, hence one
+// deliberate loose alias here instead of scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ApiListItem = any;
+
 interface InstitutionData {
   id?: string;
   name: string;
@@ -148,7 +154,7 @@ export default function CreateBeneficiaryForm({
     fetch('/api/institutions')
       .then((res) => res.json())
       .then((data) => {
-        setInstitutions(data.map((i: any) => ({ id: i.id, name: i.name })));
+        setInstitutions(data.map((i: ApiListItem) => ({ id: i.id, name: i.name })));
         setInstitutionsLoading(false);
       })
       .catch(() => setInstitutionsLoading(false));
@@ -175,17 +181,17 @@ export default function CreateBeneficiaryForm({
         const podcastsArr = Array.isArray(podcasts) ? podcasts : [];
         const talkshowsArr = Array.isArray(talkshows) ? talkshows : [];
         setProjectOptions(
-          projectsArr.map((p: any) => ({ id: p.id, label: extractPlainText(p.title) || `Project #${p.id}` }))
+          projectsArr.map((p: ApiListItem) => ({ id: p.id, label: extractPlainText(p.title) || `Project #${p.id}` }))
         );
         setEventOptions(
-          eventsArr.map((e: any) => ({ id: e.id, label: extractPlainText(e.eventTitle) || `Event #${e.id}` }))
+          eventsArr.map((e: ApiListItem) => ({ id: e.id, label: extractPlainText(e.eventTitle) || `Event #${e.id}` }))
         );
-        setReportOptions(reportsArr.map((r: any) => ({ id: r.id, label: r.title || `Report #${r.id}` })));
+        setReportOptions(reportsArr.map((r: ApiListItem) => ({ id: r.id, label: r.title || `Report #${r.id}` })));
         setPodcastOptions(
-          podcastsArr.map((p: any) => ({ id: p.id, label: extractPlainText(p.title) || `Podcast #${p.id}` }))
+          podcastsArr.map((p: ApiListItem) => ({ id: p.id, label: extractPlainText(p.title) || `Podcast #${p.id}` }))
         );
         setTalkshowOptions(
-          talkshowsArr.map((t: any) => ({ id: t.id, label: t.title || `Talkshow #${t.id}` }))
+          talkshowsArr.map((t: ApiListItem) => ({ id: t.id, label: t.title || `Talkshow #${t.id}` }))
         );
       })
       .finally(() => setPickerOptionsLoading(false));
@@ -228,7 +234,7 @@ export default function CreateBeneficiaryForm({
         initialData.talkshows?.map((t) => t.talkshowId).filter((id): id is number => typeof id === 'number') ?? []
       );
     }
-    // eslint-disable-next-line
+     
   }, [mode, initialData]);
 
   const toggleId = (id: number, setter: React.Dispatch<React.SetStateAction<number[]>>) => {
@@ -333,8 +339,8 @@ export default function CreateBeneficiaryForm({
         logoFile: null,
       });
       setInstitutionError(null);
-    } catch (err: any) {
-      setInstitutionError(err.message || 'Failed to create institution');
+    } catch (err) {
+      setInstitutionError(err instanceof Error ? err.message : 'Failed to create institution');
     } finally {
       setCreatingInstitution(false);
     }
@@ -369,7 +375,6 @@ export default function CreateBeneficiaryForm({
       });
 
       let res;
-      let beneficiary: any;
       if (mode === 'edit' && initialData?.id) {
         res = await fetch(`/api/beneficiaries/${initialData.id}`, {
           method: 'PATCH',
@@ -388,7 +393,7 @@ export default function CreateBeneficiaryForm({
             (mode === 'edit' ? 'Failed to update beneficiary' : 'Failed to create beneficiary')
         );
       }
-      beneficiary = await res.json();
+      await res.json();
 
       if (onSuccess) {
         onSuccess();
@@ -603,8 +608,8 @@ export default function CreateBeneficiaryForm({
       <div className="space-y-2">
         <Label htmlFor="voice">Beneficiary Voice (optional)</Label>
         <p className="text-xs text-muted-foreground">
-          A first-person testimonial. Shown publicly as a "Beneficiary Voice" only once this
-          record's publish status below is set to <strong>published</strong>.
+          A first-person testimonial. Shown publicly as a &quot;Beneficiary Voice&quot; only once
+          this record&apos;s publish status below is set to <strong>published</strong>.
         </p>
         <EditorClient
           key={initialData?.id ?? 'new-beneficiary'}

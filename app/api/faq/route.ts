@@ -15,7 +15,7 @@ export async function GET() {
       headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
     });
   } catch (err) {
-    // eslint-disable-next-line no-console
+     
     console.error('GET /api/faq error', err);
     return new NextResponse(JSON.stringify({ error: 'Failed to fetch FAQs' }), {
       status: 500,
@@ -98,7 +98,7 @@ export async function POST(req: Request) {
       },
     });
   } catch (err: any) {
-    // eslint-disable-next-line no-console
+     
     console.error('POST /api/faq error', err);
     // Return the real error message (safe for dev). In production you might want to mask details.
     const message = err?.message ?? 'Failed to create FAQ';

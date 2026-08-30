@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import { redis } from '@/utils/redis';
 import { sendAccountDeletionRequestEmail } from '@/lib/email';
 import { isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
@@ -49,8 +49,8 @@ export async function GET() {
     let where: any | undefined = undefined;
 
     if (role === 'beneficiary') {
-      const firstName = (session?.user as any)?.firstName;
-      const lastName = (session?.user as any)?.lastName;
+      const firstName = session?.user?.firstName;
+      const lastName = session?.user?.lastName;
       if (!firstName || !lastName) {
         return NextResponse.json([], {
           headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' },
@@ -137,8 +137,8 @@ export async function POST(req: Request) {
     const isAccountDeletionRequest = meta?.type === 'account-deletion-request';
 
     if (role === 'beneficiary' && !isAccountDeletionRequest) {
-      const firstName = (session.user as any)?.firstName;
-      const lastName = (session.user as any)?.lastName;
+      const firstName = session.user?.firstName;
+      const lastName = session.user?.lastName;
       if (!firstName || !lastName) {
         return NextResponse.json(
           { error: 'Your profile is missing first/last name; contact admin.' },

@@ -5,7 +5,7 @@ import path from 'path';
 import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 // import { redis } from '@/utils/redis'; // Redis kept commented per request
 
 const USERS_CACHE_KEY = 'users:all';
@@ -22,7 +22,7 @@ const USERS_CACHE_KEY = 'users:all';
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    const role = (session?.user as any)?.role ?? 'guest';
+    const role = session?.user?.role ?? 'guest';
     if (!session?.user?.id || !['super', 'admin', 'moderator'].includes(role)) {
       return NextResponse.json(
         { error: 'Forbidden' },
@@ -89,16 +89,15 @@ export async function GET(req: Request) {
     //   console.warn('Redis set failed for users list', err);
     // }
 
-    return NextResponse.json(users, {
-      headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' },
-    });
+    // Never let the browser (or any shared cache) hold onto this response —
+    // it's privileged, PII-bearing data now gated by role; a stale cached
+    // copy would keep serving it after the viewer signs out or is demoted.
+    return NextResponse.json(users, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
     console.error('Failed to fetch users:', error);
     return NextResponse.json(
       { error: 'Internal Server Error - Please contact the Admin' },
-      { status: 500,
-        headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' },
-      }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 }

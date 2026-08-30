@@ -2,13 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+
+// The full /api/teams/:id record this form edits — genuinely dynamic, hence
+// one deliberate loose alias here instead of scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TeamRecord = any;
 
 type Props = {
   mode?: 'create' | 'edit';
   teamId?: string;
-  initialData?: any;
-  onSuccess?: (updated?: any) => void;
+  initialData?: TeamRecord;
+  onSuccess?: (updated?: TeamRecord) => void;
   onCancel?: () => void;
   onDelete?: (id: string) => void;
   showDeleteButton?: boolean;
@@ -24,7 +28,7 @@ export default function CreateTeamForm({
   showDeleteButton = true,
 }: Props) {
   const isEdit = mode === 'edit' || !!teamId || !!initialData;
-  const initialRef = useRef<any>(initialData ?? null);
+  const initialRef = useRef<TeamRecord>(initialData ?? null);
 
   useEffect(() => {
     if (initialData) initialRef.current = initialData;
@@ -53,7 +57,6 @@ export default function CreateTeamForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const router = useRouter();
-  const { data: session } = useSession();
 
   useEffect(() => {
     if (initialData) {
@@ -159,9 +162,9 @@ export default function CreateTeamForm({
           router.push('/'); // adjust to desired location
         }, 700);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('CreateTeamForm submit error', err);
-      setError(err?.message || 'Failed to save team member');
+      setError(err instanceof Error ? err.message : 'Failed to save team member');
     } finally {
       setIsSubmitting(false);
     }
@@ -186,9 +189,9 @@ export default function CreateTeamForm({
       }
       if (onDelete) onDelete(String(idToUse));
       setSuccess('Team member deleted');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Delete team error', err);
-      setError(err?.message || 'Failed to delete team member');
+      setError(err instanceof Error ? err.message : 'Failed to delete team member');
     }
   };
 

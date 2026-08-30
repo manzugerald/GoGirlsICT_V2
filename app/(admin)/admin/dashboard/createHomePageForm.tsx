@@ -30,11 +30,11 @@ const ENDPOINT_BASE = '/api/homepage';
 type BaseProps = {
   id?: string | number | null; // existing record id (if editing)
   initial?: string;
-  onSuccess?: (payload?: any) => void;
+  onSuccess?: (payload?: unknown) => void;
   onCancel?: () => void;
 };
 
-async function submitPartial(id: string | number | null | undefined, payload: Record<string, any>) {
+async function submitPartial(id: string | number | null | undefined, payload: Record<string, unknown>) {
   if (id) {
     const res = await fetch(`${ENDPOINT_BASE}/${id}`, {
       method: 'PATCH',
@@ -77,8 +77,8 @@ export function HeroSectionForm({ id, initial, onSuccess, onCancel }: BaseProps)
       const payload = await submitPartial(id, { heroVideo });
       onSuccess?.(payload);
       // do not redirect here — caller decides
-    } catch (err: any) {
-      alert(err?.message || 'Failed to update hero video');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update hero video');
     } finally {
       setLoading(false);
     }
@@ -124,8 +124,8 @@ export function VisionSectionForm({ id, initial, onSuccess, onCancel }: BaseProp
     try {
       const payload = await submitPartial(id, { vision });
       onSuccess?.(payload);
-    } catch (err: any) {
-      alert(err?.message || 'Failed to update vision');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update vision');
     } finally {
       setLoading(false);
     }
@@ -171,8 +171,8 @@ export function MissionSectionForm({ id, initial, onSuccess, onCancel }: BasePro
     try {
       const payload = await submitPartial(id, { mission });
       onSuccess?.(payload);
-    } catch (err: any) {
-      alert(err?.message || 'Failed to update mission');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update mission');
     } finally {
       setLoading(false);
     }
@@ -218,8 +218,8 @@ export function FocusSectionForm({ id, initial, onSuccess, onCancel }: BaseProps
     try {
       const payload = await submitPartial(id, { focus });
       onSuccess?.(payload);
-    } catch (err: any) {
-      alert(err?.message || 'Failed to update focus');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update focus');
     } finally {
       setLoading(false);
     }
@@ -265,8 +265,8 @@ export function CoreValuesSectionForm({ id, initial, onSuccess, onCancel }: Base
     try {
       const payload = await submitPartial(id, { coreValues });
       onSuccess?.(payload);
-    } catch (err: any) {
-      alert(err?.message || 'Failed to update core values');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update core values');
     } finally {
       setLoading(false);
     }
@@ -383,7 +383,7 @@ export default function CreateHomepageForm({
       onSuccess?.();
       router.refresh();
       router.push('/admin/dashboard');
-    } catch (err) {
+    } catch {
       alert(`There was an error ${mode === 'edit' ? 'updating' : 'creating'} the homepage.`);
     } finally {
       setLoading(false);
@@ -415,7 +415,7 @@ export default function CreateHomepageForm({
       onSuccess?.();
       router.refresh();
       router.push('/admin/dashboard');
-    } catch (err) {
+    } catch {
       alert('There was an error deleting the homepage content.');
     } finally {
       setDeleting(false);

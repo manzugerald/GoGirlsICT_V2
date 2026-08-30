@@ -4,7 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { extractPlainText } from '@/lib/tiptap';
 
-function formatDate(d: any) {
+// This section renders Talkshow records defensively (polymorphic host —
+// beneficiary/admin/guest — plus loosely-typed linked podcasts/participants)
+// rather than one fixed shape — hence one deliberate loose alias here
+// instead of scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TalkshowRecord = any;
+
+function formatDate(d: string | number | Date | null | undefined) {
   if (!d) return '-';
   try {
     return new Date(d).toLocaleDateString();
@@ -13,7 +20,7 @@ function formatDate(d: any) {
   }
 }
 
-function hostLabel(talkshow: any) {
+function hostLabel(talkshow: TalkshowRecord) {
   if (!talkshow?.hostType) return null;
   if (talkshow.hostType === 'beneficiary') {
     const b = talkshow.hostBeneficiary;
@@ -31,7 +38,7 @@ function hostLabel(talkshow: any) {
   return null;
 }
 
-function authorLabel(talkshow: any) {
+function authorLabel(talkshow: TalkshowRecord) {
   const a = talkshow?.createdBy;
   if (!a) return 'System';
   return `${a.firstName ?? ''} ${a.lastName ?? ''}`.trim() || 'System';
@@ -39,8 +46,6 @@ function authorLabel(talkshow: any) {
 
 export default function RadioTalkshowsSection({
   paginatedData,
-  page,
-  rowsPerPage,
   handleEdit,
   handleDelete,
   TableActions,
@@ -48,18 +53,18 @@ export default function RadioTalkshowsSection({
   deleteLoading,
   onToggleControls,
 }: {
-  paginatedData: any[];
+  paginatedData: TalkshowRecord[];
   page: number;
   rowsPerPage: number;
-  handleEdit: (record: any) => void;
+  handleEdit: (record: TalkshowRecord) => void;
   handleDelete: (id: string | number) => void;
-  TableActions?: React.FC<any>;
+  TableActions?: React.ElementType;
   deleteId?: string | number | null;
   deleteLoading?: boolean;
   onToggleControls?: (hide: boolean) => void;
 }) {
-  const [viewing, setViewing] = useState<any | null>(null);
-  const [data, setData] = useState<any[]>(paginatedData ?? []);
+  const [viewing, setViewing] = useState<TalkshowRecord | null>(null);
+  const [data, setData] = useState<TalkshowRecord[]>(paginatedData ?? []);
 
   useEffect(() => {
     setData(paginatedData ?? []);
@@ -74,7 +79,7 @@ export default function RadioTalkshowsSection({
 
   if (viewing) {
     const host = hostLabel(viewing);
-    const participants: any[] = Array.isArray(viewing.participants) ? viewing.participants : [];
+    const participants: TalkshowRecord[] = Array.isArray(viewing.participants) ? viewing.participants : [];
 
     return (
       <div className="space-y-4">
@@ -136,7 +141,7 @@ export default function RadioTalkshowsSection({
             <div>
               <strong className="text-sm">Podcasts</strong>
               <ul className="mt-1 list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
-                {viewing.podcasts.map((p: any, idx: number) => (
+                {viewing.podcasts.map((p: TalkshowRecord, idx: number) => (
                   <li key={p.id ?? idx}>{extractPlainText(p.title) || `Podcast #${p.id}`}</li>
                 ))}
               </ul>

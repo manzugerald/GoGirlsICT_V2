@@ -5,6 +5,11 @@ import ProgramsGrid from './components/ProgramsGrid';
 
 import PageHero from '@/app/(root)/components/shared/page/PageHero';
 
+// ISR: this list only changes when an admin publishes/edits a project —
+// revalidatePath('/programs') in the project API routes invalidates it
+// instantly; 3600s is the safety-net upper bound otherwise.
+export const revalidate = 3600;
+
 export default async function ProgramsPage() {
   const { programs, stats } =
     await getProgramsPageData();

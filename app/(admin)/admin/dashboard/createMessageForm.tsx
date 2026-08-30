@@ -121,7 +121,7 @@ export default function CreateMessageForm({
         setBeneficiaryId(json.beneficiaryId ?? undefined);
       } catch (err) {
         // ignore fetch error — keep any initialData present
-        // eslint-disable-next-line no-console
+         
         console.warn('fetchMessage error', err);
       } finally {
         if (!aborted) setFetching(false);
@@ -205,7 +205,7 @@ export default function CreateMessageForm({
       router.refresh();
       router.push('/admin/dashboard');
     } catch (err: any) {
-      // eslint-disable-next-line no-console
+       
       console.error('CreateMessageForm submit error', err);
       setError(err?.message || 'Unexpected error');
     } finally {

@@ -3,11 +3,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import { redis } from '@/utils/redis';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { revalidatePath } from 'next/cache';
 
 const HOMEPAGE_CACHE_KEY = 'homepage:latest';
 const HOMEPAGE_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
@@ -316,6 +317,8 @@ export async function POST(req: Request) {
     } catch (err) {
       console.warn('Failed to invalidate homepage cache:', err);
     }
+
+    revalidatePath('/');
 
     return NextResponse.json(homePage, {
       status: 201,
