@@ -112,8 +112,8 @@ export default function CreateFAQForm({
       }
 
       if (onSuccess) onSuccess();
-    } catch (err: any) {
-      setError(err?.message || "Unexpected error saving FAQ");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unexpected error saving FAQ");
     } finally {
       setLoading(false);
     }

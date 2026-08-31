@@ -49,6 +49,7 @@ function truncateTitle(
 export default function ProgramCard({
   program,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   program: any;
 }) {
   const reportCount: number =

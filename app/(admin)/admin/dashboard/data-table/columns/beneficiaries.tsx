@@ -16,11 +16,11 @@ type BeneficiaryWithRelations = Beneficiary & {
   beneficiaryMessages?: { id: string; title?: string }[];
   messagesCount?: number; // server-provided (various names used across APIs)
   messageCount?: number;
-  messages?: any[]; // sometimes relations are present
+  messages?: unknown[]; // sometimes relations are present
   _count?: { messages?: number }; // Prisma _count shape
   responsesCount?: number; // server-provided
   responseCount?: number;
-  responses?: any[];
+  responses?: unknown[];
 };
 
 type Opts = {
@@ -45,7 +45,6 @@ export function beneficiaryColumns({
   onView,
   onDelete,
   onAddMessage,
-  onMessageIdClick,
   messagesCountMap,
   responsesCountMap,
   currentUserRole,

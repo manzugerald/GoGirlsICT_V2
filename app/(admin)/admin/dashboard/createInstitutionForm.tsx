@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
 import '@/assets/styles/tiptap-editor.css';
 
@@ -305,7 +304,7 @@ export default function CreateInstitutionForm({
 
       const result = await res.json();
       institutionId = result.id || result.institution?.id;
-    } catch (err) {
+    } catch {
       alert(
         `There was an error ${
           mode === 'edit' ? 'updating' : 'creating'
@@ -333,7 +332,7 @@ export default function CreateInstitutionForm({
             });
           }
         }
-      } catch (err) {
+      } catch {
         alert('Failed to update locations for the institution.');
         setLoading(false);
         return;
@@ -370,7 +369,7 @@ export default function CreateInstitutionForm({
       if (onSuccess) onSuccess();
       router.refresh();
       router.push('/admin/dashboard');
-    } catch (err) {
+    } catch {
       alert('There was an error deleting the institution. Please try again.');
     } finally {
       setDeleting(false);

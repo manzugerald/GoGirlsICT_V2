@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -12,7 +12,6 @@ import {
   Legend,
   ChartOptions,
 } from 'chart.js';
-import { cardHoverClass } from '@/utils/styles/card-hover';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -41,7 +40,7 @@ export default function AnimatedPieceBarChart({
 }) {
   const [progress, setProgress] = useState(0); // 0 to 1
   const [loopKey, setLoopKey] = useState(0); // change to restart animation
-  const chartRef = useRef<any>(null);
+  const chartRef = useRef<React.ComponentRef<typeof Bar>>(null);
 
   // Looping fill animation
   useEffect(() => {

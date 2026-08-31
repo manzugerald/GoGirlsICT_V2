@@ -6,6 +6,7 @@ import CreateProjectForm from "../dashboard/createProjectForm";
 
 export default function EditProjectPage() {
   const searchParams = useSearchParams();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [project, setProject] = useState<any>(null);
 
   

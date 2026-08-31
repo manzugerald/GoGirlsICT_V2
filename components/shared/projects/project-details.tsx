@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import ImageSlider from "../images/image-slider";
 import LightGalleryGrid from "../images/light-gallery";
 import TiptapJsonViewer from "@/components/editor/tiptap-json-viewer";
 import TitleHeader from "../title/title";
@@ -13,6 +12,7 @@ interface ProjectDetailsProps {
 }
 
 export default function ProjectDetails({ id, onBack }: ProjectDetailsProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 

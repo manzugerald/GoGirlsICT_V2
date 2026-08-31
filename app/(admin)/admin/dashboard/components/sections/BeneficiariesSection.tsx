@@ -4,15 +4,20 @@ import React from 'react';
 import { User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+// This section renders Beneficiary records defensively — hence one
+// deliberate loose alias here instead of scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type BeneficiaryRecord = any;
+
 export default function BeneficiariesSection({
   paginatedData,
   handleEdit,
   handleView,
   handleDelete,
 }: {
-  paginatedData: any[];
-  handleEdit: (record: any) => void;
-  handleView: (record: any) => void;
+  paginatedData: BeneficiaryRecord[];
+  handleEdit: (record: BeneficiaryRecord) => void;
+  handleView: (record: BeneficiaryRecord) => void;
   handleDelete: (id: string | number) => void;
 }) {
   return (

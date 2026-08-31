@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { EMPTY_TIPTAP_DOC, isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
 import '@/assets/styles/tiptap-editor.css';
 import { RichTextEditorProvider } from '@/components/editor/rich-text-context';
@@ -49,9 +48,14 @@ type MessageCategory = (typeof categoryOptions)[number];
 const publishOptions = ['draft', 'published'] as const;
 type PublishStatus = (typeof publishOptions)[number];
 
+// The Message record this form edits — genuinely dynamic, hence one
+// deliberate loose alias here instead of scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MessageRecord = any;
+
 type Props = {
   mode?: 'create' | 'edit';
-  initialData?: any;
+  initialData?: MessageRecord;
   onSuccess?: () => void;
   onCancel?: () => void;
 };
@@ -63,7 +67,6 @@ export default function CreateMessageForm({
   onCancel,
 }: Props) {
   const router = useRouter();
-  const { data: session } = useSession();
 
   const [title, setTitle] = useState<object>(() =>
     initialData?.title ? normalizeTiptapDoc(initialData.title) : EMPTY_TIPTAP_DOC
@@ -164,7 +167,7 @@ export default function CreateMessageForm({
 
     setLoading(true);
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         title: isTiptapDocEmpty(title) ? undefined : title,
         affiliated: affiliated?.trim() || undefined,
         name: name?.trim() || undefined,
@@ -204,10 +207,10 @@ export default function CreateMessageForm({
       // refresh page and navigate back to dashboard list
       router.refresh();
       router.push('/admin/dashboard');
-    } catch (err: any) {
+    } catch (err) {
        
       console.error('CreateMessageForm submit error', err);
-      setError(err?.message || 'Unexpected error');
+      setError(err instanceof Error ? err.message : 'Unexpected error');
     } finally {
       setLoading(false);
     }

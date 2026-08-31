@@ -13,9 +13,10 @@ const EMAIL_DOMAIN = 'gogirlsict.org';
 
 function playCopySound() {
   try {
+    // Safari's legacy vendor-prefixed constructor isn't in the standard DOM lib types.
     const AudioContextClass =
       window.AudioContext ||
-      (window as any).webkitAudioContext;
+      (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
 
     if (!AudioContextClass) {
       return;

@@ -1,18 +1,22 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { EMPTY_TIPTAP_DOC, isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
 import '@/assets/styles/tiptap-editor.css';
 import { RichTextEditorProvider } from '@/components/editor/rich-text-context';
 import RichTextToolbar from '@/components/editor/rich-text-toolbar';
 import RichTextField from '@/components/editor/rich-text-field';
 
+// The Response record this form creates/edits — genuinely dynamic, hence one
+// deliberate loose alias here instead of scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ResponseRecord = any;
+
 type Props = {
   messageId: number | string;
   editId?: number | string | null;
-  initialData?: any;
-  onSuccess?: (createdResponse: any) => void; // called with created response object
+  initialData?: ResponseRecord;
+  onSuccess?: (createdResponse: ResponseRecord) => void; // called with created response object
   onCancel?: () => void;
 };
 
@@ -23,7 +27,6 @@ export default function CreateResponseForm({
   onSuccess,
   onCancel,
 }: Props) {
-  const { data: session } = useSession();
   const [content, setContent] = useState<object>(() =>
     initialData?.content ? normalizeTiptapDoc(initialData.content) : EMPTY_TIPTAP_DOC
   );
@@ -71,8 +74,8 @@ export default function CreateResponseForm({
 
       const created = await res.json();
       if (onSuccess) onSuccess(created);
-    } catch (err: any) {
-      setError(err?.message || 'Unexpected error');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unexpected error');
     } finally {
       setLoading(false);
     }

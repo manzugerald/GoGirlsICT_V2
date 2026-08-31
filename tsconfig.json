@@ -31,6 +31,24 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    // One-off Prisma seed scripts, run directly via `tsx` (which transpiles
+    // without type-checking) — not part of the Next.js app the build
+    // compiles, so they shouldn't gate it on their own type errors.
+    "db/seed.ts",
+    "db/seedBeneficiaries.ts",
+    "db/seedEvents.ts",
+    "db/seedFAQs.ts",
+    "db/seedInstitutions.ts",
+    "db/seedNewProject.ts",
+    "db/seedProjects.ts",
+    "db/seedReports.ts",
+    "db/seedTeam.ts",
+    "db/userSeed.ts",
+    "db/homeSeed.ts",
+    "db/messageSeed.ts",
+    // Jest test file with no jest config/dependency wired into this project
+    // (see the file's own header comment) — not part of the Next.js app.
+    "lib/__tests__/authClient.test.ts"
   ]
 }

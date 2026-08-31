@@ -2,6 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 
+// Raw API list items are dynamic (mixed field names across cache/API shapes)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type YtApiItem = any;
+
 type YtVideo = {
   id: string;
   title?: string | null;
@@ -36,10 +40,10 @@ export default function YouTubeSection() {
           throw new Error(text || `HTTP ${res.status}`);
         }
         const json = await res.json();
-        const raw: any[] = Array.isArray(json?.data) ? json.data : [];
+        const raw: YtApiItem[] = Array.isArray(json?.data) ? json.data : [];
 
         const normalized = raw
-          .map((v: any) => {
+          .map((v: YtApiItem) => {
             const id = String(v.id ?? v.videoId ?? '');
             if (!id) return null;
             const title = v.title ?? v.snippet?.title ?? null;
@@ -88,7 +92,7 @@ export default function YouTubeSection() {
           setAllVideos(normalized);
           setPage(1);
         }
-      } catch (e: any) {
+      } catch (e) {
         if (!mounted) return;
         console.error('Failed to fetch YouTube videos', e);
         setError('Failed to load YouTube videos.');

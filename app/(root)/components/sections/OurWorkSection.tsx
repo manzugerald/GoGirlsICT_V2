@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, type Variants } from 'framer-motion';
 import {
   Calendar,
   Download,
@@ -34,13 +34,13 @@ const staggerContainer = {
   },
 };
 
-const cardVariant = {
+const cardVariant: Variants = {
   hidden: { opacity: 0, y: 24, scale: 0.98 },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
   },
 };
 
@@ -187,7 +187,7 @@ function WorkBlock({
   );
 }
 
-function ProjectCard({ project, index }: { project: Project; index: number }) {
+function ProjectCard({ project }: { project: Project; index: number }) {
   return (
     <motion.div
       variants={cardVariant}
@@ -264,7 +264,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
   );
 }
 
-function ReportCard({ report, index }: { report: Report; index: number }) {
+function ReportCard({ report }: { report: Report; index: number }) {
   return (
     <motion.div
       variants={cardVariant}

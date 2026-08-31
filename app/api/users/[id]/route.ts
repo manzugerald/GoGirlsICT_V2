@@ -13,8 +13,9 @@ import { getIpFromRequest } from '@/lib/getIp';
 const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '12', 10);
 const MAX_HISTORY = parseInt(process.env.MAX_HISTORY || '5', 10);
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const userId = params?.id;
     if (!userId) {
       return NextResponse.json({ error: 'Missing user id' }, { status: 400, headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=60' } });
@@ -47,8 +48,9 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   }
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const userId = params.id;
     const ip = getIpFromRequest(req);
     const userAgent = req.headers.get('user-agent') ?? 'unknown';
@@ -175,7 +177,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
             ip,
             userAgent,
             username: user.username,
-            firstName: user.firstName,
+            firstName: user.firstName ?? undefined,
           });
           console.log('[PATCH] Password change email sent:', emailResult?.messageId || emailResult);
         } catch (e) {
@@ -267,8 +269,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const userId = params.id;
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {

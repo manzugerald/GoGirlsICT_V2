@@ -8,7 +8,7 @@ import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
 import { saveUploadedFile, saveUploadedFiles } from '@/lib/uploadHelpers';
 
 function toEnum<T>(enumObject: T, value: string): T[keyof T] | undefined {
-  return (enumObject as any)[value];
+  return (enumObject as Record<string, unknown>)[value] as T[keyof T] | undefined;
 }
 
 export async function POST(req: NextRequest) {

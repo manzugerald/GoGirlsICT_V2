@@ -20,6 +20,7 @@ function formatDate(
 export default function FeaturedProgram({
   program,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   program: any;
 }) {
   if (!program) return null;

@@ -12,8 +12,8 @@ const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-v
 
 type FAQWithRelations = {
   id: number;
-  question: any;
-  answer: any;
+  question: unknown;
+  answer: unknown;
   category?: string;
   publishStatus?: string;
   createdAt?: string;

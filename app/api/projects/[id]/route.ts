@@ -3,6 +3,7 @@ import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { slugify } from '@/lib/utils';
+import type { Status, PublishStatus as PrismaPublishStatus, Prisma } from '@/lib/generated/prisma';
 import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
@@ -15,8 +16,9 @@ const SINGLE_PROJECT_CACHE_PREFIX = 'projects:'; // projects:[id]
 const CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
 
 // GET = fetch project details
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const projectId = Number(params.id);
     if (!projectId || isNaN(projectId)) {
       return NextResponse.json({ error: 'Invalid Project ID' }, { status: 400, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
@@ -71,8 +73,9 @@ async function saveUploadedFiles(formData: FormData, destDir: string): Promise<s
 }
 
 // PATCH = update project
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -92,10 +95,10 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       formData = await req.formData();
     }
 
-    let title: any = null;
-    let content = {};
-    let projectStatus = 'active';
-    let publishStatus = 'draft';
+    let title: unknown = null;
+    let content: Prisma.InputJsonValue = {};
+    let projectStatus: Status = 'active';
+    let publishStatus: PrismaPublishStatus = 'draft';
     let existingImages: string[] = [];
     let imagesToRemove: string[] = [];
     let newImageUrls: string[] = [];
@@ -108,8 +111,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         return NextResponse.json({ error: 'Invalid title format' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
       }
       content = JSON.parse((formData.get('content') as string) || '{}');
-      projectStatus = (formData.get('projectStatus') as string) || 'active';
-      publishStatus = (formData.get('publishStatus') as string) || 'draft';
+      projectStatus = ((formData.get('projectStatus') as string) || 'active') as Status;
+      publishStatus = ((formData.get('publishStatus') as string) || 'draft') as PrismaPublishStatus;
 
       // images: JSON string array of current images (after removals)
       const imagesRaw = formData.get('images');
@@ -158,7 +161,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const updatedProject = await prisma.project.update({
       where: { id: projectId },
       data: {
-        title,
+        title: title as Prisma.InputJsonValue,
         slug,
         content,
         projectStatus,
@@ -189,8 +192,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 }
 
 // DELETE = delete project
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const projectId = Number(params.id);
     if (!projectId || isNaN(projectId)) {
       return NextResponse.json({ error: 'Invalid Project ID' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
@@ -214,8 +218,8 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     return NextResponse.json({ message: 'Project deleted', project: deleted }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
-  } catch (error: any) {
-    if (error.code === 'P2025') {
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       // Prisma: Record not found
       return NextResponse.json({ error: 'Project not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }

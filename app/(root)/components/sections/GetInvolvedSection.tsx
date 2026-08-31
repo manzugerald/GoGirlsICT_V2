@@ -123,7 +123,7 @@ export default function GetInvolvedSection({ events }: GetInvolvedSectionProps) 
             }}
             className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
           >
-            {events.slice(0, 3).map((event: any, idx) => {
+            {events.slice(0, 3).map((event: Event, idx) => {
               const title = extractPlainText(event.eventTitle) || 'Untitled Event';
               const startAt = event.startAt ?? event.startDate ?? event.eventStartDate;
               const location = event.location ?? event.eventLocation;

@@ -104,7 +104,7 @@ const AdminMenu: React.FC<AdminMenuProps> = ({ isAuthenticated, user }) => {
               } catch {}
             }
           }
-        } catch (e) {
+        } catch {
           // ignore and fallback to now
         }
       }

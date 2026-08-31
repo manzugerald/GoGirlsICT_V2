@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/db/prisma";
 
-export async function POST(req: Request, context: { params: { id: string } }) {
+export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
     const podcastId = parseInt(id, 10);
     if (isNaN(podcastId)) {
       return NextResponse.json({ error: "Invalid Podcast ID" }, { status: 400 });
@@ -14,8 +14,8 @@ export async function POST(req: Request, context: { params: { id: string } }) {
       select: { accessCount: true },
     });
     return NextResponse.json({ accessCount: podcast.accessCount });
-  } catch (error: any) {
-    if (error?.code === 'P2025') {
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       return NextResponse.json({ error: "Podcast not found" }, { status: 404 });
     }
     return NextResponse.json({ error: "Failed to increment play count" }, { status: 500 });

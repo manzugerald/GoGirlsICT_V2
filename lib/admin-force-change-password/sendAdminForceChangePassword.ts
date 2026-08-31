@@ -217,7 +217,6 @@ export default async function sendAdminForceChangePassword(to: string, opts: Opt
 
     console.log('[ADMIN-PWD-EMAIL] Sent', info.messageId || info);
     try {
-      // @ts-ignore - nodemailer types
       const preview = nodemailer.getTestMessageUrl && nodemailer.getTestMessageUrl(info);
       if (preview) console.log('[ADMIN-PWD-EMAIL] Preview URL:', preview);
     } catch {}

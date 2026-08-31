@@ -11,8 +11,9 @@ const SINGLE_REPORT_CACHE_PREFIX = 'reports:'; // e.g., reports:123
 const CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
 
 // GET single report (with cache)
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const reportId = Number(params.id);
     if (!reportId || isNaN(reportId)) {
       return NextResponse.json({ error: 'Invalid Report ID' }, { status: 400, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
@@ -48,8 +49,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 // Handle PUT (update report) -- AUTH REQUIRED
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -113,8 +115,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 // Handle DELETE
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -142,8 +145,8 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     return NextResponse.json({ success: true }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
-  } catch (error: any) {
-    if (error.code === 'P2025') {
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       return NextResponse.json({ error: 'Report not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
     console.error('Failed to delete report:', error);

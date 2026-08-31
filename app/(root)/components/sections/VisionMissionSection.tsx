@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, type Variants } from 'framer-motion';
 import { useRef } from 'react';
 import { EyeIcon, TargetIcon, FocusIcon, HeartIcon, Sparkles } from 'lucide-react';
 import type { HomePageContent } from '../../types/home';
@@ -71,7 +71,7 @@ const staggerContainer = {
   },
 };
 
-const cardVariant = {
+const cardVariant: Variants = {
   hidden: {
     opacity: 0,
     y: 60,
@@ -85,7 +85,7 @@ const cardVariant = {
     scale: 1,
     transition: {
       duration: 0.8,
-      ease: [0.22, 1, 0.36, 1],
+      ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
     },
   },
 };

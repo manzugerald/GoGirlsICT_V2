@@ -11,7 +11,6 @@ import {
   EyeIcon,
   FocusIcon,
   HeartIcon,
-  Sparkles,
   TargetIcon,
 } from 'lucide-react';
 

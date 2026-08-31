@@ -15,6 +15,7 @@ export default function SettingsView({
   onClose,
   isEditing,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
   onClose?: () => void;
   isEditing?: boolean;

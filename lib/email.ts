@@ -20,7 +20,7 @@ export const transporter = nodemailer.createTransport({
 });
 
 // Check SMTP connection at startup (safe to remove/comment out in prod)
-transporter.verify(function (error, success) {
+transporter.verify(function (error) {
   if (error) {
     console.error('[EMAIL][VERIFY] SMTP connection error:', error);
   } else {

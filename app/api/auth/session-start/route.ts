@@ -76,7 +76,7 @@ export async function GET(req: Request) {
         select: { startedAt: true, lastSeenAt: true },
       });
       updated = up;
-    } catch (e) {
+    } catch {
       // If update fails for any reason, fall back to original values
       updated = {
         startedAt: sessionRow.startedAt,
@@ -88,7 +88,7 @@ export async function GET(req: Request) {
     const lastSeenMs = updated.lastSeenAt ? updated.lastSeenAt.getTime() : null;
 
     return NextResponse.json({ start: startMs, lastSeenAt: lastSeenMs, active: true });
-  } catch (err: any) {
+  } catch (err) {
     console.error('GET /api/auth/session-start error', err);
     return NextResponse.json({ start: null, lastSeenAt: null, active: false }, { status: 500 });
   }

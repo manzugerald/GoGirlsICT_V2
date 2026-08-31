@@ -41,7 +41,7 @@ export default function SessionsList() {
         const j = await res.json();
         setSessions(j.sessions ?? []);
       }
-    } catch (e: any) {
+    } catch {
       setError('Network error');
       setSessions([]);
     } finally {
@@ -68,7 +68,7 @@ export default function SessionsList() {
         // refresh list
         await load();
       }
-    } catch (e: any) {
+    } catch {
       setError('Network error while revoking');
     } finally {
       setRevoking((s) => {

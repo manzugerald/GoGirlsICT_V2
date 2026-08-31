@@ -5,11 +5,15 @@ import { authOptions } from '@/lib/authOptions';
 import { slugify } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
 
-// Make Redis usage optional (can be disabled with DISABLE_REDIS=1)
+// Make Redis usage optional (can be disabled with DISABLE_REDIS=1) — this
+// needs a conditional, try/catch-guarded CommonJS require rather than a
+// static import so a missing/misconfigured redis module doesn't crash the
+// whole route at import time.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let redis: any = null;
 if (process.env.DISABLE_REDIS !== '1') {
   try {
-     
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     redis = require('@/utils/redis').redis;
   } catch (e) {
     // If import fails, continue without redis

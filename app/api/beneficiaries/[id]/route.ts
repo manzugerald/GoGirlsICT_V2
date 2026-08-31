@@ -1,6 +1,7 @@
 // app/api/beneficiaries/[id]/route.ts
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
+import { Prisma } from '@/lib/generated/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,7 +28,7 @@ const fullInclude = {
   reports: { include: { report: { select: { id: true, title: true, slug: true } } } },
   podcasts: { include: { podcast: { select: { id: true, title: true, slug: true } } } },
   talkshows: { include: { talkshow: { select: { id: true, title: true } } } },
-} as const;
+};
 
 function ownCacheKey(firstName: string, lastName: string) {
   return `${BENEFICIARIES_OWN_PREFIX}${encodeURIComponent(firstName)}|${encodeURIComponent(
@@ -52,10 +53,16 @@ function parseIdArray(formData: FormData, field: string): number[] {
 // Replaces a beneficiary's links to one relation (project/event/report) with
 // exactly the given set of ids: deletes links no longer present, creates
 // links that are new, and leaves unchanged ones alone.
+// `delegate` is genuinely one of several different Prisma join-table
+// delegates (BeneficiaryProjectDelegate, BeneficiaryEventDelegate, ...),
+// each with its own narrower where/data types — hence one deliberate loose
+// signature here instead of the unsafe bare `Function` type this replaced.
 async function syncParticipation(
   delegate: {
-    deleteMany: (args: { where: Record<string, unknown> }) => Promise<unknown>;
-    createMany: (args: { data: unknown[]; skipDuplicates?: boolean }) => Promise<unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    deleteMany: (args: any) => Promise<any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    createMany: (args: any) => Promise<any>;
   },
   beneficiaryId: string,
   foreignKeyField: 'projectId' | 'eventId' | 'reportId' | 'podcastId' | 'talkshowId',
@@ -118,7 +125,7 @@ export async function GET(_req: Request, context: { params: Promise<{ id: string
     }
 
     const beneficiary = await prisma.beneficiary.findUnique({
-      where: { id: Number(id) || id },
+      where: { id },
       include: { ...fullInclude, _count: { select: { messages: true, responses: true } } },
     });
 
@@ -181,7 +188,7 @@ export async function PATCH(_req: Request, context: { params: Promise<{ id: stri
 
     // Permission check: allow super/admin OR the beneficiary owner (createdById)
     const beneficiaryRecord = await prisma.beneficiary.findUnique({
-      where: { id: Number(id) || id },
+      where: { id },
       select: { createdById: true, firstName: true, lastName: true },
     });
     if (!beneficiaryRecord) {
@@ -225,10 +232,10 @@ export async function PATCH(_req: Request, context: { params: Promise<{ id: stri
     // matching comment in the POST handler for why emptiness is checked
     // after normalizing rather than on the raw JSON-encoded string.
     const voiceRaw = formData.get('voice');
-    let voice: object | null = null;
+    let voice = Prisma.JsonNull as Prisma.NullableJsonNullValueInput | Prisma.InputJsonValue;
     if (voiceRaw && typeof voiceRaw === 'string') {
       const normalizedVoice = normalizeTiptapDoc(voiceRaw);
-      voice = isTiptapDocEmpty(normalizedVoice) ? null : normalizedVoice;
+      voice = isTiptapDocEmpty(normalizedVoice) ? Prisma.JsonNull : (normalizedVoice as Prisma.InputJsonValue);
     }
 
     const projectIds = parseIdArray(formData, 'projectIds');
@@ -280,7 +287,7 @@ export async function PATCH(_req: Request, context: { params: Promise<{ id: stri
 
     // Update beneficiary
     await prisma.beneficiary.update({
-      where: { id: Number(id) || id },
+      where: { id },
       data: {
         firstName,
         lastName,
@@ -307,7 +314,7 @@ export async function PATCH(_req: Request, context: { params: Promise<{ id: stri
     ]);
 
     const updated = await prisma.beneficiary.findUniqueOrThrow({
-      where: { id: Number(id) || id },
+      where: { id },
       include: { ...fullInclude, _count: { select: { messages: true, responses: true } } },
     });
 
@@ -373,7 +380,7 @@ export async function DELETE(_req: Request, context: { params: Promise<{ id: str
 
     // find beneficiary to capture names for cache invalidation
     const existing = await prisma.beneficiary.findUnique({
-      where: { id: Number(id) || id },
+      where: { id },
       select: { firstName: true, lastName: true },
     });
     if (!existing) {
@@ -389,7 +396,7 @@ export async function DELETE(_req: Request, context: { params: Promise<{ id: str
     });
 
     const deleted = await prisma.beneficiary.delete({
-      where: { id: Number(id) || id },
+      where: { id },
     });
 
     // Invalidate caches

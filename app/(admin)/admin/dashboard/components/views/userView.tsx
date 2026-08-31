@@ -52,9 +52,9 @@ export default function UserView() {
       }
       const json = await res.json();
       setUsers(Array.isArray(json) ? json : []);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to load users', err);
-      setError(err?.message || 'Failed to load users');
+      setError(err instanceof Error ? err.message : 'Failed to load users');
     } finally {
       setLoading(false);
     }
@@ -107,9 +107,9 @@ export default function UserView() {
       // refresh list after successful create
       await fetchUsers();
       setOpenCreate(false);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Create user failed', err);
-      setCreateError(err?.message || 'Failed to create user');
+      setCreateError(err instanceof Error ? err.message : 'Failed to create user');
     } finally {
       setCreating(false);
     }

@@ -31,7 +31,7 @@ export default function FacebookPostsCard() {
         const json = await res.json();
         if (json.data) {
           const withImages = json.data
-            .map((p: any) => {
+            .map((p: FbPost) => {
               let image = p.fullPicture;
               if (Array.isArray(p.images) && p.images.length > 0) {
                 image = p.images[0];
@@ -54,7 +54,7 @@ export default function FacebookPostsCard() {
         } else {
           setError('No posts found.');
         }
-      } catch (e: any) {
+      } catch {
         setError('Failed to load posts.');
       }
       setLoading(false);

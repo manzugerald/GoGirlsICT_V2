@@ -46,9 +46,9 @@ const AdminHeader = () => {
           <AdminMenu
             isAuthenticated={status === 'authenticated'}
             user={{
-              firstName: (session as any)?.user?.firstName || '',
-              lastName: (session as any)?.user?.lastName || '',
-              image: (session as any)?.user?.image || undefined,
+              firstName: session?.user?.firstName || '',
+              lastName: session?.user?.lastName || '',
+              image: session?.user?.image || undefined,
             }}
           />
         </div>

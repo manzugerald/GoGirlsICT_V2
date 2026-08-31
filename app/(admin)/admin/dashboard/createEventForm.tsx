@@ -48,7 +48,6 @@ export default function CreateEventForm({
   initialData,
   onSuccess,
   onCancel,
-  currentUserId,
 }: EventFormProps) {
   const router = useRouter();
 
@@ -242,7 +241,7 @@ export default function CreateEventForm({
       if (onSuccess) onSuccess();
       router.refresh();
       router.push('/admin/dashboard');
-    } catch (err) {
+    } catch {
       alert(
         `There was an error ${
           mode === 'edit' ? 'updating' : 'creating'
@@ -275,7 +274,7 @@ export default function CreateEventForm({
       if (onSuccess) onSuccess();
       router.refresh();
       router.push('/admin/dashboard');
-    } catch (err) {
+    } catch {
       alert('There was an error deleting the event. Please try again.');
     } finally {
       setDeleting(false);

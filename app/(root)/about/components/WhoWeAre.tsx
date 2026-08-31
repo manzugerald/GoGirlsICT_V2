@@ -9,7 +9,6 @@ import {
   GraduationCap,
   Quote,
   Rocket,
-  Sparkles,
   Users,
 } from 'lucide-react';
 

@@ -2,6 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 
+// Raw API list items are dynamic (mixed field names across cache/API shapes)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FbApiItem = any;
+
 type FbPost = {
   id: string;
   message?: string | null;
@@ -33,10 +37,10 @@ export default function FacebookSection() {
           throw new Error(text || `HTTP ${res.status}`);
         }
         const json = await res.json();
-        const raw: any[] = Array.isArray(json?.data) ? json.data : [];
+        const raw: FbApiItem[] = Array.isArray(json?.data) ? json.data : [];
 
         const withImages = raw
-          .map((p: any) => {
+          .map((p: FbApiItem) => {
             const id = String(p.id ?? '');
             const msg = p.message ?? null;
             const createdTime = p.createdTime
@@ -67,7 +71,7 @@ export default function FacebookSection() {
           setAllPosts(withImages);
           setPage(1);
         }
-      } catch (e: any) {
+      } catch (e) {
         if (!mounted) return;
         console.error('Failed to fetch facebook posts', e);
         setError('Failed to load Facebook posts.');

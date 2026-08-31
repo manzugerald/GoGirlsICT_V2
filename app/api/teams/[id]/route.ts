@@ -8,8 +8,9 @@ import { randomUUID } from 'crypto';
 
 const TEAM_IMAGES_DIR = '/assets/images/team';
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const teamId = params?.id;
     if (!teamId) {
       return NextResponse.json({ error: 'Missing team id' }, { status: 400, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
@@ -48,8 +49,9 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   }
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const teamId = params?.id;
     if (!teamId) {
       return NextResponse.json({ error: 'Missing team id' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
@@ -200,8 +202,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const teamId = params?.id;
     if (!teamId) {
       return NextResponse.json({ error: 'Missing team id' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });

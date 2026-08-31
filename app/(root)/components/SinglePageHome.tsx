@@ -6,7 +6,6 @@ import { useHomePageContent, usePartners } from '../hooks/useHomePageData';
 import HeroSection from './sections/HeroSection';
 import VisionMissionSection from './sections/VisionMissionSection';
 import ImpactSection from './sections/ImpactSection';
-import PartnersSection from './sections/PartnersSection';
 
 import SectionSkeleton from './skeletons/SectionSkeleton';
 import ExploreSection from './sections/ExploreSection';
@@ -36,7 +35,7 @@ export default function SinglePageHome({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { data: content } = useHomePageContent(ssrContent);
-  const { data: partners } = usePartners(ssrPartners);
+  usePartners(ssrPartners); // prime the query cache for consumers elsewhere on the page
 
   
 

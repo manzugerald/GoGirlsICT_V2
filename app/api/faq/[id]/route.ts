@@ -14,8 +14,8 @@ import prisma from '@/db/prisma';
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const faq = await prisma.FAQ.findUnique({
-      where: { id: Number(id) || id },
+    const faq = await prisma.fAQ.findUnique({
+      where: { id: Number(id) },
     });
 
     if (!faq) {
@@ -42,8 +42,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const { id } = await params;
     const body = await req.json();
 
-    const updated = await prisma.FAQ.update({
-      where: { id: Number(id) || id },
+    const updated = await prisma.fAQ.update({
+      where: { id: Number(id) },
       data: {
         question: body.question ?? undefined,
         answer: body.answer ?? undefined,
@@ -71,8 +71,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    await prisma.FAQ.delete({
-      where: { id: Number(id) || id },
+    await prisma.fAQ.delete({
+      where: { id: Number(id) },
     });
 
     return NextResponse.json({ success: true }, {

@@ -50,17 +50,17 @@ export default function BeneficiaryView({
   onClose?: () => void;
 }) {
   const { data: session } = useSession();
-  const role = (session as any)?.user?.role ?? 'guest';
+  const role = session?.user?.role ?? 'guest';
   const isPrivileged = role === 'super' || role === 'admin' || role === 'moderator';
   const isSelfBeneficiary =
     role === 'beneficiary' &&
     !!data &&
     // infer beneficiary identity from session first/last name match when possible
-    (session as any)?.user?.firstName &&
-    (session as any)?.user?.lastName &&
-    (session as any).user.firstName.trim().toLowerCase() ===
+    session?.user?.firstName &&
+    session?.user?.lastName &&
+    session.user.firstName.trim().toLowerCase() ===
       (data.firstName ?? '').trim().toLowerCase() &&
-    (session as any).user.lastName.trim().toLowerCase() ===
+    session.user.lastName.trim().toLowerCase() ===
       (data.lastName ?? '').trim().toLowerCase();
 
   const [messageCount, setMessageCount] = useState<number | null>(

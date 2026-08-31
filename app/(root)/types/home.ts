@@ -28,6 +28,12 @@ export interface ExecutiveMessage {
   allowResponses?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  // Defensive/legacy fields some callers still populate even though they
+  // aren't part of the current Message model.
+  message?: string | null;
+  authorImage?: string | null;
+  authorName?: string | null;
+  authorTitle?: string | null;
 }
 
 export interface Project {
@@ -77,6 +83,12 @@ export interface Event {
   downloadCount?: number;
   createdAt?: Date;
   updatedAt?: Date;
+  // Defensive/legacy field-name fallbacks some callers still populate even
+  // though they aren't part of the current Event model.
+  startAt?: Date | string | null;
+  startDate?: Date | string | null;
+  location?: string | null;
+  description?: unknown;
 }
 
 export interface TeamMember {
@@ -134,4 +146,9 @@ export interface Beneficiary {
   createdAt?: Date;
   updatedAt?: Date;
   institutionId?: string | null;
+  // Defensive/legacy fields some callers still populate even though they
+  // aren't part of the current Beneficiary model.
+  profileImage?: string | null;
+  location?: string | null;
+  bio?: string | null;
 }

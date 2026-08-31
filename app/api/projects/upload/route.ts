@@ -3,6 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
+import type { Status, PublishStatus } from '@/lib/generated/prisma';
 import { prisma } from '@/db/prisma';
 import { slugify } from '@/lib/utils';
 import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
@@ -74,8 +75,8 @@ export const POST = async (req: Request) => {
       slug,
       content: parsedContent,
       images: imagePaths,
-      projectStatus,
-      publishStatus,
+      projectStatus: projectStatus as Status,
+      publishStatus: publishStatus as PublishStatus,
       createdById: userId,
       updatedById: userId,
       approvedById: null,

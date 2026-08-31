@@ -190,7 +190,7 @@ export async function POST(req: Request) {
       path.join(process.cwd(), 'public', 'uploads', 'institutions')
     );
 
-    let locations: any[] = [];
+    let locations: { locationName?: string; latitude?: number; longitude?: number }[] = [];
 
     if (locationsRaw) {
       try {
@@ -220,7 +220,7 @@ export async function POST(req: Request) {
         locations:
           locations && Array.isArray(locations)
             ? {
-                create: locations.map((loc: any) => ({
+                create: locations.map((loc) => ({
                   locationName: loc.locationName,
                   latitude: loc.latitude,
                   longitude: loc.longitude,

@@ -8,6 +8,7 @@ import ProgramCard from './ProgramCard';
 export default function ProgramsGrid({
   programs,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   programs: any[];
 }) {
   return (

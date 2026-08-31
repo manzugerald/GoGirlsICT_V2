@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
+import type { ReactElement } from 'react';
 
 const ICONS = {
   home: (
@@ -33,7 +34,7 @@ const TYPE_LABELS: Record<string, string> = {
 type CrumbType = 'home' | 'folder' | 'page';
 type Crumb = {
   href: string;
-  icon: JSX.Element;
+  icon: ReactElement;
   label: string;
   type: CrumbType;
 };
@@ -91,7 +92,7 @@ export default function Breadcrumb() {
 
   // Only render unique folder segments (no duplicate consecutive)
   const filteredCrumbs: Crumb[] = [];
-  crumbs.forEach((crumb, i) => {
+  crumbs.forEach((crumb) => {
     // If folder and previous crumb has same label, skip this one
     if (
       crumb.type === 'folder' &&

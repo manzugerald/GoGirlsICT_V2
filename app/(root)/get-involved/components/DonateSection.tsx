@@ -84,7 +84,7 @@ export default function DonateSection() {
 
               <p className="text-[length:calc(0.875rem*var(--font-scale))] text-gray-500 dark:text-gray-400">
                 Online payments are
-                launching soon. We'll be
+                launching soon. We&apos;ll be
                 in touch about completing
                 your ${amount} donation.
               </p>

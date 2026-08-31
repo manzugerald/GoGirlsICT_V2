@@ -20,7 +20,7 @@ function getCurrentDayMonthYear() {
   return `${day}.${month}.${year}`;
 }
 
-export async function handleDownloadPDF(data: any[], columns: ColumnOption[], cardName: string) {
+export async function handleDownloadPDF(data: Record<string, unknown>[], columns: ColumnOption[], cardName: string) {
   const doc = new jsPDF({ orientation: 'landscape' });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -73,7 +73,7 @@ export async function handleDownloadPDF(data: any[], columns: ColumnOption[], ca
       if (col.id === 'number') return idx + 1;
       if (dateFields.includes(col.id) && row[col.id]) {
         // Format all dates as Day.Month.Year
-        const d = new Date(row[col.id]);
+        const d = new Date(row[col.id] as string | number | Date);
         return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(
           2,
           '0'
@@ -88,7 +88,7 @@ export async function handleDownloadPDF(data: any[], columns: ColumnOption[], ca
     body: rows,
     startY: HEADER_HEIGHT + 6,
     margin: { left: 10, right: 10 },
-    didDrawPage: function (data) {
+    didDrawPage: function () {
       // ----- FOOTER -----
       // Draw footer background
       doc.setFillColor(FOOTER_BG_COLOR);

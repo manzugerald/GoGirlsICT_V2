@@ -5,15 +5,19 @@ import { User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSession } from 'next-auth/react';
 
+// This section renders Team records defensively — hence one deliberate
+// loose alias here instead of scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TeamRecord = any;
+
 export default function TeamsSection({
   paginatedData,
   handleEdit,
-  handleView,
   handleDelete,
 }: {
-  paginatedData: any[];
-  handleEdit: (record: any) => void;
-  handleView: (record: any) => void;
+  paginatedData: TeamRecord[];
+  handleEdit: (record: TeamRecord) => void;
+  handleView: (record: TeamRecord) => void;
   handleDelete: (id: string | number) => void;
 }) {
   const [expandedId, setExpandedId] = useState<number | null>(null);

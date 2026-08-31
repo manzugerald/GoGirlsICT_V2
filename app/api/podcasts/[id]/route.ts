@@ -29,8 +29,9 @@ function cleanStringIdArray(value: unknown): string[] {
 }
 
 // GET single podcast -- PUBLIC
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const podcastId = Number(params.id);
     if (!podcastId || isNaN(podcastId)) {
       return NextResponse.json({ error: 'Invalid Podcast ID' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
@@ -52,8 +53,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 // Handle PUT (update podcast) -- AUTH REQUIRED
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -127,11 +129,13 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     });
 
     // Sync beneficiary participation to exactly the given set.
-    await prisma.beneficiaryPodcast.deleteMany(
-      participantIds.length
-        ? { where: { podcastId, beneficiaryId: { notIn: participantIds } } }
-        : { where: { podcastId } }
-    );
+    if (participantIds.length) {
+      await prisma.beneficiaryPodcast.deleteMany({
+        where: { podcastId, beneficiaryId: { notIn: participantIds } },
+      });
+    } else {
+      await prisma.beneficiaryPodcast.deleteMany({ where: { podcastId } });
+    }
     if (participantIds.length) {
       await prisma.beneficiaryPodcast.createMany({
         data: participantIds.map((beneficiaryId) => ({ podcastId, beneficiaryId })),
@@ -149,8 +153,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 // Handle DELETE -- AUTH REQUIRED
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -165,8 +170,8 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     await prisma.podcast.delete({ where: { id: podcastId } });
 
     return NextResponse.json({ success: true }, { headers: NO_STORE });
-  } catch (error: any) {
-    if (error.code === 'P2025') {
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       return NextResponse.json({ error: 'Podcast not found' }, { status: 404, headers: NO_STORE });
     }
     console.error('Failed to delete podcast:', error);

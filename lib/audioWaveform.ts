@@ -10,9 +10,10 @@ export async function computeWaveformPeaks(
   file: File,
   barCount = 64
 ): Promise<number[]> {
-  const AudioContextClass =
-    (window as any).AudioContext ||
-    (window as any).webkitAudioContext;
+  // Safari's legacy vendor-prefixed constructor isn't in the standard DOM lib types.
+  const AudioContextClass = (
+    window as typeof window & { webkitAudioContext?: typeof AudioContext }
+  ).AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
 
   if (!AudioContextClass) {
     return [];

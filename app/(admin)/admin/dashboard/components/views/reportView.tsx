@@ -1,14 +1,9 @@
 'use client';
 
 import React from 'react';
-import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { extractPlainText } from '@/lib/tiptap';
 import '@/assets/styles/tiptap-editor.css';
-
-const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-viewer'), {
-  ssr: false,
-});
 
 type ReportType = {
   id?: number | string;

@@ -2,7 +2,7 @@
 
 import { motion, useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
-import { Quote, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { Quote, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ExecutiveMessage } from '../../types/home';
 
 interface MessagesSectionProps {
@@ -150,7 +150,7 @@ export default function MessagesSection({ messages }: MessagesSectionProps) {
                 className="mb-8"
               >
                 <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-200 leading-relaxed italic">
-                  "{currentMessage.message}"
+                  &quot;{currentMessage.message}&quot;
                 </p>
               </motion.div>
 

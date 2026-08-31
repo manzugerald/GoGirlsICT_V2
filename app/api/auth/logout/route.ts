@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     if (!session) {
       const res = NextResponse.json({ ok: true });
       // clear cookie anyway
-      res.cookies.delete(SESSION_COOKIE_NAME, { path: '/' });
+      res.cookies.delete({ name: SESSION_COOKIE_NAME, path: '/' });
       return res;
     }
 
@@ -62,9 +62,9 @@ export async function POST(req: Request) {
     }
 
     const res = NextResponse.json({ ok: true });
-    res.cookies.delete(SESSION_COOKIE_NAME, { path: '/' });
+    res.cookies.delete({ name: SESSION_COOKIE_NAME, path: '/' });
     return res;
-  } catch (err: any) {
+  } catch (err) {
     console.error('Logout route error:', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }

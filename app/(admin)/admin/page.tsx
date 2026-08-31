@@ -75,7 +75,7 @@ export default function AdminLoginPage() {
       // cookies attached, rather than a client-side transition that can
       // race ahead of cookie propagation.
       window.location.href = result.redirectUrl ?? callbackUrl;
-    } catch (err: any) {
+    } catch (err) {
       console.error('Login error', err);
       isSubmittingRef.current = false;
       setError('Server error during login');
@@ -94,7 +94,7 @@ export default function AdminLoginPage() {
         setLogoutLoading(false);
         return;
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Logout error', err);
       setError('Logout failed');
     } finally {

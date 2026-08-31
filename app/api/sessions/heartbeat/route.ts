@@ -44,7 +44,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ ok: true });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Heartbeat error', err);
     return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
   }

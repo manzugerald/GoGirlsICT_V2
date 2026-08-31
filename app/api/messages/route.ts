@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/authOptions';
 import { redis } from '@/utils/redis';
 import { sendAccountDeletionRequestEmail } from '@/lib/email';
 import { isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
+import { Prisma } from '@/lib/generated/prisma';
 
 export const runtime = 'nodejs';
 
@@ -46,7 +47,7 @@ export async function GET() {
     const session = await getServerSession(authOptions);
     const role = session?.user?.role ?? 'guest';
 
-    let where: any | undefined = undefined;
+    let where: Prisma.MessageWhereInput | undefined = undefined;
 
     if (role === 'beneficiary') {
       const firstName = session?.user?.firstName;
@@ -119,7 +120,7 @@ export async function POST(req: Request) {
       messageStatus?: unknown;
       senderEmail?: string;
       allowResponses?: boolean;
-      meta?: { type?: string; [key: string]: any };
+      meta?: { type?: string; [key: string]: unknown };
       beneficiaryId?: string;
     };
 
@@ -133,7 +134,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid messageCategory' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
-    let beneficiaryConnect: any = undefined;
+    let beneficiaryConnect: Prisma.BeneficiaryCreateNestedOneWithoutMessagesInput | undefined = undefined;
     const isAccountDeletionRequest = meta?.type === 'account-deletion-request';
 
     if (role === 'beneficiary' && !isAccountDeletionRequest) {
@@ -179,8 +180,8 @@ export async function POST(req: Request) {
         : 'draft';
 
     // Construct Prisma message.create payload -- NO META FIELD!
-    const data: any = {
-      title: normalizedTitle,
+    const data: Prisma.MessageCreateInput = {
+      title: (normalizedTitle as Prisma.InputJsonValue | null) ?? Prisma.JsonNull,
       affiliated: affiliated ?? null,
       name: name ?? null,
       content: typeof content === 'string' ? content : JSON.stringify(content ?? ''),

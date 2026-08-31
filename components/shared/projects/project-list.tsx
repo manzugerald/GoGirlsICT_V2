@@ -13,8 +13,14 @@ export interface ProjectCardProps {
   content: string;
 }
 
+// Raw project records as returned by the API (title is Tiptap JSON, read via
+// extractPlainText) — hence one deliberate loose alias here instead of
+// scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RawProject = any;
+
 interface ProjectListProps {
-  projects?: any[];
+  projects?: RawProject[];
   onProjectClick?: (id: number) => void;
 }
 

@@ -2,7 +2,6 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
-import { Institution } from '@/lib/generated/prisma';
 
 // Types for Institution and Location with nested relations
 export type Location = {
@@ -25,6 +24,9 @@ export type InstitutionWithRelations = {
   updatedAt: string;
   createdBy?: { firstName: string; lastName: string } | null;
   locations: Location[];
+  // Defensive/legacy field some callers still populate even though it isn't
+  // part of the current Institution model.
+  address?: string | null;
 };
 
 export function institutionColumns({

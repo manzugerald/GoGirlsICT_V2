@@ -149,10 +149,17 @@ export default function DashboardChart({ counts: countsProp }: { counts?: CountD
     afterDraw(chart) {
       const ctx = chart.ctx;
       const dataset = chart.data.datasets[0];
-      const total = dataset.data.reduce((sum: number, val: any) => sum + val, 0);
-      dataset.data.forEach((value: any, index: number) => {
+      const total = dataset.data.reduce((sum: number, val: number) => sum + val, 0);
+      dataset.data.forEach((value: number, index: number) => {
         const meta = chart.getDatasetMeta(0);
-        const arc = meta.data[index];
+        const arc = meta.data[index] as unknown as ArcElement & {
+          startAngle: number;
+          endAngle: number;
+          outerRadius: number;
+          innerRadius: number;
+          x: number;
+          y: number;
+        };
         const angle = (arc.startAngle + arc.endAngle) / 2;
         const radius = (arc.outerRadius + arc.innerRadius) / 2;
         const x = arc.x + Math.cos(angle) * radius;

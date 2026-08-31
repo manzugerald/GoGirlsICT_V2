@@ -1,6 +1,7 @@
 // app/api/responses/[id]/route.ts
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
+import { Prisma } from '@/lib/generated/prisma';
 import { getServerSession } from 'next-auth';
 import type { Session } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
@@ -204,7 +205,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
 
     const updated = await prisma.response.update({
       where: { id },
-      data: { content },
+      data: { content: content as Prisma.InputJsonValue },
       include: {
         responderUser: { select: { id: true, firstName: true, lastName: true, email: true } },
         responderBeneficiary: { select: { id: true, firstName: true, lastName: true } },

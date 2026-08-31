@@ -14,7 +14,7 @@ const TEAM_IMAGES_DIR = '/assets/images/team';
  * GET /api/teams
  * - Returns list of team members (sanitized) using only attributes in the Team model.
  */
-export async function GET(_req: Request) {
+export async function GET() {
   try {
     const members = await prisma.team.findMany({
       select: {
@@ -41,7 +41,7 @@ export async function GET(_req: Request) {
     return NextResponse.json(members, {
       headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error('GET /api/teams error', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
   }
@@ -155,7 +155,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ message: 'Team member created', team: created }, { status: 201, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
-  } catch (err: any) {
+  } catch (err) {
     console.error('POST /api/teams error', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   }

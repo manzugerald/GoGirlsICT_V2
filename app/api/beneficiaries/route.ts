@@ -1,9 +1,17 @@
 // app/api/beneficiaries/route.ts
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
+import { Prisma } from '@/lib/generated/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
+import type { Session } from 'next-auth';
 import { v4 as uuidv4 } from 'uuid';
+
+// Beneficiary rows with a Prisma `_count` aggregate attached — genuinely
+// dynamic depending on which query included it — hence one deliberate loose
+// alias here instead of scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type BeneficiaryRow = any;
 import { promises as fs } from 'fs';
 import path from 'path';
 import { redis } from '@/utils/redis';
@@ -42,10 +50,10 @@ function parseIdArray(formData: FormData, field: string): number[] {
   }
 }
 
-function roleFrom(session: any): string {
+function roleFrom(session: Session | null): string {
   return session?.user?.role ?? 'guest';
 }
-function namesFrom(session: any): { firstName?: string; lastName?: string } {
+function namesFrom(session: Session | null): { firstName?: string; lastName?: string } {
   return {
     firstName: session?.user?.firstName ?? undefined,
     lastName: session?.user?.lastName ?? undefined,
@@ -101,7 +109,7 @@ export async function GET() {
       });
 
       // Normalize to include common convenience fields (messageCount/responseCount)
-      const enriched = beneficiaries.map((b: any) => {
+      const enriched = beneficiaries.map((b: BeneficiaryRow) => {
         const messageCount = typeof b._count?.messages === 'number' ? b._count.messages : 0;
         const responseCount = typeof b._count?.responses === 'number' ? b._count.responses : 0;
         return { ...b, messageCount, responseCount };
@@ -137,7 +145,7 @@ export async function GET() {
     });
 
     // Normalize beneficiaries with convenience fields
-    const enrichedAll = all.map((b: any) => {
+    const enrichedAll = all.map((b: BeneficiaryRow) => {
       const messageCount = typeof b._count?.messages === 'number' ? b._count.messages : 0;
       const responseCount = typeof b._count?.responses === 'number' ? b._count.responses : 0;
       return { ...b, messageCount, responseCount };
@@ -199,10 +207,10 @@ export async function POST(req: Request) {
     // emptiness — checking the raw string directly would never see it as
     // empty, since a bare "no visible text" doc still contains characters.
     const voiceRaw = formData.get('voice');
-    let voice: object | null = null;
+    let voice = Prisma.JsonNull as Prisma.NullableJsonNullValueInput | Prisma.InputJsonValue;
     if (voiceRaw && typeof voiceRaw === 'string') {
       const normalizedVoice = normalizeTiptapDoc(voiceRaw);
-      voice = isTiptapDocEmpty(normalizedVoice) ? null : normalizedVoice;
+      voice = isTiptapDocEmpty(normalizedVoice) ? Prisma.JsonNull : (normalizedVoice as Prisma.InputJsonValue);
     }
 
     const projectIds = parseIdArray(formData, 'projectIds');

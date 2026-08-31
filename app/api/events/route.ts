@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import path from 'path';
-import fs from 'fs';
 import { revalidatePath } from 'next/cache';
 
 async function fetchEventsFromDb() {
@@ -40,7 +39,7 @@ async function fetchEventsFromDb() {
 }
 
 // try parse JSON-like string otherwise return raw
-function tryParseMaybeString(v: any) {
+function tryParseMaybeString(v: unknown) {
   if (v == null) return null;
   if (typeof v !== 'string') return v;
   const s = v.trim();
@@ -55,7 +54,7 @@ function tryParseMaybeString(v: any) {
   return s;
 }
 
-function extractUrlFromCandidate(candidate: any): string | null {
+function extractUrlFromCandidate(candidate: unknown): string | null {
   if (!candidate) return null;
   const value = tryParseMaybeString(candidate);
   if (!value) return null;
@@ -68,7 +67,7 @@ function extractUrlFromCandidate(candidate: any): string | null {
     for (const it of value) {
       if (typeof it === 'string' && it.trim()) return it.trim();
       if (it && typeof it === 'object') {
-        const maybe = (it.url ?? it.src ?? it.path) as string | undefined;
+        const maybe = ((it as Record<string, unknown>).url ?? (it as Record<string, unknown>).src ?? (it as Record<string, unknown>).path) as string | undefined;
         if (maybe && maybe.trim()) return maybe.trim();
       }
     }
@@ -76,13 +75,13 @@ function extractUrlFromCandidate(candidate: any): string | null {
   }
 
   if (typeof value === 'object') {
-    return (value.url ?? value.src ?? value.path ?? null) as string | null;
+    return ((value as Record<string, unknown>).url ?? (value as Record<string, unknown>).src ?? (value as Record<string, unknown>).path ?? null) as string | null;
   }
 
   return null;
 }
 
-function extractArrayFromCandidate(candidate: any): string[] {
+function extractArrayFromCandidate(candidate: unknown): string[] {
   const out: string[] = [];
   if (candidate == null) return out;
   const value = tryParseMaybeString(candidate);
@@ -93,7 +92,7 @@ function extractArrayFromCandidate(candidate: any): string[] {
       if (!it) continue;
       if (typeof it === 'string' && it.trim()) out.push(it.trim());
       else if (typeof it === 'object') {
-        const maybe = it.url ?? it.src ?? it.path;
+        const maybe = (it as Record<string, unknown>).url ?? (it as Record<string, unknown>).src ?? (it as Record<string, unknown>).path;
         if (maybe && typeof maybe === 'string' && maybe.trim()) out.push(maybe.trim());
       }
     }
@@ -114,7 +113,7 @@ function extractArrayFromCandidate(candidate: any): string[] {
   }
 
   if (typeof value === 'object') {
-    const maybe = value.url ?? value.src ?? value.path;
+    const maybe = (value as Record<string, unknown>).url ?? (value as Record<string, unknown>).src ?? (value as Record<string, unknown>).path;
     if (maybe && typeof maybe === 'string' && maybe.trim()) out.push(maybe.trim());
     return out;
   }
@@ -165,6 +164,13 @@ function resolveBannerPathStrict(origin: string, bannerCandidateRaw: string | nu
   return toAbsoluteUrl(origin, candidate);
 }
 
+// Rows are read defensively across legacy/alternate field-name variants
+// (eventBanner|banner|cover, eventFile|file|files, ...) not present in the
+// current select shape — hence one deliberate loose alias here instead of
+// scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type EventRow = any;
+
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
@@ -172,7 +178,7 @@ export async function GET(req: Request) {
 
     const events = await fetchEventsFromDb();
 
-    const normalizedEvents = events.map((ev: any) => {
+    const normalizedEvents = events.map((ev: EventRow) => {
       const rawBannerCandidate = ev.eventBanner ?? ev.banner ?? ev.cover ?? null;
       const bannerCandidate = tryParseMaybeString(rawBannerCandidate);
       const bannerUrlRaw = extractUrlFromCandidate(bannerCandidate);

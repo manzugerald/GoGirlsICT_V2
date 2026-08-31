@@ -12,7 +12,7 @@ export default async function DashboardPage() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold">Dashboard</h1>
-      <p>Welcome, {session.user?.name || session.user?.username}</p>
+      <p>Welcome, {session.user?.firstName || session.user?.username}</p>
     </div>
   )
 }

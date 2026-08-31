@@ -123,9 +123,10 @@ function resolveBannerPathStrict(origin: string, bannerCandidateRaw: string | nu
   return toAbsoluteUrl(origin, candidate);
 }
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = Number(params.id);
+    const { id: idParam } = await params;
+    const id = Number(idParam);
     if (isNaN(id))
       return NextResponse.json(
         { error: 'Invalid ID' },
@@ -175,15 +176,19 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
     const origin = new URL(req.url).origin;
 
-    const bannerCandidate = event.eventBanner ?? event.banner ?? event.cover ?? null;
+    // These legacy field-name fallbacks (banner/cover/images/file/files)
+    // aren't part of the current select shape — kept for rows saved under
+    // older field names.
+    const legacy = event as unknown as Record<string, unknown>;
+    const bannerCandidate = event.eventBanner ?? legacy.banner ?? legacy.cover ?? null;
     const bannerUrlRaw = extractUrlFromCandidate(bannerCandidate);
     const bannerUrl = resolveBannerPathStrict(origin, bannerUrlRaw);
 
-    const imagesRaw = event.eventImages ?? event.images ?? null;
+    const imagesRaw = event.eventImages ?? legacy.images ?? null;
     const imagesListRaw = extractArrayFromCandidate(imagesRaw);
     const images = imagesListRaw.map((it) => toAbsoluteUrl(origin, it)).filter(Boolean) as string[];
 
-    const rawFileCandidate = event.eventFile ?? event.file ?? event.files ?? null;
+    const rawFileCandidate = event.eventFile ?? legacy.file ?? legacy.files ?? null;
     let pdfUrl: string | null = null;
     if (rawFileCandidate) {
       const filesArr = extractArrayFromCandidate(rawFileCandidate);
@@ -253,9 +258,9 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
   }
 }
 
-export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const { params } = context;
+    const params = await context.params;
     const session = await getServerSession(authOptions);
     if (!session?.user?.id)
       return NextResponse.json(

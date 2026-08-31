@@ -63,7 +63,7 @@ export default function FacebookPostsGrid() {
         const json =
           await response.json();
 
-        const rawPosts: any[] =
+        const rawPosts: FbPost[] =
           Array.isArray(json?.data)
             ? json.data
             : [];

@@ -84,7 +84,7 @@ export default function AnimatedStats({ counts: countsProp }: { counts?: Counts 
             ? beneficiaries.length
             : beneficiaries.count ?? 0,
         });
-      } catch (err) {
+      } catch {
         setCounts({
           projects: 0,
           reports: 0,

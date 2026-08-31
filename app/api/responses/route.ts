@@ -223,8 +223,12 @@ export async function POST(req: Request) {
           responderType,
           responderUserId: responderUserId ?? undefined,
           responderBeneficiaryId: responderBeneficiaryId ?? undefined,
-          content,
-          responderRole,
+          content: content as Prisma.InputJsonValue,
+          // Not (yet) part of the Prisma schema — kept as a forward-compatible
+          // attempt; the catch block below retries without it when the DB
+          // rejects the unknown column, which is the path that always runs
+          // today. Cast needed since the current schema has no such field.
+          ...({ responderRole } as Record<string, unknown>),
         },
         include: {
           responderUser: { select: { id: true, firstName: true, lastName: true, email: true } },
@@ -256,7 +260,7 @@ export async function POST(req: Request) {
             responderType,
             responderUserId: responderUserId ?? undefined,
             responderBeneficiaryId: responderBeneficiaryId ?? undefined,
-            content,
+            content: content as Prisma.InputJsonValue,
             // note: responderRole omitted
           },
           include: {

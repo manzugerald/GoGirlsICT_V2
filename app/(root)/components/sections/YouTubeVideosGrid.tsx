@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { Play, ExternalLink, Clock, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+// Raw API list items are dynamic (mixed field names across cache/API shapes)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type YtApiItem = any;
+
 type YtVideo = {
   id: string;
   title?: string | null;
@@ -30,10 +34,10 @@ export default function YouTubeVideosGrid() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const json = await res.json();
-        const raw: any[] = Array.isArray(json?.data) ? json.data : [];
+        const raw: YtApiItem[] = Array.isArray(json?.data) ? json.data : [];
 
         const normalized = raw
-          .map((v: any) => ({
+          .map((v: YtApiItem) => ({
             id: String(v.id ?? v.videoId ?? ''),
             title: v.title ?? v.snippet?.title ?? null,
             thumbnail:
@@ -155,7 +159,7 @@ export default function YouTubeVideosGrid() {
                   </h4>
 
                   <div className="flex items-center gap-3 caption text-site-muted mb-3">
-                    {video.viewCount !== null && (
+                    {video.viewCount != null && (
                       <div className="flex items-center gap-1">
                         <Eye className="w-3 h-3" />
                         <span>{video.viewCount.toLocaleString()}</span>

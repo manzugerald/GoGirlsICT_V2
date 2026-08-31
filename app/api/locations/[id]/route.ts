@@ -9,8 +9,9 @@ const SINGLE_LOCATION_CACHE_PREFIX = 'locations:'; // locations:[id]
 const LOCATIONS_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
 
 // GET = fetch location details (with Redis cache)
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const singleCacheKey = SINGLE_LOCATION_CACHE_PREFIX + params.id;
     const cached = await redis.get(singleCacheKey);
     if (cached) {
@@ -45,8 +46,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 // PATCH = update location (invalidate caches)
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
@@ -90,8 +92,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 }
 
 // DELETE = delete location (invalidate caches)
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const deleted = await prisma.location.delete({
       where: { id: params.id },
     });
@@ -105,8 +108,8 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     return NextResponse.json({ message: 'Location deleted', location: deleted }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
-  } catch (error: any) {
-    if (error.code === 'P2025') {
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       return NextResponse.json({ error: 'Location not found' }, { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
     console.error('Failed to delete location:', error);

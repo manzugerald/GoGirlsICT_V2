@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Mail, User } from 'lucide-react';
-import TeamSection from './TeamSection';
 import PartnersSection from './PartnersSection';
 import BeneficiariesSection from './BeneficiariesSection';
 import type { TeamMember, Partner, Beneficiary } from '../../types/home';

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
+import type { Session } from 'next-auth';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -52,7 +53,7 @@ function parseNumberIdArray(formData: FormData, field: string): number[] {
   }
 }
 
-function roleFrom(session: any): string {
+function roleFrom(session: Session | null): string {
   return session?.user?.role ?? 'guest';
 }
 
@@ -100,7 +101,7 @@ function parseWaveform(formData: FormData): number[] | null {
 }
 
 // GET single talkshow — PUBLIC
-export async function GET(_req: Request, context: { params: any }) {
+export async function GET(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
     const id = Number(params.id);
@@ -127,7 +128,7 @@ export async function GET(_req: Request, context: { params: any }) {
 }
 
 // PATCH: update talkshow — super/admin/moderator only
-export async function PATCH(req: Request, context: { params: any }) {
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
     const id = Number(params.id);
@@ -238,11 +239,13 @@ export async function PATCH(req: Request, context: { params: any }) {
     });
 
     // Sync participants to exactly the given set.
-    await prisma.beneficiaryTalkshow.deleteMany(
-      participantIds.length
-        ? { where: { talkshowId: id, beneficiaryId: { notIn: participantIds } } }
-        : { where: { talkshowId: id } }
-    );
+    if (participantIds.length) {
+      await prisma.beneficiaryTalkshow.deleteMany({
+        where: { talkshowId: id, beneficiaryId: { notIn: participantIds } },
+      });
+    } else {
+      await prisma.beneficiaryTalkshow.deleteMany({ where: { talkshowId: id } });
+    }
     if (participantIds.length) {
       await prisma.beneficiaryTalkshow.createMany({
         data: participantIds.map((beneficiaryId) => ({ talkshowId: id, beneficiaryId })),
@@ -252,11 +255,17 @@ export async function PATCH(req: Request, context: { params: any }) {
 
     // Podcasts own the FK (Podcast.talkshowId): unlink any podcast that
     // currently points here but isn't in the new set, then link the new set.
-    await prisma.podcast.updateMany(
-      podcastIds.length
-        ? { where: { talkshowId: id, id: { notIn: podcastIds } }, data: { talkshowId: null } }
-        : { where: { talkshowId: id }, data: { talkshowId: null } }
-    );
+    if (podcastIds.length) {
+      await prisma.podcast.updateMany({
+        where: { talkshowId: id, id: { notIn: podcastIds } },
+        data: { talkshowId: null },
+      });
+    } else {
+      await prisma.podcast.updateMany({
+        where: { talkshowId: id },
+        data: { talkshowId: null },
+      });
+    }
     if (podcastIds.length) {
       await prisma.podcast.updateMany({
         where: { id: { in: podcastIds } },
@@ -277,7 +286,7 @@ export async function PATCH(req: Request, context: { params: any }) {
 }
 
 // DELETE — super/admin/moderator only
-export async function DELETE(_req: Request, context: { params: any }) {
+export async function DELETE(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
     const id = Number(params.id);
@@ -300,8 +309,8 @@ export async function DELETE(_req: Request, context: { params: any }) {
     const deleted = await prisma.radioTalkshow.delete({ where: { id } });
 
     return NextResponse.json({ message: 'Talkshow deleted', talkshow: deleted }, { headers: NO_STORE });
-  } catch (error: any) {
-    if (error?.code === 'P2025') {
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       return NextResponse.json({ error: 'Talkshow not found' }, { status: 404, headers: NO_STORE });
     }
     console.error('Failed to delete talkshow:', error);

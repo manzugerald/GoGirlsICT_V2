@@ -69,7 +69,7 @@ export async function POST(req: Request) {
 
       // increment failed counter and possibly lock
       const newCount = (user.failedLoginCount ?? 0) + 1;
-      const updateData: any = { failedLoginCount: newCount };
+      const updateData: Record<string, unknown> = { failedLoginCount: newCount };
       if (newCount >= LOCK_THRESHOLD) {
         updateData.lockedUntil = new Date(Date.now() + LOCK_DURATION_MINUTES * 60 * 1000);
       }
@@ -124,7 +124,7 @@ export async function POST(req: Request) {
     });
 
     return res;
-  } catch (err: any) {
+  } catch (err) {
     console.error('Login route error:', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }

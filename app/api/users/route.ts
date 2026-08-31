@@ -6,9 +6,9 @@ import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
+import type { Role } from '@/lib/generated/prisma';
 // import { redis } from '@/utils/redis'; // Redis kept commented per request
 
-const USERS_CACHE_KEY = 'users:all';
 // const USERS_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days (redis disabled)
 
 /**
@@ -128,7 +128,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Image deleted' }, {
         headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
       });
-    } catch (err: any) {
+    } catch (err) {
       console.warn('Failed to delete image', err);
       return NextResponse.json({ error: 'Image not found' }, { 
         status: 404,
@@ -146,7 +146,7 @@ export async function POST(req: Request) {
     const username = (formData.get('username') as string) ?? null;
     const password = (formData.get('password') as string) ?? null;
     const imageFile = formData.get('image') as File | null;
-    const role = (formData.get('role') as string) ?? undefined;
+    const role = ((formData.get('role') as string) ?? undefined) as Role | undefined;
     const about = (formData.get('about') as string) ?? null;
 
     if (!firstName || !lastName || !username || !email || !password || !imageFile) {
@@ -210,7 +210,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'User created', user }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Failed to create user:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { 
       status: 500,

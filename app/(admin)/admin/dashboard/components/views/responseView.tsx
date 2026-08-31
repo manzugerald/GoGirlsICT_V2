@@ -2,7 +2,6 @@
 
 import React from 'react';
 import dynamic from 'next/dynamic';
-import { useSession } from 'next-auth/react';
 import { Response } from '@/lib/generated/prisma';
 import { extractPlainText } from '@/lib/tiptap';
 import '@/assets/styles/tiptap-editor.css';
@@ -94,7 +93,6 @@ export default function ResponseView({
   data: ResponseWithRelations | null | undefined;
   onClose?: () => void;
 }) {
-  const { data: session } = useSession();
 
   if (!data) return null;
 
@@ -154,7 +152,7 @@ export default function ResponseView({
           <div className="text-xs text-gray-500 mt-1">
             {data.createdAt ? new Date(data.createdAt).toLocaleString() : ''}
             {extractPlainText(data.message?.title) ? (
-              <span className="ml-2">· in "{extractPlainText(data.message?.title)}"</span>
+              <span className="ml-2">· in &quot;{extractPlainText(data.message?.title)}&quot;</span>
             ) : null}
           </div>
         </div>
@@ -164,7 +162,7 @@ export default function ResponseView({
         </div>
       </div>
 
-      <div className="pt-2 pb-4 border-t">{renderContent((data as any).content)}</div>
+      <div className="pt-2 pb-4 border-t">{renderContent(data.content)}</div>
 
       <div className="flex gap-3">
         {onClose && (

@@ -27,8 +27,9 @@ function escapeHtml(str: string | null | undefined) {
  *
  * Server-side admin-forced password reset. Sends email with the exact structured message.
  */
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -298,8 +299,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
 
     return NextResponse.json({ ok: true, message: 'Password updated' }, { status: 200 });
-  } catch (err: any) {
+  } catch (err) {
     console.error('admin-force-change-password error', err);
-    return NextResponse.json({ error: err?.message || 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Server error' }, { status: 500 });
   }
 }

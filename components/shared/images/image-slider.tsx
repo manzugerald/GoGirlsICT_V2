@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
+import type { Swiper as SwiperType } from 'swiper';
 import { Navigation, Thumbs, Pagination, EffectCube, EffectCoverflow } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -23,7 +24,7 @@ export default function ModalImageSlider({
   onShuffle,
 }: ModalImageSliderProps) {
   const [effect, setEffect] = useState<'cube' | 'coverflow'>('cube');
-  const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
+  const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
 
   // Ensure Swiper re-initializes on shuffle or effect change
   const [swiperKey, setSwiperKey] = useState(0);

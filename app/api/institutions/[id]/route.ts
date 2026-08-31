@@ -60,8 +60,9 @@ function toEnumValue<T extends Record<string, string>>(
   return fallback;
 }
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const institution = await prisma.institution.findUnique({
       where: { id: params.id },
       include: {
@@ -105,8 +106,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -251,8 +253,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const deleted = await prisma.institution.delete({
       where: { id: params.id },
     });
@@ -268,8 +271,8 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
         },
       }
     );
-  } catch (error: any) {
-    if (error.code === 'P2025') {
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
       return NextResponse.json(
         { error: 'Institution not found' },
         {

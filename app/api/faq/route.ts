@@ -8,7 +8,7 @@ import prisma from '@/db/prisma';
  */
 export async function GET() {
   try {
-    const faqs = await prisma.FAQ.findMany({
+    const faqs = await prisma.fAQ.findMany({
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json(faqs, {
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
     const safeApprovedById = approvedById ?? createdById;
 
     // Create record
-    const created = await prisma.FAQ.create({
+    const created = await prisma.fAQ.create({
       data: {
         // question/answer are JSON columns in Prisma; store whatever JSON object/string the client sent.
         question,
@@ -97,11 +97,11 @@ export async function POST(req: Request) {
         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
       },
     });
-  } catch (err: any) {
+  } catch (err) {
      
     console.error('POST /api/faq error', err);
     // Return the real error message (safe for dev). In production you might want to mask details.
-    const message = err?.message ?? 'Failed to create FAQ';
+    const message = err instanceof Error ? err.message : 'Failed to create FAQ';
     return new NextResponse(JSON.stringify({ error: message }), {
       status: 500,
       headers: { 

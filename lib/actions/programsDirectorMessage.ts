@@ -12,8 +12,8 @@ export async function getAllMessages() {
     select: {
       name: true,
       title: true,
-      message: true,
-      nameImageUrl: true, 
+      content: true,
+      nameImageUrl: true,
     }
     });
 }

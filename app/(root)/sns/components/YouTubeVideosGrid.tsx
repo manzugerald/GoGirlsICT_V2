@@ -16,6 +16,10 @@ import {
   motion,
 } from 'framer-motion';
 
+// Raw API list items are dynamic (mixed field names across cache/API shapes)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type YtApiItem = any;
+
 type YouTubeVideo = {
   id: string;
   title: string | null;
@@ -65,7 +69,7 @@ export default function YouTubeVideosGrid() {
         const json =
           await response.json();
 
-        const rawVideos: any[] =
+        const rawVideos: YtApiItem[] =
           Array.isArray(json?.data)
             ? json.data
             : [];

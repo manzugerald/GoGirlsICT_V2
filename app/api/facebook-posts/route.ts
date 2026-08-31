@@ -11,10 +11,10 @@ type FbApiPost = {
   created_time?: string;
   permalink_url?: string;
   full_picture?: string;
-  attachments?: any;
+  attachments?: unknown;
 };
 
-function makeResult(posts: any[], lastFetched: Date | null) {
+function makeResult(posts: unknown[], lastFetched: Date | null) {
   return { data: posts, lastFetched: lastFetched ?? null };
 }
 
@@ -24,10 +24,15 @@ function makeResult(posts: any[], lastFetched: Date | null) {
  * - attachments.data[0].media.image.src
  * - attachments.data[0].subattachments.data[0].media.image.src
  */
-function extractImageFromFbPost(p: any): string | null {
+// Facebook's Graph API attachment tree is deeply nested and dynamic — hence
+// one deliberate loose alias here instead of scattering `any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FbAttachmentNode = any;
+
+function extractImageFromFbPost(p: FbApiPost | null | undefined): string | null {
   if (!p) return null;
   if (p.full_picture) return String(p.full_picture);
-  const att = p.attachments?.data;
+  const att = (p.attachments as FbAttachmentNode)?.data;
   if (Array.isArray(att) && att.length > 0) {
     const first = att[0];
     if (first?.media?.image?.src) return String(first.media.image.src);
@@ -57,7 +62,7 @@ export async function GET(req: NextRequest) {
   const forceRefresh = searchParams.get('refresh') === 'true';
 
   // 1) Read from DB first and check if cache is still valid
-  let postsInDb: any[] = [];
+  let postsInDb: unknown[] = [];
   let metaLastFetched: Date | null = null;
   let needsFetch = forceRefresh; // Force fetch if requested
 
@@ -91,6 +96,8 @@ export async function GET(req: NextRequest) {
 
   // 2) Fetch from Facebook Graph API
   console.log('🔄 Fetching fresh Facebook posts from API...');
+  // Raw Facebook Graph API response body — genuinely dynamic/external.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let fbData: any;
   try {
     const url = `https://graph.facebook.com/v19.0/${encodeURIComponent(

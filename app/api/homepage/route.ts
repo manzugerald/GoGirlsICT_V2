@@ -25,7 +25,7 @@ const ALLOWED_VIDEO_EXT = ['mp4', 'mov', 'webm', 'gif', 'm4v'];
 async function ensureDir(dir: string) {
   try {
     await fs.promises.mkdir(dir, { recursive: true });
-  } catch (err) {
+  } catch {
     // ignore
   }
 }
@@ -50,7 +50,7 @@ async function saveUploadedFileLocal(
   if (kind === 'video' && size > VIDEO_MAX_BYTES)
     throw new Error(`Video too large. Max ${VIDEO_MAX_BYTES / 1024 / 1024}MB`);
 
-  const filenameRaw = String((file as any).name ?? '');
+  const filenameRaw = String(file.name ?? '');
   const extGuess = (filenameRaw.split('.').pop() || '').toLowerCase();
   const ext = extGuess || (kind === 'image' ? 'png' : 'mp4');
 
@@ -149,7 +149,7 @@ export async function GET() {
     return NextResponse.json(homePage, {
       headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Error fetching homepage:', err);
     return NextResponse.json(
       { error: 'Internal Server Error' },
@@ -324,11 +324,12 @@ export async function POST(req: Request) {
       status: 201,
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
-  } catch (err: any) {
+  } catch (err) {
+    const e = err as { message?: string; statusCode?: number; cause?: unknown };
     if (
-      err?.message?.includes?.('Body exceeded') ||
-      err?.statusCode === 413 ||
-      (err?.cause && String(err.cause).includes('Body exceeded'))
+      e?.message?.includes?.('Body exceeded') ||
+      e?.statusCode === 413 ||
+      (e?.cause && String(e.cause).includes('Body exceeded'))
     ) {
       console.error('Request body too large:', err);
       return NextResponse.json(
@@ -345,7 +346,7 @@ export async function POST(req: Request) {
 
     console.error('Failed to create homepage:', err);
     return NextResponse.json(
-      { error: err?.message || 'Internal Server Error' },
+      { error: e?.message || 'Internal Server Error' },
       {
         status: 500,
         headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },

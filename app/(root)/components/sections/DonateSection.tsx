@@ -160,8 +160,8 @@ export default function DonateSection() {
           className="text-center mt-16 pt-8 border-t border-gray-200 dark:border-gray-800"
         >
           <blockquote className="body-lg text-site-secondary italic max-w-3xl mx-auto">
-            "When girls are empowered with knowledge and opportunity, societies become more just,
-            innovative, and resilient."
+            &quot;When girls are empowered with knowledge and opportunity, societies become more
+            just, innovative, and resilient.&quot;
           </blockquote>
 
           <p className="body text-site-muted mt-4 font-semibold">

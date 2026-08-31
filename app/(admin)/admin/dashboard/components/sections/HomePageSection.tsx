@@ -58,9 +58,9 @@ export default function HomePageSection() {
       }
       const json = await res.json();
       setData(json);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to fetch homepage', err);
-      setError(err?.message || 'Failed to load homepage content');
+      setError(err instanceof Error ? err.message : 'Failed to load homepage content');
     } finally {
       setLoading(false);
     }
@@ -142,9 +142,9 @@ export default function HomePageSection() {
       // Refresh view
       await fetchHome();
       setOpenCreate(false);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to create/update homepage', err);
-      setSubmitError(err?.message || 'Failed to save homepage');
+      setSubmitError(err instanceof Error ? err.message : 'Failed to save homepage');
     } finally {
       setSubmitting(false);
     }

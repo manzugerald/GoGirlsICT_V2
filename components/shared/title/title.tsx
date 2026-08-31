@@ -38,7 +38,7 @@ export default function TitleHeader({
 
       {/* Right Section: Author Info */}
       <div className="bg-gradient-to-r from-pink-400 to-rose-800 text-black p-4 md:w-[300px] flex flex-col justify-between">
-      <div className="text-xs mb-4">Today's date: {today}</div>
+      <div className="text-xs mb-4">Today&apos;s date: {today}</div>
 
     <div className="flex items-center">
         <div className="w-15 h-15 bg-white rounded-full overflow-hidden flex items-center justify-center text-gray-600">

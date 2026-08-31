@@ -48,7 +48,6 @@ export default function CreateProjectForm({
   });
   const [imagesToRemove, setImagesToRemove] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -147,37 +146,10 @@ export default function CreateProjectForm({
       router.refresh();
       router.push("/admin/dashboard");
 
-    } catch (err) {
+    } catch {
       alert(`There was an error ${mode === "edit" ? "updating" : "creating"} the project. Please try again.`);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // --- DELETE HANDLER ---
-  const handleDelete = async () => {
-    if (!initialData?.id) return;
-    if (!window.confirm("Are you sure you want to delete this project? This action cannot be undone.")) return;
-
-    setDeleting(true);
-    try {
-      const res = await fetch(`/api/projects/${initialData.id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => null);
-        const errorMessage = errorData?.error || "Failed to delete project";
-        throw new Error(errorMessage);
-      }
-
-      if (onSuccess) onSuccess();
-      router.refresh();
-      router.push("/admin/dashboard");
-    } catch (err) {
-      alert("There was an error deleting the project. Please try again.");
-    } finally {
-      setDeleting(false);
     }
   };
 
