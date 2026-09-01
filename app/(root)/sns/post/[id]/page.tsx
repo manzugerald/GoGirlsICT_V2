@@ -9,6 +9,11 @@ import {
 
 import { prisma } from '@/db/prisma';
 
+// ISR: Facebook posts are synced in by a background job, not edited by an
+// admin, so there's no revalidatePath() trigger for this one — just the
+// time-based safety net.
+export const revalidate = 3600;
+
 function formatDate(date: Date) {
   return date.toLocaleDateString(
     'en-US',

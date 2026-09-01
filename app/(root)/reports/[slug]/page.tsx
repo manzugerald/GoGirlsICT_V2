@@ -12,6 +12,10 @@ import { getReportBySlugOrId } from '../data';
 import ReportDetailViewer from '../components/ReportDetailViewer';
 import { extractPlainText } from '@/lib/tiptap';
 
+// ISR: this specific report's path gets targeted directly by
+// revalidatePath() when it's edited — same trigger as ../page.tsx.
+export const revalidate = 3600;
+
 function getReportFile(
   files: unknown
 ): string | null {

@@ -4,6 +4,14 @@ import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { revalidatePath } from 'next/cache';
+import { EventStatus, PublishStatus, AttendanceType } from '@/lib/generated/prisma';
+import { slugify } from '@/lib/utils';
+import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
+import { saveUploadedFile, saveUploadedFiles } from '@/lib/uploadHelpers';
+
+function toEnum<T>(enumObject: T, value: string): T[keyof T] | undefined {
+  return (enumObject as Record<string, unknown>)[value] as T[keyof T] | undefined;
+}
 
 function tryParseMaybeString(v: unknown) {
   if (v == null) return null;
@@ -239,16 +247,142 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
         { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
       );
 
-    // ... (existing parsing / saving logic as before) ...
-    // For brevity, re-use your existing PUT implementation here; make sure it returns no-store
-    // For example after updating:
-    // return NextResponse.json(updatedEvent, { headers: { 'Cache-Control': 'no-store' } });
+    const existing = await prisma.event.findUnique({ where: { id: eventId } });
+    if (!existing) {
+      return NextResponse.json(
+        { error: 'Event not found' },
+        { status: 404, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
+      );
+    }
 
-    // Placeholder response until you paste your existing PUT body back in:
-    return NextResponse.json(
-      { error: 'PUT not implemented in this snippet' },
-      { status: 501, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
-    );
+    // CreateEventForm always submits multipart/form-data for both create
+    // (POST /api/events/upload) and edit (this route) — same field
+    // contract as that route, plus edit-only retention/removal fields.
+    const formData = await req.formData();
+
+    const eventTitleRaw = formData.get('eventTitle')?.toString() || '';
+    const eventDescriptionRaw = formData.get('eventDescription')?.toString() || '{}';
+    const eventDetailsRaw = formData.get('eventDetails')?.toString() || '{}';
+    const eventLocation = formData.get('eventLocation')?.toString() || '';
+
+    const eventStartDateRaw = formData.get('eventStartDate')?.toString() || '';
+    const eventEndDateRaw = formData.get('eventEndDate')?.toString() || '';
+    const eventTagsRaw = formData.get('eventTags')?.toString() || '[]';
+    const eventStatusRaw = formData.get('eventStatus')?.toString() || '';
+    const publishStatusRaw = formData.get('publishStatus')?.toString() || '';
+    const eventAttendanceRaw = formData.get('eventAttendance')?.toString() || '';
+    const maxAttendeesRaw = formData.get('maxAttendees')?.toString() || '';
+
+    let eventTitle;
+    let eventDescription;
+    let eventDetails;
+    let eventTags: string[];
+    try {
+      eventTitle = eventTitleRaw ? JSON.parse(eventTitleRaw) : null;
+    } catch {
+      eventTitle = null;
+    }
+    try {
+      eventDescription = JSON.parse(eventDescriptionRaw);
+    } catch {
+      eventDescription = {};
+    }
+    try {
+      eventDetails = JSON.parse(eventDetailsRaw);
+    } catch {
+      eventDetails = {};
+    }
+    try {
+      eventTags = JSON.parse(eventTagsRaw);
+      if (!Array.isArray(eventTags)) eventTags = [];
+    } catch {
+      eventTags = [];
+    }
+
+    if (isTiptapDocEmpty(eventTitle) || !eventDescription || !eventStartDateRaw || !eventEndDateRaw) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
+      );
+    }
+
+    const eventStartDate = new Date(eventStartDateRaw);
+    const eventEndDate = new Date(eventEndDateRaw);
+    if (isNaN(eventStartDate.getTime()) || isNaN(eventEndDate.getTime())) {
+      return NextResponse.json(
+        { error: 'Invalid date format' },
+        { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
+      );
+    }
+
+    const eventStatus = toEnum(EventStatus, eventStatusRaw) || existing.eventStatus;
+    const publishStatus = toEnum(PublishStatus, publishStatusRaw) || existing.publishStatus;
+    const eventAttendance = toEnum(AttendanceType, eventAttendanceRaw) || existing.eventAttendance;
+    const maxAttendees = maxAttendeesRaw ? Number(maxAttendeesRaw) : null;
+
+    const slug = slugify(extractPlainText(eventTitle).trim()) || existing.slug;
+
+    // Banner: a newly uploaded file wins; otherwise honor whatever the
+    // client sent back for the retained/cleared value.
+    let eventBanner = (formData.get('eventBanner') as string) ?? existing.eventBanner;
+    const newBannerUrl = await saveUploadedFile(formData, 'bannerFile', 'image', slug);
+    if (newBannerUrl) eventBanner = newBannerUrl;
+
+    // Images: the client already filters removed ones out of the
+    // retained set it sends back; append any newly uploaded ones.
+    let retainedImages: string[] = Array.isArray(existing.eventImages) ? existing.eventImages : [];
+    const imagesRaw = formData.get('eventImages');
+    if (imagesRaw) {
+      try {
+        const parsed = JSON.parse(imagesRaw as string);
+        if (Array.isArray(parsed)) retainedImages = parsed;
+      } catch {
+        // keep existing.eventImages
+      }
+    }
+    const newImageUrls = await saveUploadedFiles(formData, 'files', 'image', slug);
+    const eventImages = [...retainedImages, ...newImageUrls];
+
+    // File: a newly uploaded file wins; an explicit removal clears it;
+    // otherwise keep the existing one.
+    const fileToRemove = formData.get('fileToRemove') as string | null;
+    let eventFile = fileToRemove ? '' : existing.eventFile;
+    const newFileUrl = await saveUploadedFile(formData, 'eventFileUpload', 'pdf', slug);
+    if (newFileUrl) eventFile = newFileUrl;
+
+    const updatedEvent = await prisma.event.update({
+      where: { id: eventId },
+      data: {
+        eventTitle,
+        slug,
+        eventDescription,
+        eventDetails,
+        eventLocation,
+        eventBanner,
+        eventImages,
+        eventFile,
+        eventStartDate,
+        eventEndDate,
+        eventTags,
+        eventStatus,
+        publishStatus,
+        eventAttendance,
+        maxAttendees,
+        updatedById: session.user.id,
+      },
+    });
+
+    revalidatePath('/');
+    revalidatePath('/impact');
+    revalidatePath('/get-involved');
+    revalidatePath(`/events/${updatedEvent.slug}`);
+    if (existing.slug && existing.slug !== updatedEvent.slug) {
+      revalidatePath(`/events/${existing.slug}`);
+    }
+
+    return NextResponse.json(updatedEvent, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
+    });
   } catch (err) {
     console.error('Failed to update event:', err);
     return NextResponse.json(
@@ -275,10 +409,12 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
         { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
       );
 
-    await prisma.event.delete({ where: { id } });
+    const deleted = await prisma.event.delete({ where: { id } });
 
     revalidatePath('/');
     revalidatePath('/impact');
+    revalidatePath('/get-involved');
+    if (deleted.slug) revalidatePath(`/events/${deleted.slug}`);
 
     return NextResponse.json({ success: true }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   } catch (err) {

@@ -625,7 +625,8 @@ export default function AdminDashboardPage() {
         case 'projects':
           return (
             <CreateProjectForm
-              initialValues={editRecord}
+              mode={editRecord?.id ? 'edit' : 'create'}
+              initialData={editRecord}
               onSuccess={handleSaveEdit}
               onCancel={handleCancelEdit}
             />
@@ -633,7 +634,8 @@ export default function AdminDashboardPage() {
         case 'reports':
           return (
             <CreateReportForm
-              initialValues={editRecord}
+              mode={editRecord?.id ? 'edit' : 'create'}
+              initialData={editRecord}
               onSuccess={handleSaveEdit}
               onCancel={handleCancelEdit}
             />
@@ -641,6 +643,7 @@ export default function AdminDashboardPage() {
         case 'podcasts':
           return (
             <CreatePodcastForm
+              mode={editRecord?.id ? 'edit' : 'create'}
               initialValues={editRecord}
               onSuccess={handleSaveEdit}
               onCancel={handleCancelEdit}
@@ -658,7 +661,8 @@ export default function AdminDashboardPage() {
         case 'events':
           return (
             <CreateEventForm
-              initialValues={editRecord}
+              mode={editRecord?.id ? 'edit' : 'create'}
+              initialData={editRecord}
               onSuccess={handleSaveEdit}
               onCancel={handleCancelEdit}
             />
@@ -666,7 +670,8 @@ export default function AdminDashboardPage() {
         case 'institutions':
           return (
             <CreateInstitutionForm
-              initialValues={editRecord}
+              mode={editRecord?.id ? 'edit' : 'create'}
+              initialData={editRecord}
               onSuccess={handleSaveEdit}
               onCancel={handleCancelEdit}
             />
@@ -683,7 +688,8 @@ export default function AdminDashboardPage() {
         case 'messages':
           return (
             <CreateMessageForm
-              initialValues={editRecord}
+              mode={editRecord?.id ? 'edit' : 'create'}
+              initialData={editRecord}
               onSuccess={handleSaveEdit}
               onCancel={handleCancelEdit}
             />
@@ -905,7 +911,8 @@ export default function AdminDashboardPage() {
             rowsPerPage={rowsPerPage}
             handleEdit={handleEdit}
             handleView={(r: DashRecord) => handleView(r, 'responses')}
-            handleDelete={handleDeleteResponse}
+            handleDeleteResponse={handleDeleteResponse}
+            handleDeleteMessage={handleDeleteMessage}
             TableActions={() => null}
             deleteId={deleteId}
             deleteLoading={deleteLoading}

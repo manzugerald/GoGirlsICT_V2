@@ -235,6 +235,8 @@ export async function POST(req: Request) {
 
     revalidatePath('/');
     revalidatePath('/impact');
+    revalidatePath('/get-involved');
+    if (event.slug) revalidatePath(`/events/${event.slug}`);
 
     return NextResponse.json(event, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   } catch (err) {

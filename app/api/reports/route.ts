@@ -5,26 +5,6 @@ import { authOptions } from '@/lib/authOptions';
 import { slugify } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
 
-// Make Redis usage optional (can be disabled with DISABLE_REDIS=1) — this
-// needs a conditional, try/catch-guarded CommonJS require rather than a
-// static import so a missing/misconfigured redis module doesn't crash the
-// whole route at import time.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let redis: any = null;
-if (process.env.DISABLE_REDIS !== '1') {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    redis = require('@/utils/redis').redis;
-  } catch (e) {
-    // If import fails, continue without redis
-    console.warn('[/api/reports] redis not available, continuing without cache', e);
-    redis = null;
-  }
-}
-
-const REPORTS_CACHE_KEY = 'reports:all';
-const REPORTS_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
-
 async function fetchReportsFromDb() {
   return prisma.report.findMany({
     orderBy: { createdAt: 'asc' },
@@ -49,56 +29,9 @@ async function fetchReportsFromDb() {
 }
 
 // Handle GET (fetch all reports) -- PUBLIC
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const url = new URL(req.url);
-    const noCache = url.searchParams.get('noCache');
-
-    // Try Redis cache unless disabled or bypass requested
-    if (redis && !noCache) {
-      try {
-        const cached = await redis.get(REPORTS_CACHE_KEY);
-        if (cached) {
-          try {
-            const parsed = JSON.parse(cached);
-            // If cached contains a non-empty array, return it
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              console.log('[/api/reports] returning cached reports count=', parsed.length);
-              return NextResponse.json(parsed, {
-                headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
-              });
-            }
-            // If cached is empty array, fall through to DB fetch and refresh cache
-            console.log('[/api/reports] cached reports empty — refreshing from DB');
-          } catch (parseErr) {
-            console.warn('[/api/reports] failed to parse cached value, will fetch DB', parseErr);
-          }
-        } else {
-          console.log('[/api/reports] no cached value found');
-        }
-      } catch (redisErr) {
-        console.warn('[/api/reports] redis.get error, will fetch DB', redisErr);
-      }
-    } else {
-      if (!redis) console.log('[/api/reports] redis disabled, fetching DB');
-      else console.log('[/api/reports] bypassing cache (noCache=1)');
-    }
-
-    // Fetch from DB
     const reports = await fetchReportsFromDb();
-    console.log(
-      '[/api/reports] fetched from DB, count=',
-      Array.isArray(reports) ? reports.length : 0
-    );
-
-    // Update cache (best-effort)
-    if (redis) {
-      try {
-        await redis.set(REPORTS_CACHE_KEY, JSON.stringify(reports), 'EX', REPORTS_CACHE_TTL);
-      } catch (cacheErr) {
-        console.warn('[/api/reports] redis.set error', cacheErr);
-      }
-    }
 
     return NextResponse.json(reports, {
       headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
@@ -161,18 +94,10 @@ export async function POST(req: Request) {
       },
     });
 
-    // Invalidate cache after write (if redis available)
-    if (redis) {
-      try {
-        await redis.del(REPORTS_CACHE_KEY);
-        console.log('[/api/reports] cleared reports cache after create');
-      } catch (cacheErr) {
-        console.warn('[/api/reports] failed to delete cache after create', cacheErr);
-      }
-    }
-
     revalidatePath('/');
     revalidatePath('/impact');
+    revalidatePath('/reports');
+    revalidatePath(`/reports/${report.slug}`);
 
     return NextResponse.json(report, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },

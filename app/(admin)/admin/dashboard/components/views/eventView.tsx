@@ -63,6 +63,8 @@ export default function EventView({
     return <div className="whitespace-pre-line">{String(c)}</div>;
   };
 
+  const eventTags: string[] = Array.isArray(data.eventTags) ? data.eventTags : [];
+
   const start = data.eventStartDate ? new Date(data.eventStartDate).toLocaleString() : '-';
   const end = data.eventEndDate ? new Date(data.eventEndDate).toLocaleString() : '-';
   const created = data.createdAt ? new Date(data.createdAt).toLocaleString() : '-';
@@ -121,23 +123,28 @@ export default function EventView({
 
         <div>
           <div className="text-xs text-gray-500">Attendance</div>
-          <div className="font-medium">{data.eventAttendance ?? '-'}</div>
-          {typeof data.maxAttendees === 'number' && (
-            <div className="text-xs text-gray-500 mt-1">Max attendees: {data.maxAttendees}</div>
-          )}
+          <div className="font-medium">
+            {data.eventAttendance ?? '-'}
+            {typeof data.maxAttendees === 'number' && (
+              <span className="text-gray-500"> (max {data.maxAttendees})</span>
+            )}
+          </div>
         </div>
 
         <div>
           <div className="text-xs text-gray-500">Tags</div>
           <div className="flex flex-wrap gap-2 mt-1">
-            {Array.isArray(data.eventTags) && data.eventTags.length > 0 ? (
-              data.eventTags.map((t) => (
-                <span key={t} className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800">
+            {eventTags.length > 0 ? (
+              eventTags.map((t) => (
+                <span
+                  key={t}
+                  className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-xs"
+                >
                   {t}
                 </span>
               ))
             ) : (
-              <span className="text-sm text-muted">-</span>
+              <span className="text-sm text-gray-500">-</span>
             )}
           </div>
         </div>
@@ -150,7 +157,7 @@ export default function EventView({
       </div>
 
       {/* Additional details */}
-      {data.eventDetails && (
+      {data.eventDetails != null && (
         <div>
           <div className="text-sm text-gray-500">Details</div>
           <div className="mt-2">{renderJson(data.eventDetails)}</div>

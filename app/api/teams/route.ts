@@ -7,6 +7,7 @@ import path from 'path';
 import { randomUUID } from 'crypto';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
+import { revalidatePath } from 'next/cache';
 
 const TEAM_IMAGES_DIR = '/assets/images/team';
 
@@ -153,6 +154,8 @@ export async function POST(req: Request) {
         updatedAt: true,
       },
     });
+
+    revalidatePath('/about');
 
     return NextResponse.json({ message: 'Team member created', team: created }, { status: 201, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   } catch (err) {

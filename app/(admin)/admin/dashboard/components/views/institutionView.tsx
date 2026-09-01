@@ -12,8 +12,8 @@ type LocationType = {
 type InstitutionType = {
   id?: string;
   name?: string;
-  email?: string;
-  phone?: string;
+  email?: string | null;
+  phone?: string | null;
   logo?: string | null;
   institutionImages?: string[] | null;
   headName?: string | null;

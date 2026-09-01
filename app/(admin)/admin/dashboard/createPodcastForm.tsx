@@ -236,11 +236,11 @@ export default function CreatePodcastForm({
   };
 
   const handleTitleChange = (json: object) => {
-    setForm((prev) => ({ ...prev, title: json }));
+    setForm((prev) => ({ ...prev, title: json as Record<string, unknown> }));
   };
 
   const handleEditorChange = (json: object) => {
-    setForm((prev) => ({ ...prev, description: json }));
+    setForm((prev) => ({ ...prev, description: json as Record<string, unknown> }));
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {

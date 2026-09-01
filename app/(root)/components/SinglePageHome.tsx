@@ -34,7 +34,7 @@ export default function SinglePageHome({
 }: SinglePageHomeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { data: content } = useHomePageContent(ssrContent);
+  const { data: content } = useHomePageContent(ssrContent ?? undefined);
   usePartners(ssrPartners); // prime the query cache for consumers elsewhere on the page
 
   
@@ -58,14 +58,14 @@ export default function SinglePageHome({
       {/* 1. Hero Section */}
       <section id="hero" className="min-h-screen relative z-10">
         <Suspense fallback={<SectionSkeleton variant="hero" />}>
-          <HeroSection content={content} />
+          <HeroSection content={content ?? null} />
         </Suspense>
       </section>
 
       {/* 2. Vision, Mission, Focus, Core Values */}
       <section id="vision" className="relative z-10">
         <Suspense fallback={<SectionSkeleton variant="cards" />}>
-          <VisionMissionSection content={content} />
+          <VisionMissionSection content={content ?? null} />
         </Suspense>
       </section>
 

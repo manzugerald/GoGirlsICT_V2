@@ -235,6 +235,7 @@ export async function POST(req: Request) {
 
     revalidatePath('/');
     revalidatePath('/impact');
+    revalidatePath('/about');
 
     return NextResponse.json(institution, {
       headers: {

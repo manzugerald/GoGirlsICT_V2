@@ -32,6 +32,7 @@ export default function ProjectsSection({
   page: number;
   rowsPerPage: number;
   handleEdit: (record: ProjectRecord) => void;
+  handleView?: (record: ProjectRecord) => void;
   handleDelete: (id: string | number) => void;
   currentUserRole?: string;
   TableActions?: React.ElementType;

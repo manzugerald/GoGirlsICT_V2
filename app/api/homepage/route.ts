@@ -4,14 +4,10 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
-import { redis } from '@/utils/redis';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { revalidatePath } from 'next/cache';
-
-const HOMEPAGE_CACHE_KEY = 'homepage:latest';
-const HOMEPAGE_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
 
 // File limits
 const IMAGE_MAX_BYTES = 5 * 1024 * 1024; // 5MB
@@ -119,17 +115,10 @@ async function saveUploadedFileLocal(
 }
 
 /**
- * GET: Fetch latest homepage content (cache with Redis)
+ * GET: Fetch latest homepage content
  */
 export async function GET() {
   try {
-    const cached = await redis.get(HOMEPAGE_CACHE_KEY);
-    if (cached) {
-      return NextResponse.json(JSON.parse(cached), {
-        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
-      });
-    }
-
     const homePage = await prisma.homePage.findFirst({
       orderBy: { createdAt: 'desc' },
     });
@@ -143,8 +132,6 @@ export async function GET() {
         }
       );
     }
-
-    await redis.set(HOMEPAGE_CACHE_KEY, JSON.stringify(homePage), 'EX', HOMEPAGE_CACHE_TTL);
 
     return NextResponse.json(homePage, {
       headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
@@ -312,13 +299,8 @@ export async function POST(req: Request) {
       },
     });
 
-    try {
-      await redis.del(HOMEPAGE_CACHE_KEY);
-    } catch (err) {
-      console.warn('Failed to invalidate homepage cache:', err);
-    }
-
     revalidatePath('/');
+    revalidatePath('/about');
 
     return NextResponse.json(homePage, {
       status: 201,

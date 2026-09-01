@@ -7,7 +7,7 @@ import type { Status, PublishStatus } from '@/lib/generated/prisma';
 import { prisma } from '@/db/prisma';
 import { slugify } from '@/lib/utils';
 import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
-import { redis } from '@/utils/redis'; // <-- Include Redis
+import { revalidatePath } from 'next/cache';
 
 export const POST = async (req: Request) => {
   const session = await getServerSession(authOptions);
@@ -83,8 +83,10 @@ export const POST = async (req: Request) => {
     },
   });
 
-  // Invalidate Redis cache so the next GET will show new data
-  await redis.del('projects:all');
+  revalidatePath('/');
+  revalidatePath('/impact');
+  revalidatePath('/programs');
+  revalidatePath(`/programs/${project.slug}`);
 
   return NextResponse.json({
     success: true,

@@ -4,15 +4,10 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
-import { redis } from '@/utils/redis';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { revalidatePath } from 'next/cache';
-
-const HOMEPAGE_CACHE_KEY = 'homepage:latest';
-const SINGLE_HOMEPAGE_CACHE_PREFIX = 'homepage:'; // homepage:[id]
-const CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
 
 // File limits and allowed extensions
 const IMAGE_MAX_BYTES = 5 * 1024 * 1024; // 5MB
@@ -115,18 +110,11 @@ async function saveUploadedFileLocal(
 }
 
 /**
- * GET: Fetch single homepage by id (with cache)
+ * GET: Fetch single homepage by id
  */
 export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
-    const singleCacheKey = SINGLE_HOMEPAGE_CACHE_PREFIX + id;
-    const cached = await redis.get(singleCacheKey);
-    if (cached) {
-      return NextResponse.json(JSON.parse(cached), {
-        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
-      });
-    }
 
     const homepage = await prisma.homePage.findUnique({
       where: { id: Number(id) },
@@ -141,8 +129,6 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
         }
       );
     }
-
-    await redis.set(singleCacheKey, JSON.stringify(homepage), 'EX', CACHE_TTL);
 
     return NextResponse.json(homepage, {
       headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
@@ -317,17 +303,8 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       data: updates,
     });
 
-    // Invalidate caches
-    try {
-      await Promise.all([
-        redis.del(SINGLE_HOMEPAGE_CACHE_PREFIX + id),
-        redis.del(HOMEPAGE_CACHE_KEY),
-      ]);
-    } catch (err) {
-      console.warn('Failed to invalidate homepage caches:', err);
-    }
-
     revalidatePath('/');
+    revalidatePath('/about');
 
     return NextResponse.json(updated, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
@@ -404,16 +381,8 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
       where: { id: idNum },
     });
 
-    try {
-      await Promise.all([
-        redis.del(SINGLE_HOMEPAGE_CACHE_PREFIX + id),
-        redis.del(HOMEPAGE_CACHE_KEY),
-      ]);
-    } catch (err) {
-      console.warn('Failed to invalidate homepage caches:', err);
-    }
-
     revalidatePath('/');
+    revalidatePath('/about');
 
     return NextResponse.json(
       { message: 'HomePage deleted', homepage: deleted },

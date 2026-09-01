@@ -8,6 +8,12 @@ import Partners from './components/Partners';
 
 import { getAboutPageData } from './data';
 
+// ISR: content only changes when an admin edits homepage copy, the team
+// roster, or an institution/partner — not every request. revalidatePath()
+// in those admin API routes invalidates this on demand; 3600s is the
+// safety-net upper bound if one is ever missed.
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title:
     'About | GoGirls ICT Initiative',

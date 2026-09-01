@@ -8,12 +8,7 @@ import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { redis } from '@/utils/redis';
 import { revalidatePath } from 'next/cache';
-
-const ALL_PROJECTS_CACHE_KEY = 'projects:all';
-const SINGLE_PROJECT_CACHE_PREFIX = 'projects:'; // projects:[id]
-const CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
 
 // GET = fetch project details
 export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
@@ -24,15 +19,6 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
       return NextResponse.json({ error: 'Invalid Project ID' }, { status: 400, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
     }
 
-    // Try Redis cache first
-    const singleCacheKey = SINGLE_PROJECT_CACHE_PREFIX + projectId;
-    const cached = await redis.get(singleCacheKey);
-    if (cached) {
-      return NextResponse.json(JSON.parse(cached), {
-        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
-      });
-    }
-
     const project = await prisma.project.findUnique({
       where: { id: projectId },
     });
@@ -40,9 +26,6 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
     if (!project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
     }
-
-    // Cache result for this project for 7 days
-    await redis.set(singleCacheKey, JSON.stringify(project), 'EX', CACHE_TTL);
 
     return NextResponse.json(project, {
       headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
@@ -171,12 +154,6 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       },
     });
 
-    // Invalidate both single and all-projects cache
-    await Promise.all([
-      redis.del(SINGLE_PROJECT_CACHE_PREFIX + projectId),
-      redis.del(ALL_PROJECTS_CACHE_KEY),
-    ]);
-
     revalidatePath('/');
     revalidatePath('/impact');
     revalidatePath('/programs');
@@ -203,12 +180,6 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
     const deleted = await prisma.project.delete({
       where: { id: projectId },
     });
-
-    // Invalidate both single and all-projects cache
-    await Promise.all([
-      redis.del(SINGLE_PROJECT_CACHE_PREFIX + projectId),
-      redis.del(ALL_PROJECTS_CACHE_KEY),
-    ]);
 
     revalidatePath('/');
     revalidatePath('/impact');

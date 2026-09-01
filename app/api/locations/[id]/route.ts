@@ -2,23 +2,12 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
-import { redis } from '@/utils/redis';
+import { revalidatePath } from 'next/cache';
 
-const LOCATIONS_ALL_CACHE_KEY = 'locations:all';
-const SINGLE_LOCATION_CACHE_PREFIX = 'locations:'; // locations:[id]
-const LOCATIONS_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
-
-// GET = fetch location details (with Redis cache)
+// GET = fetch location details
 export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
-    const singleCacheKey = SINGLE_LOCATION_CACHE_PREFIX + params.id;
-    const cached = await redis.get(singleCacheKey);
-    if (cached) {
-      return NextResponse.json(JSON.parse(cached), {
-        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
-      });
-    }
 
     const location = await prisma.location.findUnique({
       where: { id: params.id },
@@ -33,9 +22,6 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
       return NextResponse.json({ error: 'Location not found' }, { status: 404, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
     }
 
-    // Cache this location
-    await redis.set(singleCacheKey, JSON.stringify(location), 'EX', LOCATIONS_CACHE_TTL);
-
     return NextResponse.json(location, {
       headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
     });
@@ -45,7 +31,7 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
   }
 }
 
-// PATCH = update location (invalidate caches)
+// PATCH = update location
 export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
@@ -76,11 +62,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       },
     });
 
-    // Invalidate both single and all locations cache
-    await Promise.all([
-      redis.del(SINGLE_LOCATION_CACHE_PREFIX + params.id),
-      redis.del(LOCATIONS_ALL_CACHE_KEY),
-    ]);
+    revalidatePath('/about');
 
     return NextResponse.json(updated, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
@@ -91,7 +73,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
   }
 }
 
-// DELETE = delete location (invalidate caches)
+// DELETE = delete location
 export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
@@ -99,11 +81,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
       where: { id: params.id },
     });
 
-    // Invalidate both single and all locations cache
-    await Promise.all([
-      redis.del(SINGLE_LOCATION_CACHE_PREFIX + params.id),
-      redis.del(LOCATIONS_ALL_CACHE_KEY),
-    ]);
+    revalidatePath('/about');
 
     return NextResponse.json({ message: 'Location deleted', location: deleted }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },

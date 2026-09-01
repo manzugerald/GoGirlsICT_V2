@@ -6,6 +6,7 @@ import { EventStatus, PublishStatus, AttendanceType } from '@/lib/generated/pris
 import { slugify } from '@/lib/utils';
 import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
 import { saveUploadedFile, saveUploadedFiles } from '@/lib/uploadHelpers';
+import { revalidatePath } from 'next/cache';
 
 function toEnum<T>(enumObject: T, value: string): T[keyof T] | undefined {
   return (enumObject as Record<string, unknown>)[value] as T[keyof T] | undefined;
@@ -119,6 +120,11 @@ export async function POST(req: NextRequest) {
         updatedById: userId,
       },
     });
+
+    revalidatePath('/');
+    revalidatePath('/impact');
+    revalidatePath('/get-involved');
+    revalidatePath(`/events/${createdEvent.slug}`);
 
     return NextResponse.json(createdEvent);
   } catch (error) {

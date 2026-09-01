@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
-import { redis } from '@/utils/redis';
 import { sendAccountDeletionRequestEmail } from '@/lib/email';
 import { isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
 import { Prisma } from '@/lib/generated/prisma';
@@ -25,17 +24,6 @@ const messageCategoryOptions = [
 type MessageCategory = (typeof messageCategoryOptions)[number];
 function isMessageCategory(v: unknown): v is MessageCategory {
   return typeof v === 'string' && (messageCategoryOptions as readonly string[]).includes(v);
-}
-
-const BENEFICIARIES_BASE_KEY = 'beneficiaries';
-const BENEFICIARIES_ALL_KEY = `${BENEFICIARIES_BASE_KEY}:all`;
-const BENEFICIARIES_OWN_PREFIX = `${BENEFICIARIES_BASE_KEY}:own:`;
-const BENEFICIARY_BY_ID_PREFIX = `${BENEFICIARIES_BASE_KEY}:`;
-
-function ownCacheKey(firstName: string, lastName: string) {
-  return `${BENEFICIARIES_OWN_PREFIX}${encodeURIComponent(firstName)}|${encodeURIComponent(
-    lastName
-  )}`;
 }
 
 export async function OPTIONS() {
@@ -216,23 +204,6 @@ export async function POST(req: Request) {
       }
     }
     // ----------------------------------------------
-
-    // Invalidate beneficiaries caches so refreshed list has updated counts
-    try {
-      await redis.del(BENEFICIARIES_ALL_KEY);
-      if (created.beneficiary?.id) {
-        await redis.del(`${BENEFICIARY_BY_ID_PREFIX}${created.beneficiary.id}`);
-        const beneficiary = await prisma.beneficiary.findUnique({
-          where: { id: created.beneficiary.id },
-          select: { firstName: true, lastName: true },
-        });
-        if (beneficiary?.firstName && beneficiary?.lastName) {
-          await redis.del(ownCacheKey(beneficiary.firstName, beneficiary.lastName));
-        }
-      }
-    } catch (err) {
-      console.warn('Failed to invalidate beneficiary cache after message create', err);
-    }
 
     return NextResponse.json(created, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },

@@ -10,6 +10,12 @@ import {
   getReportsPageData,
 } from './data';
 
+// ISR: reports/podcasts only change when an admin creates/edits/deletes
+// one — revalidatePath('/reports') in app/api/reports and app/api/podcasts
+// handles that on demand; 3600s is the safety-net upper bound if one is
+// ever missed.
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title:
     'Resources | GoGirls ICT Initiative',

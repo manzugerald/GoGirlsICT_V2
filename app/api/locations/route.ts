@@ -2,22 +2,11 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
-import { redis } from '@/utils/redis';
-
-const LOCATIONS_CACHE_KEY = 'locations:all';
-const LOCATIONS_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
+import { revalidatePath } from 'next/cache';
 
 // GET: Fetch all locations (no auth required)
 export async function GET() {
   try {
-    // Try Redis cache first
-    const cached = await redis.get(LOCATIONS_CACHE_KEY);
-    if (cached) {
-      return NextResponse.json(JSON.parse(cached), {
-        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
-      });
-    }
-
     const locations = await prisma.location.findMany({
       orderBy: { id: 'desc' },
       include: {
@@ -27,15 +16,12 @@ export async function GET() {
       },
     });
 
-    // Cache the result
-    await redis.set(LOCATIONS_CACHE_KEY, JSON.stringify(locations), 'EX', LOCATIONS_CACHE_TTL);
-
     return NextResponse.json(locations, {
       headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
     });
   } catch (err) {
     console.error('Error fetching locations:', err);
-    return NextResponse.json({ error: 'Internal Server Error' }, { 
+    return NextResponse.json({ error: 'Internal Server Error' }, {
       status: 500,
       headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
     });
@@ -67,15 +53,14 @@ export async function POST(req: Request) {
       },
     });
 
-    // Invalidate locations cache after write
-    await redis.del(LOCATIONS_CACHE_KEY);
+    revalidatePath('/about');
 
     return NextResponse.json(location, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });
   } catch (error) {
     console.error('Failed to create location:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { 
+    return NextResponse.json({ error: 'Internal Server Error' }, {
       status: 500,
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
     });

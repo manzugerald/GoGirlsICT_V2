@@ -7,16 +7,10 @@ import { authOptions } from '@/lib/authOptions';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { redis } from '@/utils/redis';
 import { isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
 import { revalidatePath } from 'next/cache';
 
 export const runtime = 'nodejs';
-
-const ALL_BENEFICIARIES_CACHE_KEY = 'beneficiaries:all';
-const SINGLE_BENEFICIARY_CACHE_PREFIX = 'beneficiaries:'; // + id
-const BENEFICIARIES_OWN_PREFIX = 'beneficiaries:own:'; // + encodeURIComponent(first)|encodeURIComponent(last)
-const SINGLE_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
 
 const fullInclude = {
   createdBy: { select: { username: true, firstName: true, lastName: true, image: true } },
@@ -29,12 +23,6 @@ const fullInclude = {
   podcasts: { include: { podcast: { select: { id: true, title: true, slug: true } } } },
   talkshows: { include: { talkshow: { select: { id: true, title: true } } } },
 };
-
-function ownCacheKey(firstName: string, lastName: string) {
-  return `${BENEFICIARIES_OWN_PREFIX}${encodeURIComponent(firstName)}|${encodeURIComponent(
-    lastName
-  )}`;
-}
 
 // Parses a JSON-encoded array of ids (sent as a form field) into a clean
 // array of positive integers, discarding anything malformed.
@@ -115,15 +103,6 @@ export async function GET(_req: Request, context: { params: Promise<{ id: string
     const params = await context.params;
     const id = params.id;
 
-    // Try Redis cache first
-    const singleCacheKey = SINGLE_BENEFICIARY_CACHE_PREFIX + id;
-    const cached = await redis.get(singleCacheKey);
-    if (cached) {
-      return NextResponse.json(JSON.parse(cached), {
-        headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
-      });
-    }
-
     const beneficiary = await prisma.beneficiary.findUnique({
       where: { id },
       include: { ...fullInclude, _count: { select: { messages: true, responses: true } } },
@@ -143,23 +122,6 @@ export async function GET(_req: Request, context: { params: Promise<{ id: string
       typeof beneficiary._count?.responses === 'number' ? beneficiary._count.responses : 0;
 
     const payload = { ...beneficiary, messageCount, responseCount };
-
-    // Cache result for this beneficiary for 7 days
-    try {
-      await redis.set(singleCacheKey, JSON.stringify(payload), 'EX', SINGLE_CACHE_TTL);
-      // Also cache name-scoped key if names available (used for beneficiary-session lookups)
-      if (beneficiary.firstName && beneficiary.lastName) {
-        await redis.set(
-          ownCacheKey(beneficiary.firstName, beneficiary.lastName),
-          JSON.stringify(payload),
-          'EX',
-          SINGLE_CACHE_TTL
-        );
-      }
-    } catch (err) {
-      // cache failures should not block response
-      console.warn('beneficiary cache set failed', err);
-    }
 
     return NextResponse.json(payload, {
       headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
@@ -318,23 +280,6 @@ export async function PATCH(_req: Request, context: { params: Promise<{ id: stri
       include: { ...fullInclude, _count: { select: { messages: true, responses: true } } },
     });
 
-    // Invalidate caches: single, all, and name-scoped for old and new names
-    const oldFirst = beneficiaryRecord.firstName;
-    const oldLast = beneficiaryRecord.lastName;
-    const newFirst = updated.firstName;
-    const newLast = updated.lastName;
-
-    try {
-      const keysToDel = [SINGLE_BENEFICIARY_CACHE_PREFIX + id, ALL_BENEFICIARIES_CACHE_KEY];
-      // delete old name-scoped
-      if (oldFirst && oldLast) keysToDel.push(ownCacheKey(oldFirst, oldLast));
-      // delete new name-scoped (in case names changed)
-      if (newFirst && newLast) keysToDel.push(ownCacheKey(newFirst, newLast));
-      await Promise.all(keysToDel.map((k) => redis.del(k)));
-    } catch (err) {
-      console.warn('Failed to invalidate beneficiary caches after update', err);
-    }
-
     revalidatePath('/');
     revalidatePath('/impact');
 
@@ -398,17 +343,6 @@ export async function DELETE(_req: Request, context: { params: Promise<{ id: str
     const deleted = await prisma.beneficiary.delete({
       where: { id },
     });
-
-    // Invalidate caches
-    try {
-      const keysToDel = [SINGLE_BENEFICIARY_CACHE_PREFIX + id, ALL_BENEFICIARIES_CACHE_KEY];
-      if (existing.firstName && existing.lastName) {
-        keysToDel.push(ownCacheKey(existing.firstName, existing.lastName));
-      }
-      await Promise.all(keysToDel.map((k) => redis.del(k)));
-    } catch (err) {
-      console.warn('Failed to invalidate beneficiary caches after delete', err);
-    }
 
     revalidatePath('/');
     revalidatePath('/impact');

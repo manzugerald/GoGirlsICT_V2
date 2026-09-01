@@ -16,9 +16,20 @@ export default function BeneficiariesSection({
   handleDelete,
 }: {
   paginatedData: BeneficiaryRecord[];
+  page?: number;
+  rowsPerPage?: number;
   handleEdit: (record: BeneficiaryRecord) => void;
   handleView: (record: BeneficiaryRecord) => void;
   handleDelete: (id: string | number) => void;
+  messagesCountMap?: Record<string, number>;
+  requestsCountMap?: Record<string, number>;
+  currentUserRole?: string;
+  onAddMessage?: (beneficiaryId: string) => void;
+  onAddRequest?: (beneficiaryId: string) => void;
+  TableActions?: React.ElementType;
+  deleteId?: string | number | null;
+  deleteLoading?: boolean;
+  onToggleControls?: (hide: boolean) => void;
 }) {
   return (
     <div className="space-y-4">

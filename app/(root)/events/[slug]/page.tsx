@@ -22,6 +22,11 @@ import { extractPlainText, isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/ti
 import TiptapJsonViewer from '@/components/editor/tiptap-json-viewer';
 import '@/assets/styles/tiptap-editor.css';
 
+// ISR: this specific event's path gets targeted directly by
+// revalidatePath() when it's edited — same trigger as
+// ../../get-involved/page.tsx.
+export const revalidate = 3600;
+
 function formatDateRange(
   start: Date,
   end: Date

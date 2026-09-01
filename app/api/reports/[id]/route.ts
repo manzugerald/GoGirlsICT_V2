@@ -3,29 +3,15 @@ import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { slugify } from '@/lib/utils';
-import { redis } from '@/utils/redis';
 import { revalidatePath } from 'next/cache';
 
-const ALL_REPORTS_CACHE_KEY = 'reports:all';
-const SINGLE_REPORT_CACHE_PREFIX = 'reports:'; // e.g., reports:123
-const CACHE_TTL = 60 * 60 * 24 * 7; // 7 days
-
-// GET single report (with cache)
+// GET single report
 export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
     const reportId = Number(params.id);
     if (!reportId || isNaN(reportId)) {
       return NextResponse.json({ error: 'Invalid Report ID' }, { status: 400, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
-    }
-
-    // Try Redis cache first
-    const singleCacheKey = SINGLE_REPORT_CACHE_PREFIX + reportId;
-    const cached = await redis.get(singleCacheKey);
-    if (cached) {
-      return NextResponse.json(JSON.parse(cached), {
-        headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
-      });
     }
 
     const report = await prisma.report.findUnique({
@@ -35,9 +21,6 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
     if (!report) {
       return NextResponse.json({ error: 'Report not found' }, { status: 404, headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' } });
     }
-
-    // Cache result for this report for 7 days
-    await redis.set(singleCacheKey, JSON.stringify(report), 'EX', CACHE_TTL);
 
     return NextResponse.json(report, {
       headers: { 'Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=86400' },
@@ -63,6 +46,8 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     if (!reportId || isNaN(reportId)) {
       return NextResponse.json({ error: 'Invalid Report ID' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
+
+    const existing = await prisma.report.findUnique({ where: { id: reportId } });
 
     const data = await req.json();
     const {
@@ -96,14 +81,13 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       },
     });
 
-    // Invalidate single and all-reports cache
-    await Promise.all([
-      redis.del(SINGLE_REPORT_CACHE_PREFIX + reportId),
-      redis.del(ALL_REPORTS_CACHE_KEY),
-    ]);
-
     revalidatePath('/');
     revalidatePath('/impact');
+    revalidatePath('/reports');
+    revalidatePath(`/reports/${updatedReport.slug}`);
+    if (existing?.slug && existing.slug !== updatedReport.slug) {
+      revalidatePath(`/reports/${existing.slug}`);
+    }
 
     return NextResponse.json(updatedReport, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },
@@ -129,18 +113,14 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
       return NextResponse.json({ error: 'Invalid Report Id' }, { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
-    await prisma.report.delete({
+    const deleted = await prisma.report.delete({
       where: { id: reportId },
     });
 
-    // Invalidate single and all-reports cache
-    await Promise.all([
-      redis.del(SINGLE_REPORT_CACHE_PREFIX + reportId),
-      redis.del(ALL_REPORTS_CACHE_KEY),
-    ]);
-
     revalidatePath('/');
     revalidatePath('/impact');
+    revalidatePath('/reports');
+    if (deleted.slug) revalidatePath(`/reports/${deleted.slug}`);
 
     return NextResponse.json({ success: true }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },

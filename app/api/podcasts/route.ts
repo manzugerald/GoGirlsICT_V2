@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { slugify } from '@/lib/utils';
 import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
+import { revalidatePath } from 'next/cache';
 
 const NO_STORE = { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' };
 
@@ -130,6 +131,8 @@ export async function POST(req: Request) {
       },
       include: includeShape,
     });
+
+    revalidatePath('/reports');
 
     return NextResponse.json(podcast, { headers: NO_STORE });
   } catch (error) {

@@ -16,9 +16,15 @@ export default function TeamsSection({
   handleDelete,
 }: {
   paginatedData: TeamRecord[];
+  page?: number;
+  rowsPerPage?: number;
   handleEdit: (record: TeamRecord) => void;
   handleView: (record: TeamRecord) => void;
   handleDelete: (id: string | number) => void;
+  TableActions?: React.ElementType;
+  deleteId?: string | number | null;
+  deleteLoading?: boolean;
+  onToggleControls?: (hide: boolean) => void;
 }) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const { data: session } = useSession();

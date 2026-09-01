@@ -7,9 +7,6 @@ import { promises as fs } from 'fs';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import type { Role } from '@/lib/generated/prisma';
-// import { redis } from '@/utils/redis'; // Redis kept commented per request
-
-// const USERS_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days (redis disabled)
 
 /**
  * GET /api/users
@@ -59,16 +56,6 @@ export async function GET(req: Request) {
     }
 
     // Default: list users (sanitized)
-    // Redis usage commented out for now.
-    // try {
-    //   const cached = await redis.get(USERS_CACHE_KEY);
-    //   if (cached) {
-    //     return NextResponse.json(JSON.parse(cached));
-    //   }
-    // } catch (err) {
-    //   console.warn('Redis get failed for users list', err);
-    // }
-
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -82,12 +69,6 @@ export async function GET(req: Request) {
         createdAt: true,
       },
     });
-
-    // try {
-    //   await redis.set(USERS_CACHE_KEY, JSON.stringify(users), 'EX', USERS_CACHE_TTL);
-    // } catch (err) {
-    //   console.warn('Redis set failed for users list', err);
-    // }
 
     // Never let the browser (or any shared cache) hold onto this response —
     // it's privileged, PII-bearing data now gated by role; a stale cached
@@ -199,13 +180,6 @@ export async function POST(req: Request) {
     } catch (e) {
       console.warn('Failed to seed passwordHistory for new user', e);
     }
-
-    // Invalidate cache after create (redis disabled)
-    // try {
-    //   await redis.del(USERS_CACHE_KEY);
-    // } catch (err) {
-    //   console.warn('Redis del failed after create user', err);
-    // }
 
     return NextResponse.json({ message: 'User created', user }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' },

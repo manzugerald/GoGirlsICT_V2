@@ -448,7 +448,7 @@ export default function CreateBeneficiaryForm({
         <select
           id="gender"
           name="gender"
-          value={form.gender}
+          value={form.gender ?? ''}
           onChange={handleChange}
           className="w-full border border-input rounded-md p-2 text-sm bg-background text-foreground"
         >
@@ -466,17 +466,17 @@ export default function CreateBeneficiaryForm({
           id="dateOfBirth"
           name="dateOfBirth"
           type="date"
-          value={form.dateOfBirth}
+          value={form.dateOfBirth ?? ''}
           onChange={handleChange}
         />
       </div>
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" value={form.email} onChange={handleChange} />
+        <Input id="email" name="email" type="email" value={form.email ?? ''} onChange={handleChange} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="phone">Phone</Label>
-        <Input id="phone" name="phone" type="tel" value={form.phone} onChange={handleChange} />
+        <Input id="phone" name="phone" type="tel" value={form.phone ?? ''} onChange={handleChange} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="images">Profile Images (PNG, JPG, JPEG)</Label>
@@ -501,7 +501,7 @@ export default function CreateBeneficiaryForm({
           <select
             id="institutionId"
             name="institutionId"
-            value={form.institutionId}
+            value={form.institutionId ?? ''}
             onChange={(e) => {
               setForm((prev) => ({ ...prev, institutionId: e.target.value }));
               setShowInstitutionForm(false);

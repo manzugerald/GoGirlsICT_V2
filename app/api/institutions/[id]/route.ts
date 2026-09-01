@@ -232,6 +232,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
 
     revalidatePath('/');
     revalidatePath('/impact');
+    revalidatePath('/about');
 
     return NextResponse.json(updated, {
       headers: {
@@ -262,6 +263,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
 
     revalidatePath('/');
     revalidatePath('/impact');
+    revalidatePath('/about');
 
     return NextResponse.json(
       { message: 'Institution deleted', institution: deleted },

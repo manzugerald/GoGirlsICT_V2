@@ -142,17 +142,8 @@ export default function UserView() {
 
       <UsersSection
         paginatedData={users}
-        page={1}
-        rowsPerPage={100}
         handleEdit={(u) => handleEdit(u)}
-        handleView={(u) => {
-          // view details: quick alert fallback (could open a details view instead)
-          alert(
-            `User: ${u.username}\nName: ${u.firstName ?? ''} ${u.lastName ?? ''}\nEmail: ${
-              u.email ?? ''
-            }`
-          );
-        }}
+        handlePasswordEdit={(u) => handleEdit(u)}
         handleDelete={(id) => {
           if (!confirm('Delete user? This cannot be undone.')) return;
           fetch(`/api/users/${encodeURIComponent(String(id))}`, { method: 'DELETE' })
@@ -161,13 +152,8 @@ export default function UserView() {
               return res.json();
             })
             .then(() => fetchUsers())
-            .catch((err) => alert(`Delete failed: ${err?.message ?? err}`));
+            .catch((err) => alert(`Delete failed: ${err instanceof Error ? err.message : err}`));
         }}
-        messagesCountMap={{}}
-        responsesCountMap={{}}
-        currentUserRole={'super'}
-        TableActions={() => null}
-        onAddMessage={() => {}}
       />
 
       {/* Create user dialog */}

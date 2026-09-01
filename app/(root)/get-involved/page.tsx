@@ -9,6 +9,11 @@ import ContactSection from './components/ContactSection';
 
 import { getGetInvolvedPageData } from './data';
 
+// ISR: the event list only changes when an admin creates/edits/deletes an
+// event — revalidatePath('/get-involved') in app/api/events handles that
+// on demand; 3600s is the safety-net upper bound if one is ever missed.
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title:
     'Get Involved | GoGirls ICT Initiative',

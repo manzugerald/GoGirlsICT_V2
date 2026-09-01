@@ -14,14 +14,10 @@ import { v4 as uuidv4 } from 'uuid';
 type BeneficiaryRow = any;
 import { promises as fs } from 'fs';
 import path from 'path';
-import { redis } from '@/utils/redis';
 import { isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
 import { revalidatePath } from 'next/cache';
 
 export const runtime = 'nodejs';
-
-const BASE_CACHE_KEY = 'beneficiaries';
-const CACHE_TTL = 10 * 60; // 10 minutes
 
 const includeShape = {
   createdBy: { select: { username: true, firstName: true, lastName: true, image: true } },
@@ -59,10 +55,6 @@ function namesFrom(session: Session | null): { firstName?: string; lastName?: st
     lastName: session?.user?.lastName ?? undefined,
   };
 }
-function ownCacheKey(firstName: string, lastName: string) {
-  return `${BASE_CACHE_KEY}:own:${encodeURIComponent(firstName)}|${encodeURIComponent(lastName)}`;
-}
-
 async function saveFiles(formData: FormData, field: string, destDir: string): Promise<string[]> {
   const files = formData.getAll(field) as File[];
   const savedNames: string[] = [];
@@ -120,20 +112,7 @@ export async function GET() {
       });
     }
 
-    // Others (super/admin/moderator/guest): use cache for "all"
-    const keyAll = `${BASE_CACHE_KEY}:all`;
-    const cached = await redis.get(keyAll);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        return NextResponse.json(Array.isArray(parsed) ? parsed : [], {
-          headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
-        });
-      } catch {
-        await redis.del(keyAll);
-      }
-    }
-
+    // Others (super/admin/moderator/guest)
     const all = await prisma.beneficiary.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
@@ -151,7 +130,6 @@ export async function GET() {
       return { ...b, messageCount, responseCount };
     });
 
-    await redis.set(keyAll, JSON.stringify(enrichedAll), 'EX', CACHE_TTL);
     return NextResponse.json(enrichedAll, {
       headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
     });
@@ -271,11 +249,6 @@ export async function POST(req: Request) {
       where: { id: created.id },
       include: { ...includeShape, _count: { select: { messages: true, responses: true } } },
     });
-
-    // Invalidate caches
-    await redis.del(`${BASE_CACHE_KEY}:all`);
-    // also invalidate potential name-scoped cache for the created beneficiary
-    await redis.del(ownCacheKey(firstName, lastName));
 
     revalidatePath('/');
     revalidatePath('/impact');

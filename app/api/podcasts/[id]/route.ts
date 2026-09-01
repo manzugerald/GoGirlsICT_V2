@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { slugify } from '@/lib/utils';
 import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
+import { revalidatePath } from 'next/cache';
 
 const NO_STORE = { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' };
 
@@ -145,6 +146,8 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
 
     const full = await prisma.podcast.findUniqueOrThrow({ where: { id: updatedPodcast.id }, include: includeShape });
 
+    revalidatePath('/reports');
+
     return NextResponse.json(full, { headers: NO_STORE });
   } catch (error) {
     console.error('Failed to update podcast:', error);
@@ -168,6 +171,8 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
     }
 
     await prisma.podcast.delete({ where: { id: podcastId } });
+
+    revalidatePath('/reports');
 
     return NextResponse.json({ success: true }, { headers: NO_STORE });
   } catch (error) {

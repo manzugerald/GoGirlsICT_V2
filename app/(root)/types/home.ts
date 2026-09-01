@@ -5,10 +5,10 @@ export interface HomePageContent {
   mission?: string;
   focus?: string;
   coreValues?: string;
-  about?: string;
-  logo?: string;
-  banner?: string;
-  siteName?: string;
+  about?: string | null;
+  logo?: string | null;
+  banner?: string | null;
+  siteName?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -115,7 +115,7 @@ export interface Partner {
   email?: string | null;
   phone?: string | null;
   logo?: string | null;
-  institutionImages: string[];
+  institutionImages?: string[];
   headName?: string | null;
   institutionType: string; // InstitutionType enum
   institutionCategory: string;

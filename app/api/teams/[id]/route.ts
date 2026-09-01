@@ -5,6 +5,7 @@ import { prisma } from '@/db/prisma';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
+import { revalidatePath } from 'next/cache';
 
 const TEAM_IMAGES_DIR = '/assets/images/team';
 
@@ -195,6 +196,8 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       },
     });
 
+    revalidatePath('/about');
+
     return NextResponse.json({ message: 'Team member updated', team: updated }, { status: 200, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   } catch (err) {
     console.error('PATCH /api/teams/:id error', err);
@@ -225,6 +228,8 @@ export async function DELETE(_req: Request, context: { params: Promise<{ id: str
     }
 
     await prisma.team.delete({ where: { id: Number(teamId) } });
+
+    revalidatePath('/about');
 
     return NextResponse.json({ message: 'Team member deleted' }, { status: 200, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   } catch (err) {

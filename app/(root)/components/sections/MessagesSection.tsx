@@ -167,8 +167,8 @@ export default function MessagesSection({ messages }: MessagesSectionProps) {
                     className="w-16 h-16 rounded-full overflow-hidden border-4 border-purple-200 dark:border-purple-800 shadow-lg"
                   >
                     <img
-                      src={currentMessage.authorImage}
-                      alt={currentMessage.authorName}
+                      src={currentMessage.authorImage ?? undefined}
+                      alt={currentMessage.authorName ?? ''}
                       className="w-full h-full object-cover"
                     />
                   </motion.div>

@@ -12,8 +12,14 @@ export default function InstitutionsSection({
   onToggleControls,
 }: {
   paginatedData: InstitutionWithRelations[];
+  page?: number;
+  rowsPerPage?: number;
   handleEdit: (record: InstitutionWithRelations) => void;
+  handleView?: (record: InstitutionWithRelations) => void;
   handleDelete: (id: string | number) => void;
+  TableActions?: React.ElementType;
+  deleteId?: string | number | null;
+  deleteLoading?: boolean;
   onToggleControls?: (hide: boolean) => void;
 }) {
   const [viewing, setViewing] = useState<InstitutionWithRelations | null>(null);
