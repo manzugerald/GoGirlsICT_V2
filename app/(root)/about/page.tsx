@@ -15,8 +15,7 @@ import { getAboutPageData } from './data';
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title:
-    'About | GoGirls ICT Initiative',
+  title: 'About',
 
   description:
     'Learn about GoGirls ICT Initiative, our people, our foundation, and the partners who make our work possible.',

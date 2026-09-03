@@ -7,6 +7,7 @@ import type { Session } from 'next-auth';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { revalidatePath } from 'next/cache';
 
 export const runtime = 'nodejs';
 
@@ -278,6 +279,8 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       include: includeShape,
     });
 
+    revalidatePath('/resources');
+
     return NextResponse.json(full, { headers: NO_STORE });
   } catch (error) {
     console.error('Failed to update talkshow:', error);
@@ -307,6 +310,8 @@ export async function DELETE(_req: Request, context: { params: Promise<{ id: str
     }
 
     const deleted = await prisma.radioTalkshow.delete({ where: { id } });
+
+    revalidatePath('/resources');
 
     return NextResponse.json({ message: 'Talkshow deleted', talkshow: deleted }, { headers: NO_STORE });
   } catch (error) {

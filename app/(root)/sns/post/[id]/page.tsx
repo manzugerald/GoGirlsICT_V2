@@ -43,9 +43,7 @@ export async function generateMetadata({
   const post = await getPost(id);
 
   return {
-    title: post
-      ? 'Facebook Post | GoGirls ICT Initiative'
-      : 'Post Not Found | GoGirls ICT Initiative',
+    title: post ? 'Facebook Post' : 'Post Not Found',
 
     description:
       post?.message?.slice(0, 160) ??

@@ -146,7 +146,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
 
     const full = await prisma.podcast.findUniqueOrThrow({ where: { id: updatedPodcast.id }, include: includeShape });
 
-    revalidatePath('/reports');
+    revalidatePath('/resources');
 
     return NextResponse.json(full, { headers: NO_STORE });
   } catch (error) {
@@ -172,7 +172,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
 
     await prisma.podcast.delete({ where: { id: podcastId } });
 
-    revalidatePath('/reports');
+    revalidatePath('/resources');
 
     return NextResponse.json({ success: true }, { headers: NO_STORE });
   } catch (error) {

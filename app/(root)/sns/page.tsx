@@ -7,8 +7,7 @@ import {
 } from './data';
 
 export const metadata: Metadata = {
-  title:
-    'SNS | GoGirls ICT Initiative',
+  title: 'SNS',
 
   description:
     'Follow the latest Facebook posts and YouTube videos from GoGirls ICT Initiative.',

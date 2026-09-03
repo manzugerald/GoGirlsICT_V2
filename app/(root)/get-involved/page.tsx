@@ -15,8 +15,7 @@ import { getGetInvolvedPageData } from './data';
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title:
-    'Get Involved | GoGirls ICT Initiative',
+  title: 'Get Involved',
 
   description:
     'Join, support, volunteer, donate, or connect with GoGirls ICT Initiative. Explore upcoming events, ways to volunteer, donation options, and how to reach us.',

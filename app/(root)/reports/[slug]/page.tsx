@@ -55,8 +55,8 @@ export async function generateMetadata({
 
   return {
     title: report
-      ? `${report.title} | GoGirls ICT Initiative`
-      : 'Report Not Found | GoGirls ICT Initiative',
+      ? report.title
+      : 'Report Not Found',
 
     description:
       'A published report from GoGirls ICT Initiative.',

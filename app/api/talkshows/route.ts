@@ -7,6 +7,7 @@ import type { Session } from 'next-auth';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { revalidatePath } from 'next/cache';
 
 export const runtime = 'nodejs';
 
@@ -237,6 +238,8 @@ export async function POST(req: Request) {
     const full = podcastIds.length
       ? await prisma.radioTalkshow.findUniqueOrThrow({ where: { id: created.id }, include: includeShape })
       : created;
+
+    revalidatePath('/resources');
 
     return NextResponse.json(full, { headers: NO_STORE });
   } catch (error) {

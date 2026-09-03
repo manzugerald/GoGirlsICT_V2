@@ -132,7 +132,7 @@ export async function POST(req: Request) {
       include: includeShape,
     });
 
-    revalidatePath('/reports');
+    revalidatePath('/resources');
 
     return NextResponse.json(podcast, { headers: NO_STORE });
   } catch (error) {

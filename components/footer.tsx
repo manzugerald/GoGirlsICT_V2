@@ -18,6 +18,7 @@ import {
   BarChart3,
   Share2,
   LogIn,
+  Radio,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -45,8 +46,9 @@ const Footer = () => {
       { label: 'Contact Us', href: '/get-involved#contact', icon: MessageCircle },
     ],
     resources: [
-      { label: 'Podcasts', href: '/reports', icon: Headphones },
-      { label: 'Published Reports', href: '/reports#reports', icon: FileText },
+      { label: 'Podcasts', href: '/resources', icon: Headphones },
+      { label: 'Radio Talkshows', href: '/resources?type=talkshows', icon: Radio },
+      { label: 'Published Reports', href: '/reports', icon: FileText },
       { label: 'Impact', href: '/impact', icon: BarChart3 },
       { label: 'Social & News', href: '/sns', icon: Share2 },
     ],

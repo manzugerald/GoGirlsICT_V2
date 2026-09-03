@@ -98,8 +98,8 @@ export async function generateMetadata({
 
   return {
     title: event
-      ? `${extractPlainText(event.eventTitle)} | GoGirls ICT Initiative`
-      : 'Event Not Found | GoGirls ICT Initiative',
+      ? extractPlainText(event.eventTitle)
+      : 'Event Not Found',
 
     description:
       'An event hosted by GoGirls ICT Initiative.',

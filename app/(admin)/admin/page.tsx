@@ -44,6 +44,23 @@ export default function AdminLoginPage() {
    */
   const isSubmittingRef = useRef(false);
 
+  /*
+   * Whenever we're authenticated, a redirect to callbackUrl is already
+   * in flight (either this effect fires it, or handleSubmit already
+   * did). That redirect is a real full navigation, so it normally
+   * replaces this page before the user perceives anything — but if the
+   * destination is slow to compile/respond (a cold dev-server compile,
+   * a cold serverless start, a slow dashboard query), this component
+   * stays mounted and re-renders in the meantime. Without this flag,
+   * that re-render showed an actionable "Continue to Dashboard" button,
+   * which reads as "click here to proceed" even though the redirect is
+   * already happening on its own. Revealing that button only after a
+   * grace period keeps the common case silent while still giving a
+   * genuinely stuck user (e.g. a popup blocker on window.location, or a
+   * request that failed silently) a manual way forward.
+   */
+  const [showManualContinue, setShowManualContinue] = useState(false);
+
   useEffect(() => {
     // If already authenticated (e.g. a direct visit to /admin while a
     // session is still valid), redirect to callbackUrl. A full reload
@@ -54,6 +71,15 @@ export default function AdminLoginPage() {
       window.location.href = callbackUrl;
     }
   }, [status, callbackUrl]);
+
+  useEffect(() => {
+    if (status !== 'authenticated') {
+      setShowManualContinue(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowManualContinue(true), 4000);
+    return () => clearTimeout(timer);
+  }, [status]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -111,14 +137,29 @@ export default function AdminLoginPage() {
   }
 
   if (status === 'authenticated' && session?.user) {
+    // The redirect to callbackUrl is already in flight by the time this
+    // renders (see the effects above / handleSubmit). Show a plain
+    // loading state for it — no clickable "continue" — so a normal-speed
+    // redirect never looks like it's waiting on the user. Only past the
+    // grace period do we assume something's actually stuck and offer a
+    // manual way forward.
+    if (!showManualContinue) {
+      return (
+        <main className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+          <p className="text-gray-600 dark:text-gray-300">Signing you in…</p>
+        </main>
+      );
+    }
+
     return (
       <main className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="space-y-4 w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded shadow-md dark:shadow-lg text-center">
           <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
-            You are signed in
+            Still redirecting…
           </h1>
           <p className="text-sm text-muted-foreground">
-            Signed in as <span className="font-medium">{session.user.username}</span>
+            Signed in as <span className="font-medium">{session.user.username}</span>. This is
+            taking longer than expected.
           </p>
           <div className="flex flex-col sm:flex-row gap-2 justify-center mt-2">
             <button

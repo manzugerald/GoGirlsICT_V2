@@ -10,6 +10,9 @@ import {
   BarChart3,
   FileText,
   HeartHandshake,
+  FolderOpen,
+  Headphones,
+  Radio,
 } from 'lucide-react';
 
 export type NavigationChild = {
@@ -48,8 +51,24 @@ export const navigationItems: NavigationItem[] = [
     label: 'Programs',
     href: '/programs',
     description:
-      'Explore our digital literacy, mentorship, innovation, and community programs.',
+      'Explore our digital literacy, mentorship, innovation, and community programs, plus the reports behind them.',
     icon: BookMarked,
+    children: [
+      {
+        label: 'Projects',
+        href: '/programs',
+        description:
+          'Our digital literacy, mentorship, innovation, and community programs.',
+        icon: FolderOpen,
+      },
+      {
+        label: 'Reports',
+        href: '/reports',
+        description:
+          'Program outcomes and impact documentation.',
+        icon: FileText,
+      },
+    ],
   },
 
   {
@@ -62,10 +81,26 @@ export const navigationItems: NavigationItem[] = [
 
   {
     label: 'Resources',
-    href: '/reports',
+    href: '/resources',
     description:
-      'Listen to our podcasts and access reports, publications, and useful resources.',
-    icon: FileText,
+      'Listen to our podcasts and radio talkshows.',
+    icon: Headphones,
+    children: [
+      {
+        label: 'Podcasts',
+        href: '/resources',
+        description:
+          'Conversations, stories, and insights from the GoGirls ICT community.',
+        icon: Headphones,
+      },
+      {
+        label: 'Radio Talkshows',
+        href: '/resources?type=talkshows',
+        description:
+          'Recordings of our on-air radio talkshow appearances.',
+        icon: Radio,
+      },
+    ],
   },
 
   {

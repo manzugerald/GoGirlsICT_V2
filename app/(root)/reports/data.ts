@@ -97,31 +97,3 @@ export type ReportDetail = NonNullable<
   >
 >;
 
-export async function getPodcasts() {
-  return prisma.podcast.findMany({
-    where: {
-      publishStatus: 'published',
-    },
-
-    orderBy: {
-      publishedAt: 'desc',
-    },
-
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      description: true,
-      image: true,
-      audioUrl: true,
-      waveform: true,
-      publishedAt: true,
-      accessCount: true,
-    },
-  });
-}
-
-export type PodcastSummary =
-  Awaited<
-    ReturnType<typeof getPodcasts>
-  >[number];

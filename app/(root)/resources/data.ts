@@ -1,7 +1,8 @@
 import { prisma } from '@/db/prisma';
 
 export const RESOURCE_TYPES = [
-  'reports',
+  'podcasts',
+  'talkshows',
 ] as const;
 
 export type ResourceType =
@@ -18,47 +19,60 @@ export function normalizeResourceType(
     candidate as ResourceType
   )
     ? (candidate as ResourceType)
-    : 'reports';
+    : 'podcasts';
 }
 
-export async function getResourcesPageData() {
-  const reports =
-    await prisma.report.findMany({
-      where: {
-        publishStatus: 'published',
-      },
+export async function getPodcasts() {
+  return prisma.podcast.findMany({
+    where: {
+      publishStatus: 'published',
+    },
 
-      orderBy: {
-        createdAt: 'desc',
-      },
+    orderBy: {
+      publishedAt: 'desc',
+    },
 
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        files: true,
-        createdAt: true,
-
-        project: {
-          select: {
-            id: true,
-            title: true,
-          },
-        },
-      },
-    });
-
-  return {
-    reports,
-  };
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      description: true,
+      image: true,
+      audioUrl: true,
+      waveform: true,
+      publishedAt: true,
+      accessCount: true,
+    },
+  });
 }
 
-export type ResourcesPageData =
+export type PodcastSummary =
   Awaited<
-    ReturnType<
-      typeof getResourcesPageData
-    >
-  >;
+    ReturnType<typeof getPodcasts>
+  >[number];
 
-export type ReportListItem =
-  ResourcesPageData['reports'][number];
+export async function getRadioTalkshows() {
+  return prisma.radioTalkshow.findMany({
+    where: {
+      publishStatus: 'published',
+    },
+
+    orderBy: {
+      date: 'desc',
+    },
+
+    select: {
+      id: true,
+      title: true,
+      date: true,
+      poster: true,
+      audioUrl: true,
+      waveform: true,
+    },
+  });
+}
+
+export type TalkshowSummary =
+  Awaited<
+    ReturnType<typeof getRadioTalkshows>
+  >[number];
