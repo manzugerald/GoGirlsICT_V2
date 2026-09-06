@@ -42,6 +42,7 @@ import {
   FaUserCircle,
   FaCog,
   FaSignOutAlt,
+  FaBars,
 } from 'react-icons/fa';
 
 // Sections we keep + Charts/Home + Projects/Events/Reports/Institutions
@@ -275,6 +276,11 @@ export default function AdminDashboardPage() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<Section>('beneficiaries');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // Below `lg`, the sidebar is an off-canvas drawer (closed by default)
+  // instead of a permanent column — at 240px expanded it would eat most
+  // of a phone screen. Desktop's collapse/expand toggle above is
+  // unaffected; this is purely the mobile show/hide state.
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [data, setData] = useState<DashRecord[]>([]);
   const [editRecord, setEditRecord] = useState<DashRecord | null>(null);
   const [viewRecord, setViewRecord] = useState<DashRecord | null>(null);
@@ -305,6 +311,8 @@ export default function AdminDashboardPage() {
   }, []);
 
   async function handleMenuClick(section: Section, replaceUrl = true) {
+    setMobileSidebarOpen(false);
+
     if (section === 'logout') {
       if (confirm('Sign out from the admin dashboard?')) {
         signOut();
@@ -984,9 +992,22 @@ export default function AdminDashboardPage() {
     // fixed independently of page scroll — means the sidebar can never sit on
     // top of content that isn't part of the dashboard.
     <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden bg-gray-50 dark:bg-gray-900 transition-colors">
+      {/* Below `lg` the sidebar is an off-canvas drawer — at its default
+          240px width it would eat most of a phone screen if it stayed a
+          permanent column. This backdrop closes it on outside tap. */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-x-0 top-14 bottom-0 z-30 bg-black/50 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       <aside
         style={{ width: sidebarWidth }}
-        className="h-full shrink-0 bg-white dark:bg-gray-950 border-r dark:border-gray-800 shadow-sm flex flex-col transition-[width] duration-300 ease-in-out"
+        className={`fixed top-14 bottom-0 left-0 z-40 shrink-0 bg-white dark:bg-gray-950 border-r dark:border-gray-800 shadow-sm flex flex-col transition-[width,transform] duration-300 ease-in-out lg:static lg:top-auto lg:bottom-auto lg:h-full lg:z-auto lg:translate-x-0 ${
+          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
       >
         <div className="flex items-center justify-between px-2 py-4 border-b dark:border-gray-800">
           <span className="text-xl font-bold text-pink-600 dark:text-pink-400 hidden sm:block">
@@ -1216,6 +1237,14 @@ export default function AdminDashboardPage() {
       >
         <div className="mb-4">
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(true)}
+              aria-label="Open menu"
+              className="p-2 -ml-2 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 lg:hidden"
+            >
+              <FaBars size={20} />
+            </button>
             <span className="text-2xl">{sectionIcons[activeSection]}</span>
             <h1 className="text-3xl font-extrabold text-left text-gray-800 dark:text-gray-100">
               {sectionLabels[activeSection]}

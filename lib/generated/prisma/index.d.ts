@@ -8152,6 +8152,7 @@ export namespace Prisma {
     id: number | null
     slug: string | null
     image: string | null
+    poster: string | null
     audioUrl: string | null
     publishedAt: Date | null
     publishStatus: $Enums.PublishStatus | null
@@ -8177,6 +8178,7 @@ export namespace Prisma {
     id: number | null
     slug: string | null
     image: string | null
+    poster: string | null
     audioUrl: string | null
     publishedAt: Date | null
     publishStatus: $Enums.PublishStatus | null
@@ -8204,6 +8206,7 @@ export namespace Prisma {
     slug: number
     description: number
     image: number
+    poster: number
     audioUrl: number
     waveform: number
     publishedAt: number
@@ -8252,6 +8255,7 @@ export namespace Prisma {
     id?: true
     slug?: true
     image?: true
+    poster?: true
     audioUrl?: true
     publishedAt?: true
     publishStatus?: true
@@ -8277,6 +8281,7 @@ export namespace Prisma {
     id?: true
     slug?: true
     image?: true
+    poster?: true
     audioUrl?: true
     publishedAt?: true
     publishStatus?: true
@@ -8304,6 +8309,7 @@ export namespace Prisma {
     slug?: true
     description?: true
     image?: true
+    poster?: true
     audioUrl?: true
     waveform?: true
     publishedAt?: true
@@ -8419,6 +8425,7 @@ export namespace Prisma {
     slug: string
     description: JsonValue
     image: string | null
+    poster: string | null
     audioUrl: string
     waveform: number[]
     publishedAt: Date
@@ -8466,6 +8473,7 @@ export namespace Prisma {
     slug?: boolean
     description?: boolean
     image?: boolean
+    poster?: boolean
     audioUrl?: boolean
     waveform?: boolean
     publishedAt?: boolean
@@ -8506,6 +8514,7 @@ export namespace Prisma {
     slug?: boolean
     description?: boolean
     image?: boolean
+    poster?: boolean
     audioUrl?: boolean
     waveform?: boolean
     publishedAt?: boolean
@@ -8544,6 +8553,7 @@ export namespace Prisma {
     slug?: boolean
     description?: boolean
     image?: boolean
+    poster?: boolean
     audioUrl?: boolean
     waveform?: boolean
     publishedAt?: boolean
@@ -8582,6 +8592,7 @@ export namespace Prisma {
     slug?: boolean
     description?: boolean
     image?: boolean
+    poster?: boolean
     audioUrl?: boolean
     waveform?: boolean
     publishedAt?: boolean
@@ -8604,7 +8615,7 @@ export namespace Prisma {
     talkshowId?: boolean
   }
 
-  export type PodcastOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "slug" | "description" | "image" | "audioUrl" | "waveform" | "publishedAt" | "publishStatus" | "accessCount" | "createdAt" | "updatedAt" | "createdById" | "updatedById" | "approvedById" | "hostType" | "hostBeneficiaryId" | "hostUserId" | "hostFirstName" | "hostLastName" | "projectId" | "eventId" | "reportId" | "institutionId" | "talkshowId", ExtArgs["result"]["podcast"]>
+  export type PodcastOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "slug" | "description" | "image" | "poster" | "audioUrl" | "waveform" | "publishedAt" | "publishStatus" | "accessCount" | "createdAt" | "updatedAt" | "createdById" | "updatedById" | "approvedById" | "hostType" | "hostBeneficiaryId" | "hostUserId" | "hostFirstName" | "hostLastName" | "projectId" | "eventId" | "reportId" | "institutionId" | "talkshowId", ExtArgs["result"]["podcast"]>
   export type PodcastInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     approvedBy?: boolean | Podcast$approvedByArgs<ExtArgs>
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
@@ -8665,6 +8676,7 @@ export namespace Prisma {
       slug: string
       description: Prisma.JsonValue
       image: string | null
+      poster: string | null
       audioUrl: string
       waveform: number[]
       publishedAt: Date
@@ -9124,6 +9136,7 @@ export namespace Prisma {
     readonly slug: FieldRef<"Podcast", 'String'>
     readonly description: FieldRef<"Podcast", 'Json'>
     readonly image: FieldRef<"Podcast", 'String'>
+    readonly poster: FieldRef<"Podcast", 'String'>
     readonly audioUrl: FieldRef<"Podcast", 'String'>
     readonly waveform: FieldRef<"Podcast", 'Float[]'>
     readonly publishedAt: FieldRef<"Podcast", 'DateTime'>
@@ -30617,6 +30630,7 @@ export namespace Prisma {
     id: number | null
     title: string | null
     date: Date | null
+    image: string | null
     poster: string | null
     audioUrl: string | null
     publishStatus: $Enums.PublishStatus | null
@@ -30640,6 +30654,7 @@ export namespace Prisma {
     id: number | null
     title: string | null
     date: Date | null
+    image: string | null
     poster: string | null
     audioUrl: string | null
     publishStatus: $Enums.PublishStatus | null
@@ -30663,6 +30678,7 @@ export namespace Prisma {
     id: number
     title: number
     date: number
+    image: number
     poster: number
     audioUrl: number
     waveform: number
@@ -30705,6 +30721,7 @@ export namespace Prisma {
     id?: true
     title?: true
     date?: true
+    image?: true
     poster?: true
     audioUrl?: true
     publishStatus?: true
@@ -30728,6 +30745,7 @@ export namespace Prisma {
     id?: true
     title?: true
     date?: true
+    image?: true
     poster?: true
     audioUrl?: true
     publishStatus?: true
@@ -30751,6 +30769,7 @@ export namespace Prisma {
     id?: true
     title?: true
     date?: true
+    image?: true
     poster?: true
     audioUrl?: true
     waveform?: true
@@ -30862,6 +30881,7 @@ export namespace Prisma {
     id: number
     title: string
     date: Date
+    image: string | null
     poster: string | null
     audioUrl: string | null
     waveform: number[]
@@ -30905,6 +30925,7 @@ export namespace Prisma {
     id?: boolean
     title?: boolean
     date?: boolean
+    image?: boolean
     poster?: boolean
     audioUrl?: boolean
     waveform?: boolean
@@ -30941,6 +30962,7 @@ export namespace Prisma {
     id?: boolean
     title?: boolean
     date?: boolean
+    image?: boolean
     poster?: boolean
     audioUrl?: boolean
     waveform?: boolean
@@ -30974,6 +30996,7 @@ export namespace Prisma {
     id?: boolean
     title?: boolean
     date?: boolean
+    image?: boolean
     poster?: boolean
     audioUrl?: boolean
     waveform?: boolean
@@ -31007,6 +31030,7 @@ export namespace Prisma {
     id?: boolean
     title?: boolean
     date?: boolean
+    image?: boolean
     poster?: boolean
     audioUrl?: boolean
     waveform?: boolean
@@ -31027,7 +31051,7 @@ export namespace Prisma {
     hostLastName?: boolean
   }
 
-  export type RadioTalkshowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "date" | "poster" | "audioUrl" | "waveform" | "publishStatus" | "createdAt" | "updatedAt" | "createdById" | "updatedById" | "approvedById" | "projectId" | "eventId" | "reportId" | "institutionId" | "hostType" | "hostBeneficiaryId" | "hostUserId" | "hostFirstName" | "hostLastName", ExtArgs["result"]["radioTalkshow"]>
+  export type RadioTalkshowOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "date" | "image" | "poster" | "audioUrl" | "waveform" | "publishStatus" | "createdAt" | "updatedAt" | "createdById" | "updatedById" | "approvedById" | "projectId" | "eventId" | "reportId" | "institutionId" | "hostType" | "hostBeneficiaryId" | "hostUserId" | "hostFirstName" | "hostLastName", ExtArgs["result"]["radioTalkshow"]>
   export type RadioTalkshowInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
     updatedBy?: boolean | RadioTalkshow$updatedByArgs<ExtArgs>
@@ -31084,6 +31108,7 @@ export namespace Prisma {
       id: number
       title: string
       date: Date
+      image: string | null
       poster: string | null
       audioUrl: string | null
       waveform: number[]
@@ -31539,6 +31564,7 @@ export namespace Prisma {
     readonly id: FieldRef<"RadioTalkshow", 'Int'>
     readonly title: FieldRef<"RadioTalkshow", 'String'>
     readonly date: FieldRef<"RadioTalkshow", 'DateTime'>
+    readonly image: FieldRef<"RadioTalkshow", 'String'>
     readonly poster: FieldRef<"RadioTalkshow", 'String'>
     readonly audioUrl: FieldRef<"RadioTalkshow", 'String'>
     readonly waveform: FieldRef<"RadioTalkshow", 'Float[]'>
@@ -37853,6 +37879,7 @@ export namespace Prisma {
     slug: 'slug',
     description: 'description',
     image: 'image',
+    poster: 'poster',
     audioUrl: 'audioUrl',
     waveform: 'waveform',
     publishedAt: 'publishedAt',
@@ -38131,6 +38158,7 @@ export namespace Prisma {
     id: 'id',
     title: 'title',
     date: 'date',
+    image: 'image',
     poster: 'poster',
     audioUrl: 'audioUrl',
     waveform: 'waveform',
@@ -38875,6 +38903,7 @@ export namespace Prisma {
     slug?: StringFilter<"Podcast"> | string
     description?: JsonFilter<"Podcast">
     image?: StringNullableFilter<"Podcast"> | string | null
+    poster?: StringNullableFilter<"Podcast"> | string | null
     audioUrl?: StringFilter<"Podcast"> | string
     waveform?: FloatNullableListFilter<"Podcast">
     publishedAt?: DateTimeFilter<"Podcast"> | Date | string
@@ -38914,6 +38943,7 @@ export namespace Prisma {
     slug?: SortOrder
     description?: SortOrder
     image?: SortOrderInput | SortOrder
+    poster?: SortOrderInput | SortOrder
     audioUrl?: SortOrder
     waveform?: SortOrder
     publishedAt?: SortOrder
@@ -38956,6 +38986,7 @@ export namespace Prisma {
     title?: JsonFilter<"Podcast">
     description?: JsonFilter<"Podcast">
     image?: StringNullableFilter<"Podcast"> | string | null
+    poster?: StringNullableFilter<"Podcast"> | string | null
     audioUrl?: StringFilter<"Podcast"> | string
     waveform?: FloatNullableListFilter<"Podcast">
     publishedAt?: DateTimeFilter<"Podcast"> | Date | string
@@ -38995,6 +39026,7 @@ export namespace Prisma {
     slug?: SortOrder
     description?: SortOrder
     image?: SortOrderInput | SortOrder
+    poster?: SortOrderInput | SortOrder
     audioUrl?: SortOrder
     waveform?: SortOrder
     publishedAt?: SortOrder
@@ -39031,6 +39063,7 @@ export namespace Prisma {
     slug?: StringWithAggregatesFilter<"Podcast"> | string
     description?: JsonWithAggregatesFilter<"Podcast">
     image?: StringNullableWithAggregatesFilter<"Podcast"> | string | null
+    poster?: StringNullableWithAggregatesFilter<"Podcast"> | string | null
     audioUrl?: StringWithAggregatesFilter<"Podcast"> | string
     waveform?: FloatNullableListFilter<"Podcast">
     publishedAt?: DateTimeWithAggregatesFilter<"Podcast"> | Date | string
@@ -40527,6 +40560,7 @@ export namespace Prisma {
     id?: IntFilter<"RadioTalkshow"> | number
     title?: StringFilter<"RadioTalkshow"> | string
     date?: DateTimeFilter<"RadioTalkshow"> | Date | string
+    image?: StringNullableFilter<"RadioTalkshow"> | string | null
     poster?: StringNullableFilter<"RadioTalkshow"> | string | null
     audioUrl?: StringNullableFilter<"RadioTalkshow"> | string | null
     waveform?: FloatNullableListFilter<"RadioTalkshow">
@@ -40562,6 +40596,7 @@ export namespace Prisma {
     id?: SortOrder
     title?: SortOrder
     date?: SortOrder
+    image?: SortOrderInput | SortOrder
     poster?: SortOrderInput | SortOrder
     audioUrl?: SortOrderInput | SortOrder
     waveform?: SortOrder
@@ -40600,6 +40635,7 @@ export namespace Prisma {
     NOT?: RadioTalkshowWhereInput | RadioTalkshowWhereInput[]
     title?: StringFilter<"RadioTalkshow"> | string
     date?: DateTimeFilter<"RadioTalkshow"> | Date | string
+    image?: StringNullableFilter<"RadioTalkshow"> | string | null
     poster?: StringNullableFilter<"RadioTalkshow"> | string | null
     audioUrl?: StringNullableFilter<"RadioTalkshow"> | string | null
     waveform?: FloatNullableListFilter<"RadioTalkshow">
@@ -40635,6 +40671,7 @@ export namespace Prisma {
     id?: SortOrder
     title?: SortOrder
     date?: SortOrder
+    image?: SortOrderInput | SortOrder
     poster?: SortOrderInput | SortOrder
     audioUrl?: SortOrderInput | SortOrder
     waveform?: SortOrder
@@ -40667,6 +40704,7 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"RadioTalkshow"> | number
     title?: StringWithAggregatesFilter<"RadioTalkshow"> | string
     date?: DateTimeWithAggregatesFilter<"RadioTalkshow"> | Date | string
+    image?: StringNullableWithAggregatesFilter<"RadioTalkshow"> | string | null
     poster?: StringNullableWithAggregatesFilter<"RadioTalkshow"> | string | null
     audioUrl?: StringNullableWithAggregatesFilter<"RadioTalkshow"> | string | null
     waveform?: FloatNullableListFilter<"RadioTalkshow">
@@ -41418,6 +41456,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -41447,6 +41486,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -41475,6 +41515,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41504,6 +41545,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41533,6 +41575,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -41560,6 +41603,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41578,6 +41622,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43161,6 +43206,7 @@ export namespace Prisma {
   export type RadioTalkshowCreateInput = {
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -43187,6 +43233,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -43212,6 +43259,7 @@ export namespace Prisma {
   export type RadioTalkshowUpdateInput = {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -43238,6 +43286,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -43264,6 +43313,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -43287,6 +43337,7 @@ export namespace Prisma {
   export type RadioTalkshowUpdateManyMutationInput = {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -43302,6 +43353,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -44240,6 +44292,7 @@ export namespace Prisma {
     slug?: SortOrder
     description?: SortOrder
     image?: SortOrder
+    poster?: SortOrder
     audioUrl?: SortOrder
     waveform?: SortOrder
     publishedAt?: SortOrder
@@ -44276,6 +44329,7 @@ export namespace Prisma {
     id?: SortOrder
     slug?: SortOrder
     image?: SortOrder
+    poster?: SortOrder
     audioUrl?: SortOrder
     publishedAt?: SortOrder
     publishStatus?: SortOrder
@@ -44301,6 +44355,7 @@ export namespace Prisma {
     id?: SortOrder
     slug?: SortOrder
     image?: SortOrder
+    poster?: SortOrder
     audioUrl?: SortOrder
     publishedAt?: SortOrder
     publishStatus?: SortOrder
@@ -45472,6 +45527,7 @@ export namespace Prisma {
     id?: SortOrder
     title?: SortOrder
     date?: SortOrder
+    image?: SortOrder
     poster?: SortOrder
     audioUrl?: SortOrder
     waveform?: SortOrder
@@ -45504,6 +45560,7 @@ export namespace Prisma {
     id?: SortOrder
     title?: SortOrder
     date?: SortOrder
+    image?: SortOrder
     poster?: SortOrder
     audioUrl?: SortOrder
     publishStatus?: SortOrder
@@ -45527,6 +45584,7 @@ export namespace Prisma {
     id?: SortOrder
     title?: SortOrder
     date?: SortOrder
+    image?: SortOrder
     poster?: SortOrder
     audioUrl?: SortOrder
     publishStatus?: SortOrder
@@ -50579,6 +50637,7 @@ export namespace Prisma {
   export type RadioTalkshowCreateWithoutProjectInput = {
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -50604,6 +50663,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -50640,6 +50700,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -50668,6 +50729,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -51177,6 +51239,7 @@ export namespace Prisma {
     id?: IntFilter<"RadioTalkshow"> | number
     title?: StringFilter<"RadioTalkshow"> | string
     date?: DateTimeFilter<"RadioTalkshow"> | Date | string
+    image?: StringNullableFilter<"RadioTalkshow"> | string | null
     poster?: StringNullableFilter<"RadioTalkshow"> | string | null
     audioUrl?: StringNullableFilter<"RadioTalkshow"> | string | null
     waveform?: FloatNullableListFilter<"RadioTalkshow">
@@ -51222,6 +51285,7 @@ export namespace Prisma {
     slug?: StringFilter<"Podcast"> | string
     description?: JsonFilter<"Podcast">
     image?: StringNullableFilter<"Podcast"> | string | null
+    poster?: StringNullableFilter<"Podcast"> | string | null
     audioUrl?: StringFilter<"Podcast"> | string
     waveform?: FloatNullableListFilter<"Podcast">
     publishedAt?: DateTimeFilter<"Podcast"> | Date | string
@@ -51707,6 +51771,7 @@ export namespace Prisma {
   export type RadioTalkshowCreateWithoutReportInput = {
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -51732,6 +51797,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -51768,6 +51834,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -51796,6 +51863,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -53012,6 +53080,7 @@ export namespace Prisma {
   export type RadioTalkshowCreateWithoutPodcastsInput = {
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -53037,6 +53106,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -53849,6 +53919,7 @@ export namespace Prisma {
   export type RadioTalkshowUpdateWithoutPodcastsInput = {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -53874,6 +53945,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -55331,6 +55403,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -55359,6 +55432,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -55396,6 +55470,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -55424,6 +55499,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -55461,6 +55537,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -55489,6 +55566,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -55662,6 +55740,7 @@ export namespace Prisma {
   export type RadioTalkshowCreateWithoutCreatedByInput = {
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -55687,6 +55766,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -55721,6 +55801,7 @@ export namespace Prisma {
   export type RadioTalkshowCreateWithoutUpdatedByInput = {
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -55746,6 +55827,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -55780,6 +55862,7 @@ export namespace Prisma {
   export type RadioTalkshowCreateWithoutApprovedByInput = {
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -55805,6 +55888,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -55839,6 +55923,7 @@ export namespace Prisma {
   export type RadioTalkshowCreateWithoutHostUserInput = {
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -55864,6 +55949,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -55900,6 +55986,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -55928,6 +56015,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -58451,6 +58539,7 @@ export namespace Prisma {
   export type RadioTalkshowCreateWithoutEventInput = {
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -58476,6 +58565,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -58512,6 +58602,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -58540,6 +58631,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -59051,6 +59143,7 @@ export namespace Prisma {
   export type RadioTalkshowCreateWithoutInstitutionInput = {
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -59076,6 +59169,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -59112,6 +59206,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -59140,6 +59235,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -60254,6 +60350,7 @@ export namespace Prisma {
   export type RadioTalkshowCreateWithoutHostBeneficiaryInput = {
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -60279,6 +60376,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -60315,6 +60413,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -60343,6 +60442,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -62020,6 +62120,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -62048,6 +62149,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -62158,6 +62260,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -62186,6 +62289,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -62272,6 +62376,7 @@ export namespace Prisma {
   export type RadioTalkshowCreateWithoutParticipantsInput = {
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -62297,6 +62402,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -62404,6 +62510,7 @@ export namespace Prisma {
   export type RadioTalkshowUpdateWithoutParticipantsInput = {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -62429,6 +62536,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -63169,6 +63277,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -63197,6 +63306,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -65630,6 +65740,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -65655,6 +65766,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -65838,6 +65950,7 @@ export namespace Prisma {
   export type RadioTalkshowUpdateWithoutProjectInput = {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -65863,6 +65976,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -65888,6 +66002,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -65912,6 +66027,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65940,6 +66056,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65968,6 +66085,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66026,6 +66144,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -66051,6 +66170,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -66179,6 +66299,7 @@ export namespace Prisma {
   export type RadioTalkshowUpdateWithoutReportInput = {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -66204,6 +66325,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -66229,6 +66351,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -66253,6 +66376,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66281,6 +66405,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66309,6 +66434,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66590,6 +66716,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -66617,6 +66744,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -66644,6 +66772,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -66723,6 +66852,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -66746,6 +66876,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -66769,6 +66900,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -66792,6 +66924,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -66817,6 +66950,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -67641,6 +67775,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67669,6 +67804,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67697,6 +67833,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67723,6 +67860,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67751,6 +67889,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67779,6 +67918,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67805,6 +67945,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67833,6 +67974,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67861,6 +68003,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68057,6 +68200,7 @@ export namespace Prisma {
   export type RadioTalkshowUpdateWithoutCreatedByInput = {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -68082,6 +68226,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -68107,6 +68252,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -68129,6 +68275,7 @@ export namespace Prisma {
   export type RadioTalkshowUpdateWithoutUpdatedByInput = {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -68154,6 +68301,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -68179,6 +68327,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -68201,6 +68350,7 @@ export namespace Prisma {
   export type RadioTalkshowUpdateWithoutApprovedByInput = {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -68226,6 +68376,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -68251,6 +68402,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -68273,6 +68425,7 @@ export namespace Prisma {
   export type RadioTalkshowUpdateWithoutHostUserInput = {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -68298,6 +68451,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -68323,6 +68477,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -68347,6 +68502,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68375,6 +68531,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -68403,6 +68560,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69038,6 +69196,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -69063,6 +69222,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -69105,6 +69265,7 @@ export namespace Prisma {
   export type RadioTalkshowUpdateWithoutEventInput = {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -69130,6 +69291,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -69155,6 +69317,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -69179,6 +69342,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69207,6 +69371,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69235,6 +69400,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69286,6 +69452,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -69311,6 +69478,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -69431,6 +69599,7 @@ export namespace Prisma {
   export type RadioTalkshowUpdateWithoutInstitutionInput = {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -69456,6 +69625,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -69481,6 +69651,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -69505,6 +69676,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69533,6 +69705,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69561,6 +69734,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69646,6 +69820,7 @@ export namespace Prisma {
     id?: number
     title: string
     date: Date | string
+    image?: string | null
     poster?: string | null
     audioUrl?: string | null
     waveform?: RadioTalkshowCreatewaveformInput | number[]
@@ -69671,6 +69846,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -69876,6 +70052,7 @@ export namespace Prisma {
   export type RadioTalkshowUpdateWithoutHostBeneficiaryInput = {
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -69901,6 +70078,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -69926,6 +70104,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    image?: NullableStringFieldUpdateOperationsInput | string | null
     poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: NullableStringFieldUpdateOperationsInput | string | null
     waveform?: RadioTalkshowUpdatewaveformInput | number[]
@@ -69950,6 +70129,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69978,6 +70158,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70006,6 +70187,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70039,6 +70221,7 @@ export namespace Prisma {
     slug: string
     description: JsonNullValueInput | InputJsonValue
     image?: string | null
+    poster?: string | null
     audioUrl: string
     waveform?: PodcastCreatewaveformInput | number[]
     publishedAt?: Date | string
@@ -70083,6 +70266,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70111,6 +70295,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70139,6 +70324,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: JsonNullValueInput | InputJsonValue
     image?: NullableStringFieldUpdateOperationsInput | string | null
+    poster?: NullableStringFieldUpdateOperationsInput | string | null
     audioUrl?: StringFieldUpdateOperationsInput | string
     waveform?: PodcastUpdatewaveformInput | number[]
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string

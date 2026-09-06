@@ -58,11 +58,21 @@ function roleFrom(session: Session | null): string {
   return session?.user?.role ?? 'guest';
 }
 
-async function savePoster(formData: FormData): Promise<string | null> {
-  const file = formData.get('poster') as File | null;
+// `field` is the FormData key to read the file from; `subdir` is where
+// under public/assets/images/talkshows it's saved (empty for the card
+// thumbnail, 'poster' for the wide /resources hero banner).
+async function saveTalkshowImage(
+  formData: FormData,
+  field: string,
+  subdir: string
+): Promise<string | null> {
+  const file = formData.get(field) as File | null;
   if (!file || typeof file === 'string') return null;
 
-  const destDir = path.join(process.cwd(), 'public', 'assets', 'images', 'talkshows');
+  const publicBase = subdir
+    ? `/assets/images/talkshows/${subdir}`
+    : '/assets/images/talkshows';
+  const destDir = path.join(process.cwd(), 'public', ...publicBase.split('/').filter(Boolean));
   await fs.mkdir(destDir, { recursive: true });
 
   const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
@@ -70,7 +80,7 @@ async function savePoster(formData: FormData): Promise<string | null> {
   const buffer = Buffer.from(await file.arrayBuffer());
   await fs.writeFile(path.join(destDir, filename), buffer);
 
-  return `/assets/images/talkshows/${filename}`;
+  return `${publicBase}/${filename}`;
 }
 
 async function saveAudio(formData: FormData): Promise<string | null> {
@@ -194,14 +204,18 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
 
     const existing = await prisma.radioTalkshow.findUnique({
       where: { id },
-      select: { poster: true, audioUrl: true, waveform: true },
+      select: { image: true, poster: true, audioUrl: true, waveform: true },
     });
     if (!existing) {
       return NextResponse.json({ error: 'Talkshow not found' }, { status: 404, headers: NO_STORE });
     }
 
+    const removeImage = formData.get('removeImage') === '1';
+    const uploadedImage = await saveTalkshowImage(formData, 'image', '');
+    const image = uploadedImage ?? (removeImage ? null : existing.image);
+
     const removePoster = formData.get('removePoster') === '1';
-    const uploadedPoster = await savePoster(formData);
+    const uploadedPoster = await saveTalkshowImage(formData, 'poster', 'poster');
     const poster = uploadedPoster ?? (removePoster ? null : existing.poster);
 
     const removeAudio = formData.get('removeAudio') === '1';
@@ -222,6 +236,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       data: {
         title,
         date,
+        image,
         poster,
         audioUrl,
         waveform,

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
+import { FolderOpen, FileText } from 'lucide-react';
 
 import PageHero from '@/app/(root)/components/shared/page/PageHero';
+import PageHeroTabs from '@/app/(root)/components/shared/page/PageHeroTabs';
 
 import ReportsGrid from './components/ReportsGrid';
 
@@ -26,7 +28,24 @@ export default async function ReportsPage() {
       <PageHero
         title="Reports"
         description="Explore our published reports, program outcomes, and impact documentation."
-      />
+      >
+        <PageHeroTabs
+          tabs={[
+            {
+              href: '/programs',
+              label: 'Projects',
+              icon: FolderOpen,
+              isActive: false,
+            },
+            {
+              href: '/reports',
+              label: 'Reports',
+              icon: FileText,
+              isActive: true,
+            },
+          ]}
+        />
+      </PageHero>
 
       <div
         id="reports"

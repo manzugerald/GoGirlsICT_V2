@@ -1,9 +1,12 @@
+import { FolderOpen, FileText } from 'lucide-react';
+
 import { getProgramsPageData } from './data';
 
 import ProgramsAnimatedStats from './components/ProgramsAnimatedStats';
 import ProgramsGrid from './components/ProgramsGrid';
 
 import PageHero from '@/app/(root)/components/shared/page/PageHero';
+import PageHeroTabs from '@/app/(root)/components/shared/page/PageHeroTabs';
 
 // ISR: this list only changes when an admin publishes/edits a project —
 // revalidatePath('/programs') in the project API routes invalidates it
@@ -21,6 +24,23 @@ export default async function ProgramsPage() {
         description="Discover the initiatives transforming communities through digital skills, innovation, mentorship, leadership, and inclusive technology."
         backgroundImage="/assets/projects/images/banner/banner2.jpg"
       >
+        <PageHeroTabs
+          tabs={[
+            {
+              href: '/programs',
+              label: 'Projects',
+              icon: FolderOpen,
+              isActive: true,
+            },
+            {
+              href: '/reports',
+              label: 'Reports',
+              icon: FileText,
+              isActive: false,
+            },
+          ]}
+        />
+
         <div className="mt-4">
           <ProgramsAnimatedStats
             projects={stats.total}

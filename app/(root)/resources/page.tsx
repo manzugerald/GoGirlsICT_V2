@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { Headphones, Radio } from 'lucide-react';
 
 import PageHero from '@/app/(root)/components/shared/page/PageHero';
+import PageHeroTabs from '@/app/(root)/components/shared/page/PageHeroTabs';
 
 import PodcastsSection from './components/PodcastsSection';
 import TalkshowsSection from './components/TalkshowsSection';
@@ -10,6 +10,7 @@ import TalkshowsSection from './components/TalkshowsSection';
 import {
   getPodcasts,
   getRadioTalkshows,
+  latestPoster,
   normalizeResourceType,
 } from './data';
 
@@ -26,69 +27,55 @@ type ResourcesPageProps = {
   }>;
 };
 
-const tabs = [
-  { type: 'podcasts', label: 'Podcasts', icon: Headphones },
-  { type: 'talkshows', label: 'Radio Talkshows', icon: Radio },
-] as const;
-
 export default async function ResourcesPage({
   searchParams,
 }: ResourcesPageProps) {
   const params = await searchParams;
   const activeType = normalizeResourceType(params.type);
 
+  // Only fetch the active tab's list — the other tab's data isn't needed
+  // for this request.
+  const podcasts = activeType === 'podcasts' ? await getPodcasts() : null;
+  const talkshows = activeType === 'talkshows' ? await getRadioTalkshows() : null;
+
+  // The hero banner uses the poster of the latest published item in
+  // whichever tab is active, falling back to the default gradient (no
+  // backgroundImage) when none has one set.
+  const heroPoster =
+    activeType === 'talkshows'
+      ? latestPoster(talkshows ?? [])
+      : latestPoster(podcasts ?? []);
+
   return (
     <main className="min-h-screen bg-white dark:bg-gray-950">
       <PageHero
         title="Resources"
         description="Listen to our podcasts and radio talkshow recordings."
+        backgroundImage={heroPoster ?? undefined}
       >
-        <div className="mt-6 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 p-1 backdrop-blur">
-          {tabs.map(({ type, label, icon: Icon }) => {
-            const isActiveTab = activeType === type;
-
-            return (
-              <Link
-                key={type}
-                href={
-                  type === 'podcasts'
-                    ? '/resources'
-                    : `/resources?type=${type}`
-                }
-                className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                  isActiveTab
-                    ? 'bg-white text-[#9f004d]'
-                    : 'text-white/85 hover:bg-white/15 hover:text-white'
-                }`}
-                aria-current={
-                  isActiveTab ? 'page' : undefined
-                }
-              >
-                <Icon className="h-4 w-4" />
-                {label}
-              </Link>
-            );
-          })}
-        </div>
+        <PageHeroTabs
+          tabs={[
+            {
+              href: '/resources',
+              label: 'Podcasts',
+              icon: Headphones,
+              isActive: activeType === 'podcasts',
+            },
+            {
+              href: '/resources?type=talkshows',
+              label: 'Radio Talkshows',
+              icon: Radio,
+              isActive: activeType === 'talkshows',
+            },
+          ]}
+        />
       </PageHero>
 
       {activeType === 'talkshows' ? (
-        <TalkshowsView />
+        <TalkshowsSection talkshows={talkshows ?? []} />
       ) : (
-        <PodcastsView />
+        <PodcastsSection podcasts={podcasts ?? []} />
       )}
     </main>
   );
-}
-
-async function PodcastsView() {
-  const podcasts = await getPodcasts();
-
-  return <PodcastsSection podcasts={podcasts} />;
-}
-
-async function TalkshowsView() {
-  const talkshows = await getRadioTalkshows();
-
-  return <TalkshowsSection talkshows={talkshows} />;
 }

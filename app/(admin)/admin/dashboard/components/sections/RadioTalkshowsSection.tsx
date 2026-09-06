@@ -91,9 +91,9 @@ export default function RadioTalkshowsSection({
 
         <div className="w-full max-w-2xl mx-auto p-4 space-y-4">
           <div className="flex items-start gap-4">
-            {viewing.poster ? (
+            {viewing.image ? (
               <img
-                src={viewing.poster}
+                src={viewing.image}
                 alt={viewing.title}
                 className="h-24 w-24 rounded-lg object-cover border shrink-0"
               />
@@ -195,9 +195,9 @@ export default function RadioTalkshowsSection({
                       if (e.key === 'Enter' || e.key === ' ') setViewing(talkshow);
                     }}
                   >
-                    {talkshow.poster ? (
+                    {talkshow.image ? (
                       <img
-                        src={talkshow.poster}
+                        src={talkshow.image}
                         alt={talkshow.title}
                         className="h-12 w-12 rounded-lg object-cover border shrink-0"
                       />

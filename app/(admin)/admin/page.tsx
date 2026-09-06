@@ -146,7 +146,15 @@ export default function AdminLoginPage() {
     if (!showManualContinue) {
       return (
         <main className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-          <p className="text-gray-600 dark:text-gray-300">Signing you in…</p>
+          <p className="flex items-baseline gap-1 text-lg text-gray-600 dark:text-gray-300">
+            <span>Signing you in</span>
+            <span className="flex items-baseline" aria-hidden="true">
+              <span className="animate-pulse text-3xl leading-none [animation-delay:0ms]">.</span>
+              <span className="animate-pulse text-3xl leading-none [animation-delay:200ms]">.</span>
+              <span className="animate-pulse text-3xl leading-none [animation-delay:400ms]">.</span>
+            </span>
+            <span className="sr-only">Loading</span>
+          </p>
         </main>
       );
     }

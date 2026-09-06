@@ -1,102 +1,51 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { usePathname } from 'next/navigation';
 import { cardHoverClass } from '@/utils/styles/card-hover';
+import { ADMIN_STAT_KEYS, buildStat, fetchStatsForKeys, type Stat } from './statsConfig';
 
-type Stat = {
-  label: string;
-  value: number;
-  color?: string;
-};
-
-// ---- Slightly reduced dimensions, animation untouched ----
-const CARD_MIN_WIDTH = 160;
+// ---- Resized for a two-column grid (was a single scrolling row of much
+// larger cards — with up to 14 stats now shown on admin, that no longer
+// fits comfortably) ----
 const CARD_PADDING_X = 10;
-const CARD_PADDING_Y = 8;
-const SVG_SIZE = 90;
-const CIRCLE_RADIUS = 33;
-const CIRCLE_STROKE_WIDTH = 9;
+const CARD_PADDING_Y = 10;
+const SVG_SIZE = 72;
+const CIRCLE_RADIUS = 26;
+const CIRCLE_STROKE_WIDTH = 7;
 const CIRCLE_DASHARRAY = 2 * Math.PI * CIRCLE_RADIUS;
-const FONT_SIZE = 38;
+const FONT_SIZE = 28;
 const ANIMATION_DURATION = 10; // seconds
 const CIRCLE_DELAY_STEP = 0.32;
 const STAT_LABEL_FONT_SIZE = 15;
 
-type Counts = {
-  projects: number;
-  reports: number;
-  events: number;
-  users: number;
-  institutions: number;
-  beneficiaries: number;
-};
-
-export default function AnimatedStats({ counts: countsProp }: { counts?: Counts } = {}) {
-  const pathname = usePathname();
-  const showUsers = pathname === '/admin' || pathname.startsWith('/admin/');
-
-  const [counts, setCounts] = useState<Counts>(
-    countsProp ?? {
-      projects: 0,
-      reports: 0,
-      events: 0,
-      users: 0,
-      institutions: 0,
-      beneficiaries: 0,
-    }
-  );
-  // When `counts` is supplied by the caller (public pages now pass real
-  // counts computed server-side), there's nothing to fetch — skip the six
+export default function AnimatedStats({ stats: statsProp }: { stats?: Stat[] } = {}) {
+  const [stats, setStats] = useState<Stat[]>(statsProp ?? []);
+  // When `stats` is supplied by the caller (public pages compute their own
+  // curated, server-side counts), there's nothing to fetch — skip the
   // client-side requests entirely instead of firing them and overwriting
-  // the prop with an identical result a moment later.
-  const [loading, setLoading] = useState(!countsProp);
+  // the prop with different data a moment later.
+  const [loading, setLoading] = useState(!statsProp);
 
   useEffect(() => {
-    if (countsProp) return;
-    async function fetchCounts() {
+    if (statsProp) return;
+    let cancelled = false;
+
+    async function load() {
       setLoading(true);
       try {
-        const [projectsRes, reportsRes, eventsRes, usersRes, institutionsRes, beneficiariesRes] =
-          await Promise.all([
-            fetch('/api/projects'),
-            fetch('/api/reports'),
-            fetch('/api/events'),
-            fetch('/api/users'),
-            fetch('/api/institutions'),
-            fetch('/api/beneficiaries'),
-          ]);
-        const [projects, reports, events, users, institutions, beneficiaries] = await Promise.all([
-          projectsRes.json(),
-          reportsRes.json(),
-          eventsRes.json(),
-          usersRes.json(),
-          institutionsRes.json(),
-          beneficiariesRes.json(),
-        ]);
-        setCounts({
-          projects: Array.isArray(projects) ? projects.length : projects.count ?? 0,
-          reports: Array.isArray(reports) ? reports.length : reports.count ?? 0,
-          events: Array.isArray(events) ? events.length : events.count ?? 0,
-          users: Array.isArray(users) ? users.length : users.count ?? 0,
-          institutions: Array.isArray(institutions) ? institutions.length : institutions.count ?? 0,
-          beneficiaries: Array.isArray(beneficiaries)
-            ? beneficiaries.length
-            : beneficiaries.count ?? 0,
-        });
+        const result = await fetchStatsForKeys(ADMIN_STAT_KEYS);
+        if (!cancelled) setStats(result);
       } catch {
-        setCounts({
-          projects: 0,
-          reports: 0,
-          events: 0,
-          users: 0,
-          institutions: 0,
-          beneficiaries: 0,
-        });
+        if (!cancelled) setStats(ADMIN_STAT_KEYS.map((key) => buildStat(key, 0)));
       }
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     }
-    fetchCounts();
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) {
@@ -109,22 +58,9 @@ export default function AnimatedStats({ counts: countsProp }: { counts?: Counts 
     );
   }
 
-  // Prepare stats to display
-  const stats: Stat[] = [
-    { label: 'Projects', value: counts.projects, color: '#7c3aed' },
-    { label: 'Reports', value: counts.reports, color: '#f59e42' },
-    { label: 'Events', value: counts.events, color: '#b87333' },
-    { label: 'Institutions', value: counts.institutions, color: '#7c482b' },
-    { label: 'Beneficiaries', value: counts.beneficiaries, color: '#059669' },
-  ];
-  if (showUsers) {
-    stats.push({ label: 'Users', value: counts.users, color: '#2563eb' });
-  }
-
   return (
     <div className="w-full">
-      <div className="flex w-full gap-5 overflow-x-auto overflow-y-visible justify-center">
-        <style>{`
+      <style>{`
         @keyframes progressCircleDash {
           0% {
             stroke-dashoffset: ${CIRCLE_DASHARRAY};
@@ -137,6 +73,13 @@ export default function AnimatedStats({ counts: countsProp }: { counts?: Counts 
           }
         }
       `}</style>
+      {/* flex-wrap + justify-center (not CSS grid) so a partial last row —
+          5 stats on the home page, or 14 on admin (6+6+2) — stays centered
+          instead of sitting flush left under the empty trailing columns a
+          grid would leave. Each card's width is a calc() that reproduces
+          the same per-breakpoint column count as before, minus its share
+          of the row gap. */}
+      <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
         {stats.map((stat, i) => (
           <StatCard key={stat.label} stat={stat} index={i} />
         ))}
@@ -173,14 +116,14 @@ function StatCard({ stat, index }: { stat: Stat; index: number }) {
   return (
     <div
       className={
-        cardHoverClass + ' flex flex-col items-center justify-center' // center everything in the card
+        cardHoverClass +
+        ' flex flex-col items-center justify-center text-center' +
+        ' w-[calc(50%-0.375rem)] sm:w-[calc(33.3333%-0.6667rem)] md:w-[calc(25%-0.75rem)] lg:w-[calc(20%-0.8rem)] xl:w-[calc(16.6667%-0.8333rem)]'
       }
       style={{
         borderTop: `7px solid ${stat.color || '#7c3aed'}`,
-        minWidth: CARD_MIN_WIDTH,
         padding: `${CARD_PADDING_Y}px ${CARD_PADDING_X}px`,
         height: 'auto',
-        marginBottom: '16px',
       }}
     >
       <div
@@ -244,7 +187,11 @@ function StatCard({ stat, index }: { stat: Stat; index: number }) {
             fontVariantNumeric: 'tabular-nums',
             letterSpacing: '-0.02em',
             userSelect: 'none',
-            fontSize: FONT_SIZE,
+            // calc() against the site's own --font-scale (set by the
+            // header's Aa font-size control, globals.css) instead of a
+            // fixed px value, so this text grows/shrinks along with the
+            // rest of the site's typography.
+            fontSize: `calc(${FONT_SIZE / 16}rem * var(--font-scale, 1))`,
             fontWeight: 800,
             textAlign: 'center',
             display: 'flex',
@@ -256,18 +203,18 @@ function StatCard({ stat, index }: { stat: Stat; index: number }) {
         </span>
       </div>
       <span
+        className="text-site-primary"
         style={{
-          fontSize: STAT_LABEL_FONT_SIZE,
+          fontSize: `calc(${STAT_LABEL_FONT_SIZE / 16}rem * var(--font-scale, 1))`,
           marginTop: 6,
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
-          color: '#6b7280',
-          fontWeight: 600,
+          fontWeight: 700,
           textAlign: 'center',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
-          maxWidth: CARD_MIN_WIDTH,
+          maxWidth: '100%',
         }}
       >
         {stat.label}
@@ -275,6 +222,7 @@ function StatCard({ stat, index }: { stat: Stat; index: number }) {
     </div>
   );
 }
-// This component displays animated stats cards with a progress circle animation.
-// It fetches counts for projects, reports, events, users, institutions, and beneficiaries from the API.
-// Each card shows a circular progress animation with the count value in the center.
+// This component displays animated stats cards (a progress circle + count)
+// in a two-column grid. Pass `stats` explicitly (public pages compute a
+// curated, server-side list) or omit it to self-fetch every content table
+// for the admin dashboard's Home section — see statsConfig.ts.

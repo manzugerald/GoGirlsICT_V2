@@ -4,6 +4,7 @@ import { motion, useInView } from 'framer-motion';
 import { useState, useRef } from 'react';
 import {
   BarChart3,
+  PieChart,
   ArrowBigRight,
   TrendingUp,
   Users,
@@ -12,21 +13,14 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-import DashboardChart from '@/app/(admin)/admin/dashboard/chart/dashboardChart';
+import { BarChartPanel, PieChartPanel } from '@/app/(admin)/admin/dashboard/chart/dashboardChart';
 import AnimatedStats from '@/app/(admin)/admin/dashboard/chart/animatedStats';
+import type { Stat } from '@/app/(admin)/admin/dashboard/chart/statsConfig';
 
 import Section from '@/app/(root)/components/shared/components/Section';
 import SectionHeader from '@/app/(root)/components/shared/components/SectionHeader';
 import SectionBackground from '@/app/(root)/components/shared/components/SectionBackground';
-
-type ImpactCounts = {
-  projects: number;
-  reports: number;
-  events: number;
-  users: number;
-  institutions: number;
-  beneficiaries: number;
-};
+import GlowChartCard from '@/app/(root)/components/shared/components/GlowChartCard';
 
 const insights = [
   {
@@ -52,7 +46,7 @@ const insights = [
   },
 ];
 
-export default function ImpactPageContent({ counts }: { counts: ImpactCounts }) {
+export default function ImpactPageContent({ stats }: { stats: Stat[] }) {
   const [isChartExpanded, setIsChartExpanded] = useState(false);
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, margin: '-100px' });
@@ -84,10 +78,22 @@ export default function ImpactPageContent({ counts }: { counts: ImpactCounts }) 
           transition={{ delay: 0.25, duration: 0.8 }}
           className="mb-12 relative z-10"
         >
-          <AnimatedStats counts={counts} />
+          <AnimatedStats stats={stats} />
         </motion.div>
 
-        {/* Dashboard Chart */}
+        {/* Pie chart — its own glowing card, above the bar chart */}
+        <div className="mb-8">
+          <GlowChartCard
+            icon={PieChart}
+            title="Distribution Overview"
+            subtitle="How each category compares"
+            delay={0.35}
+          >
+            <PieChartPanel stats={stats} />
+          </GlowChartCard>
+        </div>
+
+        {/* Bar chart */}
         <motion.div
           initial={{ opacity: 0, y: 60, rotateX: 15 }}
           animate={isInView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
@@ -164,13 +170,13 @@ export default function ImpactPageContent({ counts }: { counts: ImpactCounts }) 
             <motion.div
               initial={false}
               animate={{
-                height: isChartExpanded ? 'auto' : '400px',
+                height: isChartExpanded ? 'auto' : '260px',
               }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               className="overflow-hidden"
             >
               <div className="p-6 md:p-8">
-                <DashboardChart counts={counts} />
+                <BarChartPanel stats={stats} />
               </div>
             </motion.div>
 

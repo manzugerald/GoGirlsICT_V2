@@ -38,6 +38,7 @@ export async function getPodcasts() {
       slug: true,
       description: true,
       image: true,
+      poster: true,
       audioUrl: true,
       waveform: true,
       publishedAt: true,
@@ -65,6 +66,7 @@ export async function getRadioTalkshows() {
       id: true,
       title: true,
       date: true,
+      image: true,
       poster: true,
       audioUrl: true,
       waveform: true,
@@ -76,3 +78,17 @@ export type TalkshowSummary =
   Awaited<
     ReturnType<typeof getRadioTalkshows>
   >[number];
+
+/**
+ * The /resources hero banner for a tab uses the poster of the most
+ * recently published item in that category — skipping over any
+ * without one, since the field is optional and a stray missing poster
+ * on the very latest episode shouldn't blank the whole banner.
+ */
+export function latestPoster(
+  items: { poster?: string | null }[]
+): string | null {
+  return (
+    items.find((item) => Boolean(item.poster))?.poster ?? null
+  );
+}

@@ -25,6 +25,7 @@ interface PodcastData {
   title: object; // Tiptap JSON doc
   description: object;
   image?: string | null;
+  poster?: string | null;
   audioUrl?: string;
   waveform?: number[];
   publishedAt?: string;
@@ -50,9 +51,10 @@ interface CreatePodcastFormProps {
   onCancel?: () => void;
 }
 
-async function uploadFile(file: File): Promise<string> {
+async function uploadFile(file: File, target?: "poster"): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);
+  if (target) formData.append("target", target);
 
   const res = await fetch("/api/podcasts/upload", {
     method: "POST",
@@ -109,6 +111,9 @@ export default function CreatePodcastForm({
   const [existingImage, setExistingImage] = useState<string | null>(
     initialValues?.image || null
   );
+  const [existingPoster, setExistingPoster] = useState<string | null>(
+    initialValues?.poster || null
+  );
   const [existingAudio, setExistingAudio] = useState<string | null>(
     initialValues?.audioUrl || null
   );
@@ -118,6 +123,7 @@ export default function CreatePodcastForm({
   );
 
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [posterFile, setPosterFile] = useState<File | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [waveform, setWaveform] = useState<number[]>([]);
   const [analyzingAudio, setAnalyzingAudio] = useState(false);
@@ -160,6 +166,7 @@ export default function CreatePodcastForm({
         hostLastName: initialValues.hostLastName || '',
       });
       setExistingImage(initialValues.image || null);
+      setExistingPoster(initialValues.poster || null);
       setExistingAudio(initialValues.audioUrl || null);
       setExistingWaveform(initialValues.waveform || []);
       setSelectedParticipantIds(
@@ -249,6 +256,12 @@ export default function CreatePodcastForm({
     }
   };
 
+  const handlePosterChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setPosterFile(e.target.files[0]);
+    }
+  };
+
   const handleAudioChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -282,12 +295,14 @@ export default function CreatePodcastForm({
 
     try {
       const imagePath = imageFile ? await uploadFile(imageFile) : existingImage;
+      const posterPath = posterFile ? await uploadFile(posterFile, "poster") : existingPoster;
       const audioPath = audioFile ? await uploadFile(audioFile) : existingAudio;
 
       const payload = {
         title: form.title,
         description: form.description,
         image: imagePath || null,
+        poster: posterPath || null,
         audioUrl: audioPath,
         waveform: audioFile ? waveform : existingWaveform,
         publishedAt: new Date(form.publishedAt).toISOString(),
@@ -422,6 +437,44 @@ export default function CreatePodcastForm({
           onChange={handleImageChange}
         />
         <div className="text-xs text-muted-foreground">{imageFile?.name}</div>
+      </div>
+
+      {/* Existing poster (for edit) */}
+      {existingPoster && (
+        <div className="space-y-2">
+          <Label>Current Poster</Label>
+          <div className="flex items-center gap-3">
+            <img
+              src={existingPoster}
+              alt="Podcast poster"
+              className="h-16 w-28 rounded-lg object-cover border"
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              className="text-xs"
+              onClick={() => setExistingPoster(null)}
+            >
+              Remove
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <Label htmlFor="poster">Poster (PNG, JPG, JPEG) — optional</Label>
+        <p className="text-xs text-muted-foreground">
+          Wide banner shown as the Resources page hero when this is the latest published podcast.
+        </p>
+        <Input
+          id="poster"
+          name="poster"
+          type="file"
+          accept=".png,.jpg,.jpeg"
+          onChange={handlePosterChange}
+        />
+        <div className="text-xs text-muted-foreground">{posterFile?.name}</div>
       </div>
 
       {/* Existing audio (for edit) */}

@@ -1,5 +1,6 @@
 import { prisma } from '@/db/prisma';
 import ImpactPageContent from './components/ImpactPageContent';
+import { buildStat } from '@/app/(admin)/admin/dashboard/chart/statsConfig';
 
 // ISR: see app/(root)/page.tsx — same counts, same invalidation triggers.
 export const revalidate = 3600;
@@ -19,14 +20,13 @@ export default async function ImpactPage() {
 
   return (
     <ImpactPageContent
-      counts={{
-        projects: projectsCount,
-        reports: reportsCount,
-        events: eventsCount,
-        institutions: institutionsCount,
-        beneficiaries: beneficiariesCount,
-        users: 0, // not shown on the public page (admin-only column)
-      }}
+      stats={[
+        buildStat('projects', projectsCount),
+        buildStat('reports', reportsCount),
+        buildStat('events', eventsCount),
+        buildStat('institutions', institutionsCount),
+        buildStat('beneficiaries', beneficiariesCount),
+      ]}
     />
   );
 }

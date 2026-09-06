@@ -11,26 +11,18 @@ import SectionSkeleton from './skeletons/SectionSkeleton';
 import ExploreSection from './sections/ExploreSection';
 
 import type { HomePageContent, Partner } from '../types/home';
-
-type ImpactCounts = {
-  projects: number;
-  reports: number;
-  events: number;
-  users: number;
-  institutions: number;
-  beneficiaries: number;
-};
+import type { Stat } from '@/app/(admin)/admin/dashboard/chart/statsConfig';
 
 interface SinglePageHomeProps {
   ssrContent: HomePageContent | null;
   ssrPartners: Partner[];
-  impactCounts: ImpactCounts;
+  impactStats: Stat[];
 }
 
 export default function SinglePageHome({
   ssrContent,
   ssrPartners,
-  impactCounts,
+  impactStats,
 }: SinglePageHomeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -72,7 +64,7 @@ export default function SinglePageHome({
       {/* 3. Impact */}
       <section id="impact" className="relative z-10">
         <Suspense fallback={<SectionSkeleton variant="stats" />}>
-          <ImpactSection counts={impactCounts} />
+          <ImpactSection stats={impactStats} />
         </Suspense>
       </section>
 

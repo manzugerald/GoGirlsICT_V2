@@ -5,6 +5,9 @@ import path from "path";
 export const POST = async (req: Request) => {
   const formData = await req.formData();
   const file = formData.get("file") as File;
+  // 'poster' routes wide hero-banner uploads to their own subfolder,
+  // separate from the regular card illustration image.
+  const target = (formData.get("target") as string) || "";
 
   if (!file) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -17,7 +20,10 @@ export const POST = async (req: Request) => {
 
   let uploadDir = "";
   if (allowedImageExts.includes(ext)) {
-    uploadDir = "public/assets/images/podcasts";
+    uploadDir =
+      target === "poster"
+        ? "public/assets/images/podcasts/poster"
+        : "public/assets/images/podcasts";
   } else if (allowedAudioExts.includes(ext)) {
     uploadDir = "public/assets/audio/podcasts";
   } else {

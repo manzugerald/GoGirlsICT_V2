@@ -2,6 +2,7 @@
 
 import { prisma } from '@/db/prisma';
 import SinglePageHome from './components/SinglePageHome';
+import { buildStat } from '@/app/(admin)/admin/dashboard/chart/statsConfig';
 
 // ISR: this page only changes when an admin publishes/edits homepage
 // content, a project, report, event, institution, or beneficiary — not
@@ -22,8 +23,8 @@ export default async function HomePage() {
     projectsCount,
     reportsCount,
     eventsCount,
-    institutionsCount,
-    beneficiariesCount,
+    talkshowsCount,
+    podcastsCount,
   ] = await Promise.all([
     // HomePage content
     prisma.homePage.findFirst({
@@ -46,26 +47,28 @@ export default async function HomePage() {
       take: 3,
     }),
 
-    // Impact section counts — published/public content only.
+    // Impact section counts — published/public content only. This is a
+    // deliberately short, curated list (Projects/Reports/Events/Radio
+    // Talkshows/Podcasts) — the admin dashboard's own Home tab shows every
+    // content table instead, built from the same statsConfig.ts metadata.
     prisma.project.count({ where: { publishStatus: 'published' } }),
     prisma.report.count({ where: { publishStatus: 'published' } }),
     prisma.event.count({ where: { publishStatus: 'published' } }),
-    prisma.institution.count(),
-    prisma.beneficiary.count({ where: { beneficiaryStatus: 'published' } }),
+    prisma.radioTalkshow.count({ where: { publishStatus: 'published' } }),
+    prisma.podcast.count({ where: { publishStatus: 'published' } }),
   ]);
 
   return (
     <SinglePageHome
       ssrContent={ssrContent}
       ssrPartners={ssrInstitutions}
-      impactCounts={{
-        projects: projectsCount,
-        reports: reportsCount,
-        events: eventsCount,
-        institutions: institutionsCount,
-        beneficiaries: beneficiariesCount,
-        users: 0, // not shown on the public page (admin-only column)
-      }}
+      impactStats={[
+        buildStat('projects', projectsCount),
+        buildStat('reports', reportsCount),
+        buildStat('events', eventsCount),
+        buildStat('talkshows', talkshowsCount),
+        buildStat('podcasts', podcastsCount),
+      ]}
     />
   );
 }

@@ -245,9 +245,9 @@ export default function TalkshowCard({
     >
       {/* Illustration with the audio player UI overlaid on top */}
       <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-gradient-to-br from-[#9f004d]/15 to-purple-100 dark:from-[#9f004d]/20 dark:to-gray-800">
-        {talkshow.poster ? (
+        {talkshow.image ? (
           <Image
-            src={talkshow.poster}
+            src={talkshow.image}
             alt=""
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
