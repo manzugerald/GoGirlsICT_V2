@@ -47,8 +47,11 @@ export default function SinglePageHome({
       className="single-page-container relative bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 overflow-hidden"
     >
       
-      {/* 1. Hero Section */}
-      <section id="hero" className="min-h-screen relative z-10">
+      {/* 1. Hero Section — no min-h-screen here: HeroSection sizes itself
+          (a fixed clamp()-based height, not 100vh anymore), so forcing
+          this wrapper to a full viewport height would leave a large empty
+          gap below the (now much shorter) hero. */}
+      <section id="hero" className="relative z-10">
         <Suspense fallback={<SectionSkeleton variant="hero" />}>
           <HeroSection content={content ?? null} />
         </Suspense>

@@ -5,8 +5,8 @@ import { motion } from 'framer-motion';
 import SectionDivider from './SectionDivider';
 
 interface SectionHeaderProps {
-  badge: string;
-  title: string;
+  badge?: string;
+  title?: string;
   description?: string;
   icon?: ReactNode;
 
@@ -34,34 +34,38 @@ export default function SectionHeader({
       transition={{ duration: 0.8 }}
       className={`text-center mb-12 relative z-10 ${className}`}
     >
-      <motion.div
-        initial={{ opacity: 0, scale: 0 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
-        className={`inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4 shadow-lg ${badgeClassName}`}
-      >
-        {icon && <span className="flex items-center">{icon}</span>}
-
-        <span className="caption font-semibold uppercase tracking-wide">
-          {badge}
-        </span>
-      </motion.div>
-
-      <motion.h2
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay: 0.25, duration: 0.8 }}
-        className="heading-2 mb-4 text-site-primary"
-      >
-        <span
-          className={`bg-clip-text text-transparent bg-gradient-to-r ${titleGradient}`}
-          style={{ backgroundSize: '200% 200%' }}
+      {badge && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4 shadow-lg ${badgeClassName}`}
         >
-          {title}
-        </span>
-      </motion.h2>
+          {icon && <span className="flex items-center">{icon}</span>}
+
+          <span className="caption font-semibold uppercase tracking-wide">
+            {badge}
+          </span>
+        </motion.div>
+      )}
+
+      {title && (
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.25, duration: 0.8 }}
+          className="heading-2 mb-4 text-site-primary"
+        >
+          <span
+            className={`bg-clip-text text-transparent bg-gradient-to-r ${titleGradient}`}
+            style={{ backgroundSize: '200% 200%' }}
+          >
+            {title}
+          </span>
+        </motion.h2>
+      )}
 
       {description && (
         <motion.p

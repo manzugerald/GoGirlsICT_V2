@@ -4,8 +4,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Home, User, Star, Target, Search, Gem } from 'lucide-react';
+import { Home, User, Star, Target, Search, Gem, Image as ImageIcon } from 'lucide-react';
 import CreateUserForm from '@/app/(admin)/admin/dashboard/createUserForm';
+import ResourcePosterManager from './ResourcePosterManager';
 
 // currentUser is the full /api/users/:id payload merged with (and falling
 // back to) the NextAuth session user — two differently-shaped sources — so
@@ -532,6 +533,56 @@ export default function SettingsSection({
               Refresh
             </Button>
           )}
+        </div>
+      </section>
+
+      {/* Page Posters — the single, whole-page hero image for each page
+          (see lib/resourcePosterMeta.ts), not a field on every individual
+          entry (podcast episode, project, etc). */}
+      <section className="p-6 bg-background rounded-xl shadow transition-shadow duration-200 hover:shadow-lg">
+        <div className="flex items-center gap-3 mb-3">
+          <ImageIcon className="h-8 w-8 text-primary-500" aria-hidden />
+          <h2 className="font-semibold text-xl m-0">Page Posters</h2>
+        </div>
+        <p className="text-sm text-muted-foreground mb-3">
+          Wide banners shown as each page&apos;s hero, independent of individual entries.
+        </p>
+        <div className="grid md:grid-cols-2 gap-4">
+          <ResourcePosterManager
+            title="Podcasts poster"
+            description="Shown on /resources when the Podcasts tab is active."
+            type="podcasts"
+          />
+          <ResourcePosterManager
+            title="Radio Talkshows poster"
+            description="Shown on /resources when the Radio Talkshows tab is active."
+            type="talkshows"
+          />
+          <ResourcePosterManager
+            title="About poster"
+            description="Shown as the /about page hero."
+            type="about"
+          />
+          <ResourcePosterManager
+            title="Programs poster"
+            description="Shown as the /programs page hero."
+            type="programs"
+          />
+          <ResourcePosterManager
+            title="Impact poster"
+            description="Shown as the /impact page hero."
+            type="impact"
+          />
+          <ResourcePosterManager
+            title="SNS poster"
+            description="Shown as the /sns page hero."
+            type="sns"
+          />
+          <ResourcePosterManager
+            title="Get Involved poster"
+            description="Shown as the /get-involved page hero."
+            type="get-involved"
+          />
         </div>
       </section>
 

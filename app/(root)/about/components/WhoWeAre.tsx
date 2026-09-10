@@ -174,7 +174,7 @@ export default function WhoWeAre({
           margin:
             '0px 0px -40px 0px',
         }}
-        className="mx-auto mt-8 flex max-w-6xl flex-col gap-10 sm:mt-10 lg:gap-14"
+        className="mt-8 flex flex-col gap-10 sm:mt-10 lg:gap-14"
       >
         {/* Row 1 — organisation story, right below the heading */}
         <motion.div

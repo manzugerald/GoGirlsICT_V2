@@ -91,7 +91,7 @@ export default function FacebookPostsCard() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto my-10 px-2">
+    <div className="w-full my-10 px-2">
       <div className="flex justify-center">
         <h2 className="text-3xl font-extrabold mb-8 text-center drop-shadow-md dark:text-white">
           Latest Facebook Feed

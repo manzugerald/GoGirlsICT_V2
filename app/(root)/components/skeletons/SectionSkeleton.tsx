@@ -7,7 +7,7 @@ interface SectionSkeletonProps {
 export default function SectionSkeleton({ variant = 'cards' }: SectionSkeletonProps) {
   if (variant === 'hero') {
     return (
-      <div className="w-full h-screen bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-900 animate-pulse relative overflow-hidden">
+      <div className="w-full h-[clamp(280px,45vh,420px)] bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-900 animate-pulse relative overflow-hidden">
         {/* Background blobs */}
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
@@ -36,7 +36,7 @@ export default function SectionSkeleton({ variant = 'cards' }: SectionSkeletonPr
 
   if (variant === 'stats') {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 animate-pulse">
+      <div className="w-full px-4 py-16 animate-pulse">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4"></div>
@@ -59,7 +59,7 @@ export default function SectionSkeleton({ variant = 'cards' }: SectionSkeletonPr
 
   if (variant === 'tabs') {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 animate-pulse">
+      <div className="w-full px-4 py-16 animate-pulse">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4"></div>
@@ -92,7 +92,7 @@ export default function SectionSkeleton({ variant = 'cards' }: SectionSkeletonPr
 
   if (variant === 'social') {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 animate-pulse">
+      <div className="w-full px-4 py-16 animate-pulse">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4"></div>
@@ -132,7 +132,7 @@ export default function SectionSkeleton({ variant = 'cards' }: SectionSkeletonPr
 
   if (variant === 'team') {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 animate-pulse">
+      <div className="w-full px-4 py-16 animate-pulse">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4"></div>
@@ -161,7 +161,7 @@ export default function SectionSkeleton({ variant = 'cards' }: SectionSkeletonPr
 
   if (variant === 'events') {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 animate-pulse">
+      <div className="w-full px-4 py-16 animate-pulse">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4"></div>
@@ -197,7 +197,7 @@ export default function SectionSkeleton({ variant = 'cards' }: SectionSkeletonPr
 
   // Default cards skeleton
   return (
-    <div className="max-w-7xl mx-auto px-4 py-16 animate-pulse">
+    <div className="w-full px-4 py-16 animate-pulse">
       <div className="text-center mb-12">
         <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4"></div>
         <div className="h-12 w-80 max-w-full bg-gray-200 dark:bg-gray-700 rounded-lg mx-auto mb-4"></div>

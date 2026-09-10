@@ -110,6 +110,17 @@ export default function AnimatedPieceBarChart({
 
   const yMax = Math.max(1, ...values);
 
+  // Height is derived from the actual labels, not a fixed value — with up
+  // to 14 categories the x-axis rotates its ticks (see minRotation/
+  // maxRotation below), and a fixed height either clips those rotated
+  // labels when there are many/long ones, or wastes space when there
+  // aren't. `isRotated` mirrors the same `labels.length > 6` condition
+  // the x-scale itself uses.
+  const isRotated = labels.length > 6;
+  const longestLabelLength = labels.reduce((max, l) => Math.max(max, l.length), 0);
+  const xAxisHeight = isRotated ? Math.min(160, Math.max(50, longestLabelLength * 6)) : 32;
+  const chartHeight = 130 + xAxisHeight; // plot area (bars + y-axis) + x-axis label space
+
   const barOptions: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
@@ -149,7 +160,7 @@ export default function AnimatedPieceBarChart({
   };
 
   return (
-    <div className="w-full h-[180px] sm:h-[200px] md:h-[220px]">
+    <div className="w-full" style={{ height: chartHeight }}>
       <Bar ref={chartRef} data={barData} options={barOptions} />
     </div>
   );

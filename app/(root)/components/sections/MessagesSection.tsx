@@ -29,7 +29,7 @@ export default function MessagesSection({ messages }: MessagesSectionProps) {
   const currentMessage = messages[currentIndex];
 
   return (
-    <div ref={containerRef} className="wrapper max-w-7xl mx-auto px-4 py-16 relative">
+    <div ref={containerRef} className="wrapper px-4 py-16 relative">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div

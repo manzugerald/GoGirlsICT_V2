@@ -64,6 +64,7 @@ export default function SocialFeeds() {
 
         <div className="space-y-14">
           <SocialFeedBlock
+            id="facebook"
             title="Latest from Facebook"
             description="Follow our journey and community stories."
             href={
@@ -96,6 +97,7 @@ export default function SocialFeeds() {
           </div>
 
           <SocialFeedBlock
+            id="youtube"
             title="Latest from YouTube"
             description="Watch our videos and educational content."
             href={
@@ -165,6 +167,7 @@ export default function SocialFeeds() {
 }
 
 type SocialFeedBlockProps = {
+  id?: string;
   title: string;
   description: string;
   href: string;
@@ -177,6 +180,7 @@ type SocialFeedBlockProps = {
 };
 
 function SocialFeedBlock({
+  id,
   title,
   description,
   href,
@@ -212,6 +216,7 @@ function SocialFeedBlock({
 
   return (
     <motion.article
+      id={id}
       initial={{
         opacity: 0,
         y: 30,
@@ -228,7 +233,7 @@ function SocialFeedBlock({
         delay,
         duration: 0.6,
       }}
-      className="group"
+      className="group scroll-mt-24"
     >
       <div className="mb-6 flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">

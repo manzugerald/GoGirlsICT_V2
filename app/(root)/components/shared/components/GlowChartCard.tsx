@@ -16,6 +16,7 @@ export default function GlowChartCard({
   subtitle,
   headerRight,
   delay = 0.45,
+  glow = true,
   children,
 }: {
   icon: LucideIcon;
@@ -23,6 +24,10 @@ export default function GlowChartCard({
   subtitle: string;
   headerRight?: ReactNode;
   delay?: number;
+  /** Pulsing gradient-blur border behind the card. Defaults to true to
+   * keep existing pages (e.g. /impact) unchanged — pass false for a flat,
+   * clean card with no glow footprint (used on the home page). */
+  glow?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -35,11 +40,13 @@ export default function GlowChartCard({
       style={{ perspective: '1000px' }}
     >
       {/* Glowing border */}
-      <motion.div
-        animate={{ opacity: [0.35, 0.85, 0.35] }}
-        transition={{ duration: 3, repeat: Infinity }}
-        className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-2xl blur-lg"
-      />
+      {glow && (
+        <motion.div
+          animate={{ opacity: [0.35, 0.85, 0.35] }}
+          transition={{ duration: 3, repeat: Infinity }}
+          className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-2xl blur-lg"
+        />
+      )}
 
       <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
         {/* Header */}

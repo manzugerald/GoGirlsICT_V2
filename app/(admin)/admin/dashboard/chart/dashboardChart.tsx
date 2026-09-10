@@ -60,7 +60,7 @@ function PieLegend({
 }) {
   const total = data.reduce((a, b) => a + b, 0);
   return (
-    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 font-medium">
+    <ul className="grid grid-cols-1 gap-y-1.5 font-medium">
       {labels.map((label, i) => (
         <li key={i} className="flex items-start gap-2">
           <span
@@ -132,12 +132,18 @@ export function PieChartPanel({ stats }: { stats: Stat[] }) {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-      <div className="w-64 h-64 shrink-0">
+    // Stacked (pie above legend) up through md; side-by-side only from md
+    // up, once there's enough width for both to sit comfortably next to
+    // each other instead of cramming a legend next to a chart.
+    <div className="flex w-full flex-col md:flex-row items-center justify-center gap-6">
+      {/* Fluid, not fixed — the pie's own diameter scales continuously
+          with viewport width (clamped between 144px and 256px) instead of
+          always rendering at a fixed 256px regardless of screen size. */}
+      <div className="w-[clamp(9rem,28vw,16rem)] h-[clamp(9rem,28vw,16rem)] shrink-0">
         <Pie key={loop} data={pieData} options={pieOptions} />
       </div>
 
-      <div className="w-full sm:max-w-md">
+      <div className="w-full md:max-w-md mt-2 md:mt-0 md:ml-2">
         <PieLegend labels={labels} data={values} colors={colors} />
       </div>
     </div>

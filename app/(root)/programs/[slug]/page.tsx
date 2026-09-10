@@ -94,7 +94,7 @@ export default async function ProgramDetailsPage({
 
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.10),transparent_45%)]" />
 
-        <div className="mx-auto flex min-h-[330px] max-w-7xl flex-col px-4 pb-8 pt-16 sm:px-6 lg:px-8">
+        <div className="flex min-h-[330px] flex-col px-4 pb-8 pt-16 sm:px-6 lg:px-8">
           {/* Metadata at top */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Link

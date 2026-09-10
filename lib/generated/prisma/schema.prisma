@@ -88,7 +88,6 @@ model Podcast {
   slug          String        @unique
   description   Json // Tiptap JSON doc (edited/viewed via components/editor/*)
   image         String? // illustration / cover artwork (card thumbnail)
-  poster        String? // wide banner used as the /resources page hero when this is the latest published podcast
   audioUrl      String // mp3 path under public/assets/audio/podcasts
   waveform      Float[]       @default([]) // precomputed amplitude peaks (0..1) for the waveform UI
   publishedAt   DateTime      @default(now())
@@ -598,7 +597,6 @@ model RadioTalkshow {
   title         String
   date          DateTime
   image         String? // illustration / cover artwork (card thumbnail)
-  poster        String? // wide banner used as the /resources page hero when this is the latest published talkshow
   audioUrl      String? // mp3 path under public/assets/audio/talkshow
   waveform      Float[]       @default([]) // precomputed amplitude peaks (0..1) for the waveform UI
   publishStatus PublishStatus @default(draft)

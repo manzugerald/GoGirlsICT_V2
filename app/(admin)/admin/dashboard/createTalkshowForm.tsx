@@ -21,7 +21,6 @@ interface TalkshowData {
   title: string;
   date?: string | null;
   image?: string | null;
-  poster?: string | null;
   audioUrl?: string | null;
   waveform?: number[];
   publishStatus: PublishStatus;
@@ -83,9 +82,6 @@ export default function CreateTalkshowForm({
   const [existingImage, setExistingImage] = useState<string | null>(initialValues?.image || null);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  const [existingPoster, setExistingPoster] = useState<string | null>(initialValues?.poster || null);
-  const [posterFile, setPosterFile] = useState<File | null>(null);
-
   const [existingAudio, setExistingAudio] = useState<string | null>(initialValues?.audioUrl || null);
   const [, setExistingWaveform] = useState<number[]>(initialValues?.waveform || []);
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -139,8 +135,6 @@ export default function CreateTalkshowForm({
     });
     setExistingImage(initialValues.image || null);
     setImageFile(null);
-    setExistingPoster(initialValues.poster || null);
-    setPosterFile(null);
     setExistingAudio(initialValues.audioUrl || null);
     setExistingWaveform(initialValues.waveform || []);
     setAudioFile(null);
@@ -235,10 +229,6 @@ export default function CreateTalkshowForm({
     if (e.target.files?.[0]) setImageFile(e.target.files[0]);
   };
 
-  const handlePosterChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) setPosterFile(e.target.files[0]);
-  };
-
   const handleAudioChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -294,12 +284,6 @@ export default function CreateTalkshowForm({
         formData.append('image', imageFile);
       } else if (resolvedMode === 'edit' && !existingImage) {
         formData.append('removeImage', '1');
-      }
-
-      if (posterFile) {
-        formData.append('poster', posterFile);
-      } else if (resolvedMode === 'edit' && !existingPoster) {
-        formData.append('removePoster', '1');
       }
 
       if (audioFile) {
@@ -384,33 +368,6 @@ export default function CreateTalkshowForm({
         <p className="text-xs text-muted-foreground">Card thumbnail shown in the Radio Talkshows listing.</p>
         <Input id="image" name="image" type="file" accept=".png,.jpg,.jpeg" onChange={handleImageChange} />
         <div className="text-xs text-muted-foreground">{imageFile?.name}</div>
-      </div>
-
-      {existingPoster && (
-        <div className="space-y-2">
-          <Label>Current Poster</Label>
-          <div className="flex items-center gap-3">
-            <img src={existingPoster} alt="Talkshow poster" className="h-16 w-28 rounded-lg object-cover border" />
-            <Button
-              type="button"
-              size="sm"
-              variant="destructive"
-              className="text-xs"
-              onClick={() => setExistingPoster(null)}
-            >
-              Remove
-            </Button>
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-2">
-        <Label htmlFor="poster">Poster (PNG, JPG, JPEG) — optional</Label>
-        <p className="text-xs text-muted-foreground">
-          Wide banner shown as the Resources page hero when this is the latest published talkshow.
-        </p>
-        <Input id="poster" name="poster" type="file" accept=".png,.jpg,.jpeg" onChange={handlePosterChange} />
-        <div className="text-xs text-muted-foreground">{posterFile?.name}</div>
       </div>
 
       {existingAudio && (

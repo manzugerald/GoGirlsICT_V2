@@ -25,7 +25,7 @@ export default function EventsSection({
       aria-labelledby="events-heading"
       className="scroll-mt-20 bg-gray-50 py-8 dark:bg-gray-950 sm:scroll-mt-24 sm:py-10 lg:py-12"
     >
-      <div className="mx-auto w-[90%] max-w-[1600px]">
+      <div className="w-[90%]">
         <header className="mx-auto max-w-3xl text-center">
           <h2
             id="events-heading"

@@ -61,20 +61,17 @@ function roleFrom(session: Session | null): string {
   return session?.user?.role ?? 'guest';
 }
 
-// `field` is the FormData key to read the file from; `subdir` is where
-// under public/assets/images/talkshows it's saved (empty for the card
-// thumbnail, 'poster' for the wide /resources hero banner).
+// `field` is the FormData key to read the card illustration file from. The
+// wide /resources hero "poster" is now a single whole-section image, saved
+// separately — see /api/posters/[type] (type "talkshows") and lib/resourcePosterMeta.ts.
 async function saveTalkshowImage(
   formData: FormData,
-  field: string,
-  subdir: string
+  field: string
 ): Promise<string | null> {
   const file = formData.get(field) as File | null;
   if (!file || typeof file === 'string') return null;
 
-  const publicBase = subdir
-    ? `/assets/images/talkshows/${subdir}`
-    : '/assets/images/talkshows';
+  const publicBase = '/assets/images/talkshows';
   const destDir = path.join(process.cwd(), 'public', ...publicBase.split('/').filter(Boolean));
   await fs.mkdir(destDir, { recursive: true });
 
@@ -205,8 +202,7 @@ export async function POST(req: Request) {
     const participantIds = parseStringIdArray(formData, 'participantIds');
     const podcastIds = parseNumberIdArray(formData, 'podcastIds');
 
-    const image = await saveTalkshowImage(formData, 'image', '');
-    const poster = await saveTalkshowImage(formData, 'poster', 'poster');
+    const image = await saveTalkshowImage(formData, 'image');
     const audioUrl = await saveAudio(formData);
     const waveform = parseWaveform(formData);
 
@@ -215,7 +211,6 @@ export async function POST(req: Request) {
         title,
         date,
         image,
-        poster,
         audioUrl,
         waveform,
         publishStatus,

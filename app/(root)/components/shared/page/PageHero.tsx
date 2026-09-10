@@ -8,6 +8,16 @@ interface PageHeroProps {
   children?: ReactNode;
   backgroundImage?: string;
   showLineGraph?: boolean;
+  // 'overlay' (default): the existing dimmed, cropped-to-fit banner used
+  // by /about, /programs, /about/team. 'poster' is for an admin-uploaded
+  // poster image (see lib/resourcePosterMeta.ts, used by /resources) that
+  // must show undimmed and at its own full, uncropped height, sitting
+  // flush under the fixed header instead of behind a tall padded section
+  // — with nothing overlaid on it. `title`/`description` still exist for
+  // accessibility (a screen-reader-only <h1>) but aren't shown visually;
+  // any `children` (e.g. a tab switcher) render as a normal block right
+  // below the poster instead of on top of it.
+  variant?: 'overlay' | 'poster';
 }
 
 export default function PageHero({
@@ -16,8 +26,38 @@ export default function PageHero({
   children,
   backgroundImage,
   showLineGraph = false,
+  variant = 'overlay',
 }: PageHeroProps) {
   const hasImage = Boolean(backgroundImage);
+  const isPoster = variant === 'poster' && hasImage;
+
+  if (isPoster) {
+    return (
+      <>
+        {/* mt-14 matches the fixed header's own h-14 exactly (a constant,
+            not a breakpoint-dependent value), so the poster sits flush
+            under it the same way at every browser size. A real <img>, not
+            a sized box with object-fit, so its own aspect ratio sets the
+            section's height: full width, full height, nothing cropped,
+            nothing overlaid on top of it. */}
+        <section className="relative mt-14 overflow-hidden">
+          <img src={backgroundImage} alt="" className="block w-full h-auto" />
+          <h1 className="sr-only">{title}</h1>
+        </section>
+
+        {/* Whatever the page passed in (a tab switcher, stats, etc.) sits
+            here, immediately below the poster, in normal document flow —
+            not overlaid on the image. Pages with nothing to show here
+            (no `children`) go straight from the poster into their own
+            content. */}
+        {children && (
+          <div className="wrapper flex flex-col items-center gap-4 py-6 text-center">
+            {children}
+          </div>
+        )}
+      </>
+    );
+  }
 
   return (
     <section className="relative overflow-hidden px-4 pt-16 pb-10">
@@ -37,7 +77,7 @@ export default function PageHero({
         <div className="absolute inset-0 bg-gradient-to-br from-[#9f004d]/10 via-pink-50 to-purple-50 dark:from-[#9f004d]/20 dark:via-gray-950 dark:to-gray-900" />
       )}
 
-      <div className="wrapper relative z-10 max-w-7xl mx-auto text-center">
+      <div className="wrapper relative z-10 text-center">
         <h1 className={hasImage ? 'heading-1 text-white mb-4' : 'heading-1 text-site-primary mb-4'}>
           {title}
         </h1>
@@ -66,7 +106,7 @@ function AnalyticsOverlay() {
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-14 z-[1] h-[250px]">
-      <div className="wrapper mx-auto grid h-full max-w-7xl grid-cols-1 gap-8 px-4 lg:grid-cols-2">
+      <div className="wrapper grid h-full grid-cols-1 gap-8 px-4 lg:grid-cols-2">
         {/* Left: colorful animated line graph */}
         <div className="hidden items-end lg:flex">
           <div className="h-[220px] w-full rounded-[2rem] border border-white/15 bg-white/[0.08] p-5 shadow-2xl backdrop-blur-md">

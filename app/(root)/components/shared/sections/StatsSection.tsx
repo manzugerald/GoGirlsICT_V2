@@ -21,7 +21,7 @@ export default function StatsSection({
 }: StatsSectionProps) {
   return (
     <section className={`relative px-4 py-14 ${className}`}>
-      <div className="wrapper max-w-7xl mx-auto">
+      <div className="wrapper">
         <PageHeader
           badge={badge}
           title={title}

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import PageHero from '@/app/(root)/components/shared/page/PageHero';
+import { getResourcePosterUrl } from '@/lib/resourcePosterMeta';
 
 import AboutUs from './components/AboutUs';
 import OurTeam from './components/OurTeam';
@@ -28,6 +29,8 @@ export default async function AboutPage() {
     partners,
   } = await getAboutPageData();
 
+  const heroPoster = await getResourcePosterUrl('about');
+
   return (
     <main className="min-h-screen bg-white dark:bg-gray-950">
       <style>{`
@@ -46,7 +49,8 @@ export default async function AboutPage() {
       <PageHero
         title="About GoGirls ICT Initiative"
         description="Discover who we are, what guides us, the partners supporting our work, and the people turning our mission into meaningful community impact."
-        backgroundImage="/assets/images/about/about-banner.jpg"
+        backgroundImage={heroPoster ?? undefined}
+        variant="poster"
       />
 
       {/* Who We Are and Our Foundation */}

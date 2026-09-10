@@ -24,7 +24,7 @@ export default function PodcastsSection({
       aria-labelledby="podcasts-heading"
       className="relative scroll-mt-20 overflow-hidden py-12 sm:scroll-mt-24 sm:py-16 lg:py-20"
     >
-      <div className="relative mx-auto w-[90%] max-w-6xl">
+      <div className="relative mx-auto w-[90%]">
         <div className="mx-auto max-w-2xl text-center">
           <h2
             id="podcasts-heading"

@@ -20,7 +20,7 @@ export default function FeaturedSection({
 }: FeaturedSectionProps) {
   return (
     <section className={`relative px-4 py-12 ${className}`}>
-      <div className="wrapper max-w-7xl mx-auto">
+      <div className="wrapper">
         <PageHeader
           badge={badge}
           title={title}

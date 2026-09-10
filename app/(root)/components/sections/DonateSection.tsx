@@ -42,7 +42,7 @@ export default function DonateSection() {
         />
       </div>
 
-      <div className="wrapper max-w-7xl mx-auto px-4 py-24 relative z-10">
+      <div className="wrapper px-4 py-24 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}

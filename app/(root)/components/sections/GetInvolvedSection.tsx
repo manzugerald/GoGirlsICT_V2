@@ -15,7 +15,7 @@ export default function GetInvolvedSection({ events }: GetInvolvedSectionProps) 
   const isInView = useInView(containerRef, { once: true, margin: '-100px' });
 
   return (
-    <div ref={containerRef} className="wrapper max-w-7xl mx-auto px-4 py-16 relative">
+    <div ref={containerRef} className="wrapper px-4 py-16 relative">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           animate={{

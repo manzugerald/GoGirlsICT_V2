@@ -7,6 +7,7 @@ import ProgramsGrid from './components/ProgramsGrid';
 
 import PageHero from '@/app/(root)/components/shared/page/PageHero';
 import PageHeroTabs from '@/app/(root)/components/shared/page/PageHeroTabs';
+import { getResourcePosterUrl } from '@/lib/resourcePosterMeta';
 
 // ISR: this list only changes when an admin publishes/edits a project —
 // revalidatePath('/programs') in the project API routes invalidates it
@@ -17,12 +18,14 @@ export default async function ProgramsPage() {
   const { programs, stats } =
     await getProgramsPageData();
 
+  const heroPoster = await getResourcePosterUrl('programs');
+
   return (
     <main className="min-h-screen bg-white dark:bg-gray-950">
       <PageHero
         title="Our Programs"
-        description="Discover the initiatives transforming communities through digital skills, innovation, mentorship, leadership, and inclusive technology."
-        backgroundImage="/assets/projects/images/banner/banner2.jpg"
+        backgroundImage={heroPoster ?? undefined}
+        variant="poster"
       >
         <PageHeroTabs
           tabs={[

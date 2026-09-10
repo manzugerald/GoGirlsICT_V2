@@ -54,7 +54,6 @@ export default function ContentCard({
           <img
             src={image}
             alt={imageAlt || title}
-            loading="lazy"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
         ) : (

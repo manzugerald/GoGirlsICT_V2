@@ -203,7 +203,6 @@ function ProjectCard({ project }: { project: Project; index: number }) {
               src={project.images[0]}
               alt={extractPlainText(project.title)}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              loading="lazy"
             />
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -280,7 +279,6 @@ function ReportCard({ report }: { report: Report; index: number }) {
               src={report.images[0]}
               alt={report.title}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              loading="lazy"
             />
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">

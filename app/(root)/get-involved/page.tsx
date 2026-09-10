@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import PageHero from '@/app/(root)/components/shared/page/PageHero';
+import { getResourcePosterUrl } from '@/lib/resourcePosterMeta';
 
 import EventsSection from './components/EventsSection';
 import VolunteerSection from './components/VolunteerSection';
@@ -25,11 +26,14 @@ export default async function GetInvolvedPage() {
   const { events } =
     await getGetInvolvedPageData();
 
+  const heroPoster = await getResourcePosterUrl('get-involved');
+
   return (
     <main className="min-h-screen bg-white dark:bg-gray-950">
       <PageHero
         title="Get Involved"
-        description="Join our community and be part of the change. Attend events, volunteer your time, make a donation, or reach out to us."
+        backgroundImage={heroPoster ?? undefined}
+        variant="poster"
       />
 
       <EventsSection events={events} />

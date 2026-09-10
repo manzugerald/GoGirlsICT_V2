@@ -10,7 +10,7 @@ export default function Section({ children, className = '', id }: SectionProps) 
   return (
     <section
       id={id}
-      className={`wrapper max-w-7xl mx-auto px-4 py-16 relative ${className}`}
+      className={`wrapper px-4 py-16 relative ${className}`}
     >
       {children}
     </section>

@@ -80,7 +80,7 @@ function CoreTeamPreview({ teamMembers }: { teamMembers: TeamMember[] }) {
   }, [visibleMembers.length]);
 
   return (
-    <section className="wrapper max-w-7xl mx-auto px-4 py-16 relative z-10">
+    <section className="wrapper px-4 py-16 relative z-10">
       <div className="text-center mb-12">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#9f004d]/10 dark:bg-[#9f004d]/20 text-[#9f004d] dark:text-pink-400 mb-4 shadow-lg">
           <User className="w-4 h-4" />

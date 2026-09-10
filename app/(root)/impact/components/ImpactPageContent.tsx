@@ -5,12 +5,10 @@ import { useState, useRef } from 'react';
 import {
   BarChart3,
   PieChart,
-  ArrowBigRight,
   TrendingUp,
   Users,
   Award,
   ChevronDown,
-  Sparkles,
 } from 'lucide-react';
 
 import { BarChartPanel, PieChartPanel } from '@/app/(admin)/admin/dashboard/chart/dashboardChart';
@@ -62,12 +60,10 @@ export default function ImpactPageContent({ stats }: { stats: Stat[] }) {
         />
 
         <SectionHeader
-          badge="Impact Metrics"
-          title="Our Impact in Numbers"
+          badge="Impact in Numbers"
           description="Real-time data showcasing our reach and effectiveness"
-          icon={<BarChart3 className="w-4 h-4" />}
+          icon={<BarChart3 className="w-4 h-4 text-yellow-300" />}
           badgeClassName="bg-pink-100 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400"
-          titleGradient="from-pink-600 via-purple-600 to-blue-600"
           dividerGradient="from-pink-500 via-purple-500 to-blue-500"
         />
 
@@ -166,19 +162,15 @@ export default function ImpactPageContent({ stats }: { stats: Stat[] }) {
               </div>
             </div>
 
-            {/* Chart Content */}
-            <motion.div
-              initial={false}
-              animate={{
-                height: isChartExpanded ? 'auto' : '260px',
-              }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="overflow-hidden"
-            >
-              <div className="p-6 md:p-8">
-                <BarChartPanel stats={stats} />
-              </div>
-            </motion.div>
+            {/* Chart Content — height is always auto now, not tied to
+                isChartExpanded: the bar chart sizes its own height to fit
+                its labels (see AnimatedPieceBarChart), so a fixed
+                collapsed height here would just clip it again. The
+                expand/collapse control still only governs the Insights
+                Footer below. */}
+            <div className="p-6 md:p-8">
+              <BarChartPanel stats={stats} />
+            </div>
 
             {/* Insights Footer */}
             <motion.div
@@ -225,34 +217,6 @@ export default function ImpactPageContent({ stats }: { stats: Stat[] }) {
               </div>
             </motion.div>
           </div>
-        </motion.div>
-
-        {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.65, duration: 0.5 }}
-          className="mt-8 flex justify-center relative z-10"
-        >
-          <motion.a
-            href="/impact"
-            whileHover={{ scale: 1.03, x: 3 }}
-            whileTap={{ scale: 0.97 }}
-            className="group inline-flex items-center gap-2 rounded-full border border-pink-200 dark:border-pink-800 bg-pink-50 dark:bg-pink-900/10 hover:bg-pink-100 dark:hover:bg-pink-900/20 px-6 py-3 shadow-lg transition-all"
-          >
-            <Sparkles className="w-5 h-5 text-pink-600 dark:text-pink-400" />
-
-            <span className="body font-semibold text-pink-600 dark:text-pink-400">
-              Explore the work behind these numbers
-            </span>
-
-            <motion.div
-              animate={{ x: [0, 5, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
-              <ArrowBigRight className="w-5 h-5 text-pink-600 dark:text-pink-400" />
-            </motion.div>
-          </motion.a>
         </motion.div>
       </div>
     </Section>

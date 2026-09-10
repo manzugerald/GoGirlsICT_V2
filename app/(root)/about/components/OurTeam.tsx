@@ -28,7 +28,7 @@ export default function OurTeam({
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent dark:via-gray-800" />
       </div>
 
-      <div className="relative mx-auto w-[90%] max-w-7xl">
+      <div className="relative mx-auto w-[90%]">
         {/* Section title */}
         <header className="mx-auto max-w-3xl text-center">
           <h2

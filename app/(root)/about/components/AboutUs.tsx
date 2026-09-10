@@ -27,7 +27,7 @@ export default function AboutUs({
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gray-300/80 to-transparent dark:via-gray-800" />
       </div>
 
-      <div className="relative mx-auto w-[90%] max-w-[1400px]">
+      <div className="relative mx-auto w-[90%]">
         <WhoWeAre content={content} />
 
         {/* Separation between the two components */}

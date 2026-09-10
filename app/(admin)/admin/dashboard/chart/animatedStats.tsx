@@ -4,19 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 import { cardHoverClass } from '@/utils/styles/card-hover';
 import { ADMIN_STAT_KEYS, buildStat, fetchStatsForKeys, type Stat } from './statsConfig';
 
-// ---- Resized for a two-column grid (was a single scrolling row of much
-// larger cards — with up to 14 stats now shown on admin, that no longer
-// fits comfortably) ----
-const CARD_PADDING_X = 10;
-const CARD_PADDING_Y = 10;
-const SVG_SIZE = 72;
-const CIRCLE_RADIUS = 26;
-const CIRCLE_STROKE_WIDTH = 7;
+// ---- Sized for a compact multi-column grid ----
+const CARD_PADDING_X = 8;
+const CARD_PADDING_Y = 8;
+const SVG_SIZE = 56;
+const CIRCLE_RADIUS = 20;
+const CIRCLE_STROKE_WIDTH = 5;
 const CIRCLE_DASHARRAY = 2 * Math.PI * CIRCLE_RADIUS;
-const FONT_SIZE = 28;
 const ANIMATION_DURATION = 10; // seconds
 const CIRCLE_DELAY_STEP = 0.32;
-const STAT_LABEL_FONT_SIZE = 15;
 
 export default function AnimatedStats({ stats: statsProp }: { stats?: Stat[] } = {}) {
   const [stats, setStats] = useState<Stat[]>(statsProp ?? []);
@@ -115,10 +111,20 @@ function StatCard({ stat, index }: { stat: Stat; index: number }) {
 
   return (
     <div
+      // No width class — each card sizes itself to its own content
+      // (the circle's own fixed footprint, or the label's text length,
+      // whichever is wider) instead of being stretched into uniform
+      // grid-like columns shared by every card regardless of label
+      // length.
+      // cardHoverClass's dark mode is a translucent, backdrop-blurred glass
+      // card (dark:bg-zinc-900/70) — fine for admin tables, but on public
+      // pages it lets whatever is behind the card (the page's own
+      // background) show through, which reads as "another item behind
+      // this one" once you're scrolling. The `!` (important) overrides
+      // force it fully opaque here without touching the shared class.
       className={
         cardHoverClass +
-        ' flex flex-col items-center justify-center text-center' +
-        ' w-[calc(50%-0.375rem)] sm:w-[calc(33.3333%-0.6667rem)] md:w-[calc(25%-0.75rem)] lg:w-[calc(20%-0.8rem)] xl:w-[calc(16.6667%-0.8333rem)]'
+        ' flex flex-col items-center justify-center text-center dark:!bg-zinc-900 dark:!backdrop-blur-none'
       }
       style={{
         borderTop: `7px solid ${stat.color || '#7c3aed'}`,
@@ -174,10 +180,14 @@ function StatCard({ stat, index }: { stat: Stat; index: number }) {
             }}
           />
         </svg>
-        {/* The animated number */}
+        {/* The animated number — sized off the site's own heading-3 type
+            token (globals.css, a clamp() that already scales fluidly with
+            viewport width and with the header's Aa font-scale control)
+            instead of a fixed px value, so it tracks the rest of the
+            site's typography rather than its own bespoke scale. */}
         <span
           ref={ref}
-          className="flex items-center justify-center"
+          className="heading-3 flex items-center justify-center"
           style={{
             color: stat.color || '#7c3aed',
             position: 'relative',
@@ -187,11 +197,6 @@ function StatCard({ stat, index }: { stat: Stat; index: number }) {
             fontVariantNumeric: 'tabular-nums',
             letterSpacing: '-0.02em',
             userSelect: 'none',
-            // calc() against the site's own --font-scale (set by the
-            // header's Aa font-size control, globals.css) instead of a
-            // fixed px value, so this text grows/shrinks along with the
-            // rest of the site's typography.
-            fontSize: `calc(${FONT_SIZE / 16}rem * var(--font-scale, 1))`,
             fontWeight: 800,
             textAlign: 'center',
             display: 'flex',
@@ -202,19 +207,20 @@ function StatCard({ stat, index }: { stat: Stat; index: number }) {
           0
         </span>
       </div>
+      {/* caption token, same reasoning — and no uppercase transform: the
+          labels (see statsConfig.ts) are already properly capitalized
+          ("Radio Talkshows"), not meant to shout in all-caps. */}
       <span
-        className="text-site-primary"
+        className="caption text-site-primary"
         style={{
-          fontSize: `calc(${STAT_LABEL_FONT_SIZE / 16}rem * var(--font-scale, 1))`,
           marginTop: 6,
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
+          letterSpacing: '0.02em',
           fontWeight: 700,
           textAlign: 'center',
+          // No ellipsis/max-width truncation — now that the card's own
+          // width comes from this label's length, there's nothing to
+          // truncate against; nowrap just keeps it on one line.
           whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          maxWidth: '100%',
         }}
       >
         {stat.label}

@@ -12,9 +12,12 @@ export default function HeroSection({ content }: HeroSectionProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const { scrollY } = useScroll();
-  const videoY = useTransform(scrollY, [0, 600], [0, 160]);
-  const contentOpacity = useTransform(scrollY, [0, 350], [1, 0]);
-  const contentY = useTransform(scrollY, [0, 350], [0, -80]);
+  // Smaller-magnitude parallax than before — the hero is now a compact
+  // ~400px banner (was a full 100vh section), so the old 160px/-80px
+  // travel distances would visibly overshoot a box this short.
+  const videoY = useTransform(scrollY, [0, 600], [0, 50]);
+  const contentOpacity = useTransform(scrollY, [0, 250], [1, 0]);
+  const contentY = useTransform(scrollY, [0, 250], [0, -30]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -41,7 +44,11 @@ export default function HeroSection({ content }: HeroSectionProps) {
     : null;
 
   return (
-    <section className="relative w-full h-screen overflow-hidden bg-gray-950">
+    // Full width always (no max-width cap); height is viewport-relative
+    // (45vh) clamped between 280px and 420px — ~400px on a typical desktop
+    // window, scaling down proportionally on shorter/mobile viewports
+    // instead of the old full-100vh hero.
+    <section className="relative w-full h-[clamp(280px,45vh,420px)] overflow-hidden bg-gray-950">
       {/* Background video */}
       {videoSrc ? (
         <motion.div style={{ y: videoY }} className="absolute inset-0 z-0">
@@ -69,21 +76,14 @@ export default function HeroSection({ content }: HeroSectionProps) {
         style={{ opacity: contentOpacity, y: contentY }}
         className="relative z-20 h-full flex items-center justify-center px-4"
       >
+        {/* Fluid clamp() font sizes — text shrinks continuously with the
+            browser width instead of only jumping at sm/md/lg breakpoints. */}
         <div className="text-center max-w-5xl mx-auto">
-          <motion.p
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="mb-4 text-sm md:text-base uppercase tracking-[0.35em] text-pink-200"
-          >
-            Empowering Communities through Innovation & Technology
-          </motion.p>
-
           <motion.h1
             initial={{ opacity: 0, y: 70, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.15, duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-5xl md:text-7xl lg:text-8xl font-black text-white drop-shadow-2xl mb-6"
+            className="text-[clamp(1.5rem,1.1rem+2.2vw,3rem)] font-black text-white drop-shadow-2xl mb-3 sm:mb-4"
           >
             {content?.siteName || 'GoGirls ICT Initiative'}
           </motion.h1>
@@ -92,77 +92,20 @@ export default function HeroSection({ content }: HeroSectionProps) {
             initial={{ scaleX: 0, opacity: 0 }}
             animate={{ scaleX: 1, opacity: 1 }}
             transition={{ delay: 0.65, duration: 0.8 }}
-            className="h-1 w-40 bg-gradient-to-r from-transparent via-[#ff4fa3] to-transparent mx-auto rounded-full mb-8 origin-center"
+            className="h-1 w-24 bg-gradient-to-r from-transparent via-[#ff4fa3] to-transparent mx-auto rounded-full mb-3 sm:mb-4 origin-center"
           />
 
           <motion.p
             initial={{ opacity: 0, y: 26 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.85, duration: 0.8 }}
-            className="max-w-3xl mx-auto text-lg md:text-2xl text-white/85 leading-relaxed mb-10"
+            className="max-w-3xl mx-auto text-[clamp(0.75rem,0.65rem+0.5vw,1rem)] text-white/85 leading-snug"
           >
             Building confidence, skills, leadership, and opportunity for girls and young women
             through technology, mentorship, and digital inclusion.
           </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 34 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.05, duration: 0.8 }}
-            className="flex flex-wrap gap-4 justify-center"
-          >
-            <motion.a
-              href="#our-work"
-              whileHover={{
-                scale: 1.07,
-                y: -3,
-                boxShadow: '0 24px 60px rgba(159, 0, 77, 0.45)',
-              }}
-              whileTap={{ scale: 0.96 }}
-              className="group relative px-8 py-4 bg-[#9f004d] text-white font-semibold rounded-full shadow-xl overflow-hidden text-lg"
-            >
-              <span className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="relative z-10 flex items-center gap-2">
-                Explore Our Work
-                <motion.span
-                  animate={{ x: [0, 6, 0] }}
-                  transition={{ duration: 1.4, repeat: Infinity }}
-                >
-                  →
-                </motion.span>
-              </span>
-            </motion.a>
-
-            <motion.a
-              href="#get-involved"
-              whileHover={{ scale: 1.07, y: -3 }}
-              whileTap={{ scale: 0.96 }}
-              className="px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold rounded-full border-2 border-white/30 hover:border-white/60 transition-all duration-300 text-lg shadow-xl"
-            >
-              Get Involved
-            </motion.a>
-          </motion.div>
         </div>
       </motion.div>
-
-      {/* Scroll indicator */}
-      <motion.button
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.7, duration: 0.6 }}
-        onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 text-white/90"
-        aria-label="Scroll to explore"
-      >
-        <span className="text-sm font-medium">Scroll to explore</span>
-        <motion.span
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 1.7, repeat: Infinity }}
-          className="w-6 h-10 border-2 border-white/80 rounded-full flex justify-center p-2"
-        >
-          <span className="w-1 h-3 bg-white rounded-full" />
-        </motion.span>
-      </motion.button>
     </section>
   );
 }

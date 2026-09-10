@@ -36,7 +36,7 @@ const Header = () => {
           : 'bg-[#9f004d]/95 backdrop-blur-md shadow-md'
       } h-14 flex items-center`}
     >
-      <div className="w-full max-w-screen-xl mx-auto flex items-center justify-between px-4">
+      <div className="w-full flex items-center justify-between px-4 md:px-8 lg:px-12">
         {/* Logo + App Name */}
         <Link href="/" className="flex items-center gap-2 shrink-0 group">
           <div className="relative">

@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import {
-  ArrowRight,
   BookOpen,
   BarChart3,
   Video,
@@ -59,27 +58,30 @@ const exploreItems = [
 export default function ExploreSection() {
   return (
     <section className="relative px-4 py-5">
-      <div className="wrapper max-w-7xl mx-auto">
+      <div className="wrapper">
         <div className="text-center mb-12">
           <span className="inline-flex rounded-full bg-[#9f004d]/10 px-4 py-2 caption font-semibold uppercase tracking-wide text-[#9f004d] dark:bg-pink-500/20 dark:text-pink-400">
             Explore
           </span>
 
-          <h2 className="heading-2 mt-4 mb-4">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#9f004d] via-pink-600 to-purple-600">
+          {/* Same title gradient standard as the rest of the home page's
+              section titles. */}
+          <h2 className="heading-2 mt-4">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600">
               Explore GoGirls ICT
             </span>
           </h2>
-
-          <p className="body-lg text-site-secondary max-w-2xl mx-auto">
-            Continue your journey through our programs, impact, media, events, people, and ways to get involved.
-          </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {/* items-start so each card keeps its own content-driven height
+            instead of the grid stretching every card in a row to match
+            the tallest one. */}
+        <div className="grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {exploreItems.map((item, index) => {
             const Icon = item.icon;
 
+            // The whole card is the link (no separate "Explore" label/
+            // arrow needed) — a flat card, no glow/blur behind it.
             return (
               <motion.a
                 key={item.title}
@@ -90,35 +92,29 @@ export default function ExploreSection() {
                 transition={{ delay: index * 0.06, duration: 0.45 }}
                 whileHover={{ y: -8, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="group relative overflow-hidden rounded-3xl border border-gray-200 bg-white/90 p-6 shadow-lg transition-all duration-500 hover:shadow-2xl dark:border-gray-800 dark:bg-gray-900/90"
+                className="group relative block"
               >
-                <div
-                  className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${item.gradient}`}
-                />
+                <div className="relative overflow-hidden rounded-3xl border border-gray-200 bg-white p-6 shadow-lg transition-all duration-500 group-hover:shadow-2xl dark:border-gray-800 dark:bg-gray-900">
+                  <div
+                    className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${item.gradient}`}
+                  />
 
-                <div
-                  className={`mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${item.gradient} text-white shadow-lg`}
-                >
-                  <Icon className="h-7 w-7" />
-                </div>
-
-                <h3 className="heading-3 text-site-primary mb-3 group-hover:text-[#9f004d] dark:group-hover:text-pink-400 transition-colors">
-                  {item.title}
-                </h3>
-
-                <p className="body text-site-secondary mb-6 line-clamp-3">
-                  {item.description}
-                </p>
-
-                <div className="inline-flex items-center gap-2 body font-semibold text-[#9f004d] dark:text-pink-400">
-                  Explore
-                  <motion.span
-                    className="inline-flex"
-                    initial={{ x: 0 }}
-                    whileHover={{ x: 4 }}
+                  {/* Icon box scales with viewport instead of a fixed 56px. */}
+                  <div
+                    className={`mb-5 flex h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${item.gradient} text-white shadow-lg`}
                   >
-                    <ArrowRight className="h-4 w-4" />
-                  </motion.span>
+                    <Icon className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7" />
+                  </div>
+
+                  <h3 className="heading-3 text-site-primary mb-3 group-hover:text-[#9f004d] dark:group-hover:text-pink-400 transition-colors">
+                    {item.title}
+                  </h3>
+
+                  {/* No line-clamp — the card grows to fit the full
+                      description instead of truncating it. */}
+                  <p className="body text-site-secondary">
+                    {item.description}
+                  </p>
                 </div>
               </motion.a>
             );

@@ -5,9 +5,6 @@ import path from "path";
 export const POST = async (req: Request) => {
   const formData = await req.formData();
   const file = formData.get("file") as File;
-  // 'poster' routes wide hero-banner uploads to their own subfolder,
-  // separate from the regular card illustration image.
-  const target = (formData.get("target") as string) || "";
 
   if (!file) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -20,10 +17,11 @@ export const POST = async (req: Request) => {
 
   let uploadDir = "";
   if (allowedImageExts.includes(ext)) {
-    uploadDir =
-      target === "poster"
-        ? "public/assets/images/podcasts/poster"
-        : "public/assets/images/podcasts";
+    // The wide /resources hero "poster" is now a single whole-section
+    // image managed via /api/posters/[type] (type "podcasts"; lib/resourcePosterMeta.ts),
+    // not something uploaded through this per-entry endpoint — this only
+    // ever saves the card illustration image now.
+    uploadDir = "public/assets/images/podcasts";
   } else if (allowedAudioExts.includes(ext)) {
     uploadDir = "public/assets/audio/podcasts";
   } else {

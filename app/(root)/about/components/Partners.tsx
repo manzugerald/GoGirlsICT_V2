@@ -46,7 +46,7 @@ export default function Partners({
       aria-labelledby="partners-heading"
       className="relative overflow-hidden py-6 dark:bg-gray-950 sm:py-8 lg:py-10"
     >
-      <div className="relative mx-auto w-[90%] max-w-7xl">
+      <div className="relative mx-auto w-[90%]">
         <header className="mx-auto max-w-3xl text-center">
           <h2
             id="partners-heading"

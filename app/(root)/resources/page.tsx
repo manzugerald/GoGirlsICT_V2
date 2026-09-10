@@ -7,10 +7,11 @@ import PageHeroTabs from '@/app/(root)/components/shared/page/PageHeroTabs';
 import PodcastsSection from './components/PodcastsSection';
 import TalkshowsSection from './components/TalkshowsSection';
 
+import { getResourcePosterUrl } from '@/lib/resourcePosterMeta';
+
 import {
   getPodcasts,
   getRadioTalkshows,
-  latestPoster,
   normalizeResourceType,
 } from './data';
 
@@ -38,13 +39,11 @@ export default async function ResourcesPage({
   const podcasts = activeType === 'podcasts' ? await getPodcasts() : null;
   const talkshows = activeType === 'talkshows' ? await getRadioTalkshows() : null;
 
-  // The hero banner uses the poster of the latest published item in
-  // whichever tab is active, falling back to the default gradient (no
-  // backgroundImage) when none has one set.
-  const heroPoster =
-    activeType === 'talkshows'
-      ? latestPoster(talkshows ?? [])
-      : latestPoster(podcasts ?? []);
+  // The hero banner uses the single whole-section poster set for whichever
+  // tab is active (see lib/resourcePosterMeta.ts — an admin-managed image,
+  // not tied to any one podcast/talkshow entry), falling back to the
+  // default gradient (no backgroundImage) when none has been set.
+  const heroPoster = await getResourcePosterUrl(activeType);
 
   return (
     <main className="min-h-screen bg-white dark:bg-gray-950">
@@ -52,6 +51,7 @@ export default async function ResourcesPage({
         title="Resources"
         description="Listen to our podcasts and radio talkshow recordings."
         backgroundImage={heroPoster ?? undefined}
+        variant="poster"
       >
         <PageHeroTabs
           tabs={[

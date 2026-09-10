@@ -5,12 +5,10 @@ import { useState, useRef } from 'react';
 import {
   BarChart3,
   PieChart,
-  ArrowBigRight,
   TrendingUp,
   Users,
   Award,
   ChevronDown,
-  Sparkles,
 } from 'lucide-react';
 
 import { BarChartPanel, PieChartPanel } from '@/app/(admin)/admin/dashboard/chart/dashboardChart';
@@ -19,7 +17,6 @@ import type { Stat } from '@/app/(admin)/admin/dashboard/chart/statsConfig';
 
 import Section from '../shared/components/Section';
 import SectionHeader from '../shared/components/SectionHeader';
-import SectionBackground from '../shared/components/SectionBackground';
 import GlowChartCard from '../shared/components/GlowChartCard';
 
 const insights = [
@@ -54,20 +51,11 @@ export default function ImpactSection({ stats }: { stats: Stat[] }) {
   return (
     <Section id="impact" className="relative">
       <div ref={containerRef}>
-        <SectionBackground
-          gradient="from-pink-500 via-purple-500 to-blue-500"
-          position="top-right"
-          duration={24}
-          opacity={[0.04, 0.09, 0.04]}
-        />
-
         <SectionHeader
-          badge="Impact Metrics"
-          title="Our Impact in Numbers"
+          badge="Impact in Numbers"
           description="Real-time data showcasing our reach and effectiveness"
-          icon={<BarChart3 className="w-4 h-4" />}
+          icon={<BarChart3 className="w-4 h-4 text-yellow-300" />}
           badgeClassName="bg-pink-100 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400"
-          titleGradient="from-pink-600 via-purple-600 to-blue-600"
           dividerGradient="from-pink-500 via-purple-500 to-blue-500"
         />
 
@@ -81,13 +69,15 @@ export default function ImpactSection({ stats }: { stats: Stat[] }) {
           <AnimatedStats stats={stats} />
         </motion.div>
 
-        {/* Pie chart — its own glowing card, above the bar chart */}
+        {/* Pie chart — flat card, above the bar chart (no glow: cleaner,
+            no extra footprint behind the card). */}
         <div className="mb-8">
           <GlowChartCard
             icon={PieChart}
             title="Distribution Overview"
             subtitle="How each category compares"
             delay={0.35}
+            glow={false}
           >
             <PieChartPanel stats={stats} />
           </GlowChartCard>
@@ -101,13 +91,6 @@ export default function ImpactSection({ stats }: { stats: Stat[] }) {
           className="relative z-10"
           style={{ perspective: '1000px' }}
         >
-          {/* Glowing border */}
-          <motion.div
-            animate={{ opacity: [0.35, 0.85, 0.35] }}
-            transition={{ duration: 3, repeat: Infinity }}
-            className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-2xl blur-lg"
-          />
-
           <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
             {/* Chart Header */}
             <div className="flex items-center justify-between gap-4 p-6 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
@@ -166,19 +149,15 @@ export default function ImpactSection({ stats }: { stats: Stat[] }) {
               </div>
             </div>
 
-            {/* Chart Content */}
-            <motion.div
-              initial={false}
-              animate={{
-                height: isChartExpanded ? 'auto' : '260px',
-              }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="overflow-hidden"
-            >
-              <div className="p-6 md:p-8">
-                <BarChartPanel stats={stats} />
-              </div>
-            </motion.div>
+            {/* Chart Content — height is always auto now, not tied to
+                isChartExpanded: the bar chart sizes its own height to fit
+                its labels (see AnimatedPieceBarChart), so a fixed
+                collapsed height here would just clip it again. The
+                expand/collapse control still only governs the Insights
+                Footer below. */}
+            <div className="p-6 md:p-8">
+              <BarChartPanel stats={stats} />
+            </div>
 
             {/* Insights Footer */}
             <motion.div
@@ -226,35 +205,6 @@ export default function ImpactSection({ stats }: { stats: Stat[] }) {
             </motion.div>
           </div>
         </motion.div>
-
-        {/* CTA */}
-        {/* CTA */}
-<motion.div
-  initial={{ opacity: 0, y: 20 }}
-  animate={isInView ? { opacity: 1, y: 0 } : {}}
-  transition={{ delay: 0.65, duration: 0.5 }}
-  className="mt-8 flex justify-center relative z-10"
->
-  <motion.a
-    href="/impact"
-    whileHover={{ scale: 1.03, x: 3 }}
-    whileTap={{ scale: 0.97 }}
-    className="group inline-flex items-center gap-2 rounded-full border border-pink-200 dark:border-pink-800 bg-pink-50 dark:bg-pink-900/10 hover:bg-pink-100 dark:hover:bg-pink-900/20 px-6 py-3 shadow-lg transition-all"
-  >
-    <Sparkles className="w-5 h-5 text-pink-600 dark:text-pink-400" />
-
-    <span className="body font-semibold text-pink-600 dark:text-pink-400">
-      Explore the work behind these numbers
-    </span>
-
-    <motion.div
-      animate={{ x: [0, 5, 0] }}
-      transition={{ duration: 1.5, repeat: Infinity }}
-    >
-      <ArrowBigRight className="w-5 h-5 text-pink-600 dark:text-pink-400" />
-    </motion.div>
-  </motion.a>
-</motion.div>
       </div>
     </Section>
   );
