@@ -3,7 +3,7 @@ import PageHeader from '../page/PageHeader';
 
 interface GridSectionProps {
   badge?: string;
-  title: string;
+  title?: string;
   description?: string;
   icon?: ReactNode;
   children: ReactNode;
@@ -30,12 +30,14 @@ export default function GridSection({
   return (
     <section className={`relative px-4 py-14 ${className}`}>
       <div className="wrapper">
-        <PageHeader
-          badge={badge}
-          title={title}
-          description={description}
-          icon={icon}
-        />
+        {title && (
+          <PageHeader
+            badge={badge}
+            title={title}
+            description={description}
+            icon={icon}
+          />
+        )}
 
         <div className={`grid gap-6 ${gridClass}`}>
           {children}

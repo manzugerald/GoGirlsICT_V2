@@ -46,9 +46,13 @@ export default function HeroSection({ content }: HeroSectionProps) {
   return (
     // Full width always (no max-width cap); height is viewport-relative
     // (45vh) clamped between 280px and 420px — ~400px on a typical desktop
-    // window, scaling down proportionally on shorter/mobile viewports
-    // instead of the old full-100vh hero.
-    <section className="relative w-full h-[clamp(280px,45vh,420px)] overflow-hidden bg-gray-950">
+    // window, scaling down proportionally on shorter/mobile viewports.
+    // Below the sm breakpoint, a considerably shorter clamp takes over
+    // (180-260px on a 28vh basis) — 45vh still reads quite tall on a
+    // narrow phone screen since phone viewports are proportionally taller
+    // than wide, so mobile gets its own, more compact range instead of
+    // just inheriting the desktop one at a smaller vh value.
+    <section className="relative w-full h-[clamp(280px,45vh,420px)] max-sm:h-[clamp(180px,28vh,260px)] overflow-hidden bg-gray-950">
       {/* Background video */}
       {videoSrc ? (
         <motion.div style={{ y: videoY }} className="absolute inset-0 z-0">
@@ -83,7 +87,7 @@ export default function HeroSection({ content }: HeroSectionProps) {
             initial={{ opacity: 0, y: 70, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.15, duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[clamp(1.5rem,1.1rem+2.2vw,3rem)] font-black text-white drop-shadow-2xl mb-3 sm:mb-4"
+            className="text-[clamp(1.5rem,_1.1rem_+_2.2vw,_3rem)] font-black text-white drop-shadow-2xl mb-3 sm:mb-4"
           >
             {content?.siteName || 'GoGirls ICT Initiative'}
           </motion.h1>
@@ -99,7 +103,7 @@ export default function HeroSection({ content }: HeroSectionProps) {
             initial={{ opacity: 0, y: 26 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.85, duration: 0.8 }}
-            className="max-w-3xl mx-auto text-[clamp(0.75rem,0.65rem+0.5vw,1rem)] text-white/85 leading-snug"
+            className="max-w-3xl mx-auto text-[clamp(0.75rem,_0.65rem_+_0.5vw,_1rem)] text-white/85 leading-snug"
           >
             Building confidence, skills, leadership, and opportunity for girls and young women
             through technology, mentorship, and digital inclusion.

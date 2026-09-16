@@ -48,8 +48,9 @@ export default function ContentCard({
         className="absolute inset-x-0 top-0 z-10 h-0.5 origin-left scale-x-0 bg-gradient-to-r from-[#9f004d] via-pink-500 to-purple-600 transition-transform duration-300 group-hover:scale-x-100"
       />
 
-      {/* Short image */}
-      <div className="relative h-28 shrink-0 overflow-hidden bg-gradient-to-br from-[#9f004d]/10 to-pink-100 sm:h-32 dark:from-[#9f004d]/20 dark:to-gray-800">
+      {/* Short image — slightly taller than before to match the bigger
+          card overall. */}
+      <div className="relative h-32 shrink-0 overflow-hidden bg-gradient-to-br from-[#9f004d]/10 to-pink-100 sm:h-40 dark:from-[#9f004d]/20 dark:to-gray-800">
         {image ? (
           <img
             src={image}
@@ -71,11 +72,17 @@ export default function ContentCard({
         )}
       </div>
 
-      {/* Compact body */}
-      <div className="flex min-h-0 flex-1 flex-col p-3">
+      {/* Body — every text size below is one of the site's own typography
+          tokens (globals.css: heading-3/caption, a clamp() that scales
+          with both viewport width and the header's Aa font-scale control)
+          instead of a bespoke calc(px*font-scale) value that only
+          responded to the Aa control and stayed flat across screen sizes.
+          It matches every other card title site-wide (Vision/Mission,
+          Explore, OurWork) and reads a size class bigger than before. */}
+      <div className="flex min-h-0 flex-1 flex-col p-4">
         <h3
           title={imageAlt || title}
-          className="min-h-[2.5rem] overflow-hidden text-[length:calc(0.875rem*var(--font-scale))] font-bold leading-5 text-gray-900 transition-colors duration-200 group-hover:text-[#9f004d] dark:text-gray-100 dark:group-hover:text-pink-400"
+          className="min-h-[4rem] overflow-hidden heading-3 text-gray-900 transition-colors duration-200 group-hover:text-[#9f004d] dark:text-gray-100 dark:group-hover:text-pink-400"
           style={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -87,7 +94,7 @@ export default function ContentCard({
 
         {description && (
           <p
-            className="mt-1.5 overflow-hidden text-[length:calc(0.75rem*var(--font-scale))] leading-4 text-gray-600 dark:text-gray-400"
+            className="mt-1.5 overflow-hidden caption text-gray-600 dark:text-gray-400"
             style={{
               display: '-webkit-box',
               WebkitLineClamp: 2,
@@ -100,19 +107,19 @@ export default function ContentCard({
 
         <div className="mt-auto pt-2.5">
           {meta && (
-            <div className="flex items-center gap-1.5 text-[length:calc(0.6875rem*var(--font-scale))] font-medium text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-1.5 caption font-medium text-gray-500 dark:text-gray-400">
               <Calendar className="h-3 w-3 shrink-0" />
               <span className="truncate">{meta}</span>
             </div>
           )}
 
           {extra && (
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[length:calc(0.6875rem*var(--font-scale))] font-medium text-gray-400 dark:text-gray-500">
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 caption font-medium text-gray-400 dark:text-gray-500">
               {extra}
             </div>
           )}
 
-          <div className="mt-2 inline-flex items-center gap-1.5 text-[length:calc(0.75rem*var(--font-scale))] font-semibold text-[#9f004d] dark:text-pink-400">
+          <div className="mt-2 inline-flex items-center gap-1.5 caption font-semibold text-[#9f004d] dark:text-pink-400">
             {ctaLabel}
 
             <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-1" />

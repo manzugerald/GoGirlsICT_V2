@@ -165,6 +165,7 @@ export default function AdminLoginPage() {
           <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
             Still redirecting…
           </h1>
+          {/* Callback not rendering as should be */}
           <p className="text-sm text-muted-foreground">
             Signed in as <span className="font-medium">{session.user.username}</span>. This is
             taking longer than expected.

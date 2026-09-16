@@ -13,9 +13,7 @@ export default function ProgramsGrid({
 }) {
   return (
     <GridSection
-      title="Projects"
-      description="Browse more published programs and initiatives."
-      columns="4"
+      columns="3"
       className="pb-3 pt-1"
     >
       {programs.length > 0 ? (

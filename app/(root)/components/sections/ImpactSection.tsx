@@ -66,7 +66,7 @@ export default function ImpactSection({ stats }: { stats: Stat[] }) {
           transition={{ delay: 0.25, duration: 0.8 }}
           className="mb-12 relative z-10"
         >
-          <AnimatedStats stats={stats} />
+          <AnimatedStats stats={stats} uniform />
         </motion.div>
 
         {/* Pie chart — flat card, above the bar chart (no glow: cleaner,

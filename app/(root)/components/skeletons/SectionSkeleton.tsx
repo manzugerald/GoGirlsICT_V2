@@ -7,7 +7,7 @@ interface SectionSkeletonProps {
 export default function SectionSkeleton({ variant = 'cards' }: SectionSkeletonProps) {
   if (variant === 'hero') {
     return (
-      <div className="w-full h-[clamp(280px,45vh,420px)] bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-900 animate-pulse relative overflow-hidden">
+      <div className="w-full h-[clamp(280px,45vh,420px)] max-sm:h-[clamp(180px,28vh,260px)] bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-900 animate-pulse relative overflow-hidden">
         {/* Background blobs */}
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>

@@ -121,6 +121,16 @@ export default function AnimatedPieceBarChart({
   const xAxisHeight = isRotated ? Math.min(160, Math.max(50, longestLabelLength * 6)) : 32;
   const chartHeight = 130 + xAxisHeight; // plot area (bars + y-axis) + x-axis label space
 
+  // chartHeight above is a floor, not a target — it's just tall enough to
+  // fit the labels without clipping. On a wide desktop window the chart's
+  // WIDTH already fills the full-width container, so a height pinned to
+  // that floor looks squat and disproportionate next to it. clamp() grows
+  // the height fluidly with viewport width on top of that same floor
+  // (vw contributes almost nothing on phones/tablets, so small screens are
+  // unaffected), capped at 1.5x the floor so it doesn't run away on
+  // ultra-wide monitors.
+  const chartHeightStyle = `clamp(${chartHeight}px, ${chartHeight}px + 5vw, ${chartHeight * 1.5}px)`;
+
   const barOptions: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
@@ -160,7 +170,7 @@ export default function AnimatedPieceBarChart({
   };
 
   return (
-    <div className="w-full" style={{ height: chartHeight }}>
+    <div className="w-full" style={{ height: chartHeightStyle }}>
       <Bar ref={chartRef} data={barData} options={barOptions} />
     </div>
   );

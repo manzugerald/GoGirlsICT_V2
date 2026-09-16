@@ -139,7 +139,12 @@ export function PieChartPanel({ stats }: { stats: Stat[] }) {
       {/* Fluid, not fixed — the pie's own diameter scales continuously
           with viewport width (clamped between 144px and 256px) instead of
           always rendering at a fixed 256px regardless of screen size. */}
-      <div className="w-[clamp(9rem,28vw,16rem)] h-[clamp(9rem,28vw,16rem)] shrink-0">
+      {/* 28vw's ceiling (16rem) was reached by ~914px viewport width, so the
+          chart was already flat/maxed-out for virtually every real desktop
+          window — it never actually grew as the screen got wider. 16vw
+          with a taller 20rem cap keeps it growing fluidly up to ~2000px
+          instead of capping out just past tablet width. */}
+      <div className="w-[clamp(9rem,16vw,20rem)] h-[clamp(9rem,16vw,20rem)] shrink-0">
         <Pie key={loop} data={pieData} options={pieOptions} />
       </div>
 
