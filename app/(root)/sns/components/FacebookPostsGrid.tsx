@@ -145,7 +145,7 @@ export default function FacebookPostsGrid() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid items-start grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
       {posts.map((post, index) => (
         <motion.div
           key={post.id}
@@ -187,19 +187,19 @@ export default function FacebookPostsGrid() {
 
             <div className="flex flex-1 flex-col gap-2 p-4">
               {post.message && (
-                <p className="line-clamp-3 text-sm leading-6 text-gray-700 transition-[font-size] duration-300 group-hover:text-[15px] dark:text-gray-300">
+                <p className="line-clamp-3 caption text-gray-700 dark:text-gray-300">
                   {post.message}
                 </p>
               )}
 
               <div className="mt-auto flex items-center justify-between gap-3 pt-2">
-                <span className="text-xs text-gray-400 dark:text-gray-500">
+                <span className="caption text-gray-400 dark:text-gray-500">
                   {formatDate(
                     post.createdTime
                   )}
                 </span>
 
-                <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.06em] text-blue-600 transition-transform group-hover:translate-x-0.5 dark:text-blue-400">
+                <span className="inline-flex items-center gap-1 caption font-semibold uppercase tracking-[0.06em] text-blue-600 transition-transform group-hover:translate-x-0.5 dark:text-blue-400">
                   Read
 
                   <ArrowRight className="h-3.5 w-3.5" />

@@ -75,8 +75,12 @@ export default function ExploreSection() {
 
         {/* items-start so each card keeps its own content-driven height
             instead of the grid stretching every card in a row to match
-            the tallest one. */}
-        <div className="grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            the tallest one. xl: goes to all 6 cards in a single row —
+            there are exactly 6 fixed items, so on a large/ultra-wide
+            screen (inside the full-bleed .wrapper) showing them all at
+            once reads better than 2 rows of 3 stretched unnecessarily
+            wide. */}
+        <div className="grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {exploreItems.map((item, index) => {
             const Icon = item.icon;
 

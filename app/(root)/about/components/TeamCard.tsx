@@ -195,7 +195,7 @@ function ProtectedEmail({
       }
       className="group flex w-full items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-left transition-colors hover:border-[#9f004d]/30 hover:bg-[#9f004d]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9f004d] focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-pink-500/30 dark:hover:bg-pink-500/10 dark:focus-visible:ring-pink-500 dark:focus-visible:ring-offset-gray-900"
     >
-      <span className="flex min-w-0 items-center gap-2.5 text-sm text-gray-700 dark:text-gray-300">
+      <span className="flex min-w-0 items-center gap-2.5 caption text-gray-700 dark:text-gray-300">
         <Mail className="h-4 w-4 shrink-0 text-[#9f004d] dark:text-pink-400" />
 
         <span className="truncate">
@@ -203,7 +203,7 @@ function ProtectedEmail({
         </span>
       </span>
 
-      <span className="shrink-0 text-xs font-medium text-gray-500 dark:text-gray-400">
+      <span className="shrink-0 caption font-medium text-gray-500 dark:text-gray-400">
         {copied ? (
           <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
             <Check className="h-3.5 w-3.5" />
@@ -225,7 +225,7 @@ function ViewProfileTrigger() {
     <DialogTrigger asChild>
       <button
         type="button"
-        className="group/link inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.08em] text-[#9f004d] transition-colors hover:text-[#7a003c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9f004d] focus-visible:ring-offset-2 dark:text-pink-400 dark:hover:text-pink-300 dark:focus-visible:ring-offset-gray-900"
+        className="group/link inline-flex items-center gap-1 caption font-semibold uppercase tracking-[0.08em] text-[#9f004d] transition-colors hover:text-[#7a003c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9f004d] focus-visible:ring-offset-2 dark:text-pink-400 dark:hover:text-pink-300 dark:focus-visible:ring-offset-gray-900"
       >
         View profile
 
@@ -308,11 +308,11 @@ export default function TeamCard({
 
         {/* Identity and biography */}
         <div className="flex flex-1 flex-col items-center gap-2 pt-4">
-          <h3 className="font-serif text-lg font-semibold leading-tight text-gray-900 dark:text-white">
+          <h3 className="font-serif heading-3 text-gray-900 dark:text-white">
             {fullName}
           </h3>
 
-          <p className="text-sm leading-6 text-gray-600 dark:text-gray-300">
+          <p className="caption text-gray-600 dark:text-gray-300">
             {bioPreview}
           </p>
 
@@ -352,11 +352,11 @@ export default function TeamCard({
             </Avatar>
 
             <div className="min-w-0">
-              <DialogTitle className="font-serif text-2xl">
+              <DialogTitle className="font-serif heading-2">
                 {fullName}
               </DialogTitle>
 
-              <p className="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-[#9f004d] dark:text-pink-400">
+              <p className="mt-1 caption font-medium uppercase tracking-[0.16em] text-[#9f004d] dark:text-pink-400">
                 Team Member
               </p>
             </div>
@@ -365,7 +365,7 @@ export default function TeamCard({
 
         <Separator className="my-2" />
 
-        <p className="whitespace-pre-line text-left text-sm leading-7 text-gray-600 dark:text-gray-300 sm:[hyphens:auto] sm:[text-align:justify] sm:[text-justify:inter-word]">
+        <p className="whitespace-pre-line text-left body text-gray-600 dark:text-gray-300 sm:[hyphens:auto] sm:[text-align:justify] sm:[text-justify:inter-word]">
           {bio}
         </p>
 
@@ -396,7 +396,7 @@ export default function TeamCard({
               {member.phone && (
                 <a
                   href={`tel:${member.phone}`}
-                  className="flex items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-gray-700 transition-colors hover:border-[#9f004d]/30 hover:bg-[#9f004d]/5 hover:text-[#9f004d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9f004d] focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-pink-500/30 dark:hover:bg-pink-500/10 dark:hover:text-pink-400 dark:focus-visible:ring-pink-500 dark:focus-visible:ring-offset-gray-900"
+                  className="flex items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 caption text-gray-700 transition-colors hover:border-[#9f004d]/30 hover:bg-[#9f004d]/5 hover:text-[#9f004d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9f004d] focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-pink-500/30 dark:hover:bg-pink-500/10 dark:hover:text-pink-400 dark:focus-visible:ring-pink-500 dark:focus-visible:ring-offset-gray-900"
                 >
                   <Phone className="h-4 w-4 shrink-0" />
 

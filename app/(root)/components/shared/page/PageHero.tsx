@@ -36,22 +36,12 @@ export default function PageHero({
       <>
         {/* mt-14 matches the fixed header's own h-14 exactly (a constant,
             not a breakpoint-dependent value), so the poster sits flush
-            under it the same way at every browser size. These posters are
-            all a wide 4:1 image — plain w-full h-auto let the rendered
-            height track the viewport width directly (1:1 with it, since
-            height = width / 4), which meant it kept climbing on wider
-            desktop windows with no ceiling (~480px at 1920px wide) instead
-            of settling into a fixed banner height. h-clamp() gives it a
-            real ceiling that stops growing past tablet width, and a mobile
-            floor a bit under its old natural height there; object-cover
-            crops slightly at top/bottom to fill that box instead of
-            distorting it. */}
+            under it the same way at every browser size. A real <img>, not
+            a sized box with object-fit, so its own aspect ratio sets the
+            section's height: full width, full height, nothing cropped,
+            nothing overlaid on top of it. */}
         <section className="relative mt-14 overflow-hidden">
-          <img
-            src={backgroundImage}
-            alt=""
-            className="block w-full h-[clamp(5rem,18vw,14rem)] object-cover"
-          />
+          <img src={backgroundImage} alt="" className="block w-full h-auto" />
           <h1 className="sr-only">{title}</h1>
         </section>
 

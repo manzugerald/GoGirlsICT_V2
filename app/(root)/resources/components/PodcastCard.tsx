@@ -300,7 +300,7 @@ export default function PodcastCard({
             src={podcast.image}
             alt=""
             fill
-            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            sizes="(min-width: 1536px) 20vw, (min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -331,7 +331,7 @@ export default function PodcastCard({
 
         {/* Waveform + timer, anchored to the bottom of the image */}
         <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 px-3 pb-2.5">
-          <span className="tabular-nums text-[10px] font-semibold text-white/90">
+          <span className="tabular-nums caption font-semibold text-white/90">
             {formatTime(currentTime)}
           </span>
 
@@ -374,7 +374,7 @@ export default function PodcastCard({
             })}
           </div>
 
-          <span className="tabular-nums text-[10px] font-semibold text-white/90">
+          <span className="tabular-nums caption font-semibold text-white/90">
             {formatTime(duration)}
           </span>
 
@@ -426,12 +426,12 @@ export default function PodcastCard({
 
       {/* Title, description, meta */}
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="font-serif text-[length:calc(1rem*var(--font-scale))] font-semibold leading-tight text-gray-900 dark:text-white">
+        <h3 className="font-serif body font-semibold text-gray-900 dark:text-white">
           {titleText}
         </h3>
 
         <div
-          className="mt-1.5 overflow-hidden text-[length:calc(0.8125rem*var(--font-scale))] leading-5 text-gray-600 dark:text-gray-400 [&_p]:m-0"
+          className="mt-1.5 overflow-hidden caption text-gray-600 dark:text-gray-400 [&_p]:m-0"
           style={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -444,7 +444,7 @@ export default function PodcastCard({
           />
         </div>
 
-        <div className="mt-3 flex items-center justify-between text-[length:calc(0.6875rem*var(--font-scale))] font-medium text-gray-400 dark:text-gray-500">
+        <div className="mt-3 flex items-center justify-between caption font-medium text-gray-400 dark:text-gray-500">
           <span>
             {formatDate(podcast.publishedAt)}
           </span>

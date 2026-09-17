@@ -48,9 +48,12 @@ export default function ContentCard({
         className="absolute inset-x-0 top-0 z-10 h-0.5 origin-left scale-x-0 bg-gradient-to-r from-[#9f004d] via-pink-500 to-purple-600 transition-transform duration-300 group-hover:scale-x-100"
       />
 
-      {/* Short image — slightly taller than before to match the bigger
-          card overall. */}
-      <div className="relative h-32 shrink-0 overflow-hidden bg-gradient-to-br from-[#9f004d]/10 to-pink-100 sm:h-40 dark:from-[#9f004d]/20 dark:to-gray-800">
+      {/* aspect-video (not a fixed h-32/h-40) so the image height scales
+          with the card's own width — with the grid now adding xl:/2xl:
+          column steps, a card gets noticeably wider on a large/ultra-wide
+          screen, and a pinned-height image would go flat/letterboxed
+          instead of keeping its proportions. */}
+      <div className="relative aspect-video shrink-0 overflow-hidden bg-gradient-to-br from-[#9f004d]/10 to-pink-100 dark:from-[#9f004d]/20 dark:to-gray-800">
         {image ? (
           <img
             src={image}

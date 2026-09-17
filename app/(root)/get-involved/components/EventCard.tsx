@@ -153,24 +153,24 @@ export default function EventCard({
         {/* Title and meta */}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate font-serif text-[length:calc(1rem*var(--font-scale))] font-semibold leading-tight text-gray-900 dark:text-white">
+            <h3 className="heading-3 truncate font-serif text-gray-900 dark:text-white">
               {extractPlainText(event.eventTitle)}
             </h3>
 
             <span
-              className={`shrink-0 rounded-full px-2 py-0.5 text-[length:calc(0.7rem*var(--font-scale))] font-semibold ${status.className}`}
+              className={`caption shrink-0 rounded-full px-2 py-0.5 font-semibold ${status.className}`}
             >
               {status.label}
             </span>
           </div>
 
           {description && (
-            <p className="mt-1 line-clamp-1 text-[length:calc(0.8125rem*var(--font-scale))] text-gray-500 dark:text-gray-400">
+            <p className="caption mt-1 line-clamp-1 text-gray-500 dark:text-gray-400">
               {description}
             </p>
           )}
 
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[length:calc(0.75rem*var(--font-scale))] text-gray-400 dark:text-gray-500">
+          <div className="caption mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-gray-400 dark:text-gray-500">
             <span className="inline-flex items-center gap-1">
               <Calendar
                 aria-hidden="true"
@@ -243,13 +243,13 @@ export default function EventCard({
               )}
 
               {description && (
-                <p className="text-[length:calc(0.875rem*var(--font-scale))] leading-6 text-gray-600 dark:text-gray-300">
+                <p className="body text-gray-600 dark:text-gray-300">
                   {description}
                 </p>
               )}
 
               {event.maxAttendees && (
-                <div className="flex items-center gap-1.5 text-[length:calc(0.75rem*var(--font-scale))] text-gray-500 dark:text-gray-400">
+                <div className="caption flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
                   <Users
                     aria-hidden="true"
                     className="h-3.5 w-3.5"
@@ -269,7 +269,7 @@ export default function EventCard({
                     ) =>
                       clickEvent.stopPropagation()
                     }
-                    className="inline-flex items-center gap-1.5 rounded-full bg-[#9f004d]/10 px-3 py-1.5 text-[length:calc(0.75rem*var(--font-scale))] font-semibold text-[#9f004d] transition-colors hover:bg-[#9f004d]/15 dark:bg-pink-500/10 dark:text-pink-400"
+                    className="caption inline-flex items-center gap-1.5 rounded-full bg-[#9f004d]/10 px-3 py-1.5 font-semibold text-[#9f004d] transition-colors hover:bg-[#9f004d]/15 dark:bg-pink-500/10 dark:text-pink-400"
                   >
                     <FolderOpen className="h-3.5 w-3.5" />
                     Related project:{' '}
@@ -284,7 +284,7 @@ export default function EventCard({
                   ) =>
                     clickEvent.stopPropagation()
                   }
-                  className="inline-flex items-center gap-1 text-[length:calc(0.75rem*var(--font-scale))] font-semibold text-gray-500 transition-colors hover:text-[#9f004d] dark:text-gray-400 dark:hover:text-pink-400"
+                  className="caption inline-flex items-center gap-1 font-semibold text-gray-500 transition-colors hover:text-[#9f004d] dark:text-gray-400 dark:hover:text-pink-400"
                 >
                   View full details
                   <ExternalLink className="h-3.5 w-3.5" />
@@ -302,7 +302,7 @@ export default function EventCard({
                   }
                 />
               ) : (
-                <p className="rounded-lg bg-gray-50 px-3 py-2.5 text-[length:calc(0.75rem*var(--font-scale))] text-gray-500 dark:bg-gray-950 dark:text-gray-400">
+                <p className="caption rounded-lg bg-gray-50 px-3 py-2.5 text-gray-500 dark:bg-gray-950 dark:text-gray-400">
                   Open to everyone —
                   no registration
                   required, just show

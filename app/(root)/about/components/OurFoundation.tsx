@@ -211,7 +211,7 @@ export default function OurFoundation({
       >
         <h2
           id="our-foundation-heading"
-          className="font-serif text-3xl font-semibold leading-tight tracking-[-0.025em] text-gray-950 dark:text-white sm:text-4xl lg:text-5xl"
+          className="font-serif heading-2 tracking-[-0.025em] text-gray-950 dark:text-white"
         >
           What Guides
 
@@ -313,11 +313,11 @@ export default function OurFoundation({
                       </div>
 
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500">
+                        <p className="caption font-semibold uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500">
                           Our
                         </p>
 
-                        <h3 className="font-serif text-2xl font-semibold text-gray-950 dark:text-white">
+                        <h3 className="font-serif heading-3 text-gray-950 dark:text-white">
                           {card.title}
                         </h3>
                       </div>

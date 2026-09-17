@@ -77,12 +77,12 @@ export default function DonateSection() {
                 <Check className="h-6 w-6" />
               </span>
 
-              <p className="font-serif text-[length:calc(1.125rem*var(--font-scale))] font-semibold text-gray-900 dark:text-white">
+              <p className="body-lg font-serif font-semibold text-gray-900 dark:text-white">
                 Thank you for your
                 generosity!
               </p>
 
-              <p className="text-[length:calc(0.875rem*var(--font-scale))] text-gray-500 dark:text-gray-400">
+              <p className="caption text-gray-500 dark:text-gray-400">
                 Online payments are
                 launching soon. We&apos;ll be
                 in touch about completing
@@ -95,7 +95,7 @@ export default function DonateSection() {
               className="space-y-5"
             >
               <div>
-                <span className="mb-3 flex items-center gap-2 text-[length:calc(0.875rem*var(--font-scale))] font-semibold text-gray-700 dark:text-gray-200">
+                <span className="caption mb-3 flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200">
                   <HandCoins
                     aria-hidden="true"
                     className="h-4 w-4 text-[#9f004d] dark:text-pink-400"
@@ -123,7 +123,7 @@ export default function DonateSection() {
                           aria-pressed={
                             active
                           }
-                          className={`rounded-xl border px-3 py-2 text-[length:calc(0.875rem*var(--font-scale))] font-semibold transition-colors ${
+                          className={`caption rounded-xl border px-3 py-2 font-semibold transition-colors ${
                             active
                               ? 'border-[#9f004d] bg-[#9f004d] text-white'
                               : 'border-gray-200 bg-white text-gray-700 hover:border-[#9f004d]/40 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200'
@@ -142,7 +142,7 @@ export default function DonateSection() {
                       setIsCustom(true)
                     }
                     aria-pressed={isCustom}
-                    className={`rounded-xl border px-3 py-2 text-[length:calc(0.875rem*var(--font-scale))] font-semibold transition-colors ${
+                    className={`caption rounded-xl border px-3 py-2 font-semibold transition-colors ${
                       isCustom
                         ? 'border-[#9f004d] bg-[#9f004d] text-white'
                         : 'border-gray-200 bg-white text-gray-700 hover:border-[#9f004d]/40 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200'
@@ -157,13 +157,13 @@ export default function DonateSection() {
                 <div>
                   <label
                     htmlFor="custom-amount"
-                    className="mb-1.5 block text-[length:calc(0.875rem*var(--font-scale))] font-semibold text-gray-700 dark:text-gray-200"
+                    className="caption mb-1.5 block font-semibold text-gray-700 dark:text-gray-200"
                   >
                     Custom amount (USD)
                   </label>
 
                   <div className="relative">
-                    <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[length:calc(0.875rem*var(--font-scale))] text-gray-400">
+                    <span className="caption pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400">
                       $
                     </span>
 
@@ -183,14 +183,14 @@ export default function DonateSection() {
                       placeholder={String(
                         MIN_AMOUNT
                       )}
-                      className="w-full rounded-xl border border-gray-200 bg-white py-2 pl-7 pr-3 text-[length:calc(0.875rem*var(--font-scale))] text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9f004d] dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                      className="body w-full rounded-xl border border-gray-200 bg-white py-2 pl-7 pr-3 text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9f004d] dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                     />
                   </div>
 
                   {!isValidAmount &&
                     customAmount !==
                       '' && (
-                      <p className="mt-1.5 text-[length:calc(0.75rem*var(--font-scale))] text-red-500">
+                      <p className="caption mt-1.5 text-red-500">
                         Minimum donation
                         is ${MIN_AMOUNT}
                         .
@@ -202,7 +202,7 @@ export default function DonateSection() {
               <button
                 type="submit"
                 disabled={!isValidAmount}
-                className="w-full rounded-full bg-[#9f004d] px-6 py-3 text-[length:calc(0.875rem*var(--font-scale))] font-bold text-white shadow-md transition-all hover:bg-[#8a0042] disabled:cursor-not-allowed disabled:opacity-50"
+                className="caption w-full rounded-full bg-[#9f004d] px-6 py-3 font-bold text-white shadow-md transition-all hover:bg-[#8a0042] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Donate $
                 {isValidAmount
@@ -210,7 +210,7 @@ export default function DonateSection() {
                   : MIN_AMOUNT}
               </button>
 
-              <p className="text-center text-[length:calc(0.75rem*var(--font-scale))] text-gray-400 dark:text-gray-500">
+              <p className="caption text-center text-gray-400 dark:text-gray-500">
                 Secure online payments are
                 coming soon.
               </p>

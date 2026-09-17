@@ -109,6 +109,14 @@ export default function BeneficiariesSection({
                 slidesPerView: 4,
                 spaceBetween: 30,
               },
+              1536: {
+                slidesPerView: 5,
+                spaceBetween: 30,
+              },
+              2560: {
+                slidesPerView: 6,
+                spaceBetween: 30,
+              },
             }}
             className="beneficiaries-swiper pb-16"
           >

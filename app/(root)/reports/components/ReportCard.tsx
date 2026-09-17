@@ -200,7 +200,7 @@ export default function ReportCard({
 
         {/* Title and meta */}
         <div className="min-w-0 flex-1">
-          <h3 className="truncate font-serif text-[length:calc(1rem*var(--font-scale))] font-semibold leading-tight text-gray-900 dark:text-white">
+          <h3 className="truncate font-serif heading-3 text-gray-900 dark:text-white">
             <Link
               href={`/reports/${report.slug}`}
               className="hover:text-[#9f004d] dark:hover:text-pink-400"
@@ -209,7 +209,7 @@ export default function ReportCard({
             </Link>
           </h3>
 
-          <p className="truncate text-[length:calc(0.75rem*var(--font-scale))] text-gray-500 dark:text-gray-400">
+          <p className="truncate caption text-gray-500 dark:text-gray-400">
             {report.project ? (
               <>
                 <Link
@@ -228,7 +228,7 @@ export default function ReportCard({
         </div>
 
         {/* Stats */}
-        <div className="hidden shrink-0 items-center gap-3 text-[length:calc(0.75rem*var(--font-scale))] font-medium text-gray-400 dark:text-gray-500 sm:flex">
+        <div className="hidden shrink-0 items-center gap-3 caption font-medium text-gray-400 dark:text-gray-500 sm:flex">
           <span className="inline-flex items-center gap-1">
             <Eye
               aria-hidden="true"
@@ -255,7 +255,7 @@ export default function ReportCard({
               <button
                 type="button"
                 onClick={handleView}
-                className="inline-flex items-center gap-1 rounded-full bg-[#9f004d]/10 px-3 py-1.5 text-[length:calc(0.75rem*var(--font-scale))] font-semibold text-[#9f004d] transition-colors hover:bg-[#9f004d]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9f004d] focus-visible:ring-offset-2 dark:bg-pink-500/10 dark:text-pink-400 dark:hover:bg-pink-500/15 dark:focus-visible:ring-offset-gray-900"
+                className="inline-flex items-center gap-1 rounded-full bg-[#9f004d]/10 px-3 py-1.5 caption font-semibold text-[#9f004d] transition-colors hover:bg-[#9f004d]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9f004d] focus-visible:ring-offset-2 dark:bg-pink-500/10 dark:text-pink-400 dark:hover:bg-pink-500/15 dark:focus-visible:ring-offset-gray-900"
               >
                 View
               </button>
@@ -272,7 +272,7 @@ export default function ReportCard({
             </a>
           </div>
         ) : (
-          <span className="shrink-0 text-[length:calc(0.75rem*var(--font-scale))] font-medium text-gray-400 dark:text-gray-500">
+          <span className="shrink-0 caption font-medium text-gray-400 dark:text-gray-500">
             File unavailable
           </span>
         )}
@@ -282,11 +282,11 @@ export default function ReportCard({
         <DialogContent className="flex h-[85vh] w-full max-w-4xl flex-col gap-0 overflow-hidden p-0">
           <DialogHeader className="flex-row items-center justify-between gap-4 border-b border-gray-200 py-4 pl-6 pr-12 text-left dark:border-gray-800">
             <div className="min-w-0">
-              <DialogTitle className="truncate font-serif text-[length:calc(1.25rem*var(--font-scale))]">
+              <DialogTitle className="truncate font-serif heading-3">
                 {report.title}
               </DialogTitle>
 
-              <DialogDescription className="text-[length:calc(0.875rem*var(--font-scale))]">
+              <DialogDescription className="caption">
                 {meta}
               </DialogDescription>
             </div>
@@ -296,7 +296,7 @@ export default function ReportCard({
               download
               onClick={handleDownload}
               aria-label={`Download ${report.title}`}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-[length:calc(0.75rem*var(--font-scale))] font-semibold text-gray-600 transition-colors hover:border-[#9f004d]/30 hover:text-[#9f004d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9f004d] focus-visible:ring-offset-2 dark:border-gray-700 dark:text-gray-300 dark:hover:border-pink-500/30 dark:hover:text-pink-400 dark:focus-visible:ring-offset-gray-900"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 caption font-semibold text-gray-600 transition-colors hover:border-[#9f004d]/30 hover:text-[#9f004d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9f004d] focus-visible:ring-offset-2 dark:border-gray-700 dark:text-gray-300 dark:hover:border-pink-500/30 dark:hover:text-pink-400 dark:focus-visible:ring-offset-gray-900"
             >
               <Download className="h-3.5 w-3.5" />
               Download

@@ -116,12 +116,12 @@ export default function ContactSection() {
             />
           </span>
 
-          <p className="mt-4 select-all font-serif text-[length:calc(1.25rem*var(--font-scale))] font-semibold text-gray-900 dark:text-white">
+          <p className="body-lg mt-4 select-all font-serif font-semibold text-gray-900 dark:text-white">
             {EMAIL_LOCAL}[at]
             {EMAIL_DOMAIN}
           </p>
 
-          <p className="mt-1 text-[length:calc(0.75rem*var(--font-scale))] text-gray-500 dark:text-gray-400">
+          <p className="caption mt-1 text-gray-500 dark:text-gray-400">
             Replace [at] with @
           </p>
 
@@ -133,7 +133,7 @@ export default function ContactSection() {
                 ? 'Email address copied'
                 : 'Copy email address'
             }
-            className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-[length:calc(0.875rem*var(--font-scale))] font-semibold text-gray-600 transition-colors hover:border-[#9f004d]/30 hover:text-[#9f004d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9f004d] focus-visible:ring-offset-2 dark:border-gray-700 dark:text-gray-300 dark:hover:border-pink-500/30 dark:hover:text-pink-400 dark:focus-visible:ring-offset-gray-900"
+            className="caption mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 font-semibold text-gray-600 transition-colors hover:border-[#9f004d]/30 hover:text-[#9f004d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9f004d] focus-visible:ring-offset-2 dark:border-gray-700 dark:text-gray-300 dark:hover:border-pink-500/30 dark:hover:text-pink-400 dark:focus-visible:ring-offset-gray-900"
           >
             {copied ? (
               <>
@@ -174,7 +174,7 @@ export default function ContactSection() {
                   transition={{
                     duration: 0.2,
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1.5 text-xs font-semibold text-white shadow-lg dark:bg-white dark:text-gray-900"
+                  className="caption inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1.5 font-semibold text-white shadow-lg dark:bg-white dark:text-gray-900"
                 >
                   <Check className="h-3.5 w-3.5" />
                   Copied to clipboard!

@@ -23,7 +23,7 @@ export default function PageHeroTabs({ tabs }: { tabs: PageHeroTab[] }) {
         <Link
           key={href}
           href={href}
-          className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+          className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 caption font-semibold transition-colors ${
             isActive
               ? 'bg-white text-[#9f004d]'
               : 'text-white/85 hover:bg-white/15 hover:text-white'

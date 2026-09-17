@@ -262,6 +262,14 @@ function TeamCarousel({
                     slidesPerView: 3,
                     spaceBetween: 40,
                   },
+                  1440: {
+                    slidesPerView: 4,
+                    spaceBetween: 48,
+                  },
+                  1920: {
+                    slidesPerView: 5,
+                    spaceBetween: 56,
+                  },
                 }}
                 className="team-swiper pb-16 !px-4 md:!px-8"
               >

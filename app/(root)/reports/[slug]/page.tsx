@@ -86,27 +86,27 @@ export default async function ReportDetailPage({
       <div className="mx-auto w-[90%] max-w-4xl py-14 sm:py-20">
         <Link
           href="/reports"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 transition-colors hover:text-[#9f004d] dark:text-gray-300 dark:hover:text-pink-400"
+          className="inline-flex items-center gap-2 caption font-semibold text-gray-600 transition-colors hover:text-[#9f004d] dark:text-gray-300 dark:hover:text-pink-400"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Reports
         </Link>
 
         <header className="mt-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400 dark:text-gray-500">
+          <p className="caption font-semibold uppercase tracking-[0.14em] text-gray-400 dark:text-gray-500">
             {formatDate(
               report.createdAt
             )}
           </p>
 
-          <h1 className="mt-2 font-serif text-2xl font-semibold leading-tight text-gray-900 dark:text-white sm:text-3xl">
+          <h1 className="mt-2 font-serif heading-1 text-gray-900 dark:text-white">
             {report.title}
           </h1>
 
           {report.project && (
             <Link
               href={`/programs/${report.project.slug}`}
-              className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#9f004d]/10 px-3 py-1.5 text-xs font-semibold text-[#9f004d] transition-colors hover:bg-[#9f004d]/15 dark:bg-pink-500/10 dark:text-pink-400"
+              className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#9f004d]/10 px-3 py-1.5 caption font-semibold text-[#9f004d] transition-colors hover:bg-[#9f004d]/15 dark:bg-pink-500/10 dark:text-pink-400"
             >
               <FolderOpen className="h-3.5 w-3.5" />
               Related project:{' '}

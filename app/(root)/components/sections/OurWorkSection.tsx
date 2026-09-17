@@ -196,7 +196,7 @@ function ProjectCard({ project }: { project: Project; index: number }) {
     >
       <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 rounded-2xl opacity-0 group-hover:opacity-25 blur transition-opacity duration-300" />
 
-      <div className="relative h-48 overflow-hidden bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/20 dark:to-purple-900/20">
+      <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/20 dark:to-purple-900/20">
         {project.images && project.images.length > 0 ? (
           <>
             <img
@@ -272,7 +272,7 @@ function ReportCard({ report }: { report: Report; index: number }) {
     >
       <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-500 rounded-2xl opacity-0 group-hover:opacity-25 blur transition-opacity duration-300" />
 
-      <div className="relative h-48 overflow-hidden bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20">
+      <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20">
         {report.images && report.images.length > 0 ? (
           <>
             <img

@@ -85,7 +85,7 @@ export default function ReportDetailViewer({
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-gray-500">
+        <div className="flex items-center gap-4 caption text-gray-400 dark:text-gray-500">
           <span className="inline-flex items-center gap-1.5">
             <Eye
               aria-hidden="true"
@@ -110,7 +110,7 @@ export default function ReportDetailViewer({
             href={file}
             download
             onClick={handleDownload}
-            className="inline-flex items-center gap-2 rounded-full bg-[#9f004d] px-4 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#8a0042]"
+            className="inline-flex items-center gap-2 rounded-full bg-[#9f004d] px-4 py-2 caption font-semibold text-white shadow-sm transition-colors hover:bg-[#8a0042]"
           >
             <Download className="h-3.5 w-3.5" />
             Download
@@ -126,7 +126,7 @@ export default function ReportDetailViewer({
             className="h-[75vh] w-full"
           />
         ) : (
-          <p className="p-10 text-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="p-10 text-center caption text-gray-500 dark:text-gray-400">
             This report&apos;s file is
             currently unavailable.
           </p>

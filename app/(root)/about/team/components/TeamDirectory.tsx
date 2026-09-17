@@ -84,7 +84,7 @@ export default function TeamDirectory({
                   category.value
                 )
               }
-              className={`relative flex min-w-[150px] flex-1 items-center justify-center gap-2 overflow-hidden rounded-2xl px-4 py-3 text-sm font-semibold transition-colors ${
+              className={`relative flex min-w-[150px] flex-1 items-center justify-center gap-2 overflow-hidden rounded-2xl px-4 py-3 caption font-semibold transition-colors ${
                 isActive
                   ? 'text-white'
                   : 'text-site-secondary hover:bg-gray-100 hover:text-site-primary dark:hover:bg-gray-800'
@@ -114,7 +114,7 @@ export default function TeamDirectory({
                 </span>
 
                 <span
-                  className={`rounded-full px-2 py-0.5 text-xs ${
+                  className={`rounded-full px-2 py-0.5 caption ${
                     isActive
                       ? 'bg-white/20 text-white'
                       : 'bg-gray-100 text-site-secondary dark:bg-gray-800'
@@ -157,7 +157,7 @@ export default function TeamDirectory({
           </div>
 
           {activeMembers.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid items-start gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {activeMembers.map(
                 (member, index) => (
                   <TeamMemberCard

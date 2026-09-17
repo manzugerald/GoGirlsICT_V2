@@ -44,7 +44,7 @@ export default function SocialFeeds() {
 
       <div className="relative mx-auto w-[90%]">
         <header className="mx-auto mb-12 max-w-3xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-purple-100 px-4 py-2 font-semibold text-purple-700 dark:bg-purple-500/15 dark:text-purple-300">
+          <span className="inline-flex items-center gap-2 rounded-full bg-purple-100 px-4 py-2 caption font-semibold text-purple-700 dark:bg-purple-500/15 dark:text-purple-300">
             <Share2 className="h-4 w-4" />
 
             Social Media

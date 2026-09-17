@@ -21,7 +21,7 @@ export default function TeamCard({
 }: TeamCardProps) {
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-2xl dark:border-gray-800 dark:bg-gray-900">
-      <div className="relative h-64 bg-gradient-to-br from-[#9f004d]/10 to-pink-100 dark:from-[#9f004d]/20 dark:to-gray-800">
+      <div className="relative aspect-[4/5] bg-gradient-to-br from-[#9f004d]/10 to-pink-100 dark:from-[#9f004d]/20 dark:to-gray-800">
         {image ? (
           <img
             src={image}

@@ -151,7 +151,7 @@ export default function WhoWeAre({
       >
         <h2
           id="who-we-are-heading"
-          className="font-serif text-4xl font-semibold leading-[1.06] tracking-[-0.03em] text-gray-950 dark:text-white sm:text-5xl lg:text-[3.4rem]"
+          className="font-serif heading-2 tracking-[-0.03em] text-gray-950 dark:text-white"
         >
           Who
 
@@ -181,7 +181,7 @@ export default function WhoWeAre({
           variants={fadeUp}
           className="mx-auto max-w-3xl text-center"
         >
-          <h3 className="font-serif text-2xl font-semibold leading-tight tracking-[-0.02em] text-gray-950 dark:text-white sm:text-3xl">
+          <h3 className="font-serif heading-3 tracking-[-0.02em] text-gray-950 dark:text-white">
             Our{' '}
             <span className="bg-gradient-to-r from-[#9f004d] via-pink-500 to-purple-600 bg-clip-text text-transparent">
               Story
@@ -206,7 +206,7 @@ export default function WhoWeAre({
                   )}`}
                   className={
                     index === 0
-                      ? 'whitespace-pre-line text-lg font-medium leading-8 text-gray-700 dark:text-gray-200 sm:text-xl sm:leading-9'
+                      ? 'body-lg whitespace-pre-line font-medium leading-8 text-gray-700 dark:text-gray-200'
                       : 'body-lg whitespace-pre-line leading-8 text-gray-600 dark:text-gray-300'
                   }
                 >
@@ -240,7 +240,7 @@ export default function WhoWeAre({
                 className="h-7 w-7 text-[#9f004d]/25 dark:text-pink-400/30"
               />
 
-              <p className="mt-3 text-lg font-medium italic leading-8 text-gray-700 dark:text-gray-200">
+              <p className="mt-3 body-lg font-medium italic text-gray-700 dark:text-gray-200">
                 &ldquo;We create
                 inclusive pathways
                 through technology,
@@ -283,13 +283,13 @@ export default function WhoWeAre({
                         />
                       </span>
 
-                      <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9f004d] dark:text-pink-300">
+                      <p className="mt-3 caption font-semibold uppercase tracking-[0.18em] text-[#9f004d] dark:text-pink-300">
                         {
                           pillar.label
                         }
                       </p>
 
-                      <p className="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                      <p className="mt-1 caption text-gray-600 dark:text-gray-300">
                         {
                           pillar.description
                         }

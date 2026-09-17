@@ -47,7 +47,7 @@ export default function VolunteerSection() {
       aria-labelledby="volunteer-heading"
       className="scroll-mt-20 bg-white py-8 dark:bg-gray-900 sm:scroll-mt-24 sm:py-10 lg:py-12"
     >
-      <div className="mx-auto w-[90%] max-w-4xl">
+      <div className="mx-auto w-[90%]">
         <header className="mx-auto max-w-3xl text-center">
           <h2
             id="volunteer-heading"
@@ -67,7 +67,7 @@ export default function VolunteerSection() {
           </p>
         </header>
 
-        <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2">
+        <div className="mt-8 grid items-start gap-4 sm:mt-10 sm:grid-cols-2">
           {opportunities.map(
             (opportunity) => {
               const Icon =
@@ -86,13 +86,13 @@ export default function VolunteerSection() {
                   </span>
 
                   <div>
-                    <h3 className="font-serif text-[length:calc(1rem*var(--font-scale))] font-semibold text-gray-900 dark:text-white">
+                    <h3 className="heading-3 font-serif text-gray-900 dark:text-white">
                       {
                         opportunity.title
                       }
                     </h3>
 
-                    <p className="mt-1 text-[length:calc(0.875rem*var(--font-scale))] leading-6 text-gray-600 dark:text-gray-300">
+                    <p className="body mt-1 text-gray-600 dark:text-gray-300">
                       {
                         opportunity.description
                       }
@@ -104,7 +104,7 @@ export default function VolunteerSection() {
           )}
         </div>
 
-        <p className="mt-8 text-center text-[length:calc(0.875rem*var(--font-scale))] text-gray-500 dark:text-gray-400 sm:mt-10">
+        <p className="caption mt-8 text-center text-gray-500 dark:text-gray-400 sm:mt-10">
           Interested in volunteering?{' '}
           <a
             href="#contact"

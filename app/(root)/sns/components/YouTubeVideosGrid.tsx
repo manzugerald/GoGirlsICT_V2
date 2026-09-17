@@ -196,7 +196,7 @@ export default function YouTubeVideosGrid() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid items-start grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
       {videos.map(
         (video, index) => {
           const isExpanded =
@@ -277,7 +277,7 @@ export default function YouTubeVideosGrid() {
                     </div>
 
                     {video.duration && (
-                      <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded bg-black/80 px-1.5 py-0.5 text-[11px] text-white">
+                      <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded bg-black/80 px-1.5 py-0.5 caption text-white">
                         <Clock className="h-3 w-3" />
 
                         {video.duration}
@@ -297,10 +297,10 @@ export default function YouTubeVideosGrid() {
                   className="text-left"
                 >
                   <h3
-                    className={`font-semibold leading-6 text-gray-900 transition-[font-size] duration-300 dark:text-white ${
+                    className={`body font-semibold text-gray-900 dark:text-white ${
                       isExpanded
-                        ? 'text-sm'
-                        : 'line-clamp-2 text-sm group-hover:text-base'
+                        ? ''
+                        : 'line-clamp-2'
                     }`}
                   >
                     {video.title ||
@@ -308,7 +308,7 @@ export default function YouTubeVideosGrid() {
                   </h3>
                 </button>
 
-                <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2 text-xs text-gray-400 dark:text-gray-500">
+                <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2 caption text-gray-400 dark:text-gray-500">
                   <span className="flex items-center gap-2">
                     {video.viewCount !==
                       null &&
@@ -339,7 +339,7 @@ export default function YouTubeVideosGrid() {
                   </span>
 
                   {!isExpanded && (
-                    <span className="inline-flex items-center gap-1 font-semibold uppercase tracking-[0.06em] text-red-600 dark:text-red-400">
+                    <span className="inline-flex items-center gap-1 caption font-semibold uppercase tracking-[0.06em] text-red-600 dark:text-red-400">
                       Watch
                     </span>
                   )}
@@ -350,7 +350,7 @@ export default function YouTubeVideosGrid() {
                     href={`https://www.youtube.com/watch?v=${video.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                    className="mt-1 inline-flex items-center gap-1 caption font-semibold text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                   >
                     Open on YouTube
 

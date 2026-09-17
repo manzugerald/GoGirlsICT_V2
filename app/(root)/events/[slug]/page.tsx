@@ -134,10 +134,10 @@ export default async function EventDetailPage({
 
   return (
     <main className="min-h-screen bg-white dark:bg-gray-950">
-      <div className="mx-auto w-[90%] max-w-3xl py-14 sm:py-20">
+      <div className="mx-auto w-[90%] py-14 sm:py-20">
         <Link
           href="/get-involved#events"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 transition-colors hover:text-[#9f004d] dark:text-gray-300 dark:hover:text-pink-400"
+          className="inline-flex items-center gap-2 caption font-semibold text-gray-600 transition-colors hover:text-[#9f004d] dark:text-gray-300 dark:hover:text-pink-400"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Events
@@ -166,7 +166,7 @@ export default async function EventDetailPage({
                 background: transparent;
               }
             `}</style>
-            <div className="event-title-viewer font-serif text-2xl font-semibold leading-tight text-gray-900 dark:text-white sm:text-3xl">
+            <div className="event-title-viewer heading-2 font-serif text-gray-900 dark:text-white">
               <TiptapJsonViewer
                 content={normalizeTiptapDoc(event.eventTitle)}
                 className="[&_p]:m-0"
@@ -174,7 +174,7 @@ export default async function EventDetailPage({
             </div>
 
             <span
-              className={`rounded-full px-2.5 py-1 text-xs font-semibold ${status.className}`}
+              className={`rounded-full px-2.5 py-1 caption font-semibold ${status.className}`}
             >
               {status.label}
             </span>
@@ -183,7 +183,7 @@ export default async function EventDetailPage({
           {event.project && (
             <Link
               href={`/programs/${event.project.slug}`}
-              className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#9f004d]/10 px-3 py-1.5 text-xs font-semibold text-[#9f004d] transition-colors hover:bg-[#9f004d]/15 dark:bg-pink-500/10 dark:text-pink-400"
+              className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#9f004d]/10 px-3 py-1.5 caption font-semibold text-[#9f004d] transition-colors hover:bg-[#9f004d]/15 dark:bg-pink-500/10 dark:text-pink-400"
             >
               <FolderOpen className="h-3.5 w-3.5" />
               Related project:{' '}
@@ -191,7 +191,7 @@ export default async function EventDetailPage({
             </Link>
           )}
 
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 caption text-gray-500 dark:text-gray-400">
             <span className="inline-flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               {formatDateRange(
@@ -218,7 +218,7 @@ export default async function EventDetailPage({
         </header>
 
         {hasDescription && (
-          <div className="mt-8">
+          <div className="mx-auto mt-8 max-w-3xl">
             <TiptapJsonViewer
               content={normalizeTiptapDoc(
                 event.eventDescription
@@ -240,7 +240,7 @@ export default async function EventDetailPage({
               }
             />
           ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="caption text-gray-500 dark:text-gray-400">
               Open to everyone — no
               registration required,
               just show up!

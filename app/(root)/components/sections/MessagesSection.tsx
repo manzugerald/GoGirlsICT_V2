@@ -62,16 +62,21 @@ export default function MessagesSection({ messages }: MessagesSectionProps) {
           >
             <Quote className="w-4 h-4 text-purple-600 dark:text-purple-400" />
           </motion.div>
-          <span className="text-purple-600 dark:text-purple-400 font-semibold text-sm uppercase tracking-wide">
+          <span className="text-purple-600 dark:text-purple-400 font-semibold caption uppercase tracking-wide">
             Leadership Messages
           </span>
         </motion.div>
 
+        {/* heading-2 (not raw text-4xl md:text-5xl) — every other home
+            section title uses this fluid token, which keeps growing past
+            the md breakpoint up to ~3.25rem on large screens; this one
+            was hardcoded and stopped scaling at 768px, reading visibly
+            smaller than its siblings on a big monitor. */}
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 0.3, duration: 0.8 }}
-          className="text-4xl md:text-5xl font-bold mb-4 text-gray-800 dark:text-gray-100"
+          className="heading-2 mb-4 text-gray-800 dark:text-gray-100"
         >
           <motion.span
             animate={{

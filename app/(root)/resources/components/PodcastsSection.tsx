@@ -44,7 +44,7 @@ export default function PodcastsSection({
         </div>
 
         {podcasts.length > 0 ? (
-          <ul className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-10 grid items-start grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
             {podcasts.map(
               (podcast, index) => (
                 <PodcastCard

@@ -68,7 +68,7 @@ export default function OurTeam({
               (member, index) => (
                 <div
                   key={member.id}
-                  className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] xl:w-[calc(25%-1.125rem)]"
+                  className="w-full sm:w-[calc(50%_-_0.75rem)] lg:w-[calc(33.333%_-_1rem)] xl:w-[calc(25%_-_1.125rem)]"
                 >
                   <TeamCard
                     member={member}

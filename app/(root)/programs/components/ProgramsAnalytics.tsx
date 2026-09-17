@@ -309,7 +309,14 @@ export default function ProgramsAnalytics({
           </p>
         </div>
 
-        <div className="mt-3 h-44 sm:h-52">
+        {/* Chart.js renders responsively into this container
+            (maintainAspectRatio: false), so the container's own height is
+            what actually caps the chart's size. h-44 sm:h-52 stopped
+            growing past the sm breakpoint (640px) — same 208px height at
+            2560px as at 640px. A clamp() keeps it growing on large/
+            ultra-wide screens instead, from the same 176px floor up to
+            288px. */}
+        <div className="mt-3 h-[clamp(11rem,9rem_+_6vw,18rem)]">
           <Line
             data={lineData}
             options={lineOptions}
@@ -328,7 +335,7 @@ export default function ProgramsAnalytics({
           </p>
         </div>
 
-        <div className="mt-3 h-44 sm:h-52">
+        <div className="mt-3 h-[clamp(11rem,9rem_+_6vw,18rem)]">
           <Bar
             data={barData}
             options={barOptions}

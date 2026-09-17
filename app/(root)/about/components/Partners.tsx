@@ -91,11 +91,11 @@ export default function Partners({
                           className="h-4 w-4 text-[#9f004d] dark:text-pink-400"
                         />
 
-                        <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-gray-500 dark:text-gray-400">
+                        <h3 className="caption font-semibold uppercase tracking-[0.14em] text-gray-500 dark:text-gray-400">
                           {group.label}
                         </h3>
 
-                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                        <span className="rounded-full bg-gray-100 px-2 py-0.5 caption font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">
                           {members.length}
                         </span>
                       </div>

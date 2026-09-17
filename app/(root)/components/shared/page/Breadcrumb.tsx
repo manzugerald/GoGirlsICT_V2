@@ -12,7 +12,7 @@ interface BreadcrumbProps {
 
 export default function Breadcrumb({ items }: BreadcrumbProps) {
   return (
-    <nav className="flex items-center gap-2 text-sm text-site-muted">
+    <nav className="flex items-center gap-2 caption text-site-muted">
       <Link href="/" className="hover:text-[#9f004d] dark:hover:text-pink-400">
         <Home className="w-4 h-4" />
       </Link>

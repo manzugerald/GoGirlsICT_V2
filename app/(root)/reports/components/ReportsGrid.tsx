@@ -13,7 +13,7 @@ export default function ReportsGrid({
 }) {
   return (
     <section className="relative overflow-hidden py-12 dark:bg-gray-950 sm:py-16 lg:py-20">
-      <div className="relative mx-auto w-[90%] max-w-4xl">
+      <div className="relative mx-auto w-[90%]">
         {reports.length > 0 ? (
           <ul className="space-y-3">
             {reports.map(

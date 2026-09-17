@@ -17,7 +17,6 @@ import type { Stat } from '@/app/(admin)/admin/dashboard/chart/statsConfig';
 
 import Section from '@/app/(root)/components/shared/components/Section';
 import SectionHeader from '@/app/(root)/components/shared/components/SectionHeader';
-import SectionBackground from '@/app/(root)/components/shared/components/SectionBackground';
 import GlowChartCard from '@/app/(root)/components/shared/components/GlowChartCard';
 
 const insights = [
@@ -52,13 +51,6 @@ export default function ImpactPageContent({ stats }: { stats: Stat[] }) {
   return (
     <Section id="impact" className="relative">
       <div ref={containerRef}>
-        <SectionBackground
-          gradient="from-pink-500 via-purple-500 to-blue-500"
-          position="top-right"
-          duration={24}
-          opacity={[0.04, 0.09, 0.04]}
-        />
-
         <SectionHeader
           badge="Impact in Numbers"
           description="Real-time data showcasing our reach and effectiveness"
@@ -74,16 +66,18 @@ export default function ImpactPageContent({ stats }: { stats: Stat[] }) {
           transition={{ delay: 0.25, duration: 0.8 }}
           className="mb-12 relative z-10"
         >
-          <AnimatedStats stats={stats} />
+          <AnimatedStats stats={stats} uniform />
         </motion.div>
 
-        {/* Pie chart — its own glowing card, above the bar chart */}
+        {/* Pie chart — flat card, above the bar chart (no glow: cleaner,
+            no extra footprint behind the card, matching the home page). */}
         <div className="mb-8">
           <GlowChartCard
             icon={PieChart}
             title="Distribution Overview"
             subtitle="How each category compares"
             delay={0.35}
+            glow={false}
           >
             <PieChartPanel stats={stats} />
           </GlowChartCard>
@@ -97,13 +91,6 @@ export default function ImpactPageContent({ stats }: { stats: Stat[] }) {
           className="relative z-10"
           style={{ perspective: '1000px' }}
         >
-          {/* Glowing border */}
-          <motion.div
-            animate={{ opacity: [0.35, 0.85, 0.35] }}
-            transition={{ duration: 3, repeat: Infinity }}
-            className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-2xl blur-lg"
-          />
-
           <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
             {/* Chart Header */}
             <div className="flex items-center justify-between gap-4 p-6 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
