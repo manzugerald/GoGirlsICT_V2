@@ -24,6 +24,7 @@ export async function getGetInvolvedPageData() {
         eventStatus: true,
         eventAttendance: true,
         maxAttendees: true,
+        eventMode: true,
 
         project: {
           select: {

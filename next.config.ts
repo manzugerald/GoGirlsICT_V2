@@ -17,6 +17,15 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      // Uploaded event/project/etc. images are served back as absolute
+      // URLs built from the request origin (see app/api/events/route.ts),
+      // which in local dev is localhost on whatever port the server
+      // happens to be running on — no `port` means any port is allowed.
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        pathname: '/**',
+      },
     ],
   },
 

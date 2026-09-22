@@ -7,7 +7,7 @@ import FilesStatsCharts from './chart/fileStartsCharts';
 export default function ChartSection() {
   return (
     <div className="flex flex-col gap-4">
-      <AnimatedStats />
+      <AnimatedStats uniform wideColumns={5} />
       <DashboardChart />
       <FilesStatsCharts />
     </div>

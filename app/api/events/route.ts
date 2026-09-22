@@ -22,6 +22,15 @@ async function fetchEventsFromDb() {
       eventDetails: true,
       eventDescription: true,
       publishStatus: true,
+      eventAttendance: true,
+      eventMode: true,
+      participationLink: true,
+      registrationType: true,
+      registrationLink: true,
+      registrationStartDate: true,
+      registrationEndDate: true,
+      postedAt: true,
+      editedAt: true,
       createdAt: true,
       updatedAt: true,
       deletedAt: true,
@@ -218,8 +227,10 @@ export async function GET(req: Request) {
     });
   } catch (err) {
     console.error('[/api/events] Error fetching events:', err);
+    const detail =
+      err instanceof Error ? `${err.name}: ${err.message}` : typeof err === 'string' ? err : JSON.stringify(err);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Internal Server Error', detail },
       { status: 500, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } }
     );
   }

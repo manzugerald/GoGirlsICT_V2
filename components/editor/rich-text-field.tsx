@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -216,6 +217,31 @@ export default function RichTextField({
         class:
           "prose dark:prose-invert min-h-[160px] p-2 focus:outline-none tiptap",
       },
+      // Pasted HTML (Word, Google Docs, web pages, ...) almost always
+      // carries its own inline `color` on every run of text — usually a
+      // literal near-black, since that's the source's own default. Once
+      // parsed into a mark, that color is a fixed value with no idea what
+      // theme it'll be viewed in, so it can only ever be right for one
+      // theme (the CSS safety net in tiptap-editor.css only patches the
+      // handful of literal-black spellings it can pattern-match — it can't
+      // cover arbitrary dark colors a source might use). The robust fix is
+      // to never let a `color` survive the paste in the first place: strip
+      // every `color:` declaration out of every inline style attribute
+      // before Tiptap parses the pasted HTML into the document, so pasted
+      // text always falls through to `.tiptap`'s own theme-aware color
+      // (dark text in light mode, light text in dark mode) — the same as
+      // text typed directly into the editor. Other inline styles (bold,
+      // font-size, text-decoration, etc.) are left untouched.
+      transformPastedHTML(html: string) {
+        return html.replace(/style\s*=\s*"([^"]*)"/gi, (_match, styleContent: string) => {
+          const cleaned = styleContent
+            .split(";")
+            .filter((decl) => !/^\s*color\s*:/i.test(decl))
+            .join(";")
+            .trim();
+          return cleaned ? `style="${cleaned}"` : "";
+        });
+      },
       handleClickOn(view, pos, node, nodePos) {
         if (node.type.name === "image") {
           setSelectedImage({ from: nodePos, to: nodePos + node.nodeSize });
@@ -226,6 +252,24 @@ export default function RichTextField({
       },
     },
   });
+
+  // `useEditor`'s `content` option only seeds the document once, at
+  // creation — it's not a controlled prop. When a parent form hydrates
+  // this field's data asynchronously (e.g. an edit form's initialData
+  // arriving via useEffect after the editor already mounted empty), the
+  // ProseMirror document never picks up the new value on its own. Push it
+  // in manually whenever the incoming JSON actually differs from what the
+  // editor already holds — the equality check is what keeps this from
+  // fighting normal typing, since onUpdate immediately echoes the editor's
+  // own output back into `content` on every keystroke.
+  useEffect(() => {
+    if (!editor) return;
+    const current = JSON.stringify(editor.getJSON());
+    const next = JSON.stringify(content);
+    if (current !== next) {
+      editor.commands.setContent(content, false);
+    }
+  }, [content, editor]);
 
   if (!editor) return null;
 

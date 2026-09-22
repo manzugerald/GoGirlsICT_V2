@@ -18,6 +18,26 @@
   color: #e5e7eb;
 }
 
+/* Guard against a literal black (or near-black) text-color mark — from
+   the toolbar's color picker (see rich-text-toolbar.tsx's swatch, whose
+   value falls back to a real color once no explicit one is set), pasted
+   content, or content authored before this fix — going illegible against
+   the dark editor/viewer background. This is an inline style (a Tiptap
+   Color-extension mark rendered as style="color: ..."), which normal CSS
+   inheritance/specificity can never beat, hence !important. Only overridden
+   in dark mode; the same literal black is perfectly legible on the light
+   theme's card, where this rule doesn't apply. */
+.dark .tiptap [style*="color: #000"],
+.dark .tiptap [style*="color:#000"],
+.dark .tiptap [style*="color: rgb(0, 0, 0)"],
+.dark .tiptap [style*="color:rgb(0, 0, 0)"],
+.dark .tiptap [style*="color: rgb(0,0,0)"],
+.dark .tiptap [style*="color:rgb(0,0,0)"],
+.dark .tiptap [style*="color: black"],
+.dark .tiptap [style*="color:black"] {
+  color: #e5e7eb !important;
+}
+
 /* Read-only viewer never shows a text cursor or focus ring. */
 .tiptap-viewer,
 .tiptap-viewer:focus {

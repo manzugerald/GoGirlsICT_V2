@@ -2,6 +2,27 @@ import { signIn, signOut } from 'next-auth/react';
 
 const DEFAULT_POST_LOGIN = '/admin/dashboard?type=home';
 
+/**
+ * NextAuth's signIn({ redirect: false }) returns `url` built from its own
+ * `NEXTAUTH_URL` env var (via the default `redirect` callback: `${baseUrl}${url}`),
+ * not from the page's actual origin. In dev, if the configured port is busy
+ * and Next.js falls back to another one (e.g. NEXTAUTH_URL says :3000 but the
+ * server actually started on :3001), that `url` still points at :3000 — so
+ * `window.location.href = result.redirectUrl` would bounce the browser to a
+ * different (likely dead) server instead of landing on the dashboard.
+ * Stripping the origin and keeping only path+search+hash guarantees the
+ * post-login redirect always stays on whatever origin the browser is
+ * currently on, regardless of what NEXTAUTH_URL says.
+ */
+function toRelativePath(url: string): string {
+  try {
+    const u = new URL(url, window.location.origin);
+    return `${u.pathname}${u.search}${u.hash}`;
+  } catch {
+    return url;
+  }
+}
+
 function deleteCookie(name: string) {
   try {
     document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
@@ -91,8 +112,10 @@ export async function loginAndSync({
       } catch {}
     }
 
-    // Determine redirect: next-auth returned url > provided callbackUrl > default
-    const redirectUrl = next.url ?? callbackUrl ?? DEFAULT_POST_LOGIN;
+    // Determine redirect: next-auth returned url > provided callbackUrl > default.
+    // next.url is relativized (see toRelativePath) so it can never send the
+    // browser to a different port/origin than the one it's already on.
+    const redirectUrl = next.url ? toRelativePath(next.url) : (callbackUrl ?? DEFAULT_POST_LOGIN);
     return { ok: true, redirectUrl };
   } catch {
     // On network error, clear NextAuth session
@@ -129,8 +152,14 @@ export async function logoutAndSync(): Promise<{ ok: boolean; error?: string }> 
       credentials: 'include',
     }).catch(() => null);
 
-    // 4) Clear NextAuth client-side session and redirect to admin login page.
-    await signOut({ callbackUrl: '/admin' });
+    // 4) Clear NextAuth client-side session, then redirect to the home page.
+    // redirect: false + a manual window.location.href (rather than passing
+    // callbackUrl and letting signOut redirect on its own) — same reasoning
+    // as the login-redirect fix: signOut's own redirect is computed from
+    // NEXTAUTH_URL, not the page's actual origin, so it can send the
+    // browser to the wrong port. A literal '/' here is always same-origin.
+    await signOut({ redirect: false });
+    window.location.href = '/';
 
     return { ok: true };
   } catch {

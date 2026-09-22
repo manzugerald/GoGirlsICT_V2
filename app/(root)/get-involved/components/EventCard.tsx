@@ -2,22 +2,14 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  AnimatePresence,
-  motion,
-} from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Calendar,
-  ChevronDown,
-  ExternalLink,
-  FolderOpen,
   MapPin,
-  Users,
 } from 'lucide-react';
 
 import type { EventSummary } from '../data';
 
-import EventRegistrationForm from './EventRegistrationForm';
 import { extractPlainText } from '@/lib/tiptap';
 
 function formatDateRange(
@@ -84,13 +76,9 @@ const statusConfig: Record<
 export default function EventCard({
   event,
   index,
-  isExpanded,
-  onToggle,
 }: {
   event: EventSummary;
   index: number;
-  isExpanded: boolean;
-  onToggle: () => void;
 }) {
   const description = extractPlainText(
     event.eventDescription
@@ -100,9 +88,12 @@ export default function EventCard({
     statusConfig[event.eventStatus] ??
     statusConfig.pending;
 
-  const requiresRegistration =
-    event.eventAttendance ===
-    'registration_required';
+  const modeLabel =
+    event.eventMode === 'virtual'
+      ? 'Virtual'
+      : event.eventMode === 'hybrid'
+        ? 'Hybrid'
+        : 'On-site';
 
   return (
     <motion.li
@@ -124,10 +115,8 @@ export default function EventCard({
       }}
       className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-[#9f004d]/30 hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
     >
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={isExpanded}
+      <Link
+        href={`/events/${event.slug}`}
         className="flex w-full items-center gap-4 p-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9f004d] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
       >
         {/* Thumbnail */}
@@ -161,6 +150,10 @@ export default function EventCard({
               className={`caption shrink-0 rounded-full px-2 py-0.5 font-semibold ${status.className}`}
             >
               {status.label}
+            </span>
+
+            <span className="caption shrink-0 rounded-full bg-gray-100 px-2 py-0.5 font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+              {modeLabel}
             </span>
           </div>
 
@@ -197,122 +190,7 @@ export default function EventCard({
             )}
           </div>
         </div>
-
-        <ChevronDown
-          aria-hidden="true"
-          className={`h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-        />
-      </button>
-
-      <AnimatePresence initial={false}>
-        {isExpanded && (
-          <motion.div
-            initial={{
-              height: 0,
-              opacity: 0,
-            }}
-            animate={{
-              height: 'auto',
-              opacity: 1,
-            }}
-            exit={{
-              height: 0,
-              opacity: 0,
-            }}
-            transition={{
-              duration: 0.25,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="overflow-hidden"
-          >
-            <div className="space-y-4 border-t border-gray-100 p-4 dark:border-gray-800 sm:p-5">
-              {event.eventBanner && (
-                <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
-                  <Image
-                    src={
-                      event.eventBanner
-                    }
-                    alt={
-                      extractPlainText(event.eventTitle)
-                    }
-                    fill
-                    sizes="(min-width: 768px) 640px, 100vw"
-                    className="object-cover"
-                  />
-                </div>
-              )}
-
-              {description && (
-                <p className="body text-gray-600 dark:text-gray-300">
-                  {description}
-                </p>
-              )}
-
-              {event.maxAttendees && (
-                <div className="caption flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                  <Users
-                    aria-hidden="true"
-                    className="h-3.5 w-3.5"
-                  />
-                  Up to{' '}
-                  {event.maxAttendees}{' '}
-                  attendees
-                </div>
-              )}
-
-              <div className="flex flex-wrap items-center gap-3">
-                {event.project && (
-                  <Link
-                    href={`/programs/${event.project.slug}`}
-                    onClick={(
-                      clickEvent
-                    ) =>
-                      clickEvent.stopPropagation()
-                    }
-                    className="caption inline-flex items-center gap-1.5 rounded-full bg-[#9f004d]/10 px-3 py-1.5 font-semibold text-[#9f004d] transition-colors hover:bg-[#9f004d]/15 dark:bg-pink-500/10 dark:text-pink-400"
-                  >
-                    <FolderOpen className="h-3.5 w-3.5" />
-                    Related project:{' '}
-                    {extractPlainText(event.project.title)}
-                  </Link>
-                )}
-
-                <Link
-                  href={`/events/${event.slug}`}
-                  onClick={(
-                    clickEvent
-                  ) =>
-                    clickEvent.stopPropagation()
-                  }
-                  className="caption inline-flex items-center gap-1 font-semibold text-gray-500 transition-colors hover:text-[#9f004d] dark:text-gray-400 dark:hover:text-pink-400"
-                >
-                  View full details
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-
-              {requiresRegistration ? (
-                <EventRegistrationForm
-                  eventTitle={
-                    extractPlainText(event.eventTitle)
-                  }
-                  maxAttendees={
-                    event.maxAttendees ??
-                    null
-                  }
-                />
-              ) : (
-                <p className="caption rounded-lg bg-gray-50 px-3 py-2.5 text-gray-500 dark:bg-gray-950 dark:text-gray-400">
-                  Open to everyone —
-                  no registration
-                  required, just show
-                  up!
-                </p>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </Link>
     </motion.li>
   );
 }

@@ -4,7 +4,13 @@ import { prisma } from '@/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { revalidatePath } from 'next/cache';
-import { EventStatus, PublishStatus, AttendanceType } from '@/lib/generated/prisma';
+import {
+  EventStatus,
+  PublishStatus,
+  AttendanceType,
+  EventMode,
+  RegistrationType,
+} from '@/lib/generated/prisma';
 import { slugify } from '@/lib/utils';
 import { extractPlainText, isTiptapDocEmpty } from '@/lib/tiptap';
 import { saveUploadedFile, saveUploadedFiles } from '@/lib/uploadHelpers';
@@ -159,7 +165,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         eventTags: true,
         eventAttendance: true,
         maxAttendees: true,
+        eventMode: true,
+        participationLink: true,
+        registrationType: true,
+        registrationLink: true,
+        registrationStartDate: true,
+        registrationEndDate: true,
         publishStatus: true,
+        postedAt: true,
+        editedAt: true,
         createdAt: true,
         updatedAt: true,
         deletedAt: true,
@@ -267,11 +281,21 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
 
     const eventStartDateRaw = formData.get('eventStartDate')?.toString() || '';
     const eventEndDateRaw = formData.get('eventEndDate')?.toString() || '';
+    const postedAtRaw = formData.get('postedAt')?.toString() || '';
+    const editedAtRaw = formData.get('editedAt')?.toString() || '';
     const eventTagsRaw = formData.get('eventTags')?.toString() || '[]';
     const eventStatusRaw = formData.get('eventStatus')?.toString() || '';
     const publishStatusRaw = formData.get('publishStatus')?.toString() || '';
     const eventAttendanceRaw = formData.get('eventAttendance')?.toString() || '';
     const maxAttendeesRaw = formData.get('maxAttendees')?.toString() || '';
+    const eventModeRaw = formData.get('eventMode')?.toString() || '';
+    const participationLinkRaw = formData.get('participationLink')?.toString().trim() || '';
+    const registrationTypeRaw = formData.get('registrationType')?.toString() || '';
+    const registrationLinkRaw = formData.get('registrationLink')?.toString().trim() || '';
+    const registrationStartDateRaw = formData.get('registrationStartDate')?.toString() || '';
+    const registrationEndDateRaw = formData.get('registrationEndDate')?.toString() || '';
+    const projectIdRaw = formData.get('projectId')?.toString() || '';
+    const reportIdRaw = formData.get('reportId')?.toString() || '';
 
     let eventTitle;
     let eventDescription;
@@ -299,10 +323,23 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
       eventTags = [];
     }
 
-    if (isTiptapDocEmpty(eventTitle) || !eventDescription || !eventStartDateRaw || !eventEndDateRaw) {
+    // One specific message per field instead of a single catch-all
+    // "Missing required fields" — the client surfaces this string
+    // directly to whoever submitted the form.
+    const cacheHeaders = { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' };
+    if (isTiptapDocEmpty(eventTitle)) {
+      return NextResponse.json({ error: 'Please give this event a title.' }, { status: 400, headers: cacheHeaders });
+    }
+    if (!eventDescription) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
+        { error: 'Please provide an event description.' },
+        { status: 400, headers: cacheHeaders }
+      );
+    }
+    if (!eventStartDateRaw || !eventEndDateRaw) {
+      return NextResponse.json(
+        { error: 'Please provide both event start and end dates.' },
+        { status: 400, headers: cacheHeaders }
       );
     }
 
@@ -315,10 +352,59 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
       );
     }
 
+    // --- Posted / Edited: optional, "auto" (now) when left blank. This is
+    // an actual modification (a PUT), so — unlike on create, where
+    // "Edited" has nothing to default to yet — leaving Edited blank here
+    // means "record this modification as happening now", matching how
+    // updatedAt itself behaves. A deliberately cleared Posted likewise
+    // resets to the current system date. These are optional admin
+    // metadata — a value that fails to parse degrades to "auto" instead
+    // of blocking the whole update from saving.
+    const rawParsedPostedAt = postedAtRaw ? new Date(postedAtRaw) : null;
+    const rawParsedEditedAt = editedAtRaw ? new Date(editedAtRaw) : null;
+    const parsedPostedAt = rawParsedPostedAt && !isNaN(rawParsedPostedAt.getTime()) ? rawParsedPostedAt : null;
+    const parsedEditedAt = rawParsedEditedAt && !isNaN(rawParsedEditedAt.getTime()) ? rawParsedEditedAt : null;
+    if (rawParsedPostedAt && isNaN(rawParsedPostedAt.getTime())) {
+      console.warn('[events/[id]] Ignoring unparseable postedAt value:', postedAtRaw);
+    }
+    if (rawParsedEditedAt && isNaN(rawParsedEditedAt.getTime())) {
+      console.warn('[events/[id]] Ignoring unparseable editedAt value:', editedAtRaw);
+    }
+    const postedAt = parsedPostedAt ?? new Date();
+    const editedAt = parsedEditedAt ?? new Date();
+
     const eventStatus = toEnum(EventStatus, eventStatusRaw) || existing.eventStatus;
     const publishStatus = toEnum(PublishStatus, publishStatusRaw) || existing.publishStatus;
     const eventAttendance = toEnum(AttendanceType, eventAttendanceRaw) || existing.eventAttendance;
     const maxAttendees = maxAttendeesRaw ? Number(maxAttendeesRaw) : null;
+    const eventMode = toEnum(EventMode, eventModeRaw) || existing.eventMode;
+    const participationLink =
+      eventMode !== EventMode.on_site && participationLinkRaw ? participationLinkRaw : null;
+    const registrationType = toEnum(RegistrationType, registrationTypeRaw) || existing.registrationType;
+    const registrationLink =
+      eventAttendance === AttendanceType.registration_required &&
+      registrationType === RegistrationType.external &&
+      registrationLinkRaw
+        ? registrationLinkRaw
+        : null;
+
+    const rawParsedRegistrationStartDate = registrationStartDateRaw ? new Date(registrationStartDateRaw) : null;
+    const rawParsedRegistrationEndDate = registrationEndDateRaw ? new Date(registrationEndDateRaw) : null;
+    const registrationStartDate =
+      eventAttendance === AttendanceType.registration_required &&
+      rawParsedRegistrationStartDate &&
+      !isNaN(rawParsedRegistrationStartDate.getTime())
+        ? rawParsedRegistrationStartDate
+        : null;
+    const registrationEndDate =
+      eventAttendance === AttendanceType.registration_required &&
+      rawParsedRegistrationEndDate &&
+      !isNaN(rawParsedRegistrationEndDate.getTime())
+        ? rawParsedRegistrationEndDate
+        : null;
+
+    const projectId = projectIdRaw && !isNaN(Number(projectIdRaw)) ? Number(projectIdRaw) : null;
+    const reportId = reportIdRaw && !isNaN(Number(reportIdRaw)) ? Number(reportIdRaw) : null;
 
     const slug = slugify(extractPlainText(eventTitle).trim()) || existing.slug;
 
@@ -363,11 +449,21 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
         eventFile,
         eventStartDate,
         eventEndDate,
+        postedAt,
+        editedAt,
         eventTags,
         eventStatus,
         publishStatus,
         eventAttendance,
         maxAttendees,
+        eventMode,
+        participationLink,
+        registrationType,
+        registrationLink,
+        registrationStartDate,
+        registrationEndDate,
+        projectId,
+        reportId,
         updatedById: session.user.id,
       },
     });
@@ -385,8 +481,16 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
     });
   } catch (err) {
     console.error('Failed to update event:', err);
+    // See the same note in app/api/events/upload/route.ts — temporarily
+    // surfaces the real error to the client for diagnosis.
+    const detail =
+      err instanceof Error
+        ? `${err.name}: ${err.message}`
+        : typeof err === 'string'
+          ? err
+          : JSON.stringify(err);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Internal Server Error', detail },
       { status: 500, headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
     );
   }

@@ -27,12 +27,14 @@ export default function AnimatedPieceBarChart({
   colors = defaultColors,
   animationDuration = 1600, // ms for one fill
   loopPause = 800, // ms to show the full bar before restarting animation
+  sizeScale = 1, // multiplies the chart's height floor/ceiling; admin dashboard's chart wants to read bigger than the public pages' version
 }: {
   values?: number[];
   labels?: string[];
   colors?: string[];
   animationDuration?: number;
   loopPause?: number;
+  sizeScale?: number;
 }) {
   const [progress, setProgress] = useState(0); // 0 to 1
   const [loopKey, setLoopKey] = useState(0); // change to restart animation
@@ -129,7 +131,8 @@ export default function AnimatedPieceBarChart({
   // (vw contributes almost nothing on phones/tablets, so small screens are
   // unaffected), capped at 1.5x the floor so it doesn't run away on
   // ultra-wide monitors.
-  const chartHeightStyle = `clamp(${chartHeight}px, ${chartHeight}px + 5vw, ${chartHeight * 1.5}px)`;
+  const scaledFloor = chartHeight * sizeScale;
+  const chartHeightStyle = `clamp(${scaledFloor}px, ${scaledFloor}px + 5vw, ${scaledFloor * 1.5}px)`;
 
   const barOptions: ChartOptions<'bar'> = {
     responsive: true,

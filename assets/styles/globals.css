@@ -151,6 +151,16 @@ html, body {
 }
 
 :root {
+  /* Tells the browser to render NATIVE form controls (input/select/
+     textarea text & background, date/number pickers, scrollbars) to
+     match this theme. Without it, those controls fall back to their
+     light-mode UA default rendering regardless of the page's own dark
+     CSS — since color-scheme (not just inherited `color`) is what
+     governs native widget chrome. This is why a contenteditable field
+     (e.g. the Tiptap title editor, plain CSS-rendered) could look fine
+     in dark mode while every actual <input>/<select> in the same form
+     stayed light/illegible. */
+  color-scheme: light;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
@@ -186,6 +196,7 @@ html, body {
 }
 
 .dark {
+  color-scheme: dark;
   --background: oklch(0.129 0.042 264.695);
   --foreground: oklch(0.984 0.003 247.858);
   --card: oklch(0.208 0.042 265.755);

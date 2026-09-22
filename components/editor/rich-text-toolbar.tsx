@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTheme } from "next-themes";
 import { useRichTextEditorContext } from "./rich-text-context";
 
 const textColors = [
@@ -48,6 +49,19 @@ export default function RichTextToolbar({ showLinkUnlink = true }: Props) {
   const [includeHeader, setIncludeHeader] = useState(true);
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkValue, setLinkValue] = useState("");
+
+  // The color-picker swatch below always needs *some* hex value to show
+  // (native <input type="color"> can't display "no color set"). It used to
+  // fall back to a hardcoded "#000000" — harmless as long as it stayed a
+  // passive display value, but if that swatch is ever applied (e.g. a
+  // native color-picker dialog firing change on close without an explicit
+  // pick), it wrote a literal black color mark that stayed illegible
+  // against a dark editor/card regardless of theme. Falling back to the
+  // theme's own current default text color (matching .tiptap/.dark .tiptap
+  // in tiptap-editor.css) keeps the swatch honest about what's actually
+  // showing, and safe to apply either way.
+  const { resolvedTheme } = useTheme();
+  const defaultTextColor = resolvedTheme === "dark" ? "#e5e7eb" : "#1f2937";
 
   const disabled = !editor;
 
@@ -186,7 +200,7 @@ export default function RichTextToolbar({ showLinkUnlink = true }: Props) {
         <input
           type="color"
           onChange={(e) => setTextColor(e.target.value)}
-          value={editor?.getAttributes("textStyle").color || "#000000"}
+          value={editor?.getAttributes("textStyle").color || defaultTextColor}
           className="tiptap-color-input"
           title="Text color"
           disabled={disabled}

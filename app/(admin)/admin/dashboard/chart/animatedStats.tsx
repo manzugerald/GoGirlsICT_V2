@@ -17,7 +17,8 @@ const CIRCLE_DELAY_STEP = 0.32;
 export default function AnimatedStats({
   stats: statsProp,
   uniform = false,
-}: { stats?: Stat[]; uniform?: boolean } = {}) {
+  wideColumns,
+}: { stats?: Stat[]; uniform?: boolean; wideColumns?: number } = {}) {
   const [stats, setStats] = useState<Stat[]>(statsProp ?? []);
   // When `stats` is supplied by the caller (public pages compute their own
   // curated, server-side counts), there's nothing to fetch — skip the
@@ -90,7 +91,7 @@ export default function AnimatedStats({
         }
       >
         {stats.map((stat, i) => (
-          <StatCard key={stat.label} stat={stat} index={i} uniform={uniform} />
+          <StatCard key={stat.label} stat={stat} index={i} uniform={uniform} wideColumns={wideColumns} />
         ))}
       </div>
     </div>
@@ -101,10 +102,12 @@ function StatCard({
   stat,
   index,
   uniform,
+  wideColumns,
 }: {
   stat: Stat;
   index: number;
   uniform?: boolean;
+  wideColumns?: number;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
 
@@ -155,7 +158,19 @@ function StatCard({
         // of breakpoints a stepped class list would cover. It keeps
         // growing through common desktop widths before leveling off at
         // 14rem instead of topping out and going flat partway through.
-        (uniform ? ' w-[clamp(8rem,_6rem_+_5vw,_14rem)] aspect-square overflow-hidden' : '')
+        //
+        // wideColumns (admin dashboard's 14-stat grid) overrides that
+        // clamp from lg: up with a percentage-of-container width instead —
+        // (100% - (N-1)*gap) / N always divides the row into exactly N
+        // equal columns no matter how wide the actual container turns out
+        // to be (sidebar collapsed/expanded, etc.), which a fixed rem
+        // clamp can't guarantee. 1.5rem matches this container's own
+        // lg:gap-6. flex-wrap + justify-center (above) still centers a
+        // partial last row (14 stats / 5 per row = 5+5+4).
+        (uniform ? ' w-[clamp(8rem,_6rem_+_5vw,_14rem)] aspect-square overflow-hidden' : '') +
+        (uniform && wideColumns
+          ? ` lg:w-[calc((100%_-_${(wideColumns - 1) * 1.5}rem)/${wideColumns})]`
+          : '')
       }
       style={{
         borderTop: `7px solid ${stat.color || '#7c3aed'}`,

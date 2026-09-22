@@ -228,6 +228,23 @@ export const AttendanceType: {
 export type AttendanceType = (typeof AttendanceType)[keyof typeof AttendanceType]
 
 
+export const EventMode: {
+  on_site: 'on_site',
+  virtual: 'virtual',
+  hybrid: 'hybrid'
+};
+
+export type EventMode = (typeof EventMode)[keyof typeof EventMode]
+
+
+export const RegistrationType: {
+  internal: 'internal',
+  external: 'external'
+};
+
+export type RegistrationType = (typeof RegistrationType)[keyof typeof RegistrationType]
+
+
 export const InstitutionType: {
   education: 'education',
   faith_based_organization: 'faith_based_organization',
@@ -340,6 +357,14 @@ export const EventStatus: typeof $Enums.EventStatus
 export type AttendanceType = $Enums.AttendanceType
 
 export const AttendanceType: typeof $Enums.AttendanceType
+
+export type EventMode = $Enums.EventMode
+
+export const EventMode: typeof $Enums.EventMode
+
+export type RegistrationType = $Enums.RegistrationType
+
+export const RegistrationType: typeof $Enums.RegistrationType
 
 export type InstitutionType = $Enums.InstitutionType
 
@@ -17635,14 +17660,22 @@ export namespace Prisma {
     eventLocation: string | null
     eventBanner: string | null
     eventFile: string | null
+    eventMode: $Enums.EventMode | null
+    participationLink: string | null
     eventStartDate: Date | null
     eventEndDate: Date | null
     eventStatus: $Enums.EventStatus | null
     publishStatus: $Enums.PublishStatus | null
     eventAttendance: $Enums.AttendanceType | null
     maxAttendees: number | null
+    registrationType: $Enums.RegistrationType | null
+    registrationLink: string | null
+    registrationStartDate: Date | null
+    registrationEndDate: Date | null
     accessCount: number | null
     downloadCount: number | null
+    postedAt: Date | null
+    editedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -17658,14 +17691,22 @@ export namespace Prisma {
     eventLocation: string | null
     eventBanner: string | null
     eventFile: string | null
+    eventMode: $Enums.EventMode | null
+    participationLink: string | null
     eventStartDate: Date | null
     eventEndDate: Date | null
     eventStatus: $Enums.EventStatus | null
     publishStatus: $Enums.PublishStatus | null
     eventAttendance: $Enums.AttendanceType | null
     maxAttendees: number | null
+    registrationType: $Enums.RegistrationType | null
+    registrationLink: string | null
+    registrationStartDate: Date | null
+    registrationEndDate: Date | null
     accessCount: number | null
     downloadCount: number | null
+    postedAt: Date | null
+    editedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
     deletedAt: Date | null
@@ -17685,6 +17726,8 @@ export namespace Prisma {
     eventBanner: number
     eventImages: number
     eventFile: number
+    eventMode: number
+    participationLink: number
     eventStartDate: number
     eventEndDate: number
     eventTags: number
@@ -17692,8 +17735,14 @@ export namespace Prisma {
     publishStatus: number
     eventAttendance: number
     maxAttendees: number
+    registrationType: number
+    registrationLink: number
+    registrationStartDate: number
+    registrationEndDate: number
     accessCount: number
     downloadCount: number
+    postedAt: number
+    editedAt: number
     createdAt: number
     updatedAt: number
     deletedAt: number
@@ -17729,14 +17778,22 @@ export namespace Prisma {
     eventLocation?: true
     eventBanner?: true
     eventFile?: true
+    eventMode?: true
+    participationLink?: true
     eventStartDate?: true
     eventEndDate?: true
     eventStatus?: true
     publishStatus?: true
     eventAttendance?: true
     maxAttendees?: true
+    registrationType?: true
+    registrationLink?: true
+    registrationStartDate?: true
+    registrationEndDate?: true
     accessCount?: true
     downloadCount?: true
+    postedAt?: true
+    editedAt?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -17752,14 +17809,22 @@ export namespace Prisma {
     eventLocation?: true
     eventBanner?: true
     eventFile?: true
+    eventMode?: true
+    participationLink?: true
     eventStartDate?: true
     eventEndDate?: true
     eventStatus?: true
     publishStatus?: true
     eventAttendance?: true
     maxAttendees?: true
+    registrationType?: true
+    registrationLink?: true
+    registrationStartDate?: true
+    registrationEndDate?: true
     accessCount?: true
     downloadCount?: true
+    postedAt?: true
+    editedAt?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -17779,6 +17844,8 @@ export namespace Prisma {
     eventBanner?: true
     eventImages?: true
     eventFile?: true
+    eventMode?: true
+    participationLink?: true
     eventStartDate?: true
     eventEndDate?: true
     eventTags?: true
@@ -17786,8 +17853,14 @@ export namespace Prisma {
     publishStatus?: true
     eventAttendance?: true
     maxAttendees?: true
+    registrationType?: true
+    registrationLink?: true
+    registrationStartDate?: true
+    registrationEndDate?: true
     accessCount?: true
     downloadCount?: true
+    postedAt?: true
+    editedAt?: true
     createdAt?: true
     updatedAt?: true
     deletedAt?: true
@@ -17894,6 +17967,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages: string[]
     eventFile: string
+    eventMode: $Enums.EventMode
+    participationLink: string | null
     eventStartDate: Date
     eventEndDate: Date
     eventTags: string[]
@@ -17901,8 +17976,14 @@ export namespace Prisma {
     publishStatus: $Enums.PublishStatus
     eventAttendance: $Enums.AttendanceType
     maxAttendees: number | null
+    registrationType: $Enums.RegistrationType
+    registrationLink: string | null
+    registrationStartDate: Date | null
+    registrationEndDate: Date | null
     accessCount: number
     downloadCount: number
+    postedAt: Date | null
+    editedAt: Date | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -17941,6 +18022,8 @@ export namespace Prisma {
     eventBanner?: boolean
     eventImages?: boolean
     eventFile?: boolean
+    eventMode?: boolean
+    participationLink?: boolean
     eventStartDate?: boolean
     eventEndDate?: boolean
     eventTags?: boolean
@@ -17948,8 +18031,14 @@ export namespace Prisma {
     publishStatus?: boolean
     eventAttendance?: boolean
     maxAttendees?: boolean
+    registrationType?: boolean
+    registrationLink?: boolean
+    registrationStartDate?: boolean
+    registrationEndDate?: boolean
     accessCount?: boolean
     downloadCount?: boolean
+    postedAt?: boolean
+    editedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -17977,6 +18066,8 @@ export namespace Prisma {
     eventBanner?: boolean
     eventImages?: boolean
     eventFile?: boolean
+    eventMode?: boolean
+    participationLink?: boolean
     eventStartDate?: boolean
     eventEndDate?: boolean
     eventTags?: boolean
@@ -17984,8 +18075,14 @@ export namespace Prisma {
     publishStatus?: boolean
     eventAttendance?: boolean
     maxAttendees?: boolean
+    registrationType?: boolean
+    registrationLink?: boolean
+    registrationStartDate?: boolean
+    registrationEndDate?: boolean
     accessCount?: boolean
     downloadCount?: boolean
+    postedAt?: boolean
+    editedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -18009,6 +18106,8 @@ export namespace Prisma {
     eventBanner?: boolean
     eventImages?: boolean
     eventFile?: boolean
+    eventMode?: boolean
+    participationLink?: boolean
     eventStartDate?: boolean
     eventEndDate?: boolean
     eventTags?: boolean
@@ -18016,8 +18115,14 @@ export namespace Prisma {
     publishStatus?: boolean
     eventAttendance?: boolean
     maxAttendees?: boolean
+    registrationType?: boolean
+    registrationLink?: boolean
+    registrationStartDate?: boolean
+    registrationEndDate?: boolean
     accessCount?: boolean
     downloadCount?: boolean
+    postedAt?: boolean
+    editedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -18041,6 +18146,8 @@ export namespace Prisma {
     eventBanner?: boolean
     eventImages?: boolean
     eventFile?: boolean
+    eventMode?: boolean
+    participationLink?: boolean
     eventStartDate?: boolean
     eventEndDate?: boolean
     eventTags?: boolean
@@ -18048,8 +18155,14 @@ export namespace Prisma {
     publishStatus?: boolean
     eventAttendance?: boolean
     maxAttendees?: boolean
+    registrationType?: boolean
+    registrationLink?: boolean
+    registrationStartDate?: boolean
+    registrationEndDate?: boolean
     accessCount?: boolean
     downloadCount?: boolean
+    postedAt?: boolean
+    editedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     deletedAt?: boolean
@@ -18059,7 +18172,7 @@ export namespace Prisma {
     reportId?: boolean
   }
 
-  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "slug" | "eventTitle" | "eventDescription" | "eventDetails" | "eventLocation" | "eventBanner" | "eventImages" | "eventFile" | "eventStartDate" | "eventEndDate" | "eventTags" | "eventStatus" | "publishStatus" | "eventAttendance" | "maxAttendees" | "accessCount" | "downloadCount" | "createdAt" | "updatedAt" | "deletedAt" | "createdById" | "updatedById" | "projectId" | "reportId", ExtArgs["result"]["event"]>
+  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "slug" | "eventTitle" | "eventDescription" | "eventDetails" | "eventLocation" | "eventBanner" | "eventImages" | "eventFile" | "eventMode" | "participationLink" | "eventStartDate" | "eventEndDate" | "eventTags" | "eventStatus" | "publishStatus" | "eventAttendance" | "maxAttendees" | "registrationType" | "registrationLink" | "registrationStartDate" | "registrationEndDate" | "accessCount" | "downloadCount" | "postedAt" | "editedAt" | "createdAt" | "updatedAt" | "deletedAt" | "createdById" | "updatedById" | "projectId" | "reportId", ExtArgs["result"]["event"]>
   export type EventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
     updatedBy?: boolean | UserDefaultArgs<ExtArgs>
@@ -18104,6 +18217,8 @@ export namespace Prisma {
       eventBanner: string
       eventImages: string[]
       eventFile: string
+      eventMode: $Enums.EventMode
+      participationLink: string | null
       eventStartDate: Date
       eventEndDate: Date
       eventTags: string[]
@@ -18111,8 +18226,14 @@ export namespace Prisma {
       publishStatus: $Enums.PublishStatus
       eventAttendance: $Enums.AttendanceType
       maxAttendees: number | null
+      registrationType: $Enums.RegistrationType
+      registrationLink: string | null
+      registrationStartDate: Date | null
+      registrationEndDate: Date | null
       accessCount: number
       downloadCount: number
+      postedAt: Date | null
+      editedAt: Date | null
       createdAt: Date
       updatedAt: Date
       deletedAt: Date | null
@@ -18559,6 +18680,8 @@ export namespace Prisma {
     readonly eventBanner: FieldRef<"Event", 'String'>
     readonly eventImages: FieldRef<"Event", 'String[]'>
     readonly eventFile: FieldRef<"Event", 'String'>
+    readonly eventMode: FieldRef<"Event", 'EventMode'>
+    readonly participationLink: FieldRef<"Event", 'String'>
     readonly eventStartDate: FieldRef<"Event", 'DateTime'>
     readonly eventEndDate: FieldRef<"Event", 'DateTime'>
     readonly eventTags: FieldRef<"Event", 'String[]'>
@@ -18566,8 +18689,14 @@ export namespace Prisma {
     readonly publishStatus: FieldRef<"Event", 'PublishStatus'>
     readonly eventAttendance: FieldRef<"Event", 'AttendanceType'>
     readonly maxAttendees: FieldRef<"Event", 'Int'>
+    readonly registrationType: FieldRef<"Event", 'RegistrationType'>
+    readonly registrationLink: FieldRef<"Event", 'String'>
+    readonly registrationStartDate: FieldRef<"Event", 'DateTime'>
+    readonly registrationEndDate: FieldRef<"Event", 'DateTime'>
     readonly accessCount: FieldRef<"Event", 'Int'>
     readonly downloadCount: FieldRef<"Event", 'Int'>
+    readonly postedAt: FieldRef<"Event", 'DateTime'>
+    readonly editedAt: FieldRef<"Event", 'DateTime'>
     readonly createdAt: FieldRef<"Event", 'DateTime'>
     readonly updatedAt: FieldRef<"Event", 'DateTime'>
     readonly deletedAt: FieldRef<"Event", 'DateTime'>
@@ -37979,6 +38108,8 @@ export namespace Prisma {
     eventBanner: 'eventBanner',
     eventImages: 'eventImages',
     eventFile: 'eventFile',
+    eventMode: 'eventMode',
+    participationLink: 'participationLink',
     eventStartDate: 'eventStartDate',
     eventEndDate: 'eventEndDate',
     eventTags: 'eventTags',
@@ -37986,8 +38117,14 @@ export namespace Prisma {
     publishStatus: 'publishStatus',
     eventAttendance: 'eventAttendance',
     maxAttendees: 'maxAttendees',
+    registrationType: 'registrationType',
+    registrationLink: 'registrationLink',
+    registrationStartDate: 'registrationStartDate',
+    registrationEndDate: 'registrationEndDate',
     accessCount: 'accessCount',
     downloadCount: 'downloadCount',
+    postedAt: 'postedAt',
+    editedAt: 'editedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     deletedAt: 'deletedAt',
@@ -38441,6 +38578,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'EventMode'
+   */
+  export type EnumEventModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EventMode'>
+    
+
+
+  /**
+   * Reference to a field of type 'EventMode[]'
+   */
+  export type ListEnumEventModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EventMode[]'>
+    
+
+
+  /**
    * Reference to a field of type 'EventStatus'
    */
   export type EnumEventStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EventStatus'>
@@ -38465,6 +38616,20 @@ export namespace Prisma {
    * Reference to a field of type 'AttendanceType[]'
    */
   export type ListEnumAttendanceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AttendanceType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'RegistrationType'
+   */
+  export type EnumRegistrationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RegistrationType'>
+    
+
+
+  /**
+   * Reference to a field of type 'RegistrationType[]'
+   */
+  export type ListEnumRegistrationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RegistrationType[]'>
     
 
 
@@ -39639,6 +39804,8 @@ export namespace Prisma {
     eventBanner?: StringFilter<"Event"> | string
     eventImages?: StringNullableListFilter<"Event">
     eventFile?: StringFilter<"Event"> | string
+    eventMode?: EnumEventModeFilter<"Event"> | $Enums.EventMode
+    participationLink?: StringNullableFilter<"Event"> | string | null
     eventStartDate?: DateTimeFilter<"Event"> | Date | string
     eventEndDate?: DateTimeFilter<"Event"> | Date | string
     eventTags?: StringNullableListFilter<"Event">
@@ -39646,8 +39813,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFilter<"Event"> | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFilter<"Event"> | $Enums.AttendanceType
     maxAttendees?: IntNullableFilter<"Event"> | number | null
+    registrationType?: EnumRegistrationTypeFilter<"Event"> | $Enums.RegistrationType
+    registrationLink?: StringNullableFilter<"Event"> | string | null
+    registrationStartDate?: DateTimeNullableFilter<"Event"> | Date | string | null
+    registrationEndDate?: DateTimeNullableFilter<"Event"> | Date | string | null
     accessCount?: IntFilter<"Event"> | number
     downloadCount?: IntFilter<"Event"> | number
+    postedAt?: DateTimeNullableFilter<"Event"> | Date | string | null
+    editedAt?: DateTimeNullableFilter<"Event"> | Date | string | null
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Event"> | Date | string | null
@@ -39674,6 +39847,8 @@ export namespace Prisma {
     eventBanner?: SortOrder
     eventImages?: SortOrder
     eventFile?: SortOrder
+    eventMode?: SortOrder
+    participationLink?: SortOrderInput | SortOrder
     eventStartDate?: SortOrder
     eventEndDate?: SortOrder
     eventTags?: SortOrder
@@ -39681,8 +39856,14 @@ export namespace Prisma {
     publishStatus?: SortOrder
     eventAttendance?: SortOrder
     maxAttendees?: SortOrderInput | SortOrder
+    registrationType?: SortOrder
+    registrationLink?: SortOrderInput | SortOrder
+    registrationStartDate?: SortOrderInput | SortOrder
+    registrationEndDate?: SortOrderInput | SortOrder
     accessCount?: SortOrder
     downloadCount?: SortOrder
+    postedAt?: SortOrderInput | SortOrder
+    editedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -39712,6 +39893,8 @@ export namespace Prisma {
     eventBanner?: StringFilter<"Event"> | string
     eventImages?: StringNullableListFilter<"Event">
     eventFile?: StringFilter<"Event"> | string
+    eventMode?: EnumEventModeFilter<"Event"> | $Enums.EventMode
+    participationLink?: StringNullableFilter<"Event"> | string | null
     eventStartDate?: DateTimeFilter<"Event"> | Date | string
     eventEndDate?: DateTimeFilter<"Event"> | Date | string
     eventTags?: StringNullableListFilter<"Event">
@@ -39719,8 +39902,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFilter<"Event"> | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFilter<"Event"> | $Enums.AttendanceType
     maxAttendees?: IntNullableFilter<"Event"> | number | null
+    registrationType?: EnumRegistrationTypeFilter<"Event"> | $Enums.RegistrationType
+    registrationLink?: StringNullableFilter<"Event"> | string | null
+    registrationStartDate?: DateTimeNullableFilter<"Event"> | Date | string | null
+    registrationEndDate?: DateTimeNullableFilter<"Event"> | Date | string | null
     accessCount?: IntFilter<"Event"> | number
     downloadCount?: IntFilter<"Event"> | number
+    postedAt?: DateTimeNullableFilter<"Event"> | Date | string | null
+    editedAt?: DateTimeNullableFilter<"Event"> | Date | string | null
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Event"> | Date | string | null
@@ -39747,6 +39936,8 @@ export namespace Prisma {
     eventBanner?: SortOrder
     eventImages?: SortOrder
     eventFile?: SortOrder
+    eventMode?: SortOrder
+    participationLink?: SortOrderInput | SortOrder
     eventStartDate?: SortOrder
     eventEndDate?: SortOrder
     eventTags?: SortOrder
@@ -39754,8 +39945,14 @@ export namespace Prisma {
     publishStatus?: SortOrder
     eventAttendance?: SortOrder
     maxAttendees?: SortOrderInput | SortOrder
+    registrationType?: SortOrder
+    registrationLink?: SortOrderInput | SortOrder
+    registrationStartDate?: SortOrderInput | SortOrder
+    registrationEndDate?: SortOrderInput | SortOrder
     accessCount?: SortOrder
     downloadCount?: SortOrder
+    postedAt?: SortOrderInput | SortOrder
+    editedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
@@ -39783,6 +39980,8 @@ export namespace Prisma {
     eventBanner?: StringWithAggregatesFilter<"Event"> | string
     eventImages?: StringNullableListFilter<"Event">
     eventFile?: StringWithAggregatesFilter<"Event"> | string
+    eventMode?: EnumEventModeWithAggregatesFilter<"Event"> | $Enums.EventMode
+    participationLink?: StringNullableWithAggregatesFilter<"Event"> | string | null
     eventStartDate?: DateTimeWithAggregatesFilter<"Event"> | Date | string
     eventEndDate?: DateTimeWithAggregatesFilter<"Event"> | Date | string
     eventTags?: StringNullableListFilter<"Event">
@@ -39790,8 +39989,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusWithAggregatesFilter<"Event"> | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeWithAggregatesFilter<"Event"> | $Enums.AttendanceType
     maxAttendees?: IntNullableWithAggregatesFilter<"Event"> | number | null
+    registrationType?: EnumRegistrationTypeWithAggregatesFilter<"Event"> | $Enums.RegistrationType
+    registrationLink?: StringNullableWithAggregatesFilter<"Event"> | string | null
+    registrationStartDate?: DateTimeNullableWithAggregatesFilter<"Event"> | Date | string | null
+    registrationEndDate?: DateTimeNullableWithAggregatesFilter<"Event"> | Date | string | null
     accessCount?: IntWithAggregatesFilter<"Event"> | number
     downloadCount?: IntWithAggregatesFilter<"Event"> | number
+    postedAt?: DateTimeNullableWithAggregatesFilter<"Event"> | Date | string | null
+    editedAt?: DateTimeNullableWithAggregatesFilter<"Event"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Event"> | Date | string | null
@@ -42253,6 +42458,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -42260,8 +42467,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -42284,6 +42497,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -42291,8 +42506,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -42314,6 +42535,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -42321,8 +42544,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -42345,6 +42574,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -42352,8 +42583,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -42376,6 +42613,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -42383,8 +42622,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -42403,6 +42648,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -42410,8 +42657,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -42427,6 +42680,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -42434,8 +42689,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -44821,6 +45082,13 @@ export namespace Prisma {
     active?: SortOrder
   }
 
+  export type EnumEventModeFilter<$PrismaModel = never> = {
+    equals?: $Enums.EventMode | EnumEventModeFieldRefInput<$PrismaModel>
+    in?: $Enums.EventMode[] | ListEnumEventModeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EventMode[] | ListEnumEventModeFieldRefInput<$PrismaModel>
+    not?: NestedEnumEventModeFilter<$PrismaModel> | $Enums.EventMode
+  }
+
   export type EnumEventStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.EventStatus | EnumEventStatusFieldRefInput<$PrismaModel>
     in?: $Enums.EventStatus[] | ListEnumEventStatusFieldRefInput<$PrismaModel>
@@ -44833,6 +45101,13 @@ export namespace Prisma {
     in?: $Enums.AttendanceType[] | ListEnumAttendanceTypeFieldRefInput<$PrismaModel>
     notIn?: $Enums.AttendanceType[] | ListEnumAttendanceTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumAttendanceTypeFilter<$PrismaModel> | $Enums.AttendanceType
+  }
+
+  export type EnumRegistrationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.RegistrationType | EnumRegistrationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.RegistrationType[] | ListEnumRegistrationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RegistrationType[] | ListEnumRegistrationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumRegistrationTypeFilter<$PrismaModel> | $Enums.RegistrationType
   }
 
   export type BeneficiaryEventListRelationFilter = {
@@ -44855,6 +45130,8 @@ export namespace Prisma {
     eventBanner?: SortOrder
     eventImages?: SortOrder
     eventFile?: SortOrder
+    eventMode?: SortOrder
+    participationLink?: SortOrder
     eventStartDate?: SortOrder
     eventEndDate?: SortOrder
     eventTags?: SortOrder
@@ -44862,8 +45139,14 @@ export namespace Prisma {
     publishStatus?: SortOrder
     eventAttendance?: SortOrder
     maxAttendees?: SortOrder
+    registrationType?: SortOrder
+    registrationLink?: SortOrder
+    registrationStartDate?: SortOrder
+    registrationEndDate?: SortOrder
     accessCount?: SortOrder
     downloadCount?: SortOrder
+    postedAt?: SortOrder
+    editedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -44888,14 +45171,22 @@ export namespace Prisma {
     eventLocation?: SortOrder
     eventBanner?: SortOrder
     eventFile?: SortOrder
+    eventMode?: SortOrder
+    participationLink?: SortOrder
     eventStartDate?: SortOrder
     eventEndDate?: SortOrder
     eventStatus?: SortOrder
     publishStatus?: SortOrder
     eventAttendance?: SortOrder
     maxAttendees?: SortOrder
+    registrationType?: SortOrder
+    registrationLink?: SortOrder
+    registrationStartDate?: SortOrder
+    registrationEndDate?: SortOrder
     accessCount?: SortOrder
     downloadCount?: SortOrder
+    postedAt?: SortOrder
+    editedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -44911,14 +45202,22 @@ export namespace Prisma {
     eventLocation?: SortOrder
     eventBanner?: SortOrder
     eventFile?: SortOrder
+    eventMode?: SortOrder
+    participationLink?: SortOrder
     eventStartDate?: SortOrder
     eventEndDate?: SortOrder
     eventStatus?: SortOrder
     publishStatus?: SortOrder
     eventAttendance?: SortOrder
     maxAttendees?: SortOrder
+    registrationType?: SortOrder
+    registrationLink?: SortOrder
+    registrationStartDate?: SortOrder
+    registrationEndDate?: SortOrder
     accessCount?: SortOrder
     downloadCount?: SortOrder
+    postedAt?: SortOrder
+    editedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     deletedAt?: SortOrder
@@ -44935,6 +45234,16 @@ export namespace Prisma {
     downloadCount?: SortOrder
     projectId?: SortOrder
     reportId?: SortOrder
+  }
+
+  export type EnumEventModeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.EventMode | EnumEventModeFieldRefInput<$PrismaModel>
+    in?: $Enums.EventMode[] | ListEnumEventModeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EventMode[] | ListEnumEventModeFieldRefInput<$PrismaModel>
+    not?: NestedEnumEventModeWithAggregatesFilter<$PrismaModel> | $Enums.EventMode
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumEventModeFilter<$PrismaModel>
+    _max?: NestedEnumEventModeFilter<$PrismaModel>
   }
 
   export type EnumEventStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -44955,6 +45264,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumAttendanceTypeFilter<$PrismaModel>
     _max?: NestedEnumAttendanceTypeFilter<$PrismaModel>
+  }
+
+  export type EnumRegistrationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RegistrationType | EnumRegistrationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.RegistrationType[] | ListEnumRegistrationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RegistrationType[] | ListEnumRegistrationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumRegistrationTypeWithAggregatesFilter<$PrismaModel> | $Enums.RegistrationType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRegistrationTypeFilter<$PrismaModel>
+    _max?: NestedEnumRegistrationTypeFilter<$PrismaModel>
   }
 
   export type YoutubeCountOrderByAggregateInput = {
@@ -48285,6 +48604,10 @@ export namespace Prisma {
     push?: string | string[]
   }
 
+  export type EnumEventModeFieldUpdateOperationsInput = {
+    set?: $Enums.EventMode
+  }
+
   export type EventUpdateeventTagsInput = {
     set?: string[]
     push?: string | string[]
@@ -48296,6 +48619,10 @@ export namespace Prisma {
 
   export type EnumAttendanceTypeFieldUpdateOperationsInput = {
     set?: $Enums.AttendanceType
+  }
+
+  export type EnumRegistrationTypeFieldUpdateOperationsInput = {
+    set?: $Enums.RegistrationType
   }
 
   export type UserUpdateOneRequiredWithoutCreatedEventsNestedInput = {
@@ -49974,6 +50301,13 @@ export namespace Prisma {
     _max?: NestedEnumLoginStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumEventModeFilter<$PrismaModel = never> = {
+    equals?: $Enums.EventMode | EnumEventModeFieldRefInput<$PrismaModel>
+    in?: $Enums.EventMode[] | ListEnumEventModeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EventMode[] | ListEnumEventModeFieldRefInput<$PrismaModel>
+    not?: NestedEnumEventModeFilter<$PrismaModel> | $Enums.EventMode
+  }
+
   export type NestedEnumEventStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.EventStatus | EnumEventStatusFieldRefInput<$PrismaModel>
     in?: $Enums.EventStatus[] | ListEnumEventStatusFieldRefInput<$PrismaModel>
@@ -49986,6 +50320,23 @@ export namespace Prisma {
     in?: $Enums.AttendanceType[] | ListEnumAttendanceTypeFieldRefInput<$PrismaModel>
     notIn?: $Enums.AttendanceType[] | ListEnumAttendanceTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumAttendanceTypeFilter<$PrismaModel> | $Enums.AttendanceType
+  }
+
+  export type NestedEnumRegistrationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.RegistrationType | EnumRegistrationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.RegistrationType[] | ListEnumRegistrationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RegistrationType[] | ListEnumRegistrationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumRegistrationTypeFilter<$PrismaModel> | $Enums.RegistrationType
+  }
+
+  export type NestedEnumEventModeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.EventMode | EnumEventModeFieldRefInput<$PrismaModel>
+    in?: $Enums.EventMode[] | ListEnumEventModeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EventMode[] | ListEnumEventModeFieldRefInput<$PrismaModel>
+    not?: NestedEnumEventModeWithAggregatesFilter<$PrismaModel> | $Enums.EventMode
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumEventModeFilter<$PrismaModel>
+    _max?: NestedEnumEventModeFilter<$PrismaModel>
   }
 
   export type NestedEnumEventStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -50006,6 +50357,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumAttendanceTypeFilter<$PrismaModel>
     _max?: NestedEnumAttendanceTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumRegistrationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RegistrationType | EnumRegistrationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.RegistrationType[] | ListEnumRegistrationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RegistrationType[] | ListEnumRegistrationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumRegistrationTypeWithAggregatesFilter<$PrismaModel> | $Enums.RegistrationType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRegistrationTypeFilter<$PrismaModel>
+    _max?: NestedEnumRegistrationTypeFilter<$PrismaModel>
   }
 
   export type NestedEnumInstitutionTypeFilter<$PrismaModel = never> = {
@@ -50494,6 +50855,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -50501,8 +50864,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -50524,6 +50893,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -50531,8 +50902,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -51110,6 +51487,8 @@ export namespace Prisma {
     eventBanner?: StringFilter<"Event"> | string
     eventImages?: StringNullableListFilter<"Event">
     eventFile?: StringFilter<"Event"> | string
+    eventMode?: EnumEventModeFilter<"Event"> | $Enums.EventMode
+    participationLink?: StringNullableFilter<"Event"> | string | null
     eventStartDate?: DateTimeFilter<"Event"> | Date | string
     eventEndDate?: DateTimeFilter<"Event"> | Date | string
     eventTags?: StringNullableListFilter<"Event">
@@ -51117,8 +51496,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFilter<"Event"> | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFilter<"Event"> | $Enums.AttendanceType
     maxAttendees?: IntNullableFilter<"Event"> | number | null
+    registrationType?: EnumRegistrationTypeFilter<"Event"> | $Enums.RegistrationType
+    registrationLink?: StringNullableFilter<"Event"> | string | null
+    registrationStartDate?: DateTimeNullableFilter<"Event"> | Date | string | null
+    registrationEndDate?: DateTimeNullableFilter<"Event"> | Date | string | null
     accessCount?: IntFilter<"Event"> | number
     downloadCount?: IntFilter<"Event"> | number
+    postedAt?: DateTimeNullableFilter<"Event"> | Date | string | null
+    editedAt?: DateTimeNullableFilter<"Event"> | Date | string | null
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Event"> | Date | string | null
@@ -51622,6 +52007,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -51629,8 +52016,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -51652,6 +52045,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -51659,8 +52054,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -52865,6 +53266,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -52872,8 +53275,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -52895,6 +53304,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -52902,8 +53313,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -53684,6 +54101,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -53691,8 +54110,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53714,6 +54139,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -53721,8 +54148,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -55530,6 +55963,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -55537,8 +55972,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -55560,6 +56001,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -55567,8 +56010,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -55599,6 +56048,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -55606,8 +56057,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -55629,6 +56086,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -55636,8 +56095,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -61540,6 +62005,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -61547,8 +62014,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -61570,6 +62043,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -61577,8 +62052,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -61682,6 +62163,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -61689,8 +62172,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -61712,6 +62201,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -61719,8 +62210,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -62828,6 +63325,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -62835,8 +63334,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -62858,6 +63363,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -62865,8 +63372,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -63642,6 +64155,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -63649,8 +64164,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -63672,6 +64193,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -63679,8 +64202,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -65603,6 +66132,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -65610,8 +66141,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -65740,6 +66277,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -65747,8 +66286,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -65770,6 +66315,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -65777,8 +66324,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -65800,6 +66353,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -65807,8 +66362,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -65999,6 +66560,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -66006,8 +66569,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -66081,6 +66650,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -66088,8 +66659,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -66111,6 +66688,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -66118,8 +66697,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -66141,6 +66726,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -66148,8 +66735,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -66675,6 +67268,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -66682,8 +67277,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -66702,6 +67303,8 @@ export namespace Prisma {
     eventBanner: string
     eventImages?: EventCreateeventImagesInput | string[]
     eventFile: string
+    eventMode?: $Enums.EventMode
+    participationLink?: string | null
     eventStartDate: Date | string
     eventEndDate: Date | string
     eventTags?: EventCreateeventTagsInput | string[]
@@ -66709,8 +67312,14 @@ export namespace Prisma {
     publishStatus?: $Enums.PublishStatus
     eventAttendance?: $Enums.AttendanceType
     maxAttendees?: number | null
+    registrationType?: $Enums.RegistrationType
+    registrationLink?: string | null
+    registrationStartDate?: Date | string | null
+    registrationEndDate?: Date | string | null
     accessCount?: number
     downloadCount?: number
+    postedAt?: Date | string | null
+    editedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
@@ -67891,6 +68500,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -67898,8 +68509,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -67921,6 +68538,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -67928,8 +68547,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -67951,6 +68576,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -67958,8 +68585,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -67977,6 +68610,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -67984,8 +68619,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68007,6 +68648,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -68014,8 +68657,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68037,6 +68686,8 @@ export namespace Prisma {
     eventBanner?: StringFieldUpdateOperationsInput | string
     eventImages?: EventUpdateeventImagesInput | string[]
     eventFile?: StringFieldUpdateOperationsInput | string
+    eventMode?: EnumEventModeFieldUpdateOperationsInput | $Enums.EventMode
+    participationLink?: NullableStringFieldUpdateOperationsInput | string | null
     eventStartDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventEndDate?: DateTimeFieldUpdateOperationsInput | Date | string
     eventTags?: EventUpdateeventTagsInput | string[]
@@ -68044,8 +68695,14 @@ export namespace Prisma {
     publishStatus?: EnumPublishStatusFieldUpdateOperationsInput | $Enums.PublishStatus
     eventAttendance?: EnumAttendanceTypeFieldUpdateOperationsInput | $Enums.AttendanceType
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    registrationType?: EnumRegistrationTypeFieldUpdateOperationsInput | $Enums.RegistrationType
+    registrationLink?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationStartDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    registrationEndDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     accessCount?: IntFieldUpdateOperationsInput | number
     downloadCount?: IntFieldUpdateOperationsInput | number
+    postedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

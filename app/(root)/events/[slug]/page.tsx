@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -9,6 +8,7 @@ import {
   FolderOpen,
   MapPin,
   Users,
+  Video,
 } from 'lucide-react';
 
 import EventRegistrationForm from '@/app/(root)/get-involved/components/EventRegistrationForm';
@@ -124,6 +124,10 @@ export default async function EventDetailPage({
     event.eventDescription
   );
 
+  const hasDetails = !isTiptapDocEmpty(
+    event.eventDetails
+  );
+
   const status =
     statusConfig[event.eventStatus] ??
     statusConfig.pending;
@@ -131,6 +135,18 @@ export default async function EventDetailPage({
   const requiresRegistration =
     event.eventAttendance ===
     'registration_required';
+
+  const isExternalRegistration =
+    requiresRegistration &&
+    event.registrationType === 'external' &&
+    !!event.registrationLink;
+
+  const modeLabel =
+    event.eventMode === 'virtual'
+      ? 'Virtual'
+      : event.eventMode === 'hybrid'
+        ? 'Hybrid'
+        : 'On-site';
 
   return (
     <main className="min-h-screen bg-white dark:bg-gray-950">
@@ -142,19 +158,6 @@ export default async function EventDetailPage({
           <ArrowLeft className="h-4 w-4" />
           Back to Events
         </Link>
-
-        {event.eventBanner && (
-          <div className="relative mt-6 aspect-video w-full overflow-hidden rounded-2xl bg-gray-100 dark:bg-gray-800">
-            <Image
-              src={event.eventBanner}
-              alt={extractPlainText(event.eventTitle)}
-              fill
-              sizes="(min-width: 768px) 768px, 100vw"
-              className="object-cover"
-              priority
-            />
-          </div>
-        )}
 
         <header className="mt-6">
           <div className="flex flex-wrap items-center gap-2">
@@ -178,6 +181,10 @@ export default async function EventDetailPage({
             >
               {status.label}
             </span>
+
+            <span className="rounded-full bg-gray-100 px-2.5 py-1 caption font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+              {modeLabel}
+            </span>
           </div>
 
           {event.project && (
@@ -190,62 +197,123 @@ export default async function EventDetailPage({
               {extractPlainText(event.project.title)}
             </Link>
           )}
-
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 caption text-gray-500 dark:text-gray-400">
-            <span className="inline-flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              {formatDateRange(
-                event.eventStartDate,
-                event.eventEndDate
-              )}
-            </span>
-
-            {event.eventLocation && (
-              <span className="inline-flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                {event.eventLocation}
-              </span>
-            )}
-
-            {event.maxAttendees && (
-              <span className="inline-flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Up to {event.maxAttendees}{' '}
-                attendees
-              </span>
-            )}
-          </div>
         </header>
 
-        {hasDescription && (
-          <div className="mx-auto mt-8 max-w-3xl">
-            <TiptapJsonViewer
-              content={normalizeTiptapDoc(
-                event.eventDescription
-              )}
-              className="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-200"
-            />
-          </div>
-        )}
-
-        <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 p-5 dark:border-gray-800 dark:bg-gray-950">
-          {requiresRegistration ? (
-            <EventRegistrationForm
-              eventTitle={
-                extractPlainText(event.eventTitle)
-              }
-              maxAttendees={
-                event.maxAttendees ??
-                null
-              }
-            />
-          ) : (
-            <p className="caption text-gray-500 dark:text-gray-400">
-              Open to everyone — no
-              registration required,
-              just show up!
-            </p>
+        {/* Image on the left, details on the right (stacks on mobile) */}
+        <div className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,360px)_1fr]">
+          {event.eventBanner && (
+            <div className="w-full overflow-hidden rounded-2xl bg-gray-100 dark:bg-gray-800 md:sticky md:top-24 md:self-start">
+              {/* Rendered at its own intrinsic aspect ratio (no crop) —
+                  width fills the column, height follows naturally. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={event.eventBanner}
+                alt={extractPlainText(event.eventTitle)}
+                className="h-auto w-full"
+              />
+            </div>
           )}
+
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 caption text-gray-500 dark:text-gray-400">
+              <span className="inline-flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                {formatDateRange(
+                  event.eventStartDate,
+                  event.eventEndDate
+                )}
+              </span>
+
+              {event.eventLocation && (
+                <span className="inline-flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  {event.eventLocation}
+                </span>
+              )}
+
+              {event.maxAttendees && (
+                <span className="inline-flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Up to {event.maxAttendees}{' '}
+                  attendees
+                </span>
+              )}
+            </div>
+
+            {event.participationLink && (
+              <a
+                href={event.participationLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#9f004d] px-4 py-2 caption font-semibold text-white transition-colors hover:bg-[#9f004d]/90"
+              >
+                <Video className="h-4 w-4" />
+                Join{' '}
+                {event.eventMode === 'hybrid'
+                  ? 'Virtually'
+                  : 'Event'}
+              </a>
+            )}
+
+            {hasDescription && (
+              <div className="mt-6">
+                <TiptapJsonViewer
+                  content={normalizeTiptapDoc(
+                    event.eventDescription
+                  )}
+                  className="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-200"
+                />
+              </div>
+            )}
+
+            {hasDetails && (
+              <div className="mt-6">
+                <h2 className="heading-3 font-serif text-gray-900 dark:text-white">
+                  Additional Details
+                </h2>
+                <TiptapJsonViewer
+                  content={normalizeTiptapDoc(
+                    event.eventDetails
+                  )}
+                  className="prose dark:prose-invert mt-2 max-w-none text-gray-700 dark:text-gray-200"
+                />
+              </div>
+            )}
+
+            <div className="mt-6 rounded-2xl border border-gray-200 bg-gray-50 p-5 dark:border-gray-800 dark:bg-gray-950">
+              {isExternalRegistration ? (
+                <div className="text-center">
+                  <p className="caption mb-3 text-gray-600 dark:text-gray-300">
+                    Registration for this event happens on an external site.
+                  </p>
+                  <a
+                    href={event.registrationLink!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#9f004d] px-4 py-2 caption font-semibold text-white transition-colors hover:bg-[#9f004d]/90"
+                  >
+                    Register Now
+                  </a>
+                </div>
+              ) : requiresRegistration ? (
+                <EventRegistrationForm
+                  eventTitle={
+                    extractPlainText(event.eventTitle)
+                  }
+                  maxAttendees={
+                    event.maxAttendees ??
+                    null
+                  }
+                />
+              ) : (
+                <p className="caption text-gray-500 dark:text-gray-400">
+                  Open to everyone — no
+                  registration required,
+                  just show up!
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </main>

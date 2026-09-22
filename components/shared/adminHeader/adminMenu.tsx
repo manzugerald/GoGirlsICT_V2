@@ -139,9 +139,9 @@ const AdminMenu: React.FC<AdminMenuProps> = ({ isAuthenticated, user }) => {
         sessionStorage.removeItem('loginStartedAt');
       } catch {}
       await logoutAndSync();
-      router.push('/admin');
+      router.push('/');
     } catch {
-      router.push('/admin');
+      router.push('/');
     }
   };
 

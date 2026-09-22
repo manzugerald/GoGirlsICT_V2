@@ -77,7 +77,14 @@ export default function AdminLoginPage() {
       setShowManualContinue(false);
       return;
     }
-    const timer = setTimeout(() => setShowManualContinue(true), 4000);
+    // 4s was too tight in dev: a cold Turbopack compile of /admin/dashboard
+    // routinely takes well past that on its first hit after a server
+    // restart, which surfaced the "stuck" fallback (with its "Continue to
+    // Dashboard" button) on an otherwise-working redirect — reading exactly
+    // like login wasn't landing on the dashboard automatically. 12s gives a
+    // slow dev compile room to finish silently while still catching a
+    // genuinely stuck case (e.g. a popup blocker on window.location).
+    const timer = setTimeout(() => setShowManualContinue(true), 12000);
     return () => clearTimeout(timer);
   }, [status]);
 

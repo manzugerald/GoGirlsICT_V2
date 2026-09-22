@@ -214,6 +214,8 @@ const Footer = () => {
             <div className="text-xs">
               <Link
                 href="/admin"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-gray-400 hover:text-[#9f004d] transition-colors duration-200 inline-flex items-center gap-1.5 group"
               >
                 <LogIn className="w-3 h-3 shrink-0 text-[#9f004d] group-hover:text-pink-300 transition-colors" />

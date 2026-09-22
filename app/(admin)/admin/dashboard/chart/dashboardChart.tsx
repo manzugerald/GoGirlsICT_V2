@@ -53,14 +53,27 @@ function PieLegend({
   labels,
   data,
   colors,
+  multiColumn = false,
 }: {
   labels: string[];
   data: number[];
   colors: string[];
+  // Off by default (public pages, few items — a single column reads best
+  // and was an explicit earlier design choice). The admin dashboard has up
+  // to 14 stats in this legend, where a single column runs very tall; 2-3
+  // columns from md up (still 1 column below md, where the pie itself
+  // stacks above the legend) uses the space much better.
+  multiColumn?: boolean;
 }) {
   const total = data.reduce((a, b) => a + b, 0);
   return (
-    <ul className="grid grid-cols-1 gap-y-1.5 font-medium">
+    <ul
+      className={
+        multiColumn
+          ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-1.5 font-medium'
+          : 'grid grid-cols-1 gap-y-1.5 font-medium'
+      }
+    >
       {labels.map((label, i) => (
         <li key={i} className="flex items-start gap-2">
           <span
@@ -87,7 +100,7 @@ function PieLegend({
 // each chart in its own card (see GlowChartCard) can compose them
 // independently, in whichever order they like.
 
-export function BarChartPanel({ stats }: { stats: Stat[] }) {
+export function BarChartPanel({ stats, sizeScale }: { stats: Stat[]; sizeScale?: number }) {
   const labels = stats.map((s) => s.label);
   const values = stats.map((s) => s.value);
   const colors = stats.map((s) => s.color);
@@ -99,11 +112,18 @@ export function BarChartPanel({ stats }: { stats: Stat[] }) {
       colors={colors}
       animationDuration={1600}
       loopPause={1000}
+      sizeScale={sizeScale}
     />
   );
 }
 
-export function PieChartPanel({ stats }: { stats: Stat[] }) {
+export function PieChartPanel({
+  stats,
+  multiColumnLegend = false,
+}: {
+  stats: Stat[];
+  multiColumnLegend?: boolean;
+}) {
   // Restarts the Pie's own draw-in animation periodically, independent of
   // the bar chart's separate fill/loop animation.
   const [loop, setLoop] = useState(0);
@@ -148,8 +168,16 @@ export function PieChartPanel({ stats }: { stats: Stat[] }) {
         <Pie key={loop} data={pieData} options={pieOptions} />
       </div>
 
-      <div className="w-full md:max-w-md mt-2 md:mt-0 md:ml-2">
-        <PieLegend labels={labels} data={values} colors={colors} />
+      {/* Multi-column legend needs more than a single md:max-w-md column's
+          worth of width to actually show multiple columns side by side. */}
+      <div
+        className={
+          multiColumnLegend
+            ? 'w-full md:max-w-2xl mt-2 md:mt-0 md:ml-2'
+            : 'w-full md:max-w-md mt-2 md:mt-0 md:ml-2'
+        }
+      >
+        <PieLegend labels={labels} data={values} colors={colors} multiColumn={multiColumnLegend} />
       </div>
     </div>
   );
@@ -184,14 +212,18 @@ export default function DashboardChart({ stats: statsProp }: { stats?: Stat[] } 
             <div className="text-center text-muted-foreground">Loading...</div>
           ) : (
             <div className="flex flex-col gap-6">
-              {/* Bar chart, full width */}
+              {/* Bar chart, full width — sizeScale bumps it up from the
+                  public-page version's size, which the admin dashboard's
+                  wider layout can comfortably fit. */}
               <div className={`${cardHoverClass} w-full p-4`}>
-                <BarChartPanel stats={safeStats} />
+                <BarChartPanel stats={safeStats} sizeScale={1.4} />
               </div>
 
-              {/* Pie chart + legend, on its own row below the bar chart */}
+              {/* Pie chart + legend, on its own row below the bar chart —
+                  multi-column legend since admin shows up to 14 stats here
+                  (vs. a public page's curated handful). */}
               <div className={`${cardHoverClass} w-full p-4`}>
-                <PieChartPanel stats={safeStats} />
+                <PieChartPanel stats={safeStats} multiColumnLegend />
               </div>
 
               {/* Refresh re-fetches live counts — not meaningful when stats

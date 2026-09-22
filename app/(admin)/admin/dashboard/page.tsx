@@ -399,6 +399,7 @@ export default function AdminDashboardPage() {
 
   function handleEdit(record: DashRecord) {
     setHideControls(true);
+    setViewRecord(null);
     setEditRecord(record);
   }
   function handleCancelEdit() {
@@ -619,6 +620,21 @@ export default function AdminDashboardPage() {
           );
         case 'institutions':
           return <InstitutionView data={viewRecord} onClose={handleCloseView} />;
+        case 'events':
+          return (
+            <EventsSection
+              paginatedData={paginatedData}
+              page={page}
+              rowsPerPage={rowsPerPage}
+              handleEdit={handleEdit}
+              handleView={(r: DashRecord) => handleView(r, 'events')}
+              handleDelete={handleDelete}
+              TableActions={() => null}
+              deleteId={deleteId}
+              deleteLoading={deleteLoading}
+              onToggleControls={(hide: boolean) => setHideControls(hide)}
+            />
+          );
         case 'home':
           return <ChartSection />;
         case 'settings':

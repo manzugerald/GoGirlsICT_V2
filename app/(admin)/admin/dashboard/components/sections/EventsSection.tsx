@@ -178,7 +178,7 @@ export default function EventsSection({
     }
 
     return (
-      <div className="grid grid-cols-1 gap-4">
+      <div className="space-y-3">
         {data.map((ev) => {
           const title = tiptapExcerpt(ev.eventTitle, 200) || 'Untitled Event';
 
@@ -187,43 +187,62 @@ export default function EventsSection({
             ev.eventBanner ?? ev.banner ?? ev.cover ?? null
           );
           const bannerSrc = toAbsoluteUrl(bannerRaw) ?? null;
+          const firstImage = extractArrayFromCandidate(ev?.eventImages ?? ev?.images ?? null)[0] ?? null;
+          const thumbSrc = bannerSrc ?? (firstImage ? toAbsoluteUrl(firstImage) : null);
 
           const preview = tiptapExcerpt(ev.eventDescription ?? ev.eventDetails, 120);
           const start = formatDate(ev.eventStartDate);
           const end = formatDate(ev.eventEndDate);
           const pdf = extractUrlFromCandidate(ev.eventFile ?? ev.file ?? null);
 
+          const openView = () => {
+            setViewingEvent(ev);
+            if (typeof handleView === 'function') handleView(ev);
+          };
+
           return (
             <div
               key={ev.id}
-              className="p-0 border rounded-md bg-white dark:bg-gray-900 hover:shadow-sm transition-shadow overflow-hidden"
+              className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-[#9f004d]/30 hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
             >
-              {/* Title & meta above the banner */}
-              <div className="p-3">
-                <h3
-                  className="font-semibold text-lg truncate cursor-pointer"
-                  onClick={() => {
-                    setViewingEvent(ev);
-                    if (typeof handleView === 'function') handleView(ev);
-                  }}
+              <div className="flex w-full flex-col gap-4 p-3 sm:flex-row sm:items-center">
+                {/* Thumbnail (banner, left) */}
+                <button
+                  type="button"
+                  onClick={openView}
+                  className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100 text-left dark:bg-gray-800"
                 >
-                  {title}
-                </h3>
-                <div className="mt-2 text-sm text-gray-600 flex flex-wrap gap-4">
-                  <div className="whitespace-nowrap">
-                    By:{' '}
-                    {ev.createdBy
-                      ? `${ev.createdBy.firstName ?? ''} ${ev.createdBy.lastName ?? ''}`.trim()
-                      : 'System'}
-                  </div>
-                  <div className="whitespace-nowrap">Start: {start}</div>
-                  <div className="whitespace-nowrap">End: {end}</div>
-                </div>
+                  {thumbSrc ? (
+                    <img src={thumbSrc} alt={title} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
+                      No image
+                    </div>
+                  )}
+                </button>
 
-                {/* Text preview above the banner */}
-                <div className="mt-3 text-sm text-gray-700 dark:text-gray-300">
+                {/* Title and meta */}
+                <div className="min-w-0 flex-1">
+                  <h3
+                    className="font-semibold text-lg truncate cursor-pointer"
+                    onClick={openView}
+                  >
+                    {title}
+                  </h3>
+                  <div className="mt-1 text-sm text-gray-600 dark:text-gray-400 flex flex-wrap gap-x-4 gap-y-1">
+                    <div className="whitespace-nowrap">
+                      By:{' '}
+                      {ev.createdBy
+                        ? `${ev.createdBy.firstName ?? ''} ${ev.createdBy.lastName ?? ''}`.trim()
+                        : 'System'}
+                    </div>
+                    <div className="whitespace-nowrap">Start: {start}</div>
+                    <div className="whitespace-nowrap">End: {end}</div>
+                  </div>
+
                   {preview ? (
                     <div
+                      className="mt-2 text-sm text-gray-700 dark:text-gray-300"
                       style={{
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
@@ -235,94 +254,41 @@ export default function EventsSection({
                       {preview}
                     </div>
                   ) : (
-                    <div className="text-sm text-muted">No description</div>
+                    <div className="mt-2 text-sm text-muted">No description</div>
                   )}
                 </div>
-              </div>
 
-              {/* Banner area (clickable) */}
-              <div
-                className="relative w-full h-40 md:h-44 cursor-pointer"
-                onClick={() => {
-                  setViewingEvent(ev);
-                  if (typeof handleView === 'function') handleView(ev);
-                }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    setViewingEvent(ev);
-                    if (typeof handleView === 'function') handleView(ev);
-                  }
-                }}
-              >
-                {bannerSrc ? (
-                  <img src={bannerSrc} alt={title} className="w-full h-full object-cover" />
-                ) : (
-                  (() => {
-                    const firstImage =
-                      extractArrayFromCandidate(ev?.eventImages ?? ev?.images ?? null)[0] ?? null;
-                    if (firstImage) {
-                      return (
-                        <img
-                          src={toAbsoluteUrl(firstImage) ?? undefined}
-                          alt={title}
-                          className="w-full h-full object-cover"
-                        />
-                      );
-                    }
-                    return <div className="w-full h-full bg-gray-100 dark:bg-gray-800" />;
-                  })()
-                )}
-              </div>
+                {/* Actions */}
+                <div className="flex shrink-0 flex-wrap items-center gap-2 sm:flex-col sm:items-stretch">
+                  {pdf ? (
+                    <a
+                      href={toAbsoluteUrl(pdf) ?? undefined}
+                      download
+                      className="px-3 py-1 bg-blue-600 text-white rounded text-sm text-center"
+                    >
+                      Download
+                    </a>
+                  ) : null}
 
-              {/* Buttons immediately below the banner */}
-              <div className="p-3 flex items-center justify-end gap-2 border-t dark:border-gray-800 bg-white dark:bg-gray-900">
-                {pdf ? (
-                  <a
-                    href={toAbsoluteUrl(pdf) ?? undefined}
-                    download
-                    onClick={(e) => e.stopPropagation()}
-                    className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
+                  <Button size="sm" variant="outline" onClick={openView}>
+                    View
+                  </Button>
+
+                  <Button size="sm" variant="outline" onClick={() => handleEdit(ev)}>
+                    Edit
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={async () => {
+                      await handleDelete(ev.id);
+                    }}
+                    disabled={Boolean(deleteLoading && deleteId === ev.id)}
                   >
-                    Download
-                  </a>
-                ) : null}
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setViewingEvent(ev);
-                    if (typeof handleView === 'function') handleView(ev);
-                  }}
-                >
-                  View
-                </Button>
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEdit(ev);
-                  }}
-                >
-                  Edit
-                </Button>
-
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    await handleDelete(ev.id);
-                  }}
-                  disabled={Boolean(deleteLoading && deleteId === ev.id)}
-                >
-                  {deleteLoading && deleteId === ev.id ? 'Deleting...' : 'Delete'}
-                </Button>
+                    {deleteLoading && deleteId === ev.id ? 'Deleting...' : 'Delete'}
+                  </Button>
+                </div>
               </div>
             </div>
           );
@@ -399,8 +365,18 @@ export default function EventsSection({
       ev.createdBy && (ev.createdBy.firstName || ev.createdBy.lastName)
         ? `${ev.createdBy.firstName ?? ''} ${ev.createdBy.lastName ?? ''}`.trim()
         : ev.createdBy?.username ?? 'System';
-    const createdAt = formatDate(ev.createdAt ?? ev.eventStartDate);
-    const updatedAt = formatDate(ev.updatedAt ?? ev.eventEndDate);
+    // "Posted"/"Edited" (see prisma/schema.prisma's Event model). Posted
+    // falls back to createdAt for events saved before the field existed.
+    // Edited only ever has a value once a real modification happens — a
+    // freshly-created, never-edited event has no editedAt (and its
+    // updatedAt still equals createdAt), so it only falls back to
+    // updatedAt when that actually differs from createdAt (a real edit
+    // that happened before this field existed), not unconditionally.
+    const hasLegacyEdit =
+      ev.updatedAt && ev.createdAt && new Date(ev.updatedAt).getTime() !== new Date(ev.createdAt).getTime();
+    const editedRaw = ev.editedAt ?? (hasLegacyEdit ? ev.updatedAt : null);
+    const createdAt = formatDate(ev.postedAt ?? ev.createdAt ?? ev.eventStartDate);
+    const updatedAt = editedRaw ? formatDate(editedRaw) : null;
     const pdfUrl = extractUrlFromCandidate(ev.eventFile ?? ev.file ?? null);
     const pdfSrc = toAbsoluteUrl(pdfUrl) ?? undefined;
     const images = extractArrayFromCandidate(ev.eventImages ?? ev.images ?? null);
@@ -419,6 +395,15 @@ export default function EventsSection({
     const endDate = formatDate(ev.eventEndDate);
     const status = ev.eventStatus ?? ev.status ?? '';
     const publishStatus = ev.publishStatus ?? '';
+    const eventMode = ev.eventMode ?? 'on_site';
+    const participationLink = ev.participationLink ?? '';
+    const eventAttendance = ev.eventAttendance ?? ev.attendance ?? 'public';
+    const registrationType = ev.registrationType ?? 'internal';
+    const registrationLink = ev.registrationLink ?? '';
+    const registrationStartDate = ev.registrationStartDate ? formatDate(ev.registrationStartDate) : null;
+    const registrationEndDate = ev.registrationEndDate ? formatDate(ev.registrationEndDate) : null;
+    const relatedProject = ev.project ?? null;
+    const relatedReport = ev.report ?? null;
 
     // Beneficiaries linked to this event (e.g. "who attended").
     const attendees: { id: string; name: string; image?: string | null }[] = Array.isArray(
@@ -436,29 +421,8 @@ export default function EventsSection({
 
     return (
       <div className="w-full max-w-4xl mx-auto">
-        {/* Title & meta (on top) */}
-        <div className="px-2">
-          <div className="text-2xl font-semibold text-left">
-            <TiptapJsonViewer
-              content={normalizeTiptapDoc(title)}
-              className="prose dark:prose-invert max-w-none [&_p]:m-0"
-            />
-          </div>
-          <div className="text-sm text-gray-500 mt-2">
-            By: {createdBy} · Created: {createdAt}
-            {updatedAt ? ` · Updated: ${updatedAt}` : null}
-          </div>
-        </div>
-
-        {/* Banner (below title/meta) */}
-        {bannerSrc && (
-          <div className="w-full my-4">
-            <img src={bannerSrc} alt={titleText} className="w-full h-[320px] object-cover rounded-md" />
-          </div>
-        )}
-
-        {/* Actions (below banner) */}
-        <div className="px-2 mt-1 flex flex-wrap items-center gap-2">
+        {/* Actions (on top, before title) */}
+        <div className="px-2 flex flex-wrap items-center gap-2">
           <Button variant="ghost" onClick={() => setViewingEvent(null)}>
             ← Back
           </Button>
@@ -489,6 +453,27 @@ export default function EventsSection({
             {deleteLoading && deleteId === ev.id ? 'Deleting...' : 'Delete'}
           </Button>
         </div>
+
+        {/* Title & meta */}
+        <div className="px-2 mt-4">
+          <div className="text-2xl font-semibold text-left">
+            <TiptapJsonViewer
+              content={normalizeTiptapDoc(title)}
+              className="prose dark:prose-invert max-w-none [&_p]:m-0"
+            />
+          </div>
+          <div className="text-sm text-gray-500 mt-2">
+            By: {createdBy} · Posted: {createdAt}
+            {updatedAt ? ` · Edited: ${updatedAt}` : null}
+          </div>
+        </div>
+
+        {/* Banner (below title/meta) */}
+        {bannerSrc && (
+          <div className="w-full my-4">
+            <img src={bannerSrc} alt={titleText} className="w-full h-[320px] object-cover rounded-md" />
+          </div>
+        )}
 
         {/* Details card */}
         <div className="px-2 mt-4">
@@ -534,13 +519,72 @@ export default function EventsSection({
 
               <div>
                 <div className="text-sm font-medium">Event Status</div>
-                <div className="text-sm text-gray-700">{status || '-'}</div>
+                <div className="text-sm text-gray-700 flex items-center gap-2">
+                  <span>{status || '-'}</span>
+                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium capitalize text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                    {String(eventMode).replace('_', '-')}
+                  </span>
+                </div>
               </div>
 
               <div>
                 <div className="text-sm font-medium">Publish Status</div>
                 <div className="text-sm text-gray-700">{publishStatus || '-'}</div>
               </div>
+
+              {participationLink && (
+                <div>
+                  <div className="text-sm font-medium">Participation Link</div>
+                  <a
+                    href={participationLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 underline break-all"
+                  >
+                    {participationLink}
+                  </a>
+                </div>
+              )}
+
+              {eventAttendance === 'registration_required' && (
+                <div>
+                  <div className="text-sm font-medium">Registration</div>
+                  <div className="text-sm text-gray-700 capitalize">
+                    {registrationType}
+                  </div>
+                  {registrationType === 'external' && registrationLink && (
+                    <a
+                      href={registrationLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 underline break-all"
+                    >
+                      {registrationLink}
+                    </a>
+                  )}
+                  {(registrationStartDate || registrationEndDate) && (
+                    <div className="text-sm text-gray-700">
+                      {registrationStartDate ?? 'Open'} – {registrationEndDate ?? 'No end date'}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {(relatedProject || relatedReport) && (
+                <div>
+                  <div className="text-sm font-medium">Related To</div>
+                  {relatedProject && (
+                    <div className="text-sm text-gray-700">
+                      Project: {tiptapExcerpt(relatedProject.title, 80) || `#${relatedProject.id}`}
+                    </div>
+                  )}
+                  {relatedReport && (
+                    <div className="text-sm text-gray-700">
+                      Report: {typeof relatedReport.title === 'string' ? relatedReport.title : `#${relatedReport.id}`}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div>
                 <div className="text-sm font-medium">Event Tags</div>

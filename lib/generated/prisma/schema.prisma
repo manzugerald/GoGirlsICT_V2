@@ -350,6 +350,12 @@ model Event {
   eventImages      String[]
   eventFile        String
 
+  // How to attend: on-site only, virtual only, or both. The join link only
+  // makes sense for virtual/hybrid, so it stays optional even then (an
+  // admin may not have one ready yet) and is simply unused for on_site.
+  eventMode         EventMode @default(on_site)
+  participationLink String?
+
   eventStartDate DateTime
   eventEndDate   DateTime
 
@@ -359,8 +365,26 @@ model Event {
   eventAttendance AttendanceType @default(public)
   maxAttendees    Int?
 
+  // Only meaningful when eventAttendance is registration_required: whether
+  // sign-ups happen through the site's own EventRegistrationForm
+  // (internal) or an outside registration page (external, via the link).
+  registrationType      RegistrationType @default(internal)
+  registrationLink      String?
+  registrationStartDate DateTime?
+  registrationEndDate   DateTime?
+
   accessCount   Int @default(0)
   downloadCount Int @default(0)
+
+  // Admin-facing "Posted"/"Edited" display dates — distinct from
+  // createdAt/updatedAt (which Prisma manages automatically and always
+  // forces to the real creation/mutation time, so they can't be
+  // backdated). Both are optional: left null, the UI falls back to
+  // createdAt/updatedAt ("auto" = the system date); the create/edit form
+  // and API also write an explicit now() into these when left blank, so
+  // once set they read the same as "auto" would.
+  postedAt DateTime?
+  editedAt DateTime?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -392,6 +416,17 @@ enum EventStatus {
 enum AttendanceType {
   public
   registration_required
+}
+
+enum EventMode {
+  on_site
+  virtual
+  hybrid
+}
+
+enum RegistrationType {
+  internal
+  external
 }
 
 // YouTube Videos

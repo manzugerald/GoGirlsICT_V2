@@ -27,6 +27,8 @@ type EventType = {
   publishStatus?: string | null;
   eventAttendance?: string | null;
   maxAttendees?: number | null;
+  postedAt?: string | Date | null;
+  editedAt?: string | Date | null;
   createdAt?: string | Date | null;
   updatedAt?: string | Date | null;
   createdBy?: {
@@ -67,8 +69,23 @@ export default function EventView({
 
   const start = data.eventStartDate ? new Date(data.eventStartDate).toLocaleString() : '-';
   const end = data.eventEndDate ? new Date(data.eventEndDate).toLocaleString() : '-';
-  const created = data.createdAt ? new Date(data.createdAt).toLocaleString() : '-';
-  const updated = data.updatedAt ? new Date(data.updatedAt).toLocaleString() : '-';
+  // "Posted"/"Edited" are the admin-facing, optionally-backdated fields
+  // (see prisma/schema.prisma's Event model); they fall back to the
+  // real createdAt/updatedAt for events saved before those fields
+  // existed, or as a defensive fallback in general.
+  const posted = data.postedAt ?? data.createdAt;
+  // editedAt is only ever set once a real modification happens (see the
+  // create/update API routes) — a freshly-created, never-edited event has
+  // no editedAt at all, and its updatedAt still equals createdAt at that
+  // point too, so falling back to updatedAt unconditionally would
+  // misleadingly show the *creation* time as an edit. Only fall back to
+  // updatedAt when it actually differs from createdAt — a real edit that
+  // happened before this field existed.
+  const hasLegacyEdit =
+    data.updatedAt && data.createdAt && new Date(data.updatedAt).getTime() !== new Date(data.createdAt).getTime();
+  const edited = data.editedAt ?? (hasLegacyEdit ? data.updatedAt : null);
+  const created = posted ? new Date(posted).toLocaleString() : '-';
+  const updated = edited ? new Date(edited).toLocaleString() : 'Never edited';
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4 space-y-4">
@@ -200,7 +217,7 @@ export default function EventView({
 
       <div className="flex justify-between items-center">
         <div className="text-xs text-gray-500">
-          Created: {created} · Updated: {updated}
+          Posted: {created} · Edited: {updated}
         </div>
 
         <div className="flex gap-2">
