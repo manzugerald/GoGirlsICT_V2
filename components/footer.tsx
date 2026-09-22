@@ -41,9 +41,9 @@ const Footer = () => {
       { label: 'Our Programs', href: '/programs', icon: BookMarked },
     ],
     getInvolved: [
-      { label: 'Upcoming Events', href: '/get-involved#events', icon: Calendar },
-      { label: 'Volunteer', href: '/get-involved#volunteer', icon: HeartHandshake },
-      { label: 'Contact Us', href: '/get-involved#contact', icon: MessageCircle },
+      { label: 'Upcoming Events', href: '/get-involved', icon: Calendar },
+      { label: 'Volunteer', href: '/get-involved?section=volunteer', icon: HeartHandshake },
+      { label: 'Contact Us', href: '/get-involved?section=reachout', icon: MessageCircle },
     ],
     resources: [
       { label: 'Podcasts', href: '/resources', icon: Headphones },

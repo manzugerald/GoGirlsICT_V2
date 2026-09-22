@@ -334,6 +334,14 @@ export default function AdminDashboardPage() {
     setDeleteId(null);
     setPage(1);
     setHideControls(false);
+    // Cleared synchronously, in the same tick as activeSection: otherwise
+    // there's a render in between where activeSection already points at
+    // the new section but `data` (and thus paginatedData) is still last
+    // section's records, fetched only after the await below resolves. A
+    // section component would briefly render with a foreign shape (e.g.
+    // RadioTalkshowsSection reading `.title` off a still-Podcast record,
+    // where it's a Tiptap JSON object, not a string) and crash.
+    setData([]);
 
     const feat = sectionFeatures[section];
     if (feat?.apiRoute) {

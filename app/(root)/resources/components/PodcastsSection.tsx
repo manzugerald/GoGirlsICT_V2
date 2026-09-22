@@ -9,6 +9,14 @@ import type { PodcastSummary } from '../data';
 
 import PodcastCard from './PodcastCard';
 
+const CATEGORY_OPTIONS = [
+  { value: 'all', label: 'All' },
+  { value: 'GNTL', label: '#GNTL' },
+  { value: 'ClassroomOnPhone', label: '#ClassroomOnPhone' },
+] as const;
+
+type CategoryFilter = (typeof CATEGORY_OPTIONS)[number]['value'];
+
 export default function PodcastsSection({
   podcasts,
 }: {
@@ -18,34 +26,54 @@ export default function PodcastsSection({
     number | null
   >(null);
 
+  const [category, setCategory] =
+    useState<CategoryFilter>('all');
+
+  const visiblePodcasts =
+    category === 'all'
+      ? podcasts
+      : podcasts.filter(
+          (podcast) => podcast.category === category
+        );
+
   return (
     <section
       id="podcasts"
       aria-labelledby="podcasts-heading"
-      className="relative scroll-mt-20 overflow-hidden py-12 sm:scroll-mt-24 sm:py-16 lg:py-20"
+      className="relative scroll-mt-20 overflow-hidden pt-4 pb-12 sm:scroll-mt-24 sm:pt-6 sm:pb-16 lg:pt-8 lg:pb-20"
     >
       <div className="relative mx-auto w-[90%]">
         <div className="mx-auto max-w-2xl text-center">
-          <h2
-            id="podcasts-heading"
-            className="heading-2 text-site-primary"
-          >
-            Listen to our{' '}
-            <span className="bg-gradient-to-r from-[#9f004d] via-pink-500 to-purple-600 bg-clip-text text-transparent">
-              Podcasts
-            </span>
-          </h2>
+          <fieldset className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            <legend className="sr-only">
+              Filter podcasts by category
+            </legend>
 
-          <p className="body-lg mx-auto mt-3 max-w-xl text-site-secondary">
-            Conversations, stories, and
-            insights from the GoGirls ICT
-            community.
-          </p>
+            {CATEGORY_OPTIONS.map((option) => (
+              <label
+                key={option.value}
+                className="inline-flex cursor-pointer items-center gap-2 caption font-medium text-site-secondary"
+              >
+                <input
+                  type="radio"
+                  name="podcast-category"
+                  value={option.value}
+                  checked={category === option.value}
+                  onChange={() =>
+                    setCategory(option.value)
+                  }
+                  className="h-4 w-4 accent-[#9f004d]"
+                />
+                {option.label}
+              </label>
+            ))}
+          </fieldset>
         </div>
 
-        {podcasts.length > 0 ? (
-          <ul className="mt-10 grid items-start grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-            {podcasts.map(
+        {visiblePodcasts.length > 0 ? (
+          <ul className="mt-10 flex flex-wrap items-start justify-evenly gap-5">
+
+            {visiblePodcasts.map(
               (podcast, index) => (
                 <PodcastCard
                   key={podcast.id}
@@ -54,6 +82,7 @@ export default function PodcastsSection({
                   isActive={
                     activeId === podcast.id
                   }
+                  isAnyActive={activeId !== null}
                   onPlay={() =>
                     setActiveId(podcast.id)
                   }
@@ -70,8 +99,16 @@ export default function PodcastsSection({
           </ul>
         ) : (
           <EmptyState
-            title="No Podcasts Yet"
-            description="Published podcast episodes will appear here."
+            title={
+              podcasts.length > 0
+                ? 'No Podcasts in This Category'
+                : 'No Podcasts Yet'
+            }
+            description={
+              podcasts.length > 0
+                ? 'Try a different category, or view all podcasts.'
+                : 'Published podcast episodes will appear here.'
+            }
             icon={
               <Headphones className="h-16 w-16" />
             }

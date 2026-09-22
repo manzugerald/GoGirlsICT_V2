@@ -1186,6 +1186,15 @@ html[data-font-size="xlarge"] {
   line-height: 1.5;
 }
 
+/* Pairs with Tailwind's `prose` class wherever rich-text content (a
+   TiptapJsonViewer) needs to track the header's Aa font-size setting.
+   `prose` sets its own fixed font-size directly on the same element,
+   which otherwise wins over any scale-aware ancestor by sitting closer
+   in the inheritance chain — this pins it back to the scaled base size. */
+.prose-scaled {
+  font-size: calc(1rem * var(--font-scale));
+}
+
 /* =======================================================================
    BUTTONS
    ======================================================================= */

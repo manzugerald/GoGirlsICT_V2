@@ -178,6 +178,35 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       return NextResponse.json({ error: 'Invalid date' }, { status: 400, headers: NO_STORE });
     }
 
+    // Description / Additional Details — both optional Tiptap JSON docs.
+    const descriptionRaw = (formData.get('description') as string) || '';
+    const detailsRaw = (formData.get('details') as string) || '';
+    let description = null;
+    let details = null;
+    try {
+      description = descriptionRaw ? JSON.parse(descriptionRaw) : null;
+    } catch {
+      description = null;
+    }
+    try {
+      details = detailsRaw ? JSON.parse(detailsRaw) : null;
+    } catch {
+      details = null;
+    }
+
+    // Posted / Edited: optional, "auto" (now) when left blank. This is an
+    // actual modification (a PATCH), so — unlike on create — leaving
+    // Edited blank here means "record this modification as happening
+    // now", mirroring Event's PUT handler exactly.
+    const postedAtRaw = (formData.get('postedAt') as string) || '';
+    const editedAtRaw = (formData.get('editedAt') as string) || '';
+    const rawParsedPostedAt = postedAtRaw ? new Date(postedAtRaw) : null;
+    const rawParsedEditedAt = editedAtRaw ? new Date(editedAtRaw) : null;
+    const parsedPostedAt = rawParsedPostedAt && !isNaN(rawParsedPostedAt.getTime()) ? rawParsedPostedAt : null;
+    const parsedEditedAt = rawParsedEditedAt && !isNaN(rawParsedEditedAt.getTime()) ? rawParsedEditedAt : null;
+    const postedAt = parsedPostedAt ?? new Date();
+    const editedAt = parsedEditedAt ?? new Date();
+
     const projectIdRaw = (formData.get('projectId') as string) || '';
     const eventIdRaw = (formData.get('eventId') as string) || '';
     const reportIdRaw = (formData.get('reportId') as string) || '';
@@ -228,11 +257,15 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       where: { id },
       data: {
         title,
+        description,
+        details,
         date,
         image,
         audioUrl,
         waveform,
         publishStatus,
+        postedAt,
+        editedAt,
         projectId: projectIdRaw ? Number(projectIdRaw) : null,
         eventId: eventIdRaw ? Number(eventIdRaw) : null,
         reportId: reportIdRaw ? Number(reportIdRaw) : null,

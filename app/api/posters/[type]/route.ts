@@ -27,7 +27,10 @@ const REVALIDATE_PATH: Record<ResourcePosterType, string> = {
   programs: '/programs',
   impact: '/impact',
   sns: '/sns',
-  'get-involved': '/get-involved',
+  'get-involved-events': '/get-involved',
+  'get-involved-volunteer': '/get-involved',
+  'get-involved-contact': '/get-involved',
+  'get-involved-donate': '/get-involved',
 };
 
 function roleFrom(session: Session | null): string {

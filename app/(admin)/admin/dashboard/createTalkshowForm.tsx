@@ -5,8 +5,13 @@ import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { extractPlainText } from '@/lib/tiptap';
+import DateTimePicker from '@/components/ui/datetime-picker';
+import { EMPTY_TIPTAP_DOC, extractPlainText, isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
 import { computeWaveformPeaks } from '@/lib/audioWaveform';
+import '@/assets/styles/tiptap-editor.css';
+import { RichTextEditorProvider } from '@/components/editor/rich-text-context';
+import RichTextToolbar from '@/components/editor/rich-text-toolbar';
+import RichTextField from '@/components/editor/rich-text-field';
 
 const publishOptions = ['draft', 'published'] as const;
 type PublishStatus = (typeof publishOptions)[number];
@@ -19,11 +24,15 @@ type StringPickerOption = { id: string; label: string };
 interface TalkshowData {
   id?: number;
   title: string;
+  description?: object | null; // Tiptap JSON doc, optional
+  details?: object | null; // "Additional Details" Tiptap JSON doc, optional
   date?: string | null;
   image?: string | null;
   audioUrl?: string | null;
   waveform?: number[];
   publishStatus: PublishStatus;
+  postedAt?: string | null;
+  editedAt?: string | null;
   projectId?: number | null;
   eventId?: number | null;
   reportId?: number | null;
@@ -50,6 +59,13 @@ function toDateInputValue(value?: string | Date | null) {
   return d.toISOString().slice(0, 10);
 }
 
+function toDatetimeLocal(value?: string | Date | null) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toISOString().slice(0, 16);
+}
+
 export default function CreateTalkshowForm({
   mode,
   initialValues,
@@ -66,8 +82,12 @@ export default function CreateTalkshowForm({
 
   const [form, setForm] = useState({
     title: initialValues?.title || '',
+    description: initialValues?.description ? normalizeTiptapDoc(initialValues.description) : EMPTY_TIPTAP_DOC,
+    details: initialValues?.details ? normalizeTiptapDoc(initialValues.details) : EMPTY_TIPTAP_DOC,
     date: toDateInputValue(initialValues?.date),
     publishStatus: (initialValues?.publishStatus as PublishStatus) || 'draft',
+    postedAt: toDatetimeLocal(initialValues?.postedAt),
+    editedAt: toDatetimeLocal(initialValues?.editedAt),
     projectId: initialValues?.projectId ? String(initialValues.projectId) : '',
     eventId: initialValues?.eventId ? String(initialValues.eventId) : '',
     reportId: initialValues?.reportId ? String(initialValues.reportId) : '',
@@ -121,8 +141,12 @@ export default function CreateTalkshowForm({
     if (resolvedMode !== 'edit' || !initialValues) return;
     setForm({
       title: initialValues.title || '',
+      description: initialValues.description ? normalizeTiptapDoc(initialValues.description) : EMPTY_TIPTAP_DOC,
+      details: initialValues.details ? normalizeTiptapDoc(initialValues.details) : EMPTY_TIPTAP_DOC,
       date: toDateInputValue(initialValues.date),
       publishStatus: (initialValues.publishStatus as PublishStatus) || 'draft',
+      postedAt: toDatetimeLocal(initialValues.postedAt),
+      editedAt: toDatetimeLocal(initialValues.editedAt),
       projectId: initialValues.projectId ? String(initialValues.projectId) : '',
       eventId: initialValues.eventId ? String(initialValues.eventId) : '',
       reportId: initialValues.reportId ? String(initialValues.reportId) : '',
@@ -225,6 +249,14 @@ export default function CreateTalkshowForm({
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleDescriptionChange = (json: object) => {
+    setForm((prev) => ({ ...prev, description: json }));
+  };
+
+  const handleDetailsChange = (json: object) => {
+    setForm((prev) => ({ ...prev, details: json }));
+  };
+
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) setImageFile(e.target.files[0]);
   };
@@ -256,8 +288,15 @@ export default function CreateTalkshowForm({
     try {
       const formData = new FormData();
       formData.append('title', form.title.trim());
+      formData.append(
+        'description',
+        isTiptapDocEmpty(form.description) ? '' : JSON.stringify(form.description)
+      );
+      formData.append('details', isTiptapDocEmpty(form.details) ? '' : JSON.stringify(form.details));
       formData.append('date', form.date);
       formData.append('publishStatus', form.publishStatus);
+      formData.append('postedAt', form.postedAt);
+      formData.append('editedAt', form.editedAt);
       if (form.projectId) formData.append('projectId', form.projectId);
       if (form.eventId) formData.append('eventId', form.eventId);
       if (form.reportId) formData.append('reportId', form.reportId);
@@ -339,6 +378,32 @@ export default function CreateTalkshowForm({
         <Label htmlFor="title">Title</Label>
         <Input id="title" name="title" value={form.title} onChange={handleChange} required />
       </div>
+
+      {/* Description / Additional Details — both optional. One toolbar
+          shared by both fields, acting on whichever was last focused. */}
+      <RichTextEditorProvider key={initialValues?.id ?? 'new-talkshow'}>
+        <div className="tiptap-wrapper">
+          <RichTextToolbar showLinkUnlink />
+
+          <div className="space-y-2 p-3">
+            <Label htmlFor="description">Description (optional)</Label>
+            <RichTextField
+              content={form.description}
+              onChange={handleDescriptionChange}
+              placeholder="Talkshow description..."
+            />
+          </div>
+
+          <div className="space-y-2 border-t border-gray-200 p-3 dark:border-gray-800">
+            <Label htmlFor="details">Additional Details (optional)</Label>
+            <RichTextField
+              content={form.details}
+              onChange={handleDetailsChange}
+              placeholder="Additional details..."
+            />
+          </div>
+        </div>
+      </RichTextEditorProvider>
 
       <div className="space-y-2">
         <Label htmlFor="date">Date</Label>
@@ -650,6 +715,32 @@ export default function CreateTalkshowForm({
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Posted date — optional, defaults to the system date/time when
+          left blank. Can be backdated. */}
+      <div className="space-y-2">
+        <Label htmlFor="postedAt">Posted</Label>
+        <DateTimePicker
+          id="postedAt"
+          value={form.postedAt}
+          onChange={(v) => setForm((prev) => ({ ...prev, postedAt: v }))}
+          placeholder="Not set — defaults to now"
+        />
+      </div>
+      {/* Edited date — unlike Posted, this only has something to default
+          to once a real modification happens: left blank on create it
+          stays unset; left blank on an update it becomes "now". */}
+      <div className="space-y-2">
+        <Label htmlFor="editedAt">Edited</Label>
+        <DateTimePicker
+          id="editedAt"
+          value={form.editedAt}
+          onChange={(v) => setForm((prev) => ({ ...prev, editedAt: v }))}
+          placeholder={
+            resolvedMode === 'edit' ? 'Not set — defaults to now' : 'Not set — stays unset until first edited'
+          }
+        />
       </div>
 
       <div className="flex gap-3">

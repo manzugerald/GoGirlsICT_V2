@@ -38,13 +38,23 @@
   color: #e5e7eb !important;
 }
 
-/* Read-only viewer never shows a text cursor or focus ring. */
+/* Read-only viewer never shows a text cursor or focus ring. Unlike an
+   editable .tiptap field — which deliberately WYSIWYGs at a fixed 1rem
+   while typing, via .tiptap's own font-size/line-height rule above — a
+   read-only viewer has no such reason to ignore its container: it should
+   always take the size the page around it wants (a heading-2/heading-3/
+   body/caption class, itself driven by the header's Aa font-size
+   setting via --font-scale). Without this, .tiptap's own hardcoded
+   font-size/line-height silently wins over whatever scale-aware class
+   wraps the viewer, and the text never responds to that setting. */
 .tiptap-viewer,
 .tiptap-viewer:focus {
   cursor: default;
   outline: none;
   min-height: 0;
   padding: 0;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 /* WYSIWYG styles for content elements */

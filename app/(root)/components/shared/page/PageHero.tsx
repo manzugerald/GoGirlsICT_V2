@@ -8,6 +8,10 @@ interface PageHeroProps {
   children?: ReactNode;
   backgroundImage?: string;
   showLineGraph?: boolean;
+  // Poster variant only: content rendered bottom-center, overlaid on the
+  // poster image itself (e.g. a page heading + description), instead of
+  // in the plain block below it that `children` renders into.
+  posterOverlay?: ReactNode;
   // 'overlay' (default): the existing dimmed, cropped-to-fit banner used
   // by /about, /programs, /about/team. 'poster' is for an admin-uploaded
   // poster image (see lib/resourcePosterMeta.ts, used by /resources) that
@@ -27,6 +31,7 @@ export default function PageHero({
   backgroundImage,
   showLineGraph = false,
   variant = 'overlay',
+  posterOverlay,
 }: PageHeroProps) {
   const hasImage = Boolean(backgroundImage);
   const isPoster = variant === 'poster' && hasImage;
@@ -34,15 +39,28 @@ export default function PageHero({
   if (isPoster) {
     return (
       <>
-        {/* mt-14 matches the fixed header's own h-14 exactly (a constant,
-            not a breakpoint-dependent value), so the poster sits flush
-            under it the same way at every browser size. A real <img>, not
-            a sized box with object-fit, so its own aspect ratio sets the
-            section's height: full width, full height, nothing cropped,
-            nothing overlaid on top of it. */}
-        <section className="relative mt-14 overflow-hidden">
+        {/* No top offset: the section starts flush at the very top of the
+            page, behind the fixed h-14 header (z-50), which is on top of
+            it (a fixed element's stacking context sits above normal-flow
+            content by default). So the image's own top ~56px renders
+            underneath the header and is hidden by it, and only
+            (image height − header height) is actually visible — exactly
+            as much of the poster is "lost" under the header as the
+            header itself is tall, however tall that turns out to be. A
+            real <img>, not a sized box with object-fit, so its own
+            aspect ratio sets the section's height: full width, nothing
+            cropped, nothing overlaid on top of it other than the header. */}
+        <section className="relative overflow-hidden">
           <img src={backgroundImage} alt="" className="block w-full h-auto" />
           <h1 className="sr-only">{title}</h1>
+
+          {posterOverlay && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent pt-16 pb-6">
+              <div className="wrapper pointer-events-auto text-center">
+                {posterOverlay}
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Whatever the page passed in (a tab switcher, stats, etc.) sits
@@ -51,7 +69,7 @@ export default function PageHero({
             (no `children`) go straight from the poster into their own
             content. */}
         {children && (
-          <div className="wrapper flex flex-col items-center gap-4 py-6 text-center">
+          <div className="wrapper flex flex-col items-center gap-4 pt-[5px] pb-6 text-center">
             {children}
           </div>
         )}

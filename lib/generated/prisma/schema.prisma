@@ -83,24 +83,31 @@ model Report {
 }
 
 model Podcast {
-  id            Int           @id @default(autoincrement())
+  id            Int             @id @default(autoincrement())
   title         Json // Tiptap JSON doc (edited/viewed via components/editor/*)
-  slug          String        @unique
+  slug          String          @unique
   description   Json // Tiptap JSON doc (edited/viewed via components/editor/*)
   image         String? // illustration / cover artwork (card thumbnail)
   audioUrl      String // mp3 path under public/assets/audio/podcasts
-  waveform      Float[]       @default([]) // precomputed amplitude peaks (0..1) for the waveform UI
-  publishedAt   DateTime      @default(now())
-  publishStatus PublishStatus @default(draft)
-  accessCount   Int           @default(0) // play count
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  waveform      Float[]         @default([]) // precomputed amplitude peaks (0..1) for the waveform UI
+  publishedAt   DateTime        @default(now())
+  publishStatus PublishStatus   @default(draft)
+  // All existing podcasts belong to #GNTL, so that's the default for
+  // rows that don't explicitly pick #ClassroomOnPhone.
+  category      PodcastCategory @default(GNTL)
+  accessCount   Int             @default(0) // play count
+  // Admin-facing "Posted"/"Edited" display dates — see the matching
+  // fields on Event for the full semantics.
+  postedAt      DateTime?
+  editedAt      DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   createdById   String
   updatedById   String?
   approvedById  String?
-  approvedBy    User?         @relation("PodcastApprovedBy", fields: [approvedById], references: [id])
-  createdBy     User          @relation("PodcastCreatedBy", fields: [createdById], references: [id])
-  updatedBy     User?         @relation("PodcastUpdatedBy", fields: [updatedById], references: [id])
+  approvedBy    User?           @relation("PodcastApprovedBy", fields: [approvedById], references: [id])
+  createdBy     User            @relation("PodcastCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User?           @relation("PodcastUpdatedBy", fields: [updatedById], references: [id])
 
   // Beneficiaries who took part in / are featured on this podcast episode.
   beneficiaries BeneficiaryPodcast[]
@@ -627,14 +634,28 @@ enum HostType {
   guest
 }
 
+enum PodcastCategory {
+  GNTL
+  ClassroomOnPhone
+}
+
 model RadioTalkshow {
   id            Int           @id @default(autoincrement())
   title         String
+  description   Json? // Tiptap JSON doc (edited/viewed via components/editor/*) — optional
+  details       Json? // "Additional Details" — Tiptap JSON doc, optional
   date          DateTime
   image         String? // illustration / cover artwork (card thumbnail)
   audioUrl      String? // mp3 path under public/assets/audio/talkshow
   waveform      Float[]       @default([]) // precomputed amplitude peaks (0..1) for the waveform UI
   publishStatus PublishStatus @default(draft)
+
+  // Admin-facing "Posted"/"Edited" display dates — distinct from
+  // createdAt/updatedAt (which Prisma manages automatically). Both
+  // optional: left null, the UI falls back to createdAt/updatedAt; see
+  // the matching fields on Event for the full semantics.
+  postedAt DateTime?
+  editedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

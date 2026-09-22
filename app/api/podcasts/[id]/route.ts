@@ -78,6 +78,9 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       waveform,
       publishedAt,
       publishStatus,
+      category,
+      postedAt: postedAtRaw,
+      editedAt: editedAtRaw,
       accessCount = 0,
       // Everything below is optional.
       projectId = null,
@@ -99,6 +102,18 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
 
     const validHostType =
       hostType === 'beneficiary' || hostType === 'admin' || hostType === 'guest' ? hostType : null;
+    const validCategory = category === 'GNTL' || category === 'ClassroomOnPhone' ? category : undefined;
+
+    // Posted / Edited: optional, "auto" (now) when left blank. This is an
+    // actual modification (a PUT), so leaving Edited blank here means
+    // "record this modification as happening now" — mirrors Event's PUT
+    // handler exactly.
+    const rawParsedPostedAt = postedAtRaw ? new Date(postedAtRaw) : null;
+    const rawParsedEditedAt = editedAtRaw ? new Date(editedAtRaw) : null;
+    const parsedPostedAt = rawParsedPostedAt && !isNaN(rawParsedPostedAt.getTime()) ? rawParsedPostedAt : null;
+    const parsedEditedAt = rawParsedEditedAt && !isNaN(rawParsedEditedAt.getTime()) ? rawParsedEditedAt : null;
+    const postedAt = parsedPostedAt ?? new Date();
+    const editedAt = parsedEditedAt ?? new Date();
 
     const slug = slugify(extractPlainText(title).trim());
     const participantIds = cleanStringIdArray(beneficiaryIds);
@@ -114,6 +129,9 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
         waveform: Array.isArray(waveform) ? waveform : undefined,
         publishedAt: publishedAt ? new Date(publishedAt) : undefined,
         publishStatus,
+        category: validCategory,
+        postedAt,
+        editedAt,
         updatedById: userId,
         accessCount,
         projectId: projectId ? Number(projectId) : null,

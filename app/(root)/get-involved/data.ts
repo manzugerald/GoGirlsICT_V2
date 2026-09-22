@@ -1,5 +1,29 @@
 import { prisma } from '@/db/prisma';
 
+export const GET_INVOLVED_SECTIONS = [
+  'events',
+  'volunteer',
+  'reachout',
+  'donate',
+] as const;
+
+export type GetInvolvedSection =
+  (typeof GET_INVOLVED_SECTIONS)[number];
+
+export function normalizeGetInvolvedSection(
+  value?: string | string[]
+): GetInvolvedSection {
+  const candidate = Array.isArray(value)
+    ? value[0]
+    : value;
+
+  return GET_INVOLVED_SECTIONS.includes(
+    candidate as GetInvolvedSection
+  )
+    ? (candidate as GetInvolvedSection)
+    : 'events';
+}
+
 export async function getGetInvolvedPageData() {
   const events =
     await prisma.event.findMany({

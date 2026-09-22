@@ -18,15 +18,15 @@ export type PageHeroTab = {
  */
 export default function PageHeroTabs({ tabs }: { tabs: PageHeroTab[] }) {
   return (
-    <div className="mt-6 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 p-1 backdrop-blur">
+    <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-gray-200 bg-gray-100/90 p-1 backdrop-blur dark:border-white/20 dark:bg-white/10">
       {tabs.map(({ href, label, icon: Icon, isActive }) => (
         <Link
           key={href}
           href={href}
           className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 caption font-semibold transition-colors ${
             isActive
-              ? 'bg-white text-[#9f004d]'
-              : 'text-white/85 hover:bg-white/15 hover:text-white'
+              ? 'bg-[#9f004d] text-white dark:bg-white dark:text-[#9f004d]'
+              : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900 dark:text-white/85 dark:hover:bg-white/15 dark:hover:text-white'
           }`}
           aria-current={isActive ? 'page' : undefined}
         >

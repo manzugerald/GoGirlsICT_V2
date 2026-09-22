@@ -14,7 +14,16 @@ import path from 'path';
 //   public/assets/images/programs/poster/meta.json
 //   public/assets/images/impact/poster/meta.json
 //   public/assets/images/sns/poster/meta.json
-//   public/assets/images/get-involved/poster/meta.json
+//   public/assets/images/get-involved/events/poster/meta.json
+//   public/assets/images/get-involved/volunteer/poster/meta.json
+//   public/assets/images/get-involved/contact/poster/meta.json
+//   public/assets/images/get-involved/donate/poster/meta.json
+//
+// /get-involved splits into four tabs (Events/Volunteer/Reachout/Donate —
+// "contact" is the folder/type name, matching ContactSection.tsx, but the
+// visible tab label is "Reachout"; see app/(root)/get-involved/page.tsx),
+// each with its own poster — same "podcasts"/"talkshows" split sharing one
+// /resources page.
 //
 // Exactly one image file is kept per folder — uploading a new poster
 // deletes the previous one — so the folder itself never accumulates stray
@@ -27,7 +36,10 @@ export type ResourcePosterType =
   | 'programs'
   | 'impact'
   | 'sns'
-  | 'get-involved';
+  | 'get-involved-events'
+  | 'get-involved-volunteer'
+  | 'get-involved-contact'
+  | 'get-involved-donate';
 
 export const RESOURCE_POSTER_TYPES: ResourcePosterType[] = [
   'podcasts',
@@ -36,7 +48,10 @@ export const RESOURCE_POSTER_TYPES: ResourcePosterType[] = [
   'programs',
   'impact',
   'sns',
-  'get-involved',
+  'get-involved-events',
+  'get-involved-volunteer',
+  'get-involved-contact',
+  'get-involved-donate',
 ];
 
 const PUBLIC_SUBDIR: Record<ResourcePosterType, string> = {
@@ -46,7 +61,10 @@ const PUBLIC_SUBDIR: Record<ResourcePosterType, string> = {
   programs: 'assets/images/programs/poster',
   impact: 'assets/images/impact/poster',
   sns: 'assets/images/sns/poster',
-  'get-involved': 'assets/images/get-involved/poster',
+  'get-involved-events': 'assets/images/get-involved/events/poster',
+  'get-involved-volunteer': 'assets/images/get-involved/volunteer/poster',
+  'get-involved-contact': 'assets/images/get-involved/contact/poster',
+  'get-involved-donate': 'assets/images/get-involved/donate/poster',
 };
 
 const META_FILENAME = 'meta.json';

@@ -13,6 +13,9 @@ import {
   FolderOpen,
   Headphones,
   Radio,
+  Calendar,
+  MessageCircle,
+  Heart,
 } from 'lucide-react';
 
 export type NavigationChild = {
@@ -117,10 +120,40 @@ export const navigationItems: NavigationItem[] = [
     description:
       'Join, support, volunteer, donate, or connect with GoGirls ICT.',
     icon: HeartHandshake,
+    children: [
+      {
+        label: 'Events',
+        href: '/get-involved',
+        description:
+          'Upcoming workshops, bootcamps, trainings, and community activities.',
+        icon: Calendar,
+      },
+      {
+        label: 'Volunteer',
+        href: '/get-involved?section=volunteer',
+        description:
+          'Ways to mentor, facilitate, or support our community.',
+        icon: HeartHandshake,
+      },
+      {
+        label: 'Reachout',
+        href: '/get-involved?section=reachout',
+        description:
+          'Get in touch with the GoGirls ICT team.',
+        icon: MessageCircle,
+      },
+      {
+        label: 'Donate',
+        href: '/get-involved?section=donate',
+        description:
+          'Support our mission with a contribution.',
+        icon: Heart,
+      },
+    ],
   },
 ];
 
 export const donateLink = {
   label: 'Donate',
-  href: '/get-involved#donate',
+  href: '/get-involved?section=donate',
 };

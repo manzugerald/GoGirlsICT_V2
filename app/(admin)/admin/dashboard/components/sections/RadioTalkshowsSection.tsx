@@ -1,8 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { extractPlainText } from '@/lib/tiptap';
+import { extractPlainText, isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
+import '@/assets/styles/tiptap-editor.css';
+
+const TiptapJsonViewer = dynamic(() => import('@/components/editor/tiptap-json-viewer'), {
+  ssr: false,
+});
 
 // This section renders Talkshow records defensively (polymorphic host —
 // beneficiary/admin/guest — plus loosely-typed linked podcasts/participants)
@@ -106,10 +112,34 @@ export default function RadioTalkshowsSection({
               </div>
               {host && <div className="text-sm text-gray-500 mt-1">By: {host}</div>}
               <div className="text-sm text-gray-500 mt-1 capitalize">{viewing.publishStatus}</div>
+              <div className="text-sm text-gray-500 mt-1">
+                Posted: {formatDate(viewing.postedAt ?? viewing.createdAt)}
+                {viewing.editedAt ? ` · Edited: ${formatDate(viewing.editedAt)}` : ''}
+              </div>
             </div>
           </div>
 
           {viewing.audioUrl && <audio controls src={viewing.audioUrl} className="w-full" />}
+
+          {!isTiptapDocEmpty(viewing.description) && (
+            <div>
+              <div className="text-sm font-medium mb-1">Description</div>
+              <TiptapJsonViewer
+                content={normalizeTiptapDoc(viewing.description)}
+                className="prose prose-sm dark:prose-invert max-w-none"
+              />
+            </div>
+          )}
+
+          {!isTiptapDocEmpty(viewing.details) && (
+            <div>
+              <div className="text-sm font-medium mb-1">Additional Details</div>
+              <TiptapJsonViewer
+                content={normalizeTiptapDoc(viewing.details)}
+                className="prose prose-sm dark:prose-invert max-w-none"
+              />
+            </div>
+          )}
 
           {(viewing.project || viewing.event || viewing.report || viewing.institution) && (
             <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">

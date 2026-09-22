@@ -118,6 +118,10 @@ export default function PodcastsSection({
                 {viewing.accessCount ?? 0}
               </div>
               {host && <div className="text-sm text-gray-500 mt-1">By: {host}</div>}
+              <div className="text-sm text-gray-500 mt-1">
+                Posted: {formatDate(viewing.postedAt ?? viewing.createdAt)}
+                {viewing.editedAt ? ` · Edited: ${formatDate(viewing.editedAt)}` : ''}
+              </div>
             </div>
           </div>
 

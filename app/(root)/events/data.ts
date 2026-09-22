@@ -34,6 +34,7 @@ export async function getEventBySlugOrId(
       eventStartDate: true,
       eventEndDate: true,
       eventStatus: true,
+      eventTags: true,
       eventAttendance: true,
       maxAttendees: true,
       eventMode: true,
@@ -42,6 +43,8 @@ export async function getEventBySlugOrId(
       registrationLink: true,
       registrationStartDate: true,
       registrationEndDate: true,
+      postedAt: true,
+      editedAt: true,
 
       project: {
         select: {

@@ -52,6 +52,36 @@ export default async function ResourcesPage({
         description="Listen to our podcasts and radio talkshow recordings."
         backgroundImage={heroPoster ?? undefined}
         variant="poster"
+        posterOverlay={
+          activeType === 'podcasts' ? (
+            <>
+              <h2 id="podcasts-heading" className="heading-2 text-white">
+                Listen to our{' '}
+                <span className="bg-gradient-to-r from-pink-300 via-pink-400 to-purple-300 bg-clip-text text-transparent">
+                  Podcasts
+                </span>
+              </h2>
+              <p className="body-lg mx-auto mt-3 max-w-xl text-white/85">
+                Conversations, stories, and
+                insights from the GoGirls ICT
+                community.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 id="talkshows-heading" className="heading-2 text-white">
+                Listen to our{' '}
+                <span className="bg-gradient-to-r from-pink-300 via-pink-400 to-purple-300 bg-clip-text text-transparent">
+                  Radio Talkshows
+                </span>
+              </h2>
+              <p className="body-lg mx-auto mt-3 max-w-xl text-white/85">
+                Recordings of our on-air radio
+                talkshow appearances.
+              </p>
+            </>
+          )
+        }
       >
         <PageHeroTabs
           tabs={[

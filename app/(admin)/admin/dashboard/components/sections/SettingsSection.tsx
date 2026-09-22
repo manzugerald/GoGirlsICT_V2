@@ -579,9 +579,24 @@ export default function SettingsSection({
             type="sns"
           />
           <ResourcePosterManager
-            title="Get Involved poster"
-            description="Shown as the /get-involved page hero."
-            type="get-involved"
+            title="Get Involved — Events poster"
+            description="Shown on /get-involved when the Events tab is active."
+            type="get-involved-events"
+          />
+          <ResourcePosterManager
+            title="Get Involved — Volunteer poster"
+            description="Shown on /get-involved when the Volunteer tab is active."
+            type="get-involved-volunteer"
+          />
+          <ResourcePosterManager
+            title="Get Involved — Reachout poster"
+            description="Shown on /get-involved when the Reachout tab is active."
+            type="get-involved-contact"
+          />
+          <ResourcePosterManager
+            title="Get Involved — Donate poster"
+            description="Shown on /get-involved when the Donate tab is active."
+            type="get-involved-donate"
           />
         </div>
       </section>

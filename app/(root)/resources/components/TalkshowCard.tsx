@@ -6,16 +6,24 @@ import {
   useState,
 } from 'react';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import {
   Pause,
   Play,
   Radio,
+  Square,
   Volume2,
   VolumeX,
 } from 'lucide-react';
 
 import type { TalkshowSummary } from '../data';
+import { isTiptapDocEmpty, normalizeTiptapDoc } from '@/lib/tiptap';
+
+const TiptapJsonViewer = dynamic(
+  () => import('@/components/editor/tiptap-json-viewer'),
+  { ssr: false }
+);
 
 // Used when a talkshow has no stored waveform yet (e.g. legacy rows
 // created before this feature) so the player still shows *something*
@@ -53,15 +61,18 @@ export default function TalkshowCard({
   talkshow,
   index,
   isActive,
+  isAnyActive,
   onPlay,
   onPause,
 }: {
   talkshow: TalkshowSummary;
   index: number;
   isActive: boolean;
+  isAnyActive: boolean;
   onPlay: () => void;
   onPause: () => void;
 }) {
+  const isDimmed = isAnyActive && !isActive;
   const hasAudio = Boolean(talkshow.audioUrl);
 
   const audioRef = useRef<HTMLAudioElement>(
@@ -131,6 +142,19 @@ export default function TalkshowCard({
       setIsPlaying(false);
       onPause();
     }
+  }
+
+  // Distinct from the play/pause toggle: stop always resets playback back
+  // to the start, rather than leaving off wherever it was paused.
+  function stopPlaying() {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+    setIsPlaying(false);
+    setCurrentTime(0);
+    onPause();
   }
 
   function seekToClientX(clientX: number) {
@@ -241,10 +265,23 @@ export default function TalkshowCard({
         delay: Math.min(index, 8) * 0.05,
         duration: 0.35,
       }}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-[#9f004d]/30 hover:shadow-md dark:border-gray-800 dark:bg-gray-900"
+      className={`group relative flex shrink-0 grow-0 flex-col overflow-visible rounded-2xl border bg-white transition-all duration-300 dark:bg-gray-900 ${
+        isActive
+          ? 'z-20 my-6 w-full -translate-y-2 border-[#9f004d] opacity-100 shadow-[0_30px_70px_-12px_rgba(159,0,77,0.6)] ring-2 ring-[#9f004d]/40 hover:-translate-y-2.5 hover:shadow-[0_35px_80px_-12px_rgba(159,0,77,0.7)] sm:w-[calc(((100%_-_1.25rem)/2)*1.25)] lg:w-[calc(((100%_-_2.5rem)/3)*1.25)] xl:w-[calc(((100%_-_3.75rem)/4)*1.25)] 2xl:w-[calc(((100%_-_5rem)/5)*1.25)] dark:border-pink-500 dark:ring-pink-500/40 dark:shadow-[0_30px_70px_-12px_rgba(236,72,153,0.55)] dark:hover:shadow-[0_35px_80px_-12px_rgba(236,72,153,0.65)]'
+          : isDimmed
+            ? 'z-0 w-full border-gray-200 opacity-15 shadow-sm hover:opacity-100 hover:z-10 hover:-translate-y-1 hover:scale-[1.02] hover:border-[#9f004d]/40 hover:shadow-xl hover:shadow-[#9f004d]/20 sm:w-[calc((100%_-_1.25rem)/2)] lg:w-[calc((100%_-_2.5rem)/3)] xl:w-[calc((100%_-_3.75rem)/4)] 2xl:w-[calc((100%_-_5rem)/5)] dark:border-gray-800 dark:hover:border-pink-500/40 dark:hover:shadow-pink-500/20'
+            : 'z-0 w-full border-gray-200 opacity-100 shadow-sm hover:z-10 hover:-translate-y-1 hover:scale-[1.02] hover:border-[#9f004d]/40 hover:shadow-xl hover:shadow-[#9f004d]/20 sm:w-[calc((100%_-_1.25rem)/2)] lg:w-[calc((100%_-_2.5rem)/3)] xl:w-[calc((100%_-_3.75rem)/4)] 2xl:w-[calc((100%_-_5rem)/5)] dark:border-gray-800 dark:hover:border-pink-500/40 dark:hover:shadow-pink-500/20'
+      }`}
     >
+      {isActive && (
+        <span className="absolute -top-3 left-1/2 z-30 inline-flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-1.5 truncate rounded-full bg-[#9f004d] px-3.5 py-1.5 caption font-bold text-black shadow-lg shadow-[#9f004d]/40 dark:bg-pink-500 dark:shadow-pink-500/40">
+          <Volume2 className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">Now Playing: {talkshow.title}</span>
+        </span>
+      )}
+
       {/* Illustration with the audio player UI overlaid on top */}
-      <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-gradient-to-br from-[#9f004d]/15 to-purple-100 dark:from-[#9f004d]/20 dark:to-gray-800">
+      <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-[#9f004d]/15 to-purple-100 dark:from-[#9f004d]/20 dark:to-gray-800">
         {talkshow.image ? (
           <Image
             src={talkshow.image}
@@ -315,11 +352,11 @@ export default function TalkshowCard({
                       style={{
                         height: `${Math.max(peak * 100, 16)}%`,
                         background: isPlayed
-                          ? 'linear-gradient(to top, #9f004d, #ff4fa0)'
-                          : 'rgba(255, 159, 203, 0.3)',
+                          ? 'linear-gradient(to top, #c2005f, #ff2d96)'
+                          : 'rgba(255, 255, 255, 0.32)',
                         boxShadow: isPlayed
-                          ? '0 0 6px rgba(255, 45, 150, 0.75)'
-                          : 'none',
+                          ? '0 0 8px rgba(255, 45, 150, 0.95)'
+                          : '0 0 2px rgba(0, 0, 0, 0.4)',
                       }}
                     />
                   );
@@ -378,11 +415,54 @@ export default function TalkshowCard({
         )}
       </div>
 
-      {/* Title + date */}
+      {/* Title, description, date */}
       <div className="flex flex-1 flex-col p-4">
         <h3 className="font-serif body font-semibold text-gray-900 dark:text-white">
           {talkshow.title}
         </h3>
+
+        {!isTiptapDocEmpty(talkshow.description) && (
+          <div
+            className="mt-1.5 overflow-hidden caption text-gray-600 dark:text-gray-400 [&_p]:m-0"
+            style={
+              isActive
+                ? undefined
+                : {
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }
+            }
+          >
+            <TiptapJsonViewer
+              content={normalizeTiptapDoc(talkshow.description)}
+              className="prose-scaled prose prose-sm dark:prose-invert max-w-none"
+            />
+          </div>
+        )}
+
+        {isActive && !isTiptapDocEmpty(talkshow.details) && (
+          <div className="mt-3 border-t border-gray-100 pt-3 dark:border-gray-800">
+            <div className="caption mb-1 font-semibold text-gray-700 dark:text-gray-300">
+              Additional Details
+            </div>
+            <TiptapJsonViewer
+              content={normalizeTiptapDoc(talkshow.details)}
+              className="prose-scaled prose prose-sm dark:prose-invert max-w-none"
+            />
+          </div>
+        )}
+
+        {isActive && (
+          <button
+            type="button"
+            onClick={stopPlaying}
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-red-600 px-4 py-2.5 caption font-bold text-white shadow-lg shadow-red-600/30 transition-all hover:scale-[1.02] hover:bg-red-700 hover:shadow-xl hover:shadow-red-600/40"
+          >
+            <Square className="h-4 w-4" fill="currentColor" />
+            Stop Playing
+          </button>
+        )}
 
         <div className="mt-3 flex items-center justify-between caption font-medium text-gray-400 dark:text-gray-500">
           <span>

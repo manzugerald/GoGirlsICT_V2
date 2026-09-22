@@ -171,6 +171,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid date' }, { status: 400, headers: NO_STORE });
     }
 
+    // Description / Additional Details — both optional Tiptap JSON docs.
+    const descriptionRaw = (formData.get('description') as string) || '';
+    const detailsRaw = (formData.get('details') as string) || '';
+    let description = null;
+    let details = null;
+    try {
+      description = descriptionRaw ? JSON.parse(descriptionRaw) : null;
+    } catch {
+      description = null;
+    }
+    try {
+      details = detailsRaw ? JSON.parse(detailsRaw) : null;
+    } catch {
+      details = null;
+    }
+
+    // Posted: optional, "auto" (now) when left blank. Edited: this is the
+    // talkshow's first creation, not a modification, so it stays null
+    // until a real edit happens (see the PATCH handler, which defaults it
+    // to "now" instead) — mirrors Event's postedAt/editedAt exactly.
+    const postedAtRaw = (formData.get('postedAt') as string) || '';
+    const editedAtRaw = (formData.get('editedAt') as string) || '';
+    const rawParsedPostedAt = postedAtRaw ? new Date(postedAtRaw) : null;
+    const rawParsedEditedAt = editedAtRaw ? new Date(editedAtRaw) : null;
+    const parsedPostedAt = rawParsedPostedAt && !isNaN(rawParsedPostedAt.getTime()) ? rawParsedPostedAt : null;
+    const parsedEditedAt = rawParsedEditedAt && !isNaN(rawParsedEditedAt.getTime()) ? rawParsedEditedAt : null;
+    const postedAt = parsedPostedAt ?? new Date();
+    const editedAt = parsedEditedAt;
+
     // Optional single links to other content — everything below is optional.
     const projectIdRaw = (formData.get('projectId') as string) || '';
     const eventIdRaw = (formData.get('eventId') as string) || '';
@@ -209,11 +238,15 @@ export async function POST(req: Request) {
     const created = await prisma.radioTalkshow.create({
       data: {
         title,
+        description,
+        details,
         date,
         image,
         audioUrl,
         waveform,
         publishStatus,
+        postedAt,
+        editedAt,
         projectId,
         eventId,
         reportId,

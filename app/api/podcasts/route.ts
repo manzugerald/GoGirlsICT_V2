@@ -76,6 +76,9 @@ export async function POST(req: Request) {
       waveform = [],
       publishedAt,
       publishStatus,
+      category,
+      postedAt: postedAtRaw,
+      editedAt: editedAtRaw,
       accessCount = 0,
       // Everything below is optional.
       projectId = null,
@@ -97,6 +100,18 @@ export async function POST(req: Request) {
 
     const validHostType =
       hostType === 'beneficiary' || hostType === 'admin' || hostType === 'guest' ? hostType : null;
+    const validCategory = category === 'GNTL' || category === 'ClassroomOnPhone' ? category : 'GNTL';
+
+    // Posted: optional, "auto" (now) when left blank. Edited: this is the
+    // podcast's first creation, not a modification, so it stays null
+    // until a real edit happens (see the PUT handler) — mirrors Event's
+    // postedAt/editedAt exactly.
+    const rawParsedPostedAt = postedAtRaw ? new Date(postedAtRaw) : null;
+    const rawParsedEditedAt = editedAtRaw ? new Date(editedAtRaw) : null;
+    const parsedPostedAt = rawParsedPostedAt && !isNaN(rawParsedPostedAt.getTime()) ? rawParsedPostedAt : null;
+    const parsedEditedAt = rawParsedEditedAt && !isNaN(rawParsedEditedAt.getTime()) ? rawParsedEditedAt : null;
+    const postedAt = parsedPostedAt ?? new Date();
+    const editedAt = parsedEditedAt;
 
     const slug = slugify(extractPlainText(title).trim());
     const participantIds = cleanStringIdArray(beneficiaryIds);
@@ -111,6 +126,9 @@ export async function POST(req: Request) {
         waveform: Array.isArray(waveform) ? waveform : [],
         publishedAt: publishedAt ? new Date(publishedAt) : new Date(),
         publishStatus,
+        category: validCategory,
+        postedAt,
+        editedAt,
         createdById: userId,
         approvedById: userId,
         updatedById: userId,

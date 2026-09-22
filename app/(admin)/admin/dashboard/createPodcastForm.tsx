@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import DateTimePicker from "@/components/ui/datetime-picker";
 import { computeWaveformPeaks } from "@/lib/audioWaveform";
 import { EMPTY_TIPTAP_DOC, extractPlainText, isTiptapDocEmpty, normalizeTiptapDoc } from "@/lib/tiptap";
 import "@/assets/styles/tiptap-editor.css";
@@ -14,6 +15,8 @@ import RichTextField from "@/components/editor/rich-text-field";
 
 const publishOptions = ["draft", "published"] as const;
 type PublishStatus = (typeof publishOptions)[number];
+const categoryOptions = ["GNTL", "ClassroomOnPhone"] as const;
+type PodcastCategory = (typeof categoryOptions)[number];
 type HostType = "beneficiary" | "admin" | "guest";
 type Mode = "create" | "edit";
 
@@ -29,6 +32,9 @@ interface PodcastData {
   waveform?: number[];
   publishedAt?: string;
   publishStatus: PublishStatus;
+  category?: PodcastCategory;
+  postedAt?: string | null;
+  editedAt?: string | null;
   accessCount?: number;
   projectId?: number | null;
   eventId?: number | null;
@@ -80,6 +86,13 @@ function toDateInputValue(value?: string | Date | null) {
   return d.toISOString().slice(0, 10);
 }
 
+function toDatetimeLocal(value?: string | Date | null) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toISOString().slice(0, 16);
+}
+
 export default function CreatePodcastForm({
   mode,
   initialValues,
@@ -94,6 +107,9 @@ export default function CreatePodcastForm({
     description: initialValues?.description ? normalizeTiptapDoc(initialValues.description) : EMPTY_TIPTAP_DOC,
     publishedAt: toDateInputValue(initialValues?.publishedAt),
     publishStatus: (initialValues?.publishStatus as PublishStatus) || "draft",
+    category: (initialValues?.category as PodcastCategory) || "GNTL",
+    postedAt: toDatetimeLocal(initialValues?.postedAt),
+    editedAt: toDatetimeLocal(initialValues?.editedAt),
     projectId: initialValues?.projectId ? String(initialValues.projectId) : '',
     eventId: initialValues?.eventId ? String(initialValues.eventId) : '',
     reportId: initialValues?.reportId ? String(initialValues.reportId) : '',
@@ -148,6 +164,9 @@ export default function CreatePodcastForm({
         description: initialValues.description ? normalizeTiptapDoc(initialValues.description) : EMPTY_TIPTAP_DOC,
         publishedAt: toDateInputValue(initialValues.publishedAt),
         publishStatus: (initialValues.publishStatus as PublishStatus) || "draft",
+        category: (initialValues.category as PodcastCategory) || "GNTL",
+        postedAt: toDatetimeLocal(initialValues.postedAt),
+        editedAt: toDatetimeLocal(initialValues.editedAt),
         projectId: initialValues.projectId ? String(initialValues.projectId) : '',
         eventId: initialValues.eventId ? String(initialValues.eventId) : '',
         reportId: initialValues.reportId ? String(initialValues.reportId) : '',
@@ -292,6 +311,9 @@ export default function CreatePodcastForm({
         waveform: audioFile ? waveform : existingWaveform,
         publishedAt: new Date(form.publishedAt).toISOString(),
         publishStatus: form.publishStatus,
+        category: form.category,
+        postedAt: form.postedAt ? new Date(form.postedAt).toISOString() : null,
+        editedAt: form.editedAt ? new Date(form.editedAt).toISOString() : null,
         accessCount: initialValues?.accessCount || 0,
         projectId: form.projectId || null,
         eventId: form.eventId || null,
@@ -671,6 +693,23 @@ export default function CreatePodcastForm({
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="category">Category</Label>
+        <select
+          id="category"
+          name="category"
+          value={form.category}
+          onChange={handleChange}
+          className="w-full border border-input rounded-md p-2 text-sm bg-background text-foreground"
+        >
+          {categoryOptions.map((category) => (
+            <option key={category} value={category}>
+              #{category}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="publishStatus">Publish Status</Label>
         <select
           id="publishStatus"
@@ -685,6 +724,32 @@ export default function CreatePodcastForm({
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Posted date — optional, defaults to the system date/time when
+          left blank. Can be backdated. */}
+      <div className="space-y-2">
+        <Label htmlFor="postedAt">Posted</Label>
+        <DateTimePicker
+          id="postedAt"
+          value={form.postedAt}
+          onChange={(v) => setForm((prev) => ({ ...prev, postedAt: v }))}
+          placeholder="Not set — defaults to now"
+        />
+      </div>
+      {/* Edited date — unlike Posted, this only has something to default
+          to once a real modification happens: left blank on create it
+          stays unset; left blank on an update it becomes "now". */}
+      <div className="space-y-2">
+        <Label htmlFor="editedAt">Edited</Label>
+        <DateTimePicker
+          id="editedAt"
+          value={form.editedAt}
+          onChange={(v) => setForm((prev) => ({ ...prev, editedAt: v }))}
+          placeholder={
+            resolvedMode === "edit" ? "Not set — defaults to now" : "Not set — stays unset until first edited"
+          }
+        />
       </div>
 
       <div className="flex gap-3">

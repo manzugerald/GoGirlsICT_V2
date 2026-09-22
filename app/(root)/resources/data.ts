@@ -42,6 +42,7 @@ export async function getPodcasts() {
       waveform: true,
       publishedAt: true,
       accessCount: true,
+      category: true,
     },
   });
 }
@@ -64,6 +65,8 @@ export async function getRadioTalkshows() {
     select: {
       id: true,
       title: true,
+      description: true,
+      details: true,
       date: true,
       image: true,
       audioUrl: true,

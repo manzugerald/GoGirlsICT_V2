@@ -22,28 +22,12 @@ export default function TalkshowsSection({
     <section
       id="talkshows"
       aria-labelledby="talkshows-heading"
-      className="relative scroll-mt-20 overflow-hidden py-12 sm:scroll-mt-24 sm:py-16 lg:py-20"
+      className="relative scroll-mt-20 overflow-hidden pt-4 pb-12 sm:scroll-mt-24 sm:pt-6 sm:pb-16 lg:pt-8 lg:pb-20"
     >
       <div className="relative mx-auto w-[90%]">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2
-            id="talkshows-heading"
-            className="heading-2 text-site-primary"
-          >
-            Our{' '}
-            <span className="bg-gradient-to-r from-[#9f004d] via-pink-500 to-purple-600 bg-clip-text text-transparent">
-              Radio Talkshows
-            </span>
-          </h2>
-
-          <p className="body-lg mx-auto mt-3 max-w-xl text-site-secondary">
-            Recordings of our on-air radio
-            talkshow appearances.
-          </p>
-        </div>
-
         {talkshows.length > 0 ? (
-          <ul className="mt-10 grid items-start grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+          <ul className="flex flex-wrap items-start justify-evenly gap-5">
+
             {talkshows.map(
               (talkshow, index) => (
                 <TalkshowCard
@@ -53,6 +37,7 @@ export default function TalkshowsSection({
                   isActive={
                     activeId === talkshow.id
                   }
+                  isAnyActive={activeId !== null}
                   onPlay={() =>
                     setActiveId(talkshow.id)
                   }
